@@ -153,7 +153,8 @@ license_blacklist = {
     "using": True,
     "classifiers)": True,
     "APL-2.0": True,
-    "dual": True
+    "dual": True,
+    "GPL/BSD": True
 }
 
 
