@@ -25,6 +25,7 @@ import glob
 import os
 import tarball
 import subprocess
+import config
 
 tests_config = ""
 skip_tests = False
@@ -68,8 +69,9 @@ def scan_for_tests(dir):
     if len(tests_config) > 0:
         return
 
+    makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
     testsuites = {
-        "makecheck": "make VERBOSE=1 V=1 %{?_smp_mflags} check",
+        "makecheck": "make VERBOSE=1 V=1 {}check".format(makeflags),
         "perlcheck": "make TEST_VERBOSE=1 test",
         "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python2.7/site-packages python2 setup.py test",
         "cmake": "pushd clr-build ; make test ; popd",
