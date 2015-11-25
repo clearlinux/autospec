@@ -168,6 +168,7 @@ def main():
 
     config.config_file = args.config
     config.parse_config_files(build.download_path, args.bump)
+    config.parse_existing_spec(build.download_path, tarball.name)
 
     buildreq.scan_for_configure(name, dir, build.download_path)
     specdescription.scan_for_description(name, dir)

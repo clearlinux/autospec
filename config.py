@@ -48,6 +48,7 @@ license_fetch = None
 license_show = None
 git_uri = None
 config_file = None
+old_version = None
 
 
 def filter_blanks(lines):
@@ -61,6 +62,26 @@ def read_conf_file(name):
             return filter_blanks(f.readlines())
     except EnvironmentError:
         return []
+
+
+def parse_existing_spec(path, name):
+    global old_version
+
+    spec = os.path.join(path, "{}.spec".format(name))
+    if not os.path.exists(spec):
+        return
+
+    with open(spec, "r") as inp:
+        for line in inp.readlines():
+            line = line.strip().replace("\r", "").replace("\n", "")
+            if ":" not in line:
+                continue
+            spl = line.split(":")
+            key = spl[0].lower().strip()
+            if key != "version":
+                continue
+            old_version = ":".join(spl[1:]).strip()
+            break
 
 
 def parse_config_files(path, bump):
