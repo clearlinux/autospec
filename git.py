@@ -69,4 +69,4 @@ def commit_to_git(path):
     if build.success == 0:
         return
 
-    call("git commit -a -f commitmsg ", cwd=path)
+    call("git commit -a -F commitmsg ", cwd=path)
