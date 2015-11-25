@@ -66,4 +66,7 @@ def commit_to_git(path):
     if build.success == 0:
         return
 
-    call("git commit -a -m \"Autospec creation for version " + tarball.version + "\"", cwd=path)
+    if config.old_version != None and config.old_version != tarball.version:
+        call("git commit -a -m \"Autospec creation for version update from " + config.old_version + " to " + tarball.version + "\"", cwd=path)
+    else:
+        call("git commit -a -m \"Autospec creation for version " + tarball.version + "\"", cwd=path)
