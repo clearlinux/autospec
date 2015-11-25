@@ -22,9 +22,11 @@
 #
 #
 
+import subprocess
+
+import build
 import config
 import tarball
-import subprocess
 
 commitmessage = []
 
@@ -67,4 +69,4 @@ def guess_commit_message():
     print("Guessed commit message:")
     print(commitmessage)
     with open(build.download_path + "/commitmsg", "w") as file:
-      file.writelines(commitmessage)
+      file.write("\n".join(commitmessage) + "\n")
