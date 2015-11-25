@@ -49,6 +49,7 @@ license_show = None
 git_uri = None
 config_file = None
 old_version = None
+old_patches = list()
 
 
 def filter_blanks(lines):
@@ -78,10 +79,11 @@ def parse_existing_spec(path, name):
                 continue
             spl = line.split(":")
             key = spl[0].lower().strip()
-            if key != "version":
-                continue
-            old_version = ":".join(spl[1:]).strip()
-            break
+            value = ":".join(spl[1:]).strip()
+            if key == "version":
+                old_version = value
+            elif key.startswith("patch"):
+                old_patches.append(value)
 
 
 def parse_config_files(path, bump):
