@@ -25,6 +25,7 @@ import build
 import buildpattern
 import tarball
 import test
+import docs
 from util import call
 import config
 
@@ -58,6 +59,8 @@ def commit_to_git(path):
     call("git add make_check_command", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add keepstatic", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add *.patch", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    for item in docs.transforms.values():
+        call("git add {}".format(item), check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add release", cwd=path)
 
     if build.success == 0:

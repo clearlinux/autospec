@@ -25,6 +25,7 @@ import files
 import git
 import lang
 import license
+import docs
 import os
 import patches
 import re
@@ -171,6 +172,7 @@ def main():
     buildreq.scan_for_configure(name, dir, build.download_path)
     specdescription.scan_for_description(name, dir)
     license.scan_for_licenses(name, dir)
+    docs.scan_for_changes(build.download_path, dir)
     add_sources(build.download_path, args.archives)
     test.scan_for_tests(dir)
 
