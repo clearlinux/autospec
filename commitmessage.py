@@ -66,5 +66,5 @@ def guess_commit_message():
 
     print("Guessed commit message:")
     print(commitmessage)
-    with open("commitmsg", "w") as file:
+    with open(build.download_path + "/commitmsg", "w") as file:
       file.writelines(commitmessage)
