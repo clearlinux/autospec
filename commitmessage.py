@@ -26,43 +26,45 @@ import config
 import tarball
 import subprocess
 
-commitmessage = ""
+commitmessage = []
 
 cves = set()
-have_cves = 0
-cvestring = "";
-    
-    
-def new_cve(str):
-    global cvestring;
-    global have_cves
-    global cves
-    
-    cves.add(str)
-    have_cves = 1;
-    cvestring = cvestring + " " + str
-    
-def guess_commit_message():
+have_cves = False
+cvestring = ""
+
+
+def new_cve(cve):
     global cvestring
     global have_cves
-     
+    global cves
+
+    cves.add(cve)
+    have_cves = True
+    cvestring += " " + cve
+
+
+def guess_commit_message():
+    global cvestring
+
     # default commit messages before we get too smart
     if config.old_version != None and config.old_version != tarball.version:
-        commitmessage = "Autospec creation for update from version " + config.old_version + " to version " + tarball.version + "\n\n"
+        commitmessage.append("Autospec creation for update from version " +
+                             config.old_version + " to version " +
+                             tarball.version)
     else:
-        if have_cves > 0:
-          commitmessage = "Fix for " + cvestring + "\n\n"
+        if have_cves:
+          commitmessage.append("Fix for " + cvestring.strip())
         else:
-          commitmessage = "Autospec creation for version " + tarball.version + "\n\n"
-          
-          
-    if have_cves > 0:
-        commitmessage = commitmessage + "CVEs fixed in this build: " + cvestring + "\n\n"
-        
-        
+          commitmessage.append("Autospec creation for version " +
+                               tarball.version)
+    commitmessage.append("")
+
+    if have_cves:
+        commitmessage.append("CVEs fixed in this build:")
+        commitmessage.extend(list(cves))
+        commitmessage.append("")
 
     print("Guessed commit message:")
     print(commitmessage)
     with open("commitmsg", "w") as file:
-      file.write(var)
-  
+      file.writelines(commitmessage)
