@@ -20,6 +20,8 @@
 #
 
 
+import config
+
 patches = []
 autoreconf = False
 

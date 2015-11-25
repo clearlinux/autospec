@@ -32,6 +32,8 @@ import tarball
 import test
 import textwrap
 import configparser
+import commitmessage
+
 from util import call
 
 extra_configure = ""
@@ -67,6 +69,7 @@ def read_conf_file(name):
 
 def parse_existing_spec(path, name):
     global old_version
+    global old_patches
 
     spec = os.path.join(path, "{}.spec".format(name))
     if not os.path.exists(spec):
@@ -84,6 +87,12 @@ def parse_existing_spec(path, name):
                 old_version = value
             elif key.startswith("patch"):
                 old_patches.append(value)
+
+    # Ignore nopatch
+    cves = [p for p in patches.patches if p.lower() not in old_patches and p.lower().endswith(".patch") and p.lower().startswith("cve-")]
+    for cve in cves:
+        commitmessage.new_cve(cve.upper().split(".PATCH")[0])
+
 
 
 def parse_config_files(path, bump):

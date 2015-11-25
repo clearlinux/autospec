@@ -29,9 +29,11 @@ import docs
 import patches
 from util import call
 import config
-
+import commitmessage
 
 def commit_to_git(path):
+
+    commitmessage.guess_commit_message()
 
     if not config.git_uri:
         return
@@ -67,13 +69,4 @@ def commit_to_git(path):
     if build.success == 0:
         return
 
-    # Ignore nopatch
-    cves = [p for p in patches.patches if p.lower() not in config.old_patches and p.lower().endswith(".patch") and p.lower().startswith("cve-")]
-    cve_message = "" if len(cves) == 0 else "\n\nCVEs patched in this update:\n"
-    for cve in cves:
-        cve_message += " - {}".format(cve.upper().split(".PATCH")[0])
-
-    if config.old_version is not None and config.old_version != tarball.version:
-        call("git commit -a -m \"Autospec creation for version update from {0} to {1}{2}\"".format(config.old_version, tarball.version, cve_message), cwd=path)
-    else:
-        call("git commit -a -m \"Autospec creation for version {0}{1}\"".format(tarball.version, cve_message), cwd=path)
+    call("git commit -a -f commitmsg ", cwd=path)
