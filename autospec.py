@@ -34,6 +34,8 @@ import sys
 import tarball
 import test
 import types
+import commitmessage
+
 from tarball import name
 from util import _file_write
 
@@ -200,6 +202,8 @@ def main():
 
     with open(build.download_path + "/release", "w") as fp:
         fp.write(tarball.release + "\n")
+
+    commitmessage.guess_commit_message()
 
     if args.git:
         git.commit_to_git(build.download_path)

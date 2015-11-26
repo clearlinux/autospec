@@ -33,8 +33,6 @@ import commitmessage
 
 def commit_to_git(path):
 
-    commitmessage.guess_commit_message()
-
     if not config.git_uri:
         return
 
