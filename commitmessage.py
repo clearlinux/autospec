@@ -23,6 +23,7 @@
 #
 
 import subprocess
+import re
 
 import build
 import config
@@ -83,6 +84,9 @@ def process_NEWS(file):
         if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i-1] == "":
             stop = i - 1;
             success = 1
+        if news[i].find(config.old_version + ":") == 0:
+            stop = i - 1;
+            success = 1
         if news[i] == config.old_version and news[i+1].find("---") >= 0:
             stop = i - 1;
             success = 1
@@ -94,6 +98,16 @@ def process_NEWS(file):
     if success == 0:
         return
 
+
+    # now search for CVEs
+    i = start;
+    pat = re.compile("(CVE\-[0-9]+\-[0-9]+)")
+    while i < stop and i < start:
+        match = pat.search(news[i])
+        if match:
+                s = match.group(1)
+                new_cve(s)
+        i = i + 1
 
     commitmessage.append("")
     i = start;
