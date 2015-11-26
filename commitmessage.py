@@ -106,14 +106,14 @@ def guess_commit_message():
 
     # default commit messages before we get too smart
     if config.old_version != None and config.old_version != tarball.version:
-        commitmessage.append("Autospec creation for update from version " +
+        commitmessage.append(tarball.name + ": Autospec creation for update from version " +
                              config.old_version + " to version " +
                              tarball.version)
     else:
         if have_cves:
-          commitmessage.append("Fix for " + cvestring.strip())
+          commitmessage.append(tarball.name + ": Fix for " + cvestring.strip())
         else:
-          commitmessage.append("Autospec creation for version " +
+          commitmessage.append(tarball.name + ":Autospec creation for version " +
                                tarball.version)
     commitmessage.append("")
 
