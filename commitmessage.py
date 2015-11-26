@@ -45,6 +45,53 @@ def new_cve(cve):
     cvestring += " " + cve
 
 
+def process_NEWS():
+    global commitmessage
+    news = []
+    start = 0
+    stop = 0
+    success = 0
+
+
+    if config.old_version == None or config.old_version == tarball.version:
+        return;
+
+    try:
+        with open(build.download_path + "/NEWS") as f:
+            news = f.readlines()
+    except EnvironmentError:
+        return
+
+    stop = len(news)
+    if stop <= start:
+        return
+
+    i = start;
+    while i < stop:
+        news[i] = news[i].strip('\n')
+        i = i + 1
+
+
+    i = start + 1
+    while i < stop - 1:
+        if news[i] == config.old_version and news[i-1] == "":
+            stop = i - 1;
+            success = 1
+        i = i + 1
+
+    if success == 0:
+        return
+
+
+    commitmessage.append("")
+    i = start;
+    while i < stop and i < start + 15:
+        commitmessage.append(news[i])
+        i = i + 1
+    commitmessage.append("")
+
+
+
 def guess_commit_message():
     global cvestring
 
@@ -65,6 +112,8 @@ def guess_commit_message():
         commitmessage.append("CVEs fixed in this build:")
         commitmessage.extend(list(cves))
         commitmessage.append("")
+
+    process_NEWS()
 
     print("Guessed commit message:")
     print(commitmessage)
