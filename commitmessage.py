@@ -54,8 +54,8 @@ def process_NEWS(file):
     success = 0
 
 
-    if config.old_version == None or config.old_version == tarball.version:
-        return;
+    if config.old_version is None or config.old_version == tarball.version:
+        return
 
     try:
         with open(build.download_path + "/" + file) as f:
@@ -67,7 +67,7 @@ def process_NEWS(file):
     if stop <= start:
         return
 
-    i = start;
+    i = start
     while i < stop:
         news[i] = news[i].strip('\n')
         i = i + 1
@@ -75,32 +75,31 @@ def process_NEWS(file):
 
     i = start + 1
     while i < stop - 1:
-        if news[i] == config.old_version and news[i-1] == "":
-            stop = i - 1;
+        if news[i] == config.old_version and news[i - 1] == "":
+            stop = i - 1
             success = 1
-        if news[i] == "Overview of changes leading to " + config.old_version and news[i-1] == "":
-            stop = i - 1;
+        if news[i] == "Overview of changes leading to " + config.old_version and news[i - 1] == "":
+            stop = i - 1
             success = 1
-        if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i-1] == "":
-            stop = i - 1;
+        if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i - 1] == "":
+            stop = i - 1
             success = 1
         if news[i].find(config.old_version + ":") == 0:
-            stop = i - 1;
+            stop = i - 1
             success = 1
         if news[i] == config.old_version and news[i+1].find("---") >= 0:
-            stop = i - 1;
+            stop = i - 1
             success = 1
         if news[i] == tarball.version and news[i+1].find("---") >= 0:
-            start = i;
+            start = i
 
         i = i + 1
 
     if success == 0:
         return
 
-
     # now search for CVEs
-    i = start;
+    i = start
     pat = re.compile("(CVE\-[0-9]+\-[0-9]+)")
     while i < stop and i < start:
         match = pat.search(news[i])
@@ -110,7 +109,7 @@ def process_NEWS(file):
         i = i + 1
 
     commitmessage.append("")
-    i = start;
+    i = start
     while i < stop and i < start + 15:
         commitmessage.append(news[i])
         i = i + 1
@@ -122,7 +121,7 @@ def guess_commit_message():
     global cvestring
 
     # default commit messages before we get too smart
-    if config.old_version != None and config.old_version != tarball.version:
+    if config.old_version is not None and config.old_version != tarball.version:
         commitmessage.append(tarball.name + ": Autospec creation for update from version " +
                              config.old_version + " to version " +
                              tarball.version)
