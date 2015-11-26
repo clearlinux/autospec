@@ -68,3 +68,4 @@ def commit_to_git(path):
         return
 
     call("git commit -a -F commitmsg ", cwd=path)
+    call("rm commitmsg", cwd=path)
