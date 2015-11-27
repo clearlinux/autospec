@@ -81,6 +81,16 @@ def process_NEWS(file):
         if news[i] == "Overview of changes leading to " + config.old_version and news[i - 1] == "":
             stop = i - 1
             success = 1
+        if news[i] == config.old_version + ":"  and news[i - 1] == "":
+            stop = i - 1
+            success = 1
+        if news[i] == tarball.version + ":"  and news[i - 1] == "":
+            start = i
+        if news[i] == tarball.name + "-" + config.old_version + ":"  and news[i - 1] == "":
+            stop = i - 1
+            success = 1
+        if news[i] == tarball.name + "-" + tarball.version + ":"  and news[i - 1] == "":
+            start = i
         if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i - 1] == "":
             stop = i - 1
             success = 1

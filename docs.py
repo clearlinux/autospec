@@ -24,6 +24,7 @@ import sys
 transforms = {
     'changelog': 'ChangeLog',
     'changes.rst': 'ChangeLog',
+    'changes.txt': 'ChangeLog',
     'news': 'NEWS'
 }
 interests = transforms.keys()
