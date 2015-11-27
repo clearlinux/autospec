@@ -23,6 +23,7 @@ import sys
 
 transforms = {
     'changelog': 'ChangeLog',
+    'changelog.txt': 'ChangeLog',
     'changes.rst': 'ChangeLog',
     'changes.txt': 'ChangeLog',
     'news': 'NEWS'
