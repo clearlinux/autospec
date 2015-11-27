@@ -22,8 +22,8 @@ import shutil
 import sys
 
 transforms = {
-    'changelog': 'ChangeLog',
     'changelog.txt': 'ChangeLog',
+    'changelog': 'ChangeLog',
     'changes.rst': 'ChangeLog',
     'changes.txt': 'ChangeLog',
     'news': 'NEWS'
