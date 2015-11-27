@@ -87,6 +87,9 @@ def process_NEWS(file):
         if news[i].find(config.old_version) >= 0 and news[i].find("Version ") >= 0 and news[i - 1] == "":
             stop = i - 1
             success = 1
+        if news[i].find(tarball.version) >= 0 and news[i].find("Version ") >= 0 and news[i - 1] == "":
+            start = i
+            
         if news[i].find(config.old_version + ":") == 0:
             stop = i - 1
             success = 1
