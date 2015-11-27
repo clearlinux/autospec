@@ -23,6 +23,7 @@ import sys
 
 transforms = {
     'changelog': 'ChangeLog',
+    'changes.rst': 'ChangeLog',
     'news': 'NEWS'
 }
 interests = transforms.keys()
@@ -35,7 +36,7 @@ def scan_for_changes(download_path, dir):
         hits = [x for x in files if x.lower() in interests and x.lower() not in found]
         for item in hits:
             source = os.path.join(dirpath, item)
-            target = os.path.join(download_path, item)
+            target = os.path.join(download_path, transforms[item.lower()])
             try:
                 shutil.copy(source, target)
             except Exception as e:
