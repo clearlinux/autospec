@@ -94,7 +94,6 @@ def parse_existing_spec(path, name):
         commitmessage.new_cve(cve.upper().split(".PATCH")[0])
 
 
-
 def parse_config_files(path, bump):
     global extra_configure
     global keepstatic

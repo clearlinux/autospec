@@ -22,7 +22,6 @@
 #
 #
 
-import subprocess
 import re
 
 import build
@@ -53,7 +52,6 @@ def process_NEWS(file):
     stop = 0
     success = 0
 
-
     if config.old_version is None or config.old_version == tarball.version:
         return
 
@@ -72,7 +70,6 @@ def process_NEWS(file):
         news[i] = news[i].strip('\n')
         i = i + 1
 
-
     i = start + 1
     while i < stop - 1:
         if news[i] == config.old_version and news[i - 1] == "":
@@ -81,15 +78,15 @@ def process_NEWS(file):
         if news[i] == "Overview of changes leading to " + config.old_version and news[i - 1] == "":
             stop = i - 1
             success = 1
-        if news[i] == config.old_version + ":"  and news[i - 1] == "":
+        if news[i] == config.old_version + ":" and news[i - 1] == "":
             stop = i - 1
             success = 1
-        if news[i] == tarball.version + ":"  and news[i - 1] == "":
+        if news[i] == tarball.version + ":" and news[i - 1] == "":
             start = i
-        if news[i] == tarball.name + "-" + config.old_version + ":"  and news[i - 1] == "":
+        if news[i] == tarball.name + "-" + config.old_version + ":" and news[i - 1] == "":
             stop = i - 1
             success = 1
-        if news[i] == tarball.name + "-" + tarball.version + ":"  and news[i - 1] == "":
+        if news[i] == tarball.name + "-" + tarball.version + ":" and news[i - 1] == "":
             start = i
         if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i - 1] == "":
             stop = i - 1
@@ -99,14 +96,14 @@ def process_NEWS(file):
             success = 1
         if news[i].find(tarball.version) >= 0 and news[i].find("Version ") >= 0 and news[i - 1] == "":
             start = i
-            
+
         if news[i].find(config.old_version + ":") == 0:
             stop = i - 1
             success = 1
-        if news[i] == config.old_version and news[i+1].find("---") >= 0:
+        if news[i] == config.old_version and news[i + 1].find("---") >= 0:
             stop = i - 1
             success = 1
-        if news[i] == tarball.version and news[i+1].find("---") >= 0:
+        if news[i] == tarball.version and news[i + 1].find("---") >= 0:
             start = i
 
         i = i + 1
@@ -132,7 +129,6 @@ def process_NEWS(file):
     commitmessage.append("")
 
 
-
 def guess_commit_message():
     global cvestring
 
@@ -143,10 +139,10 @@ def guess_commit_message():
                              tarball.version)
     else:
         if have_cves:
-          commitmessage.append(tarball.name + ": Fix for " + cvestring.strip())
+            commitmessage.append(tarball.name + ": Fix for " + cvestring.strip())
         else:
-          commitmessage.append(tarball.name + ":Autospec creation for version " +
-                               tarball.version)
+            commitmessage.append(tarball.name + ":Autospec creation for version " +
+                                 tarball.version)
     commitmessage.append("")
 
     if have_cves:
@@ -160,4 +156,4 @@ def guess_commit_message():
     print("Guessed commit message:")
     print(commitmessage)
     with open(build.download_path + "/commitmsg", "w") as file:
-      file.write("\n".join(commitmessage) + "\n")
+        file.write("\n".join(commitmessage) + "\n")

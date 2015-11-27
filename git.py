@@ -26,10 +26,9 @@ import buildpattern
 import tarball
 import test
 import docs
-import patches
 from util import call
 import config
-import commitmessage
+
 
 def commit_to_git(path):
 
