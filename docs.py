@@ -22,6 +22,7 @@ import shutil
 import sys
 
 transforms = {
+    'changes': 'ChangeLog',
     'changelog.txt': 'ChangeLog',
     'changelog': 'ChangeLog',
     'changes.rst': 'ChangeLog',
@@ -33,7 +34,7 @@ interests = transforms.keys()
 
 def scan_for_changes(download_path, dir):
     found = []
-    for dirpath, dirnames, files in os.walk(dir):
+    for dirpath, dirnames, files in os.walk(dir, topdown=False):
 
         hits = [x for x in files if x.lower() in interests and x.lower() not in found]
         for item in hits:
