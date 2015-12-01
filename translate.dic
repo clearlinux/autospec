@@ -17,6 +17,7 @@ Jinja2-python=Jinja2
 keystoneclient.auth-python=python-keystoneclient
 keystoneclient.v3-python=python-keystoneclient
 keystonemiddleware-python=keystonemiddleware
+lazy_object_proxy=lazy-object-proxy
 manilaclient-python=python-manilaclient
 mistralclient.api.v2-python=python-mistralclient
 mock=python-mock
