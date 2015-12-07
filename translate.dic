@@ -47,6 +47,7 @@ sqlparse-python=sqlparse
 stevedore-python=stevedore
 testresources-python=testresources
 testscenarios-python=testscenarios
+websocket-client=websocket_client
 WebTest-python=WebTest
 yaml-python=PyYAML
 zaqarclient.queues.v1-python=python-zaqarclient
