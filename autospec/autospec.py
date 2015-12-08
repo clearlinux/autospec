@@ -17,6 +17,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import sys
+import os
+import re
+import types
+
 import build
 import buildpattern
 import buildreq
@@ -26,21 +31,16 @@ import git
 import lang
 import license
 import docs
-import os
 import patches
-import re
 import specdescription
-import sys
 import tarball
 import test
-import types
 import commitmessage
 
 from tarball import name
 from util import _file_write
 
 sys.path.append(os.path.dirname(__file__))
-
 
 def write_sources(file):
     """Append additonal source files.
