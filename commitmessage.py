@@ -152,7 +152,7 @@ def guess_commit_message():
         if have_cves:
             commitmessage.append(tarball.name + ": Fix for " + cvestring.strip())
         else:
-            commitmessage.append(tarball.name + ":Autospec creation for version " +
+            commitmessage.append(tarball.name + ": Autospec creation for version " +
                                  tarball.version)
     commitmessage.append("")
 
