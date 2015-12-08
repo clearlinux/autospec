@@ -72,7 +72,7 @@ def build_untar(tarball_path):
     return extract_cmd, tarball_prefix
 
 
-def download_tarball(url_argument, name_argument, archives):
+def download_tarball(url_argument, name_argument, archives, target_dir):
     global name
     global rawname
     global version
@@ -196,7 +196,10 @@ def download_tarball(url_argument, name_argument, archives):
 
     assert name != ""
 
-    build.download_path = os.getcwd() + "/" + name
+    if not target_dir:
+        build.download_path = os.getcwd() + "/" + name
+    else:
+        build.download_path = target_dir
     call("mkdir -p %s" % build.download_path)
 
     gcov_path = build.download_path + "/" + name + ".gcov"

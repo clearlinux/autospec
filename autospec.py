@@ -143,6 +143,9 @@ def main():
     parser.add_argument("-c", "--config", dest="config", action="store",
                         default="/usr/share/defaults/autospec/autospec.conf",
                         help="Set configuration file to use")
+    parser.add_argument("-t", "--target", dest="target", action="store",
+                        default=None,
+                        help="Target location to create or reuse")
 
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
@@ -154,7 +157,7 @@ def main():
     #
     build.setup_patterns()
 
-    tarball.download_tarball(args.url, args.name, args.archives)
+    tarball.download_tarball(args.url, args.name, args.archives, args.target)
     dir = tarball.path
     if args.license_only:
         try:
