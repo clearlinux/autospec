@@ -214,8 +214,9 @@ def license_from_copying_hash(copying):
                 add_license(the_page.strip())
                 return
     else:
-        with open(LICENSE_HASH_FILE, "r") as file:
-            licenses_list = file.readlines()
+        if os.path.exists(LICENSE_HASH_FILE):
+            with open(LICENSE_HASH_FILE, "r") as file:
+                licenses_list = file.readlines()
         licenses_dict = dict(license.split(" | ") for license in licenses_list)
 
     if hash_sum in licenses_dict:
