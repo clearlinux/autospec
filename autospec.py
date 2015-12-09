@@ -140,7 +140,7 @@ def main():
     parser.add_argument("-b", "--skip-bump", dest="bump",
                         action="store_false", default=True,
                         help="Don't bump release number")
-    parser.add_argument("-c", "--config", nargs=1, dest="config",
+    parser.add_argument("-c", "--config", dest="config",
                         action="store", default="common/autospec.conf",
                         help="Set configuration file to use")
 
