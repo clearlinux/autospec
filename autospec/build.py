@@ -859,7 +859,7 @@ def package():
     util.call(mock_cmd + " -r clear --buildsrpm --sources=./ --spec={0}.spec --uniqueext={0} --result=results/ --no-cleanup-after".format(tarball.name),
               logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
     util.call("rm -f results/build.log", cwd=download_path)
-    srcrpm = "%s/results/%s-%s-%s.src.rpm" % (download_path, tarball.name, tarball.version, tarball.release)
+    srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
     returncode = util.call(mock_cmd + " -r clear  --result=results/ %s --enable-plugin=ccache  --uniqueext=%s --no-cleanup-after" % (srcrpm, tarball.name),
                            logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
     parse_build_results(download_path + "/results/build.log", returncode)
