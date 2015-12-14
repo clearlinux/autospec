@@ -84,6 +84,7 @@ license_translations = {
     "Apache-2": "Apache-2.0",
     "artistic_2": "Artistic-2.0",
     "MPLv1.1": "MPL-1.1",
+    "MPL-2": "MPL-2.0",
     "ZPL 2.1": "ZPL-2.1",
     "ZPL": "ZPL-2.0",
     "http://creativecommons.org/licenses/BSD/": "BSD-2-Clause",
