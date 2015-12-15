@@ -290,6 +290,12 @@ Controlling flags and optimisation
     the smallest ``-02`` based generic flags possible. This is useful for
     operating systems employing heavy optimisations or full RELRO by default.
 
+**pgo**
+
+    If this file exists, the ``CFLAGS/CXXFLAGS`` will be extended to build
+    the package with profile-guided optimization data. It will add ``-O3``,
+    ``-fprofile-use``, ``-fprofile-correction`` and ``-fprofile-dir=pgo``.
+
 
 Name and version resolution
 ===========================
