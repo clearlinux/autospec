@@ -189,6 +189,25 @@ def write_distutils_pattern(file):
     lang.write_find_lang(file)
 
 
+def write_distutils3_pattern(file):
+    write_prep(file)
+    file.write_strip("%build")
+    write_variables(file)
+    file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
+    file.write_strip("\n")
+    if test.tests_config:
+        file.write_strip("%check")
+        # Prevent setuptools from hitting the internet
+        file.write_strip("export http_proxy=http://127.0.0.1:9/")
+        file.write_strip("export https_proxy=http://127.0.0.1:9/")
+        file.write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+        file.write_strip(test.tests_config)
+    file.write_strip("%install")
+    file.write_strip("rm -rf %{buildroot}")
+    file.write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot}")
+    lang.write_find_lang(file)
+
+
 def write_distutils23_pattern(file):
     write_prep(file)
     file.write_strip("%build")
