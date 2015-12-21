@@ -42,6 +42,7 @@ from util import _file_write
 
 sys.path.append(os.path.dirname(__file__))
 
+
 def write_sources(file):
     """Append additonal source files.
     systemd unit files, gcov and additional source tarballs

@@ -77,7 +77,7 @@ def write_variables(file):
         flags.extend(["-O3", "-flto", "-ffunction-sections", "-fno-semantic-interposition"])
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
-    if  config.pgo:
+    if config.pgo:
         flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
     if tarball.gcov_file:
         flags = list(filter(("-flto").__ne__, flags))
