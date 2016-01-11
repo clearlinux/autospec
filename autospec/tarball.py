@@ -129,11 +129,17 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             name = "perl-" + name
 
     if url_argument.find("github.com") > 0:
-        p = re.compile(r"https://github.com/.*/(.*?)/archive/v?(.*).tar")
+        p = re.compile(r"https://github.com/.*/(.*?)/archive/(.*)-final.tar")
         m = p.search(url_argument)
         if m:
             name = m.group(1).strip()
             version = m.group(2).strip()
+        else:
+            p = re.compile(r"https://github.com/.*/(.*?)/archive/v?(.*).tar")
+            m = p.search(url_argument)
+            if m:
+                name = m.group(1).strip()
+                version = m.group(2).strip()
 
     if url_argument.find("bitbucket.org") > 0:
         p = re.compile(r"https://bitbucket.org/.*/(.*?)/get/[a-zA-Z_-]*([0-9][0-9_.]*).tar")
