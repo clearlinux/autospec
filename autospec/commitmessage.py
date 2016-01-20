@@ -56,7 +56,7 @@ def process_NEWS(file):
         return
 
     try:
-        with open(build.download_path + "/" + file) as f:
+        with open(build.download_path + "/" + file, encoding="latin-1") as f:
             news = f.readlines()
     except EnvironmentError:
         return
