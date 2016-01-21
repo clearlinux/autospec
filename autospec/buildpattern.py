@@ -74,7 +74,7 @@ def write_variables(file):
         file.write_strip("export CFLAGS=\"-O2 -g\"\n")
         file.write_strip("unset LDFLAGS\n")
     if config.optimize_speed:
-        flags.extend(["-O3", "-flto", "-ffunction-sections", "-fno-semantic-interposition", "-falign-functions=32"])
+        flags.extend(["-O3", "-flto", "-fno-semantic-interposition", "-falign-functions=32"])
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
     if config.pgo:
@@ -238,8 +238,8 @@ def write_R_pattern(file):
     file.write_strip("%install")
     file.write_strip("rm -rf %{buildroot}")
     file.write_strip("export LANG=C")
-    file.write_strip("export CFLAGS=\"$CFLAGS -O3 -flto -ffunction-sections -fno-semantic-interposition \"\n")
-    file.write_strip("export CXXFLAGS=\"$CXXFLAGS -O3 -flto -ffunction-sections -fno-semantic-interposition \"\n")
+    file.write_strip("export CFLAGS=\"$CFLAGS -O3 -flto -fno-semantic-interposition \"\n")
+    file.write_strip("export CXXFLAGS=\"$CXXFLAGS -O3 -flto -fno-semantic-interposition \"\n")
     file.write_strip("export AR=gcc-ar\n")
     file.write_strip("export RANLIB=gcc-ranlib\n")
     file.write_strip("export LDFLAGS=\"$LDFLAGS  -Wl,-z -Wl,relro\"\n")
