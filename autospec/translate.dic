@@ -3,6 +3,7 @@ barbicanclient-python=python-barbicanclient
 BeautifulSoup=beautifulsoup4
 cryptography-python=cryptography
 Crypto-python=pycrypt-python
+dateutil-python=python-dateutil
 dateutil.relativedelta-python=python-dateutil
 designateclient-python=python-designateclient
 django-python=Django
