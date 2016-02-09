@@ -97,7 +97,7 @@ def scan_for_tests(dir):
         makefile_path = os.path.join(dir, "Makefile.in")
         if not os.path.isfile(makefile_path):
             return
-        with open(makefile_path) as fp:
+        with open(makefile_path, encoding="latin-1") as fp:
             lines = fp.readlines()
         for line in lines:
             if line.startswith("check:"):
