@@ -155,6 +155,8 @@ def write_make_pattern(file):
     if subdir:
         file.write_strip("pushd %s" % subdir)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
+    if subdir:
+        file.write_strip("popd")
     file.write_strip("\n")
     write_check(file)
     write_make_install(file)
