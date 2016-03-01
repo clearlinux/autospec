@@ -59,8 +59,12 @@ def write_prep(file, ruby_pattern=False):
         else:
             file.write_strip("%setup -q -n " + tarball.tarball_prefix)
     for archive in sources["archive"]:
-        file.write_strip('mv %{{_topdir}}/BUILD/{0}/* ./{1}'
+        file.write_strip('mkdir -p %{{_topdir}}/BUILD/{0}/{1}'
+                         .format(tarball.tarball_prefix,
+                                 archive_details[archive + "destination"]))
+        file.write_strip('mv %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}'
                          .format(archive_details[archive + "prefix"],
+                                 tarball.tarball_prefix,
                                  archive_details[archive + "destination"]))
     patches.apply_patches(file)
     file.write_strip("\n")
