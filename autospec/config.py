@@ -33,6 +33,7 @@ import test
 import textwrap
 import configparser
 import commitmessage
+from os.path import exists as file_exists
 
 from util import call
 
@@ -217,23 +218,23 @@ def parse_config_files(path, bump):
     content = read_conf_file("configure")
     extra_configure = " \\\n".join(content)
 
-    if read_conf_file("keepstatic"):
+    if file_exists("keepstatic"):
         keepstatic = 1
         buildpattern.disable_static = ""
 
-    if read_conf_file("asneeded"):
+    if file_exists("asneeded"):
         print("Disabling LD_AS_NEEDED\n")
         asneeded = 0
 
-    if read_conf_file("optimize_size"):
+    if file_exists("optimize_size"):
         optimize_size = True
-    if read_conf_file("funroll-loops"):
+    if file_exists("funroll-loops"):
         optimize_speed = True
-    if read_conf_file("insecure_build"):
+    if file_exists("insecure_build"):
         insecure_build = True
-    if read_conf_file("pgo"):
+    if file_exists("pgo"):
         pgo = True
-    if read_conf_file("broken_parallel_build"):
+    if file_exists("broken_parallel_build"):
         parallel_build = ""
 
     content = read_conf_file("make_args")
@@ -261,10 +262,10 @@ def parse_config_files(path, bump):
         buildpattern.set_build_pattern(content[0], 20)
         patches.autoreconf = False
 
-    if read_conf_file("skip_test_suite"):
+    if file_exists("skip_test_suite"):
         test.skip_tests = True
 
-    if read_conf_file("unit_tests_must_pass"):
+    if file_exists("unit_tests_must_pass"):
         test.new_pkg = False
 
     content = read_conf_file("make_check_command")

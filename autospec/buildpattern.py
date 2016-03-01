@@ -94,7 +94,7 @@ def write_variables(file):
 
 
 def write_check(file):
-    if test.tests_config:
+    if test.tests_config and not test.skip_tests:
         file.write_strip("%check")
         file.write_strip("export http_proxy=http://127.0.0.1:9/")
         file.write_strip("export https_proxy=http://127.0.0.1:9/")
@@ -183,7 +183,7 @@ def write_distutils_pattern(file):
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("\n")
-    if test.tests_config:
+    if test.tests_config and not test.skip_tests:
         file.write_strip("%check")
         # Prevent setuptools from hitting the internet
         file.write_strip("export http_proxy=http://127.0.0.1:9/")
@@ -202,7 +202,7 @@ def write_distutils3_pattern(file):
     write_variables(file)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
     file.write_strip("\n")
-    if test.tests_config:
+    if test.tests_config and not test.skip_tests:
         file.write_strip("%check")
         # Prevent setuptools from hitting the internet
         file.write_strip("export http_proxy=http://127.0.0.1:9/")
@@ -222,7 +222,7 @@ def write_distutils23_pattern(file):
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
     file.write_strip("\n")
-    if test.tests_config:
+    if test.tests_config and not test.skip_tests:
         file.write_strip("%check")
         # Prevent setuptools from hitting the internet
         file.write_strip("export http_proxy=http://127.0.0.1:9/")
