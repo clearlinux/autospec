@@ -156,6 +156,7 @@ license_blacklist = {
     "APL-2.0": True,
     "dual": True,
     ".git": True,
+    ".mit": True,
     "GPL/BSD": True
 }
 
