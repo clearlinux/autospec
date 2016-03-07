@@ -95,42 +95,44 @@ def configure_ac_line(line):
     line = line.strip()
 
     # print("--", line, "--")
-    pattern = re.compile(r"PKG_CHECK_MODULES\((.*)\)")
-    match = pattern.search(line)
-    L = []
-    if match:
-        L = match.group(1).split(",")
-    if len(L) > 1:
-        rqlist = L[1].strip()
-        f = rqlist.find(">")
-        if f >= 0:
-            rqlist = rqlist[:f]
-        f = rqlist.find("<")
-        if f >= 0:
-            rqlist = rqlist[:f]
+    # XFCE uses an equivalent to PKG_CHECK_MODULES, handle them both the same
+    for style in [r"PKG_CHECK_MODULES\((.*)\)", r"XDT_CHECK_PACKAGE\((.*)\)"]:
+        pattern = re.compile(style)
+        match = pattern.search(line)
+        L = []
+        if match:
+            L = match.group(1).split(",")
+        if len(L) > 1:
+            rqlist = L[1].strip()
+            f = rqlist.find(">")
+            if f >= 0:
+                rqlist = rqlist[:f]
+            f = rqlist.find("<")
+            if f >= 0:
+                rqlist = rqlist[:f]
 
-        L2 = rqlist.split(" ")
-        for rq in L2:
-            if len(rq) < 2:
-                continue
-            # remove [] if any
-            if rq[0] == "[":
-                rq = rq[1:]
-            f = rq.find("]")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find(">")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("<")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("=")
-            if f >= 0:
-                rq = rq[:f]
-            rq = rq.strip()
-            if len(rq) > 0 and rq[0] != "$":
-                add_pkgconfig_buildreq(rq)
+            L2 = rqlist.split(" ")
+            for rq in L2:
+                if len(rq) < 2:
+                    continue
+                # remove [] if any
+                if rq[0] == "[":
+                    rq = rq[1:]
+                f = rq.find("]")
+                if f >= 0:
+                    rq = rq[:f]
+                f = rq.find(">")
+                if f >= 0:
+                    rq = rq[:f]
+                f = rq.find("<")
+                if f >= 0:
+                    rq = rq[:f]
+                f = rq.find("=")
+                if f >= 0:
+                    rq = rq[:f]
+                rq = rq.strip()
+                if len(rq) > 0 and rq[0] != "$":
+                    add_pkgconfig_buildreq(rq)
 
     pattern = re.compile(r"PKG_CHECK_EXISTS\((.*)\)")
     match = pattern.search(line)
