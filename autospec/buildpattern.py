@@ -90,6 +90,8 @@ def write_variables(file):
     if flags:
         flags = list(set(flags))
         file.write_strip("export CFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
+        file.write_strip("export FCFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
+        file.write_strip("export FFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
         file.write_strip("export CXXFLAGS=\"$CXXFLAGS {0} \"\n".format(" ".join(flags)))
 
 
@@ -246,6 +248,8 @@ def write_R_pattern(file):
     file.write_strip("rm -rf %{buildroot}")
     file.write_strip("export LANG=C")
     file.write_strip("export CFLAGS=\"$CFLAGS -O3 -flto -fno-semantic-interposition \"\n")
+    file.write_strip("export FCFLAGS=\"$CFLAGS -O3 -flto -fno-semantic-interposition \"\n")
+    file.write_strip("export FFLAGS=\"$CFLAGS -O3 -flto -fno-semantic-interposition \"\n")
     file.write_strip("export CXXFLAGS=\"$CXXFLAGS -O3 -flto -fno-semantic-interposition \"\n")
     file.write_strip("export AR=gcc-ar\n")
     file.write_strip("export RANLIB=gcc-ranlib\n")
