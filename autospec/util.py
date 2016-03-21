@@ -60,3 +60,7 @@ def translate(package):
         if item.startswith(package + "="):
             return item.split("=")[1]
     return package
+
+
+def print_fatal(message):
+    print("[\033[1m\033[91mFATAL\033[0m] {}".format(message))

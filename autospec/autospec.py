@@ -39,6 +39,7 @@ import commitmessage
 
 from tarball import name
 from util import _file_write
+from abireport import examine_abi
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -203,6 +204,8 @@ def main():
     if build.success == 0:
         print("Build failed")
         return
+
+    examine_abi(build.download_path)
 
     with open(build.download_path + "/release", "w") as fp:
         fp.write(tarball.release + "\n")

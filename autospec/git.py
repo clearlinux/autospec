@@ -62,6 +62,7 @@ def commit_to_git(path):
     for item in docs.transforms.values():
         call("git add {}".format(item), check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add release", cwd=path)
+    call("git add symbols", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     if build.success == 0:
         return
