@@ -38,7 +38,7 @@ import test
 import commitmessage
 
 from tarball import name
-from util import _file_write
+from util import _file_write, print_fatal
 from abireport import examine_abi
 
 sys.path.append(os.path.dirname(__file__))
@@ -119,6 +119,29 @@ def add_sources(download_path, archives):
         buildpattern.archive_details[archive + "destination"] = destination
 
 
+def binary_in_path(binary, paths):
+    """ Determine if the given binary exists in the provided filesystem paths """
+    for path in paths:
+        if os.path.exists(os.path.join(path, binary)):
+            return True
+    return False
+
+
+def check_requirements(useGit):
+    """ Ensure all requirements are satisfied before continuing """
+    required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio"]
+
+    if useGit:
+        required_bins.append("git")
+
+    paths = os.getenv("PATH", default="/usr/bin:/bin").split(os.pathsep)
+    missing = [x for x in required_bins if not binary_in_path(x, paths)]
+
+    if len(missing) > 0:
+        print_fatal("Required programs are not installed: {}".format(", ".join(missing)))
+        sys.exit(1)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--skip-git",
@@ -153,6 +176,9 @@ def main():
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(
                      "-a/--archives requires an even number of arguments"))
+
+    check_requirements(args.git)
+
     #
     # First, download the tarball, extract it and then do a set
     # of static analysis on the content of the tarball.
