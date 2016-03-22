@@ -120,7 +120,7 @@ def purge_tree(tree):
 def truncate_file(path):
     if not os.path.exists(path):
         return
-    with open(path, "rw+") as trunc:
+    with open(path, "rw+", encoding="utf-8") as trunc:
         trunc.truncate()
 
 
@@ -200,7 +200,7 @@ def examine_abi(download_path):
 
     if len(abi_report) > 0:
         # Finally, write the report
-        report = open(report_file, "w")
+        report = open(report_file, "w", encoding="utf-8")
         for soname in sorted(abi_report.keys()):
             for symbol in sorted(abi_report[soname]):
                 report.write("{}:{}\n".format(soname, symbol))
