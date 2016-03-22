@@ -125,8 +125,8 @@ def truncate_file(path):
 
 
 def examine_abi(download_path):
-    results_dir = os.path.abspath(os.path.join(download_path, "results"))
     download_path = os.path.abspath(download_path)
+    results_dir = os.path.abspath(os.path.join(download_path, "results"))
 
     if not os.path.exists(results_dir):
         util.print_fatal("Results directory does not exist, aborting")
