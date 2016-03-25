@@ -300,6 +300,7 @@ def write_cmake_pattern(file):
     file.write_strip("%build")
     file.write_strip("mkdir clr-build")
     file.write_strip("pushd clr-build")
+    write_variables(file)
     file.write_strip("cmake .. -G \"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON -DLIB_INSTALL_DIR:PATH=%{_libdir} " + extra_cmake)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     file.write_strip("popd")

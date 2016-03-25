@@ -21,6 +21,7 @@ import build
 import buildpattern
 import buildreq
 import files
+import config
 import glob
 import hashlib
 import os
@@ -296,6 +297,8 @@ def write_nvr(file):
     global name
     global version
     global release
+    global url
+    url = re.sub(config.urlban, "localhost", url)
     file.write("Name     : " + name + "\n")
     file.write("Version  : " + version + "\n")
     file.write("Release  : " + str(release) + "\n")

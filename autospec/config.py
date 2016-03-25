@@ -110,6 +110,7 @@ def parse_config_files(path, bump):
     global license_fetch
     global license_show
     global git_uri
+    global urlban
     global config_file
 
     config_path = path
@@ -126,6 +127,7 @@ def parse_config_files(path, bump):
         git_uri = config['autospec'].get('git', None)
         license_fetch = config['autospec'].get('license_fetch', None)
         license_show = config['autospec'].get('license_show', None)
+        urlban = config['autospec'].get('urlban', None)
 
     if not git_uri:
         print("Warning: Set [autospec][git] upstream template for git support")
