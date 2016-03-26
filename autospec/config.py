@@ -47,6 +47,7 @@ pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
 config_path = ""
+urlban = ""
 
 license_fetch = None
 license_show = None
