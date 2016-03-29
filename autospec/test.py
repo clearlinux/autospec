@@ -26,6 +26,7 @@ import os
 import tarball
 import subprocess
 import config
+from collections import OrderedDict
 
 tests_config = ""
 skip_tests = False
@@ -47,15 +48,36 @@ def check_regression(dir):
     lines = result.strip('\n').split('\n')
     titles = ['package name', 'total tests', 'tests passing', 'tests failing',
               'tests skipped', 'expected fail']
+
+    output_format = OrderedDict([
+        ('total tests', 'Total'),
+        ('tests passing', 'Pass'),
+        ('tests failing', 'Fail'),
+        ('tests skipped', 'Skip'),
+        ('expected fail', 'XFail')
+    ])
+
+    mapping = dict()
+
     if len(lines) > 1:
         for l in lines:
             split_lines = l.split(',')
             for x in range(0, len(split_lines)):
                 print(titles[x] + ": " + split_lines[x])
+                if titles[x] in output_format:
+                    mapping[output_format[titles[x]]] = split_lines[x]
     else:
         split_list = lines[0].split(',')
         for x in range(1, len(split_list)):
             print(titles[x] + ": " + split_list[x])
+            if titles[x] in output_format:
+                mapping[output_format[titles[x]]] = split_list[x]
+
+    with open(os.path.join(dir, "testresults"), "w", encoding="utf-8") as resfile:
+        for key in output_format.keys():
+            of = output_format[key]
+            val = mapping[of]
+            resfile.write("{} : {}\n".format(of, val))
 
 
 def scan_for_tests(dir):
