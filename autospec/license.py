@@ -94,6 +94,7 @@ license_translations = {
     "Python": "Python-2.0",
     "BSD_2_clause": "BSD-2-Clause",
     "Expat": "MIT",
+    "w3c": "W3C",
     "VIM": "Vim"
 }
 
