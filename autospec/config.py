@@ -55,6 +55,7 @@ git_uri = None
 config_file = None
 old_version = None
 old_patches = list()
+profile_payload = None
 
 
 def filter_blanks(lines):
@@ -113,6 +114,7 @@ def parse_config_files(path, bump):
     global git_uri
     global urlban
     global config_file
+    global profile_payload
 
     config_path = path
 
@@ -287,3 +289,5 @@ def parse_config_files(path, bump):
                 license.add_license(word)
 
     buildpattern.make_install_append = read_conf_file("make_install_append")
+
+    profile_payload = read_conf_file("profile_payload")

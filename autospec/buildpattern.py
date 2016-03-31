@@ -94,6 +94,22 @@ def write_variables(file):
         file.write_strip("export FFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
         file.write_strip("export CXXFLAGS=\"$CXXFLAGS {0} \"\n".format(" ".join(flags)))
 
+    if config.profile_payload and config.profile_payload[0]:
+        genflags = list()
+        genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo"])
+        useflags = list()
+        useflags.extend(["-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
+
+        file.write_strip("export CFLAGS_GENERATE=\"$CFLAGS {0} \"\n".format(" ".join(genflags)))
+        file.write_strip("export FCFLAGS_GENERATE=\"$FCFLAGS {0} \"\n".format(" ".join(genflags)))
+        file.write_strip("export FFLAGS_GENERATE=\"$FFLAGS {0} \"\n".format(" ".join(genflags)))
+        file.write_strip("export CXXFLAGS_GENERATE=\"$CXXFLAGS {0} \"\n".format(" ".join(genflags)))
+
+        file.write_strip("export CFLAGS_USE=\"$CFLAGS {0} \"\n".format(" ".join(useflags)))
+        file.write_strip("export FCFLAGS_USE=\"$FCFLAGS {0} \"\n".format(" ".join(useflags)))
+        file.write_strip("export FFLAGS_USE=\"$FFLAGS {0} \"\n".format(" ".join(useflags)))
+        file.write_strip("export CXXFLAGS_USE=\"$CXXFLAGS {0} \"\n".format(" ".join(useflags)))
+
 
 def write_check(file):
     if test.tests_config and not test.skip_tests:
@@ -116,6 +132,18 @@ def write_make_install(file):
     lang.write_find_lang(file)
 
 
+def get_profile_generate_flags():
+    if config.profile_payload and config.profile_payload[0]:
+        return "CFLAGS=\"${CFLAGS_GENERATE}\" CXXFLAGS=\"${CXXFLAGS_GENERATE}\" FFLAGS=\"${FFLAGS_GENERATE}\" FCFLAGS=\"${FCFLAGS_GENERATE}\" "
+    return ""
+
+
+def get_profile_use_flags():
+    if config.profile_payload and config.profile_payload[0]:
+        return "CFLAGS=\"${CFLAGS_USE}\" CXXFLAGS=\"${CXXFLAGS_USE}\" FFLAGS=\"${FFLAGS_USE}\" FCFLAGS=\"${FCFLAGS_USE}\" "
+    return ""
+
+
 def write_configure_pattern(file):
     if patches.autoreconf:
         # Patches affecting configure.* or Makefile.*, reconf instead
@@ -126,9 +154,23 @@ def write_configure_pattern(file):
     if config.asneeded == 0:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
+
+    # Prep it for PGO
+    if config.profile_payload and config.profile_payload[0]:
+        if subdir:
+            file.write_strip("pushd %s" % subdir)
+        file.write_strip(get_profile_generate_flags() + "%configure " + disable_static + " " + config.extra_configure)
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        if subdir:
+            file.write_strip("popd")
+        file.write_strip("\n")
+
+        file.write_strip("\n".join(config.profile_payload))
+        file.write_strip("\nmake clean\n")
+
     if subdir:
         file.write_strip("pushd %s" % subdir)
-    file.write_strip("%configure " + disable_static + " " + config.extra_configure)
+    file.write_strip(get_profile_use_flags() + "%configure " + disable_static + " " + config.extra_configure)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     if subdir:
         file.write_strip("popd")
@@ -143,9 +185,22 @@ def write_configure_ac_pattern(file):
     if config.asneeded == 0:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
+    # Prep it for PGO
+    if config.profile_payload and config.profile_payload[0]:
+        if subdir:
+            file.write_strip("pushd %s" % subdir)
+        file.write_strip(get_profile_generate_flags() + "%reconfigure " + disable_static + " " + config.extra_configure)
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        if subdir:
+            file.write_strip("popd")
+        file.write_strip("\n")
+
+        file.write_strip("\n".join(config.profile_payload))
+        file.write_strip("\nmake clean\n")
+
     if subdir:
         file.write_strip("pushd %s" % subdir)
-    file.write_strip("%reconfigure " + disable_static + " " + config.extra_configure)
+    file.write_strip(get_profile_use_flags() + "%reconfigure " + disable_static + " " + config.extra_configure)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     if subdir:
         file.write_strip("popd")
@@ -172,7 +227,15 @@ def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     write_variables(file)
-    file.write_strip("%autogen " + disable_static + " " + config.extra_configure)
+    if config.profile_payload and config.profile_payload[0]:
+        file.write_strip(get_profile_generate_flags() + "%autogen " + disable_static + " " + config.extra_configure)
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        file.write_strip("\n")
+
+        file.write_strip("\n".join(config.profile_payload))
+        file.write_strip("\nmake clean\n")
+
+    file.write_strip(get_profile_use_flags() + "%autogen " + disable_static + " " + config.extra_configure)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     file.write_strip("\n")
     write_check(file)
