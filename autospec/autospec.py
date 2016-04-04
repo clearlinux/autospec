@@ -129,7 +129,7 @@ def binary_in_path(binary, paths):
 
 def check_requirements(useGit):
     """ Ensure all requirements are satisfied before continuing """
-    required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio"]
+    required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio", "readelf"]
 
     if useGit:
         required_bins.append("git")
