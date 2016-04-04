@@ -165,6 +165,9 @@ def guess_commit_message():
     process_NEWS("ChangeLog")
 
     print("Guessed commit message:")
-    print(commitmessage)
-    with open(build.download_path + "/commitmsg", "w") as file:
+    with open(build.download_path + "/commitmsg", "w", encoding="latin-1") as file:
         file.write("\n".join(commitmessage) + "\n")
+    try:
+        print(commitmessage)
+    except:
+        print("Can't print")
