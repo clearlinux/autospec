@@ -28,11 +28,16 @@ import sys
 import util
 import shutil
 
-valid_file = ".* ELF (64|32)\-bit LSB shared object,"
-
 valid_dirs = ["/usr/lib", "/usr/lib64"]
 
-reg = re.compile(valid_file)
+# For determining .so's
+reg = re.compile(r".* ELF (64|32)\-bit LSB shared object,")
+
+# All dynamic binaries
+valid_dyn = re.compile(r".* ELF (64|32)\-bit LSB (shared object|executable),")
+
+# shared-lib matcher
+shared_lib = re.compile(r".*Shared library: \[(.*)\].*")
 
 wanted_symbol_types = ["A", "T"]
 
@@ -66,17 +71,83 @@ def get_soname(path):
         return None
 
 
-def is_file_valid(path):
-    if not os.path.exists(path) or os.path.islink(path):
-        return False
+def get_shared_dependencies(path):
+    ''' Return the shared dependencies for a given path '''
+    ret = set()
+    cmd = "readelf -d {}".format(path)
+
+    for line in get_output(cmd).split("\n"):
+        line = line.strip()
+        shared = shared_lib.match(line)
+        if shared is None:
+            continue
+        ret.add(shared.group(1))
+
+    return ret
+
+
+def get_all_dependencies(path):
+    ''' Determine all dependencies in the given path '''
+
+    deps = set()
+
+    sonames = set()
+    examine = set()
+
+    for root, dirs, files in os.walk(path):
+        for file in files:
+            fpath = os.path.join(root, file)
+            if not is_dynamic_binary(fpath):
+                continue
+            # Encountered a valid dynamic linked object
+            if is_file_valid(fpath):
+                # We must account for *all* internal symbols due to rpaths and
+                # overriding of LD_LIBRARY_PATH
+                soname = get_soname(fpath)
+                if soname is not None:
+                    sonames.add(soname)
+            if is_dynamic_binary(fpath):
+                examine.add(fpath)
+
+    for path in examine:
+        current_deps = get_shared_dependencies(path)
+        # Ensure we don't add a dependency on an internally provided symbol
+        deps.update(set(filter(lambda s: s not in sonames, current_deps)))
+
+    return deps
+
+
+def get_file_magic(path):
+    ''' Return the 'magic' for a given path '''
     cmd = "file \"{}\"".format(path)
     try:
         line = get_output(cmd).split("\n")[0]
-        if reg.match(line):
-            return True
-    except Exception as e:
-        print(e)
+        return line.strip()
+    except Exception:
+        return None
+
+
+def is_dynamic_binary(path):
+    ''' Determine if a given path is a dynamic binary '''
+    if not os.path.exists(path) or not os.path.isfile(path):
         return False
+    mg = get_file_magic(path)
+    if not mg:
+        return False
+    if valid_dyn.match(mg):
+        return True
+    return False
+
+
+def is_file_valid(path):
+    if not os.path.exists(path) or os.path.islink(path):
+        return False
+    mg = get_file_magic(path)
+    if not mg:
+        return False
+    if reg.match(mg):
+        return True
+    return False
 
 
 def dump_symbols(path):
@@ -205,6 +276,17 @@ def examine_abi(download_path):
             for symbol in sorted(abi_report[soname]):
                 report.write("{}:{}\n".format(soname, symbol))
 
+        report.close()
+    else:
+        truncate_file(report_file)
+
+    # Write the library report
+    lib_deps = get_all_dependencies(extract_dir)
+    report_file = os.path.join(download_path, "used_libs")
+    if len(lib_deps) > 0:
+        report = open(report_file, "w", encoding="utf-8")
+        for soname in sorted(lib_deps):
+            report.write("{}\n".format(soname))
         report.close()
     else:
         truncate_file(report_file)
