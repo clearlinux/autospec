@@ -191,7 +191,7 @@ def purge_tree(tree):
 def truncate_file(path):
     if not os.path.exists(path):
         return
-    with open(path, "rw+", encoding="utf-8") as trunc:
+    with open(path, "r+", encoding="utf-8") as trunc:
         trunc.truncate()
 
 
