@@ -158,7 +158,8 @@ license_blacklist = {
     "dual": True,
     ".git": True,
     ".mit": True,
-    "GPL/BSD": True
+    "GPL/BSD": True,
+    "version-2": True,
 }
 
 
