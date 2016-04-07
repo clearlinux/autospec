@@ -169,6 +169,12 @@ Controlling the build process
     Much like ``make_args``, this will pass arguments to the ``make install``
     macro in the ``.spec``
 
+**make_install_append**
+
+    Additional actions that should take place after the ``make install`` step
+    has completed. This will be placed in the resulting ``.spec``, and is used
+    for situations where fine-grained control is required.
+
 **install_macro**
 
     The contents of this file be used instead of the automatically detected
