@@ -48,7 +48,7 @@ def write_prep(file, ruby_pattern=False):
     file.write_strip("%prep")
     for archive in sources["archive"]:
         file.write_strip("tar -xf %{{SOURCE{}}}".format(source_index[archive]))
-        file.write_strip("cd ..")
+    file.write_strip("cd ..")
     if ruby_pattern:
         file.write_strip("gem unpack %{SOURCE0}")
         file.write_strip("%setup -q -D -T -n " + tarball.tarball_prefix)
