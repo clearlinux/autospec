@@ -43,6 +43,7 @@ asneeded = 1
 optimize_size = False
 optimize_speed = False
 insecure_build = False
+conservative_flags = False
 pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
@@ -105,6 +106,7 @@ def parse_config_files(path, bump):
     global optimize_size
     global optimize_speed
     global insecure_build
+    global conservative_flags
     global pgo
     global config_files
     global config_path
@@ -237,6 +239,8 @@ def parse_config_files(path, bump):
         optimize_speed = True
     if file_exists("insecure_build"):
         insecure_build = True
+    if file_exists("conservative_flags"):
+        conservative_flags = True
     if file_exists("pgo"):
         pgo = True
     if file_exists("broken_parallel_build"):

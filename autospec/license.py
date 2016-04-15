@@ -160,6 +160,8 @@ license_blacklist = {
     ".mit": True,
     "GPL/BSD": True,
     "version-2": True,
+    "public": True,
+    "domain": True,
 }
 
 
