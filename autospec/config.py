@@ -44,6 +44,8 @@ optimize_size = False
 optimize_speed = False
 insecure_build = False
 conservative_flags = False
+clang_flags = False
+want_clang = False
 pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
@@ -107,6 +109,8 @@ def parse_config_files(path, bump):
     global optimize_speed
     global insecure_build
     global conservative_flags
+    global clang_flags
+    global want_clang
     global pgo
     global config_files
     global config_path
@@ -291,6 +295,12 @@ def parse_config_files(path, bump):
         for word in words:
             if word.find(":") < 0:
                 license.add_license(word)
+
+    if file_exists("use_clang"):
+        clang_flags = True
+        optimize_speed = False        
+        want_clang = True
+        buildreq.add_buildreq("llvm-dev")
 
     buildpattern.make_install_append = read_conf_file("make_install_append")
 
