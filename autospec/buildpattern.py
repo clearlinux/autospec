@@ -75,6 +75,7 @@ def write_variables(file):
     flags = []
     if config.want_clang:
         file.write_strip("export CC=clang\n")
+        file.write_strip("export LD=ld.gold\n")
     if config.optimize_size:
         flags.extend(["-Os", "-ffunction-sections"])
     if config.insecure_build:
@@ -85,7 +86,7 @@ def write_variables(file):
         file.write_strip("export CXXFLAGS=$CFLAGS\n");
         file.write_strip("unset LDFLAGS\n")
     if config.clang_flags:
-        file.write_strip("export CFLAGS=\"-g -O3 -feliminate-unused-debug-types  -pipe -Wall -D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wl,--copy-dt-needed-entries -m64 -march=westmere  -mtune=native -fasynchronous-unwind-tables -D_REENTRANT  -Wl,-z -Wl,now -Wl,-z -Wl,relro \"\n")
+        file.write_strip("export CFLAGS=\"-g -O3 -feliminate-unused-debug-types  -pipe -Wall -D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector --param=ssp-buffer-size=32 -Wformat -Wformat-security -Wl,--copy-dt-needed-entries -m64 -march=westmere  -mtune=native -fasynchronous-unwind-tables -D_REENTRANT  -Wl,-z -Wl,now -Wl,-z -Wl,relro -flto\"\n")
         file.write_strip("export CXXFLAGS=$CFLAGS\n");
         file.write_strip("unset LDFLAGS\n")
     if config.optimize_speed:
