@@ -129,18 +129,20 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         if name:
             name = "perl-" + name
 
-    if url_argument.find("github.com") > 0:
-        p = re.compile(r"https://github.com/.*/(.*?)/archive/(.*)-final.tar")
-        m = p.search(url_argument)
-        if m:
-            name = m.group(1).strip()
-            version = m.group(2).strip()
-        else:
-            p = re.compile(r"https://github.com/.*/(.*?)/archive/v?(.*).tar")
+    if "github.com" in  url_argument:
+        # define regex accepted for valid packages
+        github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
+                           r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
+                           r"https://github.com/.*/(.*?)/archive/(.*).zip",
+                           r"https://github.com/.*/(.*?)/archive/v?(.*).tar"]
+
+        for pattern in github_patterns:
+            p = re.compile(pattern)
             m = p.search(url_argument)
             if m:
                 name = m.group(1).strip()
                 version = m.group(2).strip()
+                break
 
     if url_argument.find("bitbucket.org") > 0:
         p = re.compile(r"https://bitbucket.org/.*/(.*?)/get/[a-zA-Z_-]*([0-9][0-9_.]*).tar")
