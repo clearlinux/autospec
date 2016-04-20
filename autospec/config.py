@@ -298,7 +298,7 @@ def parse_config_files(path, bump):
 
     if file_exists("use_clang"):
         clang_flags = True
-        optimize_speed = False        
+        optimize_speed = False
         want_clang = True
         buildreq.add_buildreq("llvm-dev")
 
