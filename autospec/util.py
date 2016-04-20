@@ -18,6 +18,7 @@
 #
 
 import os
+import re
 import shlex
 import subprocess
 
@@ -60,6 +61,29 @@ def translate(package):
         if item.startswith(package + "="):
             return item.split("=")[1]
     return package
+
+
+def golang_name(some_str):
+    """ get the golang-somesite-project-repo format pkg name"""
+    ret = some_str
+    pattern = re.compile(r".*(github)\.com/([0-9a-zA-Z_-]+)/([0-9a-zA-Z_-]+)/?")
+    match = pattern.search(some_str)
+    if match:
+        domain = match.group(1).strip()
+        project = match.group(2).strip()
+        repo = match.group(3).strip()
+        ret = "golang-" + domain + "-" + project + "-" + repo
+    return ret
+
+
+def golang_libpath(some_str):
+    """ get the import path for golang"""
+    ret = ""
+    pattern = re.compile(r".*(github\.com/[0-9a-zA-Z_\-]+/[0-9a-zA-Z_\-]+).*")
+    match = pattern.search(some_str)
+    if match:
+        ret =  match.group(1).strip()
+    return ret
 
 
 def print_fatal(message):

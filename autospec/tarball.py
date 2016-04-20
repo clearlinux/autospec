@@ -31,6 +31,8 @@ import subprocess
 import urllib
 import urllib.request
 from util import call
+from util import golang_name
+from util import golang_libpath
 
 name = ""
 rawname = ""
@@ -40,6 +42,7 @@ url = ""
 path = ""
 tarball_prefix = ""
 gcov_file = ""
+golibpath = ""
 
 
 def get_sha1sum(filename):
@@ -81,6 +84,9 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
     global path
     global tarball_prefix
     global gcov_file
+    # go naming
+    global golibpath
+    global go_pkgname
 
     url = url_argument
     tarfile = os.path.basename(url)
@@ -130,6 +136,8 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             name = "perl-" + name
 
     if "github.com" in url_argument:
+        golibpath = golang_libpath(url_argument)
+        go_pkgname = golang_name(url_argument)
         # define regex accepted for valid packages
         github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
                            r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",

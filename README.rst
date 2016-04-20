@@ -206,6 +206,15 @@ Controlling the build process
     This file contains a list of patches to apply during the build, using the ``%patch``
     macro. As such it is affected by ``-p1`` style modifiers.
 
+**golang_libpath**
+
+    When building go packages, the go import path will be guessed automatically
+    (e.g. building ``https://github.com/go-yaml/yaml/`` would get
+    ``github.com/go-yaml/yaml``). While this is handy, it's not always correct
+    (in the previous example, the correct import path should be
+    ``gopkg.in/yaml.v2``). This could be easily fixed by placing
+    ``gopkg.in/yaml.v`` in this file, changing where the go bits will be placed.
+
 Controlling files and subpackages
 ---------------------------------
 

@@ -434,6 +434,39 @@ def write_scons_pattern(file):
     file.write_strip("scons install " + extra_make_install)
 
 
+def write_golang_pattern(file):
+    library_path = tarball.golibpath
+    tolerance = ""
+    write_prep(file)
+    file.write_strip("%build")
+    file.write_strip("\n")
+    file.write_strip("%install")
+    file.write_strip("gopath=\"/usr/lib/golang\"")
+    file.write_strip("library_path=\"" + library_path +"\"")
+    file.write_strip("rm -rf %{buildroot}")
+    file.write_strip("install -d -p %{buildroot}${gopath}/src/${library_path}/")
+    file.write_strip("for file in $(find . -iname \"*.go\" -o -iname \"*.h\" -o -iname \"*.c\") ; do")
+    file.write("     echo ${file}\n")
+    file.write("     install -d -p %{buildroot}${gopath}/src/${library_path}/$(dirname $file)\n")
+    file.write("     cp -pav $file %{buildroot}${gopath}/src/${library_path}/$file\n")
+    file.write_strip("done")
+    write_make_install_append(file)
+    file.write_strip("\n")
+    if not test.skip_tests:
+        if test.allow_test_failures:
+            tolerance = " || :"
+        file.write_strip("%check")
+        file.write_strip("export http_proxy=http://127.0.0.1:9/")
+        file.write_strip("export https_proxy=http://127.0.0.1:9/")
+        file.write_strip("export no_proxy=localhost")
+        file.write_strip("gopath=\"/usr/lib/golang\"")
+        file.write_strip("export GOPATH=\"%{buildroot}${gopath}\"")
+        if test.tests_config:
+            file.write_strip(test.tests_config)
+        else:
+            file.write_strip("go test -v -x " + library_path + tolerance)
+
+
 def set_build_pattern(pattern, strength):
     global default_pattern
     global pattern_strengh

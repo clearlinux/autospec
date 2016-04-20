@@ -25,6 +25,7 @@ import re
 import buildpattern
 import patches
 import util
+import tarball
 
 buildreqs = set()
 pythonreqs = set()
@@ -291,6 +292,10 @@ def scan_for_configure(package, dir, autospecdir):
         if dirpath != dir:
             default_score = 1
 
+        if any( file.endswith(".go") for file in files):
+            add_buildreq("go")
+            tarball.name = tarball.go_pkgname
+            buildpattern.set_build_pattern("golang", default_score)
         if "CMakeLists.txt" in files and "configure.ac" not in files:
             add_buildreq("cmake")
             buildpattern.set_build_pattern("cmake", default_score)

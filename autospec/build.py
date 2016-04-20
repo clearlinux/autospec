@@ -625,6 +625,27 @@ def failed_pattern_pypi(line, pattern, verbose=0):
                 print("Unknown python pattern match: ", pattern, s, line)
 
 
+def failed_pattern_go(line, pattern, verbose=0):
+    global must_restart
+    global failed_commands
+
+    pat = re.compile(pattern)
+    match = pat.search(line)
+    if match:
+        s = util.translate(match.group(1))
+        if s == "":
+            return
+        elif s == match.group(1):
+            # the requirement it's also golang libpath format
+            # (e.g: github.com/<project>/<repo> so transform into pkg name
+            s = util.golang_name(s)
+        try:
+            must_restart = must_restart + buildreq.add_buildreq(s)
+        except:
+            if verbose > 0:
+                print("Unknown golang pattern match: ", pattern, s, line)
+
+
 def failed_pattern_ruby(line, pattern, verbose=0):
     global must_restart
     global failed_commands
@@ -806,6 +827,7 @@ def parse_build_results(filename, returncode):
         failed_pattern_ruby(line, r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:]+) ")
         failed_pattern_ruby_table(line, r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:\/]+)")
         failed_pattern_ruby_table(line, r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)")
+        failed_pattern_go(line, r".*\.go:.*cannot find package \"(.*)\" in any of:")
 
         if infiles == 1 and line.find("RPM build errors") >= 0:
             infiles = 2

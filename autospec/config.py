@@ -296,6 +296,11 @@ def parse_config_files(path, bump):
             if word.find(":") < 0:
                 license.add_license(word)
 
+    content = read_conf_file("golang_libpath")
+    if content and content[0]:
+        tarball.golibpath = content[0]
+        print("golibpath   : {}".format(tarball.golibpath))
+
     if file_exists("use_clang"):
         clang_flags = True
         optimize_speed = False
