@@ -59,15 +59,15 @@ sub parse_log
             $incheck = 1;
         }
         if ($line =~ /CLR-XTEST: Package: (.*)/) {
-           my $n = $1;
-           sanitize_counts();
-           collect_output();
-           $name = $n;
+            my $n = $1;
+            sanitize_counts();
+            collect_output();
+            $name = $n;
         }
 
-        # ACL package
-        # [22] $ rm -Rf d -- ok-
-        # 17 commands (17 passed, 0 failed)-
+# ACL package
+# [22] $ rm -Rf d -- ok-
+# 17 commands (17 passed, 0 failed)-
         if ($line =~ /\[[0-9]+\].*\-\- ok/) {
             $counted_pass++;
         }
@@ -76,9 +76,9 @@ sub parse_log
             $total_fail += $2;
         }
 
-        # alembic package
-        #Ran 678 tests in 5.175s
-        #OK (SKIP=15)
+# alembic package
+#Ran 678 tests in 5.175s
+#OK (SKIP=15)
         if ($line =~ /Ran ([0-9]+) tests? in/) {
             $total_tests += $1;
             next;
@@ -91,9 +91,9 @@ sub parse_log
             next;
         }
 
-        # anyjson
-        # test_implementations.test_default_serialization ... ok
-        # note: configure false positive
+# anyjson
+# test_implementations.test_default_serialization ... ok
+# note: configure false positive
         if ($line =~ /\.\.\. ok$/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -103,27 +103,26 @@ sub parse_log
             next;
         }
 
-        # apr
-        # testatomic          :  SUCCESS
-        #
+# apr
+# testatomic          :  SUCCESS
         if ($line =~ /\:  SUCCESS$/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # cryptography
-        # ================= 76230 passed, 267 skipped in 140.23 seconds ==================
-        #                 ==== 47 passed, 2 error in 10.36 seconds ===
-        # ================ 10 failed, 16 passed, 4 error in 0.16 seconds =================
-        # ========================== 43 passed in 2.90 seconds ===========================
-        # ======= 28 failed, 281 passed, 13 skipped, 10 warnings in 28.48 seconds ========
-        # ===================== 5 failed, 318 passed in 1.06 seconds =====================
-        # ============= 1628 passed, 72 skipped, 4 xfailed in 146.26 seconds =============
-        # =============== 119 passed, 2 skipped, 54 error in 2.19 seconds ================
-        # ========== 1 failed, 74 passed, 10 skipped, 55 error in 2.05 seconds ===========
-        # ==================== 68 passed, 1 warnings in 0.12 seconds =====================
-        # ================ 3 failed, 250 passed, 3 error in 3.28 seconds =================
-        # =============== 1 failed, 407 passed, 10 skipped in 4.71 seconds ===============
+# cryptography
+# ================= 76230 passed, 267 skipped in 140.23 seconds ==================
+# ================== 47 passed, 2 error in 10.36 seconds =========================
+# ================ 10 failed, 16 passed, 4 error in 0.16 seconds =================
+# ========================== 43 passed in 2.90 seconds ===========================
+# ======= 28 failed, 281 passed, 13 skipped, 10 warnings in 28.48 seconds ========
+# ===================== 5 failed, 318 passed in 1.06 seconds =====================
+# ============= 1628 passed, 72 skipped, 4 xfailed in 146.26 seconds =============
+# =============== 119 passed, 2 skipped, 54 error in 2.19 seconds ================
+# ========== 1 failed, 74 passed, 10 skipped, 55 error in 2.05 seconds ===========
+# ==================== 68 passed, 1 warnings in 0.12 seconds =====================
+# ================ 3 failed, 250 passed, 3 error in 3.28 seconds =================
+# =============== 1 failed, 407 passed, 10 skipped in 4.71 seconds ===============
         if ($line =~ /== ([0-9]+) passed, ([0-9]+) skipped in / and $incheck == 1) {
             $total_pass += $1;
             $total_skip += $2;
@@ -191,16 +190,16 @@ sub parse_log
             next;
         }
 
-        # swift
-        # ========= 1 failed, 1287 passed, 1 warnings, 62 error in 35.77 seconds =========
+# swift
+# ========= 1 failed, 1287 passed, 1 warnings, 62 error in 35.77 seconds =========
         if ($line =~ /== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) warnings\, ([0-9]+) error in / and $incheck == 1) {
             $total_fail += ($1 + $3 + $4);
             $total_pass += $2;
             next;
         }
 
-        # tox
-        # ======== 199 passed, 38 skipped, 1 xpassed, 1 warnings in 5.76 seconds =========
+# tox
+# ======== 199 passed, 38 skipped, 1 xpassed, 1 warnings in 5.76 seconds =========
         if ($line =~/== ([0-9]+) passed\, ([0-9]+) skipped\, ([0-9]+) xpassed\, ([0-9]) warnings in / and $incheck == 1) {
             $total_pass += $1;
             $total_skip += $2;
@@ -209,14 +208,14 @@ sub parse_log
             next;
         }
 
-        # augeas
-        # TOTAL: 215
-        # PASS:  212
-        # SKIP:  3
-        # XFAIL: 0
-        # FAIL:  0
-        # XPASS: 0
-        # ERROR: 0
+# augeas
+# TOTAL: 215
+# PASS:  212
+# SKIP:  3
+# XFAIL: 0
+# FAIL:  0
+# XPASS: 0
+# ERROR: 0
         if ($line =~ /# TOTAL: +([0-9]+)/ and $incheck == 1) {
             $total_tests += $1;
         }
@@ -236,12 +235,12 @@ sub parse_log
             $total_pass += $1;
         }
 
-        # autoconf
-        # 493 tests behaved as expected.
-        # 10 tests were skipped.
-        # 495: AC_FUNC_STRNLEN                                 ok
-        # 344: Erlang                                          skipped (erlang.at:30)
-        # 26: autoupdating macros recursively                 expected failure (tools.at:945)
+# autoconf
+# 493 tests behaved as expected.
+# 10 tests were skipped.
+# 495: AC_FUNC_STRNLEN                                 ok
+# 344: Erlang                                          skipped (erlang.at:30)
+# 26: autoupdating macros recursively                 expected failure (tools.at:945)
         if ($line =~ /^([0-9]+) tests behaved as expected/ and $incheck == 1) {
             $total_pass += $1;
         }
@@ -258,17 +257,17 @@ sub parse_log
             $counted_xfail++;
         }
 
-        # bison
-        # 470 tests were successful.
+# bison
+# 470 tests were successful.
         if ($line =~ /^([0-9]+) tests were successful/ and $incheck == 1) {
             $total_pass += $1;
         }
 
-        # binutils
-        # of expected passes            1144
-        # of expected failures          57
-        # of untested testcases         1
-        # of unsupported tests          12
+# binutils
+# of expected passes            1144
+# of expected failures          57
+# of untested testcases         1
+# of unsupported tests          12
         if ($line =~ /^# of expected passes.*\t([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
         }
@@ -282,30 +281,31 @@ sub parse_log
             $total_skip += $1;
         }
 
-        # ccache
-        # PASSED: 448 assertions, 88 tests, 10 suites
+# ccache
+# PASSED: 448 assertions, 88 tests, 10 suites
         if ($line =~ /PASSED: [0-9]+ assertions, ([0-9]+) tests, [0-9]+ suites/ and $incheck == 1) {
             $total_pass += $1;
         }
 
-        # rubygem-rack
-        # 701 tests, 2292 assertions, 0 failures, 0 errors
+# rubygem-rack
+# 701 tests, 2292 assertions, 0 failures, 0 errors
         if ($line =~ /([0-9]+) tests, [0-9]+ assertions, ([0-9]+) failures, ([0-9])+ errors/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
             $total_fail += $3;
         }
 
-        # curl
-        # TESTDONE: 686 tests out of 686 reported OK: 100%
+# curl
+# TESTDONE: 686 tests out of 686 reported OK: 100%
         if ($line =~ /TESTDONE: ([0-9]+) tests out of ([0-9]+) reported OK: / and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $2;
+            $total_fail = $2-$1;
         }
 
-        # gcc
-        # All 4 tests passed
-        # PASS: test-strtol-16.
+# gcc
+# All 4 tests passed
+# PASS: test-strtol-16.
         if ($line =~ /All ([0-9]+) tests passed/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
@@ -317,19 +317,19 @@ sub parse_log
             $counted_fail++;
         }
 
-        # gdbm
-        # All 22 tests were successful.
+# gdbm
+# All 22 tests were successful.
         if ($line =~ /All ([0-9]+) tests were successful./ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
         }
 
-        # glibc
-        # 3 FAIL
-        # 2182 PASS
-        # 1 UNRESOLVED
-        # 199 XFAIL
-        # 3 XPASS
+# glibc
+# 3 FAIL
+# 2182 PASS
+# 1 UNRESOLVED
+# 199 XFAIL
+# 3 XPASS
         if ($line =~ /^\s*([0-9]+) FAIL$/ and $incheck == 1) {
             $total_fail += $1;
         }
@@ -343,9 +343,9 @@ sub parse_log
             $total_pass += $1;
         }
 
-        # libxml2
-        # Total 2908 tests, no errors
-        # Total: 1171 functions, 291083 tests, 0 errors
+# libxml2
+# Total 2908 tests, no errors
+# Total: 1171 functions, 291083 tests, 0 errors
         if ($line =~ /Total ([0-9]+) tests, no errors/ and $incheck == 1) {
             $total_pass += $1;
         }
@@ -353,21 +353,21 @@ sub parse_log
             $total_pass += $1
         }
 
-        # zlib
-        # *** zlib shared test OK ***
+# zlib
+# *** zlib shared test OK ***
         if (line =~ /\*\*\* .* test OK \*\*\*/ and $incheck == 1) {
             $counted_pass++;
         }
 
-        # e2fsprogs
-        # 153 tests succeeded     0 tests failed
+# e2fsprogs
+# 153 tests succeeded     0 tests failed
         if ($line =~ /([0-9]+) tests succeeded\s*([0-9]+) tests failed/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
         }
 
-        # expect
-        # all.tcl:        Total   29      Passed  29      Skipped 0       Failed  0
+# expect
+# all.tcl:        Total   29      Passed  29      Skipped 0       Failed  0
         if ($line =~ /.*:\s*Total\s+([0-9]+)\s+Passed\s+([0-9]+)\s+Skipped\s+([0-9]+)\s+Failed\s+([0-9]+)/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $2;
@@ -375,16 +375,16 @@ sub parse_log
             $total_fail += $4;
         }
 
-        # expat
-        # 100%: Checks: 50, Failed: 0
+# expat
+# 100%: Checks: 50, Failed: 0
         if ($line =~ /100%: Checks: ([0-9]+), Failed: ([0-9]+)/ and $incheck == 1) {
             $total_pass += $1 - $2;
             $total_fail += $2;
         }
 
-        # flex
-        #Tests succeeded: 47
-        #Tests FAILED: 0
+# flex
+#Tests succeeded: 47
+#Tests FAILED: 0
         if ($line =~/^Tests succeeded: ([0-9]+)/ and $incheck == 1 and $incheck == 1) {
             $total_pass += $1;
         }
@@ -392,9 +392,9 @@ sub parse_log
             $total_fail += $1;
         }
 
-        # this one catches the generic TAP format!
-        #  perl-Capture-tiny
-        # ok 580 - tee_merged|sys|stderr|short - got STDERR
+# this one catches the generic TAP format!
+#  perl-Capture-tiny
+# ok 580 - tee_merged|sys|stderr|short - got STDERR
         if ($line =~ /^ok [0-9]+ \-/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -416,9 +416,9 @@ sub parse_log
             next;
         }
 
-        # tcpdump
-        #    0 tests failed
-        # 154 tests passed
+# tcpdump
+#    0 tests failed
+# 154 tests passed
         if ($line =~ /^\s+([0-9]+) tests failed$/ and $incheck == 1) {
             $total_fail += $1;
         }
@@ -426,8 +426,8 @@ sub parse_log
             $total_pass += $1;
         }
 
-        # R packages
-        # * checking top-level files ... OK
+# R packages
+# * checking top-level files ... OK
         if ($line =~ /\* .* \.\.\. OK/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -440,9 +440,9 @@ sub parse_log
             $counted_skip++;
         }
 
-        # python
-        # 365 tests OK.
-        # 22 tests skipped:
+# python
+# 365 tests OK.
+# 22 tests skipped:
         if ($line =~ /^([0-9]+) tests skipped:$/ and $incheck == 1) {
             $total_skip += $1;
         }
@@ -450,8 +450,8 @@ sub parse_log
             $total_pass += $1;
         }
 
-        #jemalloc
-        # Test suite summary: pass: 30/33, skip: 3/33, fail: 0/33
+#jemalloc
+# Test suite summary: pass: 30/33, skip: 3/33, fail: 0/33
         if ($line =~ /Test suite summary: pass: ([0-9]+)\/([0-9]+), skip: ([0-9]+)\/([0-9]+), fail: ([0-9]+)\/([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
             $total_tests += $2;
@@ -459,24 +459,24 @@ sub parse_log
             $total_fail += $5;
         }
 
-        # util-linux
-        #   All 160 tests PASSED
+# util-linux
+#   All 160 tests PASSED
         if ($line =~ /  All ([0-9]+) tests PASSED$/ and $incheck == 1) {
             $total_pass += $1;
         }
 
-        # onig
-        # OK: // 'a'
+# onig
+# OK: // 'a'
         if ($line =~ /^OK\: / and $incheck == 1) {
             $counted_pass++;
         }
 
-        # nss
-        # cert.sh: #101: Import chain-2-serverCA-ec CA -t u,u,u for localhost.localdomain (ext.)  - PASSED
-        # Passed:             13036
-        # Failed:             6
-        # Failed with core:   0
-        # Unknown status:     0
+# nss
+# cert.sh: #101: Import chain-2-serverCA-ec CA -t u,u,u for localhost.localdomain (ext.)  - PASSED
+# Passed:             13036
+# Failed:             6
+# Failed with core:   0
+# Unknown status:     0
         if ($line =~ /^[a-z]+.sh: #[0-9]+: .*  - PASSED$/ and $incheck == 1) {
             $counted_pass++;
         }
@@ -493,9 +493,9 @@ sub parse_log
             $total_fail += $1;
         }
 
-        # rsync
-        #       34 passed
-        #      5 skipped
+# rsync
+#      34 passed
+#      5 skipped
         if ($line =~ /^\s+([0-9]+) passed$/ and $incheck == 1) {
             $total_pass += $1;
         }
@@ -503,8 +503,8 @@ sub parse_log
             $total_skip += $1;
         }
 
-        # mariadb
-        # 100% tests passed, 0 tests failed out of 53
+# mariadb
+# 100% tests passed, 0 tests failed out of 53
         if ($line =~ /tests passed, ([0-9]+) tests failed out of ([0-9]+)/ and $incheck == 1) {
             $total_fail += $1;
             $total_tests += $2;
@@ -512,11 +512,11 @@ sub parse_log
             next;
         }
 
-        # python-runtime-tests
-        # FAILED (KNOWNFAIL=6, SKIP=18, errors=6)
-        # FAILED (failures=1)
-        # FAILED (failures=1, errors=499, skipped=48)
-        # OK (KNOWNFAIL=5, SKIP=15)
+# python-runtime-tests
+# FAILED (KNOWNFAIL=6, SKIP=18, errors=6)
+# FAILED (failures=1)
+# FAILED (failures=1, errors=499, skipped=48)
+# OK (KNOWNFAIL=5, SKIP=15)
         if ($line =~ /FAILED \(KNOWNFAIL=([0-9]+), SKIP=([0-9]+), errors=([0-9]+)\)/ and $incheck == 1) {
             $total_xfail += $1;
             $total_skip += $2;
@@ -547,8 +547,8 @@ sub parse_log
             $total_skip += $2;
         }
 
-        # qpid-python
-        # Totals: 318 tests, 200 passed, 112 skipped, 0 ignored, 6 failed
+# qpid-python
+# Totals: 318 tests, 200 passed, 112 skipped, 0 ignored, 6 failed
         if ($line =~ /Totals: ([0-9]+) tests, ([0-9]+) passed, ([0-9]+) skipped, ([0-9]+) ignored, ([0-9]+) failed/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $2;
@@ -557,15 +557,15 @@ sub parse_log
             $total_fail += $5;
         }
 
-        # PyYAML
-        # TESTS: 2577
+# PyYAML
+# TESTS: 2577
         if ($line =~ /^TESTS: ([0-9]+)$/ and $incheck == 1) {
             $total_tests += $1;
         }
 
-        # sudo
-        # visudo: 7/7 tests passed; 0/7 tests failed
-        # check_symbols: 7 tests run, 0 errors, 100% success rate
+# sudo
+# visudo: 7/7 tests passed; 0/7 tests failed
+# check_symbols: 7 tests run, 0 errors, 100% success rate
         if ($line =~ /[a-z_]+\:\s+([0-9]+)\/[0-9]+ tests passed; ([0-9]+)\/[0-9]+ tests failed/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
@@ -576,10 +576,10 @@ sub parse_log
              $total_pass += $1 - $2;
         }
 
-        # R
-        # running code in 'reg-examples1.R' ... OK
-        # Status: 1 ERROR, 1 WARNING, 4 NOTEs
-        # OK: 749 SKIPPED: 4 FAILED: 2
+# R
+# running code in 'reg-examples1.R' ... OK
+# Status: 1 ERROR, 1 WARNING, 4 NOTEs
+# OK: 749 SKIPPED: 4 FAILED: 2
         if ($line =~ /running code in '.*\.R' \.\.. OK/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -593,13 +593,13 @@ sub parse_log
             $total_skip += $2;
         }
 
-        # php
-        # Number of tests : 13526              9794
-        # Tests skipped   : 3732 ( 27.6%) --------
-        # Tests warned    :    0 (  0.0%) (  0.0%)
-        # Tests failed    :   12 (  0.1%) (  0.1%)
-        # Expected fail   :   31 (  0.2%) (  0.3%)
-        # Tests passed    : 9751 ( 72.1%) ( 99.6%)
+# php
+# Number of tests : 13526              9794
+# Tests skipped   : 3732 ( 27.6%) --------
+# Tests warned    :    0 (  0.0%) (  0.0%)
+# Tests failed    :   12 (  0.1%) (  0.1%)
+# Expected fail   :   31 (  0.2%) (  0.3%)
+# Tests passed    : 9751 ( 72.1%) ( 99.6%)
         if ($line =~ /^Number of tests : ([0-9]+)/ and $incheck == 1) {
             $total_tests += $1;
         }
@@ -616,30 +616,30 @@ sub parse_log
             $total_pass += $1;
         }
 
-        # rubygem / rake
-        # 174 runs, 469 assertions, 0 failures, 0 errors, 0 skips
+# rubygem / rake
+# 174 runs, 469 assertions, 0 failures, 0 errors, 0 skips
         if ($line =~ /([0-9]+) runs, ([0-9]+) assertions, ([0-9]+) failures, ([0-9]+) errors, ([0-9]+) skips/ and $incheck == 1) {
             $total_tests += $1;
             $total_fail += $3;
             $total_skip += $5;
         }
 
-        # cryptsetup
-        #  [OK]
+# cryptsetup
+#  [OK]
         if ($incheck == 1 && $line =~ / \[OK\]$/ and $incheck == 1) {
             $counted_pass++;
         }
 
-        # lzo
-        #  test passed.
+# lzo
+#  test passed.
         if ($line =~ / test passed.$/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # lsof
-        # LTnlink ... OK
-        # LTnfs ... ERROR!!!
+# lsof
+# LTnlink ... OK
+# LTnfs ... ERROR!!!
         if ($line =~ /^LT[a-zA-Z0-9]+ \.\.\. OK$/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -649,30 +649,30 @@ sub parse_log
             next;
         }
 
-        # libaio
-        # Pass: 11  Fail: 1
+# libaio
+# Pass: 11  Fail: 1
         if ($line =~ /^Pass: ([0-9]+)  Fail: ([0-9]+)$/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $1;
             next;
         }
 
-        # gawk
+# gawk
         if ($line =~ /^ALL TESTS PASSED$/ and $incheck == 1) {
             $total_pass++;
             next;
         }
 
-        # gptfdisk
-        # **SUCCESS** ...
+# gptfdisk
+# **SUCCESS** ...
         if ($line =~ /^\*\*SUCCESS\*\*/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # boost
-        # **passed** ...
-        # 8 errors detected.
+# boost
+# **passed** ...
+# 8 errors detected.
         if ($line =~ /^\*\*passed\*\*/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -686,43 +686,43 @@ sub parse_log
             next;
         }
 
-        # make
-        # 534 Tests in 118 Categories Complete ... No Failures
+# make
+# 534 Tests in 118 Categories Complete ... No Failures
         if ($line =~ /([0-9]+) Tests in ([0-9]+) Categories Complete ... No Failures/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
         }
 
-        # icu4c ---[OK]
+# icu4c ---[OK]
         if ($line =~ /---\[OK\]/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # libxslt
-        # Pass 1
+# libxslt
+# Pass 1
         if ($line =~ /^Pass [0-9]+$/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # apr-util
-        # :  SUCCESS
+# apr-util
+# :  SUCCESS
         if ($line =~ /:  SUCCESS$/ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # bash
-        # < Failed 126 of 1378 Unicode tests
+# bash
+# < Failed 126 of 1378 Unicode tests
         if ($line =~ /^[<,>] Failed ([0-9]+) of ([0-9]+)/ and $incheck == 1) {
             $total_fail+=$1;
             $total_tests+=$2;
             next;
         }
 
-        # crudini
-        # Test 95 OK (line 460)
+# crudini
+# Test 95 OK (line 460)
         if ($line =~ /^Test [0-9]+ OK/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -732,8 +732,8 @@ sub parse_log
             next;
         }
 
-        # discount
-        # Reddit-style automatic links ......................... OK
+# discount
+# Reddit-style automatic links ......................... OK
         if ($line =~ /[a-z\-]+ \.\.\.+ (OK|GOOD)$/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -743,17 +743,17 @@ sub parse_log
             next;
         }
 
-        # libjpeg-turbo
-        # JPEG -> RGB Top-Down  2/1 ... Passed.
-        # JPEG -> RGB Top-Down  15/8 ... Passed.
-        # JPEG -> RGB Top-Down  7/4 ... Passed.
+# libjpeg-turbo
+# JPEG -> RGB Top-Down  2/1 ... Passed.
+# JPEG -> RGB Top-Down  15/8 ... Passed.
+# JPEG -> RGB Top-Down  7/4 ... Passed.
         if ($line =~ /[A-Za-z0-9\ \>\<\/]+ \.\.\. Passed\./ and $incheck == 1) {
             $counted_pass++;
             next;
         }
 
-        # *** zlib test OK ***
-        # *** zlib 64-bit test OK ***
+# *** zlib test OK ***
+# *** zlib 64-bit test OK ***
         if ($line =~ /\*\*\* zlib .*test OK \*\*\*/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -763,17 +763,17 @@ sub parse_log
             next;
         }
 
-        # LVM2
-        # valgrind pool awareness ... fail
-        # dfa matching ... fail
-        # dfa matching ... fail
-        # dfa with non-print regex chars ... pass
-        # bitset iteration ... pass
-        # valgrind pool awareness ... fail
-        # dfa matching ... fail
-        # dfa matching ... fail
-        # dfa with non-print regex chars ... fail
-        # bitset iteration ... fail
+# LVM2
+# valgrind pool awareness ... fail
+# dfa matching ... fail
+# dfa matching ... fail
+# dfa with non-print regex chars ... pass
+# bitset iteration ... pass
+# valgrind pool awareness ... fail
+# dfa matching ... fail
+# dfa matching ... fail
+# dfa with non-print regex chars ... fail
+# bitset iteration ... fail
         if ($line =~ /[a-z\ ]+\ \.\.\.\ pass/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -783,8 +783,8 @@ sub parse_log
             next;
         }
 
-        # keyring
-        #  76 passed, 62 skipped, 50 xfailed, 14 xpassed, 2 warnings, 32 error in 2.13 seconds
+# keyring
+#  76 passed, 62 skipped, 50 xfailed, 14 xpassed, 2 warnings, 32 error in 2.13 seconds
         if ($line =~ /([0-9]+) passed, ([0-9]+) skipped, ([0-9]+) xfailed, ([0-9]+) xpassed, ([0-9]+) warnings, ([0-9]+) error in [0-9\.]+ seconds/ and $incheck == 1) {
             $total_pass += $1 + $4;
             $total_skipp += $2;
@@ -793,14 +793,14 @@ sub parse_log
             next;
         }
 
-        # openblas
-        #  Real BLAS Test Program Results
-        #  Test of subprogram number  1             SDOT
-        #                                     ----- PASS -----
-        #  Test of subprogram number  2            SAXPY
-        #                                     ----- PASS -----
-        #  Test of subprogram number  3            SROTG
-        #                                     ----- PASS -----
+# openblas
+#  Real BLAS Test Program Results
+#  Test of subprogram number  1             SDOT
+#                                     ----- PASS -----
+#  Test of subprogram number  2            SAXPY
+#                                     ----- PASS -----
+#  Test of subprogram number  3            SROTG
+#                                     ----- PASS -----
         if ($line =~ /\ \ +\-\-\-+\ PASS\ \-\-\-+/ and $incheck == 1) {
             $counted_pass++;
             next;
@@ -810,9 +810,9 @@ sub parse_log
             next;
         }
 
-        # rubygem-hashie
-        # Finished in 0.07221 seconds (files took 0.28356 seconds to load)
-        # 545 examples, 0 failures, 1 pending
+# rubygem-hashie
+# Finished in 0.07221 seconds (files took 0.28356 seconds to load)
+# 545 examples, 0 failures, 1 pending
         if ($line =~ /([0-9]+) examples?, ([0-9]+) failures?, ([0-9]+) pending/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
@@ -820,50 +820,50 @@ sub parse_log
             next;
         }
 
-        # rubygem-warden
-        # Finished in 0.08928 seconds (files took 0.1046 seconds to load)
-        # 215 examples, 14 failures
+# rubygem-warden
+# Finished in 0.08928 seconds (files took 0.1046 seconds to load)
+# 215 examples, 14 failures
         if ($line =~ /([0-9]+) examples?, ([0-9]+) failures?/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
             next;
         }
 
-        # rubygem-ansi
-        # Executed 12 tests with 7 passing, 5 errors.
-        if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ and $incheck == 1) {
+# rubygem-ansi
+# Executed 12 tests with 7 passing, 5 errors.
+if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $2;
             $total_fail += $3;
             next;
         }
 
-        # rubygem-formatador
-        #   9 succeeded in 0.00375661 seconds
+# rubygem-formatador
+#   9 succeeded in 0.00375661 seconds
         if ($line =~ /([0-9]+) succeeded in [0-9]+\.[0-9]+ seconds/ and $incheck == 1) {
             $total_pass += $1
         }
 
-        # ./pigz -kf pigz.c ; ./pigz -t pigz.c.gz
-        # ./pigz -kfb 32 pigz.c ; ./pigz -t pigz.c.gz
+# ./pigz -kf pigz.c ; ./pigz -t pigz.c.gz
+# ./pigz -kfb 32 pigz.c ; ./pigz -t pigz.c.gz
         if ($line =~ /.*\.\/pigz.+(\.\/pigz).+/ and $incheck == 1) {
             $total_pass += 2;
         } elsif ($line =~ /.*\.\/pigz.+/ and $incheck == 1) {
             $total_pass++;
         }
 
-        # netifaces
-        # Interface lo:
-        # Interface enp2s0:
+# netifaces
+# Interface lo:
+# Interface enp2s0:
         if ($line =~ /^Interface [a-zA-Z0-9]+\:/ and $incheck == 1) {
             $total_pass++;
             next;
         }
 
-        # btrfs-progs
-        # [TEST]   001-bad-file-extent-bytenr
-        # [NOTRUN] Need to validate root privileges
-        # test failed for case
+# btrfs-progs
+# [TEST]   001-bad-file-extent-bytenr
+# [NOTRUN] Need to validate root privileges
+# test failed for case
         if ($line =~ /    \[TEST\]   .*/ and $incheck == 1) {
             $total_pass++;
             next;
@@ -878,9 +878,9 @@ sub parse_log
             next;
         }
 
-        # chrpath
-        # success: chrpath changed rpath to larger path.
-        # error: chrpath unable to change rpath to larger path.
+# chrpath
+# success: chrpath changed rpath to larger path.
+# error: chrpath unable to change rpath to larger path.
         if ($line =~ /success\: chrpath .*/ and $incheck == 1) {
             $total_pass++;
             next;
@@ -892,33 +892,32 @@ sub parse_log
             next;
         }
 
-        # yajl
-        # 58/58 tests successful
-        #
+# yajl
+# 58/58 tests successful
         if ($line =~/([0-9]+)\/([0-9]+) tests successful/ and $incheck == 1) {
             $total_pass += $1;
             $total_tests += $2;
             next;
         }
 
-        # xmlsec1
-        #     Checking required transforms                            OK
-        #     Verify existing signature                             Fail
-        #     Checking required transforms                          Skip
-        #     Checking required key data                               OK
-        if ($line =~ /^    [\w ]+\ +OK$/ and $incheck == 1) {
+# xmlsec1
+#     Checking required transforms                            OK
+#     Verify existing signature                             Fail
+#     Checking required transforms                          Skip
+#     Checking required key data                               OK
+if ($line =~ /^    [\w ]+\ +OK$/ and $incheck == 1) {
             $total_pass++;
             next;
-        } elsif ($line =~ /^    [\w ]+\ +Fail$/ and $incheck == 1) {
+        }elsif ($line =~ /^    [\w ]+\ +Fail$/ and $incheck == 1) {
             $total_fail++;
             next;
-        } elsif ($line =~ /^    [\w ]+\ +Skip$/ and $incheck == 1) {
+        }elsif ($line =~ /^    [\w ]+\ +Skip$/ and $incheck == 1) {
             $total_skip++;
             next;
         }
 
-        # xdg-utils
-        # TOTAL: 4 tests failed, 90 of 116 tests passed. (140 attempted)
+# xdg-utils
+# TOTAL: 4 tests failed, 90 of 116 tests passed. (140 attempted)
         if ($line =~/TOTAL\: ([0-9]+) tests? failed\, ([0-9]+) of [0-9]+ tests? passed\. \(([0-9]+) attempted\)/ and $incheck == 1) {
             $total_fail += $1;
             $total_pass += $2;
@@ -926,9 +925,9 @@ sub parse_log
             next;
         }
 
-        # slang
-        # Testing argv processing ...Ok
-        # ./utf8.sl:14:check_sprintf:Test Error
+# slang
+# Testing argv processing ...Ok
+# ./utf8.sl:14:check_sprintf:Test Error
         if ($line =~/^Testing [\w ]+\.\.\.Ok$/ and $incheck == 1) {
             $total_pass++;
             next;
@@ -938,10 +937,12 @@ sub parse_log
             next;
         }
 
-        # go & golang
-        # ok  	golang.org/x/text/encoding/htmlindex	0.002s  	
-        # --- FAIL: TestParents (0.00s)
-        # FAIL	golang.org/x/text/internal	0.002s
+#go & golang
+#ok  	golang.org/x/text/encoding/htmlindex	0.002s  	
+#--- FAIL: TestParents (0.00s)
+#FAIL	golang.org/x/text/internal	0.002s
+#--- PASS: TestApp_Command (0.00s)
+#if ($line =~/^ok\s+[\w_]+[0-9A-Za-z\._\/]*\s+[0-9]+\.[0-9]+s$/ and $incheck == 1) {
         if ($line =~/^ok\s+[\w_]+[A-Za-z0-9\.\?_\-]*/ and $incheck == 1) {
             $total_tests++;
             $total_pass++;
@@ -952,12 +953,17 @@ sub parse_log
             $total_fail++;
             next;
         }
+        if ($line =~/---\s+PASS|PASS\s+ / and $incheck == 1) {
+            $total_tests++;
+            $total_pass++;
+            next;
+        }
 
-        # valgrind
-        # == 5 tests, 0 stderr failures, 1 stdout failure, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
-        # == 55 tests, 48 stderr failures, 6 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
-        # == 125 tests, 12 stderr failures, 0 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
-        #if ($line =~/\=\= ([0-9]+) tests/ and $incheck == 1) {
+# valgrind
+# == 5 tests, 0 stderr failures, 1 stdout failure, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
+# == 55 tests, 48 stderr failures, 6 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
+# == 125 tests, 12 stderr failures, 0 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
+#if ($line =~/\=\= ([0-9]+) tests/ and $incheck == 1) {
         if ($line =~/\=\= ([0-9]+) tests?\, ([0-9]+) stderr failures?\, ([0-9]+) stdout failures?\, ([0-9]+) stderrB failures?\, ([0-9]+) stdoutB failures?\, ([0-9]+) post failures? \=\=/ and $incheck == 1) {
             $total_tests += $1;
             $total_fail += ($2 + $3 + $4 + $5 + $6);
