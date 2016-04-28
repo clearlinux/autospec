@@ -75,11 +75,12 @@ def write_variables(file):
     flags = []
     if config.want_clang:
         file.write_strip("export CC=clang\n")
+        file.write_strip("export CXX=clang++\n")
         file.write_strip("export LD=ld.gold\n")
     if config.optimize_size:
         flags.extend(["-Os", "-ffunction-sections"])
     if config.insecure_build:
-        file.write_strip("export CFLAGS=\"-O2 -g\"\n")
+        file.write_strip("export CFLAGS=\"-O3 -g -fopt-info-vec \"\n")
         file.write_strip("unset LDFLAGS\n")
     if config.conservative_flags:
         file.write_strip("export CFLAGS=\"-O2 -g -Wp,-D_FORTIFY_SOURCE=2 "
