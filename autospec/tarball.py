@@ -43,7 +43,7 @@ path = ""
 tarball_prefix = ""
 gcov_file = ""
 golibpath = ""
-
+go_pkgname = ""
 
 def get_sha1sum(filename):
     sh = hashlib.sha1()

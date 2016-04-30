@@ -79,6 +79,8 @@ def write_variables(file):
         file.write_strip("export LD=ld.gold\n")
     if config.optimize_size:
         flags.extend(["-Os", "-ffunction-sections"])
+    if config.broken_cpp:
+        flags.extend(["-std=gnu++98"])
     if config.insecure_build:
         file.write_strip("export CFLAGS=\"-O3 -g -fopt-info-vec \"\n")
         file.write_strip("unset LDFLAGS\n")

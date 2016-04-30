@@ -44,6 +44,7 @@ optimize_size = False
 optimize_speed = False
 insecure_build = False
 conservative_flags = False
+broken_cpp = False
 clang_flags = False
 want_clang = False
 pgo = False
@@ -121,6 +122,7 @@ def parse_config_files(path, bump):
     global urlban
     global config_file
     global profile_payload
+    global broken_cpp
 
     config_path = path
 
@@ -280,6 +282,9 @@ def parse_config_files(path, bump):
 
     if file_exists("unit_tests_must_pass"):
         test.new_pkg = False
+
+    if file_exists("broken_c++"):
+        broken_cpp = True
 
     content = read_conf_file("make_check_command")
     if content and content[0]:
