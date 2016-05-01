@@ -88,6 +88,7 @@ def setup_patterns():
     failed_commands["X"] = "pkgconfig(x11)"
     failed_commands["valgrind"] = "valgrind"
     failed_commands["nasm"] = "nasm-bin"
+    failed_commands["clang"] = "llvm-dev"
     failed_commands["XML::Parser"] = "perl(XML::Parser)"
     failed_commands["XML::Simple"] = "perl(XML::Simple)"
     failed_commands["ExtUtils::Depends"] = "perl(ExtUtils::Depends)"
