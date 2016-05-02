@@ -223,7 +223,7 @@ def parse_config_files(path, bump):
 
     patches.patches += read_conf_file("series")
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches.patches]
-    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am|Makefile.in)|(configure.ac|configure.in))\" %s" % \
+    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
         " ".join(pfiles)
     if len(patches.patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
         patches.autoreconf = True

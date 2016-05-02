@@ -101,7 +101,7 @@ def write_variables(file):
                          "-Wformat-security -Wl,--copy-dt-needed-entries -m64 "
                          "-march=westmere  -mtune=native "
                          "-fasynchronous-unwind-tables -D_REENTRANT  "
-                         "-Wl,-z -Wl,now -Wl,-z -Wl,relro -flto\"\n")
+                         "-Wl,-z -Wl,now -Wl,-z -Wl,relro \"\n")
         file.write_strip("export CXXFLAGS=$CFLAGS\n")
         file.write_strip("unset LDFLAGS\n")
     if config.optimize_speed:
