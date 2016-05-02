@@ -292,7 +292,7 @@ def scan_for_configure(package, dir, autospecdir):
         if dirpath != dir:
             default_score = 1
 
-        if any( file.endswith(".go") for file in files):
+        if any( file.endswith(".go") for file in files) and tarball.go_pkgname:
             add_buildreq("go")
             tarball.name = tarball.go_pkgname
             buildpattern.set_build_pattern("golang", default_score)
