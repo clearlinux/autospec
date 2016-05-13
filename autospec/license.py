@@ -163,6 +163,7 @@ license_blacklist = {
     "version-2": True,
     "public": True,
     "domain": True,
+    "Commercial": True,
 }
 
 
