@@ -171,6 +171,8 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/include/", "dev"):
         return
+    if file_pat_match(filename, r"^/usr/lib64/girepository-1.0/", "dev"):
+        return
     if want_dev_split > 0 and file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
         return
     if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev", "/usr/lib/*.so"):

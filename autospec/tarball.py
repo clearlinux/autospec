@@ -161,6 +161,8 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         if m:
             name = m.group(1).strip()
             version = m.group(2).strip().replace('_', '.')
+        else:
+            version = "1"
 
     # ruby
     if url_argument.find("rubygems.org/") > 0:
@@ -187,7 +189,7 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             rawname = name
             version = m.group(1).strip()
             b = version.find("-")
-            if b >= 0:
+            if b >= 0 and version.find("-beta") < 0:
                 version = version[:b]
             if version.startswith('.'):
                 version = version[1:]
@@ -207,11 +209,11 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
                 version = '.'.join(version.split('.')[:-1])
 
     b = version.find("-")
-    if b >= 0:
+    if b >= 0 and version.find("-beta") < 0:
         b = b + 1
         version = version[b:]
 
-    if version[0] in ['v', 'r']:
+    if len(version) > 0 and version[0] in ['v', 'r']:
         version = version[1:]
 
     assert name != ""
