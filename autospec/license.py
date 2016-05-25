@@ -160,10 +160,12 @@ license_blacklist = {
     ".git": True,
     ".mit": True,
     "GPL/BSD": True,
+    "GPLv2.1": True,
     "version-2": True,
     "public": True,
     "domain": True,
     "Commercial": True,
+    "License(==-2.0)": True,
 }
 
 

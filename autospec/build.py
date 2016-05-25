@@ -749,6 +749,8 @@ def parse_build_results(filename, returncode):
         failed_pattern(line, r"checking for library containing (.*)... no")
         failed_pattern(line, r"checking for (.*?)\.\.\. not_found")
         failed_pattern(line, r"checking for (.*?)\.\.\. not found")
+        failed_pattern(line, r"configure: error: pkg-config missing (.*)")
+        failed_pattern(line, r"configure: error: Cannot find (.*). Make sure your CFLAGS and LDFLAGS environment variable are set properly")
         failed_pattern(line, r"checking for (.*?)\.\.\. no")
         failed_pattern(line, r"checking for (.*) support\.\.\. no")
         failed_pattern(line, r"checking (.*?)\.\.\. no")
