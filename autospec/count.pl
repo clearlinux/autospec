@@ -50,13 +50,55 @@ sub parse_log
         chomp($line);
 
         if ($line =~ /Executing\(%check\)/) {
-            $incheck = 1;
+            if ($incheck == 1) {
+                $total_tests = 0;
+                $total_pass = 0;
+                $total_fail = 0;
+                $total_xfail = 0;
+                $total_skip = 0;
+                $counted_tests = 0;
+                $counted_pass = 0;
+                $counted_fail = 0;
+                $counted_xfail = 0;
+                $counted_skip = 0;
+            }
+            else {
+                $incheck = 1;
+            }
         }
         if ($line =~ /\+ make check/) {
-            $incheck = 1;
+            if ($incheck == 1) {
+                $total_tests = 0;
+                $total_pass = 0;
+                $total_fail = 0;
+                $total_xfail = 0;
+                $total_skip = 0;
+                $counted_tests = 0;
+                $counted_pass = 0;
+                $counted_fail = 0;
+                $counted_xfail = 0;
+                $counted_skip = 0;
+            }
+            else {
+                $incheck = 1;
+            }
         }
         if ($line =~ /##### Testing packages\./) {
-            $incheck = 1;
+            if ($incheck == 1) {
+                $total_tests = 0;
+                $total_pass = 0;
+                $total_fail = 0;
+                $total_xfail = 0;
+                $total_skip = 0;
+                $counted_tests = 0;
+                $counted_pass = 0;
+                $counted_fail = 0;
+                $counted_xfail = 0;
+                $counted_skip = 0;
+            }
+            else {
+                $incheck = 1;
+            }
         }
         if ($line =~ /CLR-XTEST: Package: (.*)/) {
             my $n = $1;
@@ -70,10 +112,12 @@ sub parse_log
 # 17 commands (17 passed, 0 failed)-
         if ($line =~ /\[[0-9]+\].*\-\- ok/) {
             $counted_pass++;
+            next;
         }
         if ($line =~ /[0-9]+ commands \(([0-9]+) passed, ([0-9]+) failed\)/) {
             $total_pass += $1;
             $total_fail += $2;
+            next;
         }
 
 # alembic package
@@ -218,21 +262,27 @@ sub parse_log
 # ERROR: 0
         if ($line =~ /# TOTAL: +([0-9]+)/ and $incheck == 1) {
             $total_tests += $1;
+            next;
         }
         if ($line =~ /# PASS: +([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /# SKIP: +([0-9]+)/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
         if ($line =~ /# FAIL: +([0-9]+)/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /# XFAIL: +([0-9]+)/ and $incheck == 1) {
             $total_xfail += $1;
+            next;
         }
         if ($line =~ /# XPASS: +([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # autoconf
@@ -243,24 +293,30 @@ sub parse_log
 # 26: autoupdating macros recursively                 expected failure (tools.at:945)
         if ($line =~ /^([0-9]+) tests behaved as expected/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /^([0-9]+) tests were skipped/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
         if ($line =~ /^[0-9]+\:.*ok$/ and $incheck == 1) {
             $counted_pass++;
+            next;
         }
         if ($line =~ /^[0-9]+\:.*skipped \(/ and $incheck == 1) {
             $counted_skip++;
+            next;
         }
         if ($line =~ /^[0-9]+\:.*expected failure \(/ and $incheck == 1) {
             $counted_xfail++;
+            next;
         }
 
 # bison
 # 470 tests were successful.
         if ($line =~ /^([0-9]+) tests were successful/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # binutils
@@ -270,21 +326,26 @@ sub parse_log
 # of unsupported tests          12
         if ($line =~ /^# of expected passes.*\t([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /^# of expected failures.*\t([0-9]+)/ and $incheck == 1) {
             $total_xfail += $1;
+            next;
         }
         if ($line =~ /^# of unexpected failures.*\t([0-9]+)/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /^# of unsupported tests.*\t([0-9]+)/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
 
 # ccache
 # PASSED: 448 assertions, 88 tests, 10 suites
         if ($line =~ /PASSED: [0-9]+ assertions, ([0-9]+) tests, [0-9]+ suites/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # rubygem-rack
@@ -293,6 +354,7 @@ sub parse_log
             $total_pass += $1;
             $total_fail += $2;
             $total_fail += $3;
+            next;
         }
 
 # curl
@@ -301,6 +363,7 @@ sub parse_log
             $total_tests += $1;
             $total_pass += $2;
             $total_fail = $2-$1;
+            next;
         }
 
 # gcc
@@ -309,12 +372,15 @@ sub parse_log
         if ($line =~ /All ([0-9]+) tests passed/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
+            next;
         }
-        if ($line =~/^PASS\:/ and $incheck == 1) {
+        if ($line =~/^PASS\: [A-Za-z]+/ and $incheck == 1) {
             $counted_pass++;
+            next;
         }
-        if ($line =~/^FAIL\:/ and $incheck == 1) {
+        if ($line =~/^FAIL\: [A-Za-z]+/ and $incheck == 1) {
             $counted_fail++;
+            next;
         }
 
 # gdbm
@@ -322,6 +388,7 @@ sub parse_log
         if ($line =~ /All ([0-9]+) tests were successful./ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
+            next;
         }
 
 # glibc
@@ -332,15 +399,19 @@ sub parse_log
 # 3 XPASS
         if ($line =~ /^\s*([0-9]+) FAIL$/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /^\s*([0-9]+) PASS$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /^\s*([0-9]+) XFAIL$/ and $incheck == 1) {
             $total_xfail += $1;
+            next;
         }
-        if ($line =~ /^\s*([0-9]+) XPAS$/ and $incheck == 1) {
+        if ($line =~ /^\s*([0-9]+) XPASS$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # libxml2
@@ -348,15 +419,18 @@ sub parse_log
 # Total: 1171 functions, 291083 tests, 0 errors
         if ($line =~ /Total ([0-9]+) tests, no errors/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /Total: ([0-9]+) functions, ([0-9]+) tests, 0 errors/ and $incheck == 1) {
-            $total_pass += $1
+            $total_pass += $1;
+            next;
         }
 
 # zlib
 # *** zlib shared test OK ***
         if (line =~ /\*\*\* .* test OK \*\*\*/ and $incheck == 1) {
             $counted_pass++;
+            next;
         }
 
 # e2fsprogs
@@ -364,6 +438,7 @@ sub parse_log
         if ($line =~ /([0-9]+) tests succeeded\s*([0-9]+) tests failed/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
+            next;
         }
 
 # expect
@@ -373,6 +448,7 @@ sub parse_log
             $total_pass += $2;
             $total_skip += $3;
             $total_fail += $4;
+            next;
         }
 
 # expat
@@ -380,6 +456,7 @@ sub parse_log
         if ($line =~ /100%: Checks: ([0-9]+), Failed: ([0-9]+)/ and $incheck == 1) {
             $total_pass += $1 - $2;
             $total_fail += $2;
+            next;
         }
 
 # flex
@@ -387,9 +464,11 @@ sub parse_log
 #Tests FAILED: 0
         if ($line =~/^Tests succeeded: ([0-9]+)/ and $incheck == 1 and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~/^Tests FAILED: ([0-9]+)/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
 
 # this one catches the generic TAP format!
@@ -419,11 +498,13 @@ sub parse_log
 # tcpdump
 #    0 tests failed
 # 154 tests passed
-        if ($line =~ /^\s+([0-9]+) tests failed$/ and $incheck == 1) {
+        if ($line =~ /^\s?+([0-9]+) tests? failed$/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
-        if ($line =~ /^\s+([0-9]+) tests passed$/ and $incheck == 1) {
+        if ($line =~ /^\s?+([0-9]+) tests? passed$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # R packages
@@ -438,6 +519,7 @@ sub parse_log
         }
         if ($line =~ /\* .* \.\.\. SKIPPED/ and $incheck == 1) {
             $counted_skip++;
+            next;
         }
 
 # python
@@ -445,9 +527,11 @@ sub parse_log
 # 22 tests skipped:
         if ($line =~ /^([0-9]+) tests skipped:$/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
         if ($line =~ /^([0-9]+) tests OK.$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 #jemalloc
@@ -457,18 +541,21 @@ sub parse_log
             $total_tests += $2;
             $total_skip += $3;
             $total_fail += $5;
+            next;
         }
 
 # util-linux
 #   All 160 tests PASSED
         if ($line =~ /  All ([0-9]+) tests PASSED$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # onig
 # OK: // 'a'
         if ($line =~ /^OK\: / and $incheck == 1) {
             $counted_pass++;
+            next;
         }
 
 # nss
@@ -479,18 +566,23 @@ sub parse_log
 # Unknown status:     0
         if ($line =~ /^[a-z]+.sh: #[0-9]+: .*  - PASSED$/ and $incheck == 1) {
             $counted_pass++;
+            next;
         }
         if ($line =~ /^[a-z]+.sh: #[0-9]+: .*  - FAILED$/ and $incheck == 1) {
             $counted_fail++;
+            next;
         }
         if ($line =~ /^Passed:\s+([0-9]+)$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /^Failed:\s+([0-9]+)$/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /^Failed with core:\s+([0-9]+)$/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
 
 # rsync
@@ -498,9 +590,11 @@ sub parse_log
 #      5 skipped
         if ($line =~ /^\s+([0-9]+) passed$/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
         if ($line =~ /^\s+([0-9]+) skipped$/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
 
 # mariadb
@@ -545,6 +639,7 @@ sub parse_log
         if ($line =~ /OK \(KNOWNFAIL=([0-9]+), SKIP=([0-9]+)\)/ and $incheck == 1) {
             $total_xfail += $1;
             $total_skip += $2;
+            next;
         }
 
 # qpid-python
@@ -555,12 +650,14 @@ sub parse_log
             $total_skip += $3;
             $total_xfail += $4;
             $total_fail += $5;
+            next;
         }
 
 # PyYAML
 # TESTS: 2577
         if ($line =~ /^TESTS: ([0-9]+)$/ and $incheck == 1) {
             $total_tests += $1;
+            next;
         }
 
 # sudo
@@ -569,11 +666,13 @@ sub parse_log
         if ($line =~ /[a-z_]+\:\s+([0-9]+)\/[0-9]+ tests passed; ([0-9]+)\/[0-9]+ tests failed/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $2;
+            next;
         }
         if ($line =~ /[a-z_]+\: ([0-9]+) tests run, ([0-9]+) errors/ and $incheck == 1) {
              $total_tests += $1;
              $total_fail += $2;
              $total_pass += $1 - $2;
+             next;
         }
 
 # R
@@ -586,11 +685,13 @@ sub parse_log
         }
         if ($line =~ /Status: ([0-9]+) ERROR, ([0-9]+) WARNING, ([0-9]+) NOTEs/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /OK: ([0-9]+) SKIPPED: ([0-9]+) FAILED: ([0-9]+)/ and $incheck == 1) {
             $total_pass += $1;
             $total_fail += $3;
             $total_skip += $2;
+            next;
         }
 
 # php
@@ -602,18 +703,23 @@ sub parse_log
 # Tests passed    : 9751 ( 72.1%) ( 99.6%)
         if ($line =~ /^Number of tests : ([0-9]+)/ and $incheck == 1) {
             $total_tests += $1;
+            next;
         }
         if ($line =~ /^Tests skipped   :\s+([0-9]+) \(/ and $incheck == 1) {
             $total_skip += $1;
+            next;
         }
         if ($line =~ /^Tests failed    :\s+([0-9]+) \(/ and $incheck == 1) {
             $total_fail += $1;
+            next;
         }
         if ($line =~ /^Expected fail   :\s+([0-9]+) \(/ and $incheck == 1) {
             $total_xfail += $1;
+            next;
         }
         if ($line =~ /^Tests passed    :\s+([0-9]+) \(/ and $incheck == 1) {
             $total_pass += $1;
+            next;
         }
 
 # rubygem / rake
@@ -622,12 +728,14 @@ sub parse_log
             $total_tests += $1;
             $total_fail += $3;
             $total_skip += $5;
+            next;
         }
 
 # cryptsetup
 #  [OK]
         if ($incheck == 1 && $line =~ / \[OK\]$/ and $incheck == 1) {
             $counted_pass++;
+            next;
         }
 
 # lzo
@@ -691,6 +799,7 @@ sub parse_log
         if ($line =~ /([0-9]+) Tests in ([0-9]+) Categories Complete ... No Failures/ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $1;
+            next;
         }
 
 # icu4c ---[OK]
@@ -831,7 +940,7 @@ sub parse_log
 
 # rubygem-ansi
 # Executed 12 tests with 7 passing, 5 errors.
-if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ and $incheck == 1) {
+        if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ and $incheck == 1) {
             $total_tests += $1;
             $total_pass += $2;
             $total_fail += $3;
@@ -841,15 +950,18 @@ if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ 
 # rubygem-formatador
 #   9 succeeded in 0.00375661 seconds
         if ($line =~ /([0-9]+) succeeded in [0-9]+\.[0-9]+ seconds/ and $incheck == 1) {
-            $total_pass += $1
+            $total_pass += $1;
+            next;
         }
 
 # ./pigz -kf pigz.c ; ./pigz -t pigz.c.gz
 # ./pigz -kfb 32 pigz.c ; ./pigz -t pigz.c.gz
         if ($line =~ /.*\.\/pigz.+(\.\/pigz).+/ and $incheck == 1) {
             $total_pass += 2;
+            next;
         } elsif ($line =~ /.*\.\/pigz.+/ and $incheck == 1) {
             $total_pass++;
+            next;
         }
 
 # netifaces
@@ -905,13 +1017,13 @@ if ($line =~ /Executed ([0-9]+) tests with ([0-9+]) passing, ([0-9]+) errors\./ 
 #     Verify existing signature                             Fail
 #     Checking required transforms                          Skip
 #     Checking required key data                               OK
-if ($line =~ /^    [\w ]+\ +OK$/ and $incheck == 1) {
+        if ($line =~ /^    [\w ]+\ +OK$/ and $incheck == 1) {
             $total_pass++;
             next;
-        }elsif ($line =~ /^    [\w ]+\ +Fail$/ and $incheck == 1) {
+        } elsif ($line =~ /^    [\w ]+\ +Fail$/ and $incheck == 1) {
             $total_fail++;
             next;
-        }elsif ($line =~ /^    [\w ]+\ +Skip$/ and $incheck == 1) {
+        } elsif ($line =~ /^    [\w ]+\ +Skip$/ and $incheck == 1) {
             $total_skip++;
             next;
         }
