@@ -56,6 +56,7 @@ def setup_patterns():
     failed_commands["install-info"] = "texinfo"
     failed_commands["desktop-file-install"] = "desktop-file-utils"
     failed_commands["deflateBound in -lz"] = "zlib-dev"
+    failed_commands["zlib"] = "zlib-dev"
     failed_commands["-lgnutls-openssl"] = "gnutls-dev"
     failed_commands["gnutls/openssl.h"] = "gnutls-dev"
     failed_commands["zlib.h"] = "pkgconfig(zlib)"
@@ -750,7 +751,7 @@ def parse_build_results(filename, returncode):
         failed_pattern(line, r"checking for (.*?)\.\.\. not_found")
         failed_pattern(line, r"checking for (.*?)\.\.\. not found")
         failed_pattern(line, r"configure: error: pkg-config missing (.*)")
-        failed_pattern(line, r"configure: error: Cannot find (.*). Make sure your CFLAGS and LDFLAGS environment variable are set properly")
+        failed_pattern(line, r"configure: error: Cannot find (.*)\. Make sure")
         failed_pattern(line, r"checking for (.*?)\.\.\. no")
         failed_pattern(line, r"checking for (.*) support\.\.\. no")
         failed_pattern(line, r"checking (.*?)\.\.\. no")

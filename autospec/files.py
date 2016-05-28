@@ -135,6 +135,8 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib", "/usr/lib64/*.so.*"):
         return
+    if file_pat_match(filename, r"^/usr/lib64/gobject-introspection/", "lib"):
+        return
     if file_pat_match(filename, r"^/usr/libexec/", "bin"):
         return
     if file_pat_match(filename, r"^/usr/bin/", "bin"):
