@@ -98,7 +98,7 @@ def write_spec(filename):
 
 def add_sources(download_path, archives):
     for file in os.listdir(download_path):
-        if re.search(".*\.(mount|service|socket|target)$", file):
+        if re.search(".*\.(mount|service|socket|target|timer)$", file):
             buildpattern.sources["unit"].append(file)
     buildpattern.sources["unit"].sort()
     #
