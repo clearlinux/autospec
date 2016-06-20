@@ -167,6 +167,10 @@ sub parse_log
 # ==================== 68 passed, 1 warnings in 0.12 seconds =====================
 # ================ 3 failed, 250 passed, 3 error in 3.28 seconds =================
 # =============== 1 failed, 407 passed, 10 skipped in 4.71 seconds ===============
+# ========================== 1 skipped in 0.79 seconds ===========================
+# =========================== 3 error in 0.41 seconds ============================
+# ================= 68 passed, 1 pytest-warnings in 0.09 seconds =================
+# ===== 21 failed, 73 passed, 5 skipped, 2 pytest-warnings in 34.81 seconds ======
         if ($line =~ /== ([0-9]+) passed, ([0-9]+) skipped in / and $incheck == 1) {
             $total_pass += $1;
             $total_skip += $2;
@@ -233,12 +237,39 @@ sub parse_log
             $total_skip += $3;
             next;
         }
+        if ($line =~ /== ([0-9]+) skipped in [0-9\.]+ seconds ====/ and $incheck == 1) {
+            $total_skip += $1;
+            next;
+        }
+        if ($line =~ /== ([0-9]+) error in [0-9\.]+ seconds ====/ and $incheck == 1) {
+            $total_fail += $1;
+            next;
+        }
+        if ($line =~ /== ([0-9]+) passed\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+ seconds ====/ and $incheck == 1) {
+            $total_pass += $1;
+            next;
+        }
+# ===== 21 failed, 73 passed, 5 skipped, 2 pytest-warnings in 34.81 seconds ======
+        if ($line =~ /== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) skipped\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+ seconds ====/ and $incheck == 1) {
+            $total_fail += $1;
+            $total_pass += $2;
+            $total_skip += $3;
+            next;
+        }
 
 # swift
 # ========= 1 failed, 1287 passed, 1 warnings, 62 error in 35.77 seconds =========
         if ($line =~ /== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) warnings\, ([0-9]+) error in / and $incheck == 1) {
             $total_fail += ($1 + $3 + $4);
             $total_pass += $2;
+            next;
+        }
+# swift
+# 487 failed, 4114 passed, 32 skipped, 1 pytest-warnings, 34 error in 222.82 seconds
+        if ($line =~ /\ ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) skipped\, [0-9]+ [A-Za-z0-9]+\-warnings?\, ([0-9]+) error in / and $incheck == 1) {
+            $total_fail += $1 + $4;
+            $total_pass += $2;
+            $total_skip += $3;
             next;
         }
 
@@ -1082,6 +1113,87 @@ sub parse_log
             $total_pass += ($1 - ($2 + $3 + $4 + $5 + $6));
             next;
         }
+# zsh
+# **************************************
+# 46 successful test scripts, 0 failures, 1 skipped
+# **************************************
+        if ($line =~/([0-9]+) successful test scripts\, ([0-9]+) failures\, ([0-9]+) skipped/ and $incheck == 1) {
+            $total_pass += $1;
+            $total_fail += $2;
+            $total_skip += $3;
+            next;
+        }
+# glog
+# Passed 3 tests
+        if ($line =~/Passed ([0-9]+) tests/ and $incheck == 1) {
+            $total_pass += $1;
+            next;
+        }
+# hdf5
+# Testing h5repack h5repack_szip.h5 -f dset_szip:GZIP=1                  -SKIP-
+# Verifying h5dump output -f GZIP=1 -m 1024                             *FAILED*
+# Testing h5repack --metadata_block_size=8192                            PASSED
+# Verifying h5diff output h5repack_layout.h5 out-meta_long.h5repack_layo PASSED
+        if ($line =~/^Testing .+\ +PASSED$/ and $incheck == 1) {
+            $total_pass ++;
+            next;
+        }
+        if ($line =~/^Verifying .+\ +PASSED$/ and $incheck == 1) {
+            $total_pass ++;
+            next;
+        }
+        if ($line =~/^Testing .+\ +\-SKIP\-$/ and $incheck == 1) {
+            $total_skip ++;
+            next;
+        }
+        if ($line =~/^Verifying .+\ +\-SKIP\-$/ and $incheck == 1) {
+            $total_skip ++;
+            next;
+        }
+        if ($line =~/^Testing .+\ +\*FAILED\*$/ and $incheck == 1) {
+            $total_fail ++;
+            next;
+        }
+        if ($line =~/^Verifying .+\ +\*FAILED\*$/ and $incheck == 1) {
+            $total_fail ++;
+            next;
+        }
+# libconfig
+# 3 tests; 3 passed, 0 failed
+        if ($line =~/^([0-9]+) tests; ([0-9]+) passed\, ([0-9]+) failed/ and $incheck == 1) {
+            $total_tests = $1;
+            $total_pass = $2;
+            $total_fail = $3;
+            next;
+        }
+# libogg
+# testing page spill expansion... 0, (0),  granule:0 1, (1),  granule:4103 2, (2),  granule:5127 ok.
+# testing max packet segments... 0, (0),  granule:0 1, (1),  granule:261127 2, (2),  granule:262151 ok.
+# testing very large packets... 0, (0),  granule:0 1, (1),  granule:1031 2, (2), 3, (3),  granule:4103 ok.
+# testing continuation resync in very large packets... 0, 1, 2, (2), 3, (3),  granule:4103 ok.
+# testing zero data page (1 nil packet)... 0, (0),  granule:0 1, (1),  granule:1031 2, (2),  granule:2055 ok.
+# Testing search for capture... ok.
+# Testing recapture... ok.
+        if ($line =~/^[T,t]esting .*\ ok\.$/ and $incheck == 1) {
+            $counted_pass++;
+            next;
+        }
+# libvorbis
+#     vorbis_1ch_q-0.5_44100.ogg : ok
+#     vorbis_2ch_q-0.5_44100.ogg : ok
+#     ...
+#     vorbis_7ch_q-0.5_44100.ogg : ok
+#     vorbis_8ch_q-0.5_44100.ogg : ok
+        if ($line =~/^\ \ \ \ vorbis_.*\.ogg\ \:\ ok$/ and $incheck == 1) {
+            $counted_pass++;
+            next;
+        }
+# pth
+# OK - ALL TESTS SUCCESSFULLY PASSED.
+        if ($line =~/^OK\ \-\ ALL\ TESTS\ SUCCESSFULLY\ PASSED\.$/ and $incheck == 1) {
+            $counted_pass++;
+            next;
+        }
     } 
     close($log);
 }
@@ -1102,6 +1214,9 @@ sub sanitize_counts
     }
     if (($total_pass + $total_fail + $total_skip + $total_xfail) < $total_tests) {
         $total_pass+=$total_tests-($total_pass + $total_fail + $total_skip + $total_xfail);
+    }
+    if (($total_pass + $total_fail + $total_skip + $total_xfail) > $total_tests) {
+        $total_tests = ($total_pass + $total_fail + $total_skip + $total_xfail)
     }
 }
 
