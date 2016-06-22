@@ -141,6 +141,7 @@ def write_variables(file):
 def write_check(file):
     if test.tests_config and not test.skip_tests:
         file.write_strip("%check")
+        file.write_strip("export LANG=C")
         file.write_strip("export http_proxy=http://127.0.0.1:9/")
         file.write_strip("export https_proxy=http://127.0.0.1:9/")
         file.write_strip("export no_proxy=localhost")
@@ -178,6 +179,7 @@ def write_configure_pattern(file):
         return
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     if config.asneeded == 0:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -209,6 +211,7 @@ def write_configure_pattern(file):
 def write_configure_ac_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     if config.asneeded == 0:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -239,6 +242,7 @@ def write_configure_ac_pattern(file):
 def write_make_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     if subdir:
         file.write_strip("pushd %s" % subdir)
@@ -253,6 +257,7 @@ def write_make_pattern(file):
 def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     if config.profile_payload and config.profile_payload[0]:
         file.write_strip(get_profile_generate_flags() + "%autogen " + disable_static + " " + config.extra_configure)
@@ -272,6 +277,7 @@ def write_autogen_pattern(file):
 def write_distutils_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("\n")
@@ -291,6 +297,7 @@ def write_distutils_pattern(file):
 def write_distutils3_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
     file.write_strip("\n")
@@ -310,6 +317,7 @@ def write_distutils3_pattern(file):
 def write_distutils23_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
@@ -332,6 +340,7 @@ def write_distutils23_pattern(file):
 def write_R_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     file.write_strip("\n")
 
     file.write_strip("%install")
@@ -355,6 +364,7 @@ def write_R_pattern(file):
 def write_ruby_pattern(file):
     write_prep(file, ruby_pattern=True)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     file.write_strip("gem build " + tarball.name + ".gemspec")
     file.write_strip("\n")
 
@@ -388,6 +398,7 @@ def write_cmake_pattern(file):
     subdir = "clr-build"
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     file.write_strip("mkdir clr-build")
     file.write_strip("pushd clr-build")
     write_variables(file)
@@ -403,6 +414,7 @@ def write_cpan_pattern(file):
     global subdir
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     file.write_strip("if test -f Makefile.PL; then")
     file.write_strip("%{__perl} Makefile.PL")
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
@@ -429,6 +441,7 @@ def write_cpan_pattern(file):
 def write_scons_pattern(file):
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     write_variables(file)
     file.write_strip("scons" + config.parallel_build + " " + config.extra_configure)
     file.write_strip("\n")
@@ -441,6 +454,7 @@ def write_golang_pattern(file):
     tolerance = ""
     write_prep(file)
     file.write_strip("%build")
+    file.write_strip("export LANG=C")
     file.write_strip("\n")
     file.write_strip("%install")
     file.write_strip("gopath=\"/usr/lib/golang\"")

@@ -57,7 +57,7 @@ def add_pythonreq(req):
     if req in pythonreqs:
         new = False
     if new:
-        print("Adding python requirement:", req)
+#        print("Adding python requirement:", req)
         pythonreqs.add(req)
     return new
 
