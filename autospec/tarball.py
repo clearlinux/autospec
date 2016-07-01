@@ -125,6 +125,9 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
 
     if url_argument.find("pypi.python.org") > 0:
         buildpattern.set_build_pattern("distutils", 10)
+        url_argument = "http://pypi.debian.net/" + name + "/"+ tarfile;
+    if url_argument.find("pypi.debian.net") > 0:
+        buildpattern.set_build_pattern("distutils", 10)
 
     if url_argument.find(".cpan.org/CPAN/") > 0:
         buildpattern.set_build_pattern("cpan", 10)
