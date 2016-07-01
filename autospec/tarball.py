@@ -251,6 +251,9 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
                 tarball_prefix = tarball_prefix[:-1]
     else:
         extract_cmd, tarball_prefix = build_untar(tarball_path)
+        
+    if version == "":
+        version = "1";
 
     print("\n")
 

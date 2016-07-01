@@ -265,7 +265,7 @@ def license_from_doc(doc):
 def scan_for_licenses(package, dir):
     for dirpath, dirnames, files in os.walk(dir):
         for name in files:
-            if (name.lower() in ("copyright", "apache-2.0", "libcurllicense", "gpl.txt", "gplv2.txt", "notice", "copyrights", "about_bsd.txt") or
+            if (name.lower() in ("copyright", "copyright.txt", "apache-2.0", "libcurllicense", "gpl.txt", "gplv2.txt", "notice", "copyrights", "about_bsd.txt") or
                name.lower().startswith("copying") or name.lower().startswith("license") or name.lower().endswith("license") or name.lower().startswith("licence") or name.lower().endswith("licence")):
                 license_from_copying_hash(os.path.join(dirpath, name))
                 license_from_copying_content(os.path.join(dirpath, name))
