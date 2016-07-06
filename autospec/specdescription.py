@@ -224,7 +224,11 @@ def description_from_readme(readmefile):
     if readmefile.lower().endswith("readme"):
         score = 1.5
 
-    file = open(readmefile, "r", encoding="latin-1")
+    try:
+        file = open(readmefile, "r", encoding="latin-1")
+    except:
+        return
+        
     for line in file.readlines():
         if state == 1 and len(line) < 2 and len(desc) > 80:
             state = 2

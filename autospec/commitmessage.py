@@ -116,6 +116,11 @@ def process_NEWS(file):
             success = 1
         if news[i] == tarball.version and news[i + 1].find("---") >= 0:
             start = i
+        if news[i] == "v" + config.old_version and news[i + 1].find("---") >= 0:
+            stop = i - 1
+            success = 1
+        if news[i] == "v" + tarball.version and news[i + 1].find("---") >= 0:
+            start = i
 
         i = i + 1
 
