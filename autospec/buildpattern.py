@@ -402,7 +402,11 @@ def write_cmake_pattern(file):
     file.write_strip("mkdir clr-build")
     file.write_strip("pushd clr-build")
     write_variables(file)
-    file.write_strip("cmake .. -G \"Unix Makefiles\" -DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON -DLIB_INSTALL_DIR:PATH=%{_libdir} -DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + extra_cmake)
+    file.write_strip("cmake .. -G \"Unix Makefiles\" "
+                     "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                     "-DLIB_INSTALL_DIR:PATH=%{_libdir} "
+                     "-DCMAKE_AR=/usr/bin/gcc-ar "
+                     "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + extra_cmake)
     file.write_strip("make VERBOSE=1 " + config.parallel_build + extra_make)
     file.write_strip("popd")
     file.write_strip("\n")
@@ -458,7 +462,7 @@ def write_golang_pattern(file):
     file.write_strip("\n")
     file.write_strip("%install")
     file.write_strip("gopath=\"/usr/lib/golang\"")
-    file.write_strip("library_path=\"" + library_path +"\"")
+    file.write_strip("library_path=\"" + library_path + "\"")
     file.write_strip("rm -rf %{buildroot}")
     file.write_strip("install -d -p %{buildroot}${gopath}/src/${library_path}/")
     file.write_strip("for file in $(find . -iname \"*.go\" -o -iname \"*.h\" -o -iname \"*.c\") ; do")

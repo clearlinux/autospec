@@ -83,7 +83,7 @@ def parse_existing_spec(path, name):
     if not os.path.exists(spec):
         return
 
-    with open(spec, "r",  encoding="latin-1") as inp:
+    with open(spec, "r", encoding="latin-1") as inp:
         for line in inp.readlines():
             line = line.strip().replace("\r", "").replace("\n", "")
             if ":" not in line:

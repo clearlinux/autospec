@@ -82,7 +82,7 @@ def golang_libpath(some_str):
     pattern = re.compile(r".*(github\.com/[0-9a-zA-Z_\-]+/[0-9a-zA-Z_\-]+).*")
     match = pattern.search(some_str)
     if match:
-        ret =  match.group(1).strip()
+        ret = match.group(1).strip()
     return ret
 
 

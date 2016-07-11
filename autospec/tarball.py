@@ -31,8 +31,8 @@ import subprocess
 import urllib
 import urllib.request
 from util import call
-from util import golang_name
-from util import golang_libpath
+# from util import golang_name
+# from util import golang_libpath
 
 name = ""
 rawname = ""
@@ -44,6 +44,7 @@ tarball_prefix = ""
 gcov_file = ""
 golibpath = ""
 go_pkgname = ""
+
 
 def get_sha1sum(filename):
     sh = hashlib.sha1()
@@ -125,7 +126,7 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
 
     if url_argument.find("pypi.python.org") > 0:
         buildpattern.set_build_pattern("distutils", 10)
-        url_argument = "http://pypi.debian.net/" + name + "/"+ tarfile;
+        url_argument = "http://pypi.debian.net/" + name + "/" + tarfile
     if url_argument.find("pypi.debian.net") > 0:
         buildpattern.set_build_pattern("distutils", 10)
 
@@ -139,8 +140,8 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             name = "perl-" + name
 
     if "github.com" in url_argument:
-        #golibpath = golang_libpath(url_argument)
-        #go_pkgname = golang_name(url_argument)
+        # golibpath = golang_libpath(url_argument)
+        # go_pkgname = golang_name(url_argument)
         # define regex accepted for valid packages
         github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
                            r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
@@ -254,9 +255,9 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
                 tarball_prefix = tarball_prefix[:-1]
     else:
         extract_cmd, tarball_prefix = build_untar(tarball_path)
-        
+
     if version == "":
-        version = "1";
+        version = "1"
 
     print("\n")
 
