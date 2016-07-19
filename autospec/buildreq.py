@@ -97,7 +97,7 @@ def configure_ac_line(line):
 
     # print("--", line, "--")
     # XFCE uses an equivalent to PKG_CHECK_MODULES, handle them both the same
-    for style in [r"PKG_CHECK_MODULES\((.*)\)", r"XDT_CHECK_PACKAGE\((.*)\)"]:
+    for style in [r"PKG_CHECK_MODULES\((.*?)\)", r"XDT_CHECK_PACKAGE\((.*?)\)"]:
         pattern = re.compile(style)
         match = pattern.search(line)
         L = []
@@ -135,7 +135,7 @@ def configure_ac_line(line):
                 if len(rq) > 0 and rq[0] != "$":
                     add_pkgconfig_buildreq(rq)
 
-    pattern = re.compile(r"PKG_CHECK_EXISTS\((.*)\)")
+    pattern = re.compile(r"PKG_CHECK_EXISTS\((.*?)\)")
     match = pattern.search(line)
     if match:
         L = match.group(1).split(",")
