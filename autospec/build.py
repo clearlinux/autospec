@@ -447,7 +447,7 @@ def setup_patterns():
     failed_commands["PNG"] = "pkgconfig(libpng)"
     failed_commands["png_read_info in -lpng"] = "pkgconfig(libpng)"
     failed_commands["libpng-config"] = "pkgconfig(libpng)"
-    failed_commands["lua"] = "lua"
+    failed_commands["lua"] = "lua-dev"
     failed_commands["pcre.h"] = "pcre-dev"
     failed_commands["-lSM"] = "pkgconfig(sm)"
     failed_commands["X11/xpm.h"] = "pkgconfig(xpm)"
