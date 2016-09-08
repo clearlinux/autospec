@@ -221,6 +221,9 @@ gems = {"hoe": "rubygem-hoe",
         "test/unit": "rubygem-test-unit",
         }
 
+maven_jars = {"apache": "jdk-apache-parent"
+              }
+
 
 def Rakefile(filename):
     global gems

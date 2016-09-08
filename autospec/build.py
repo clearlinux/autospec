@@ -684,6 +684,24 @@ def failed_pattern_ruby_table(line, pattern, verbose=0):
                 print("Unknown pattern match: ", pattern, s)
 
 
+def failed_pattern_maven(line, pattern, verbose=0):
+    global must_restart
+    global failed_commands
+
+    pat = re.compile(pattern)
+    match = pat.search(line)
+    if match:
+        s = match.group(1)
+        try:
+            if s in buildreq.maven_jars:
+                must_restart = must_restart + buildreq.add_buildreq(buildreq.maven_jars[s])
+            else:
+                must_restart = must_restart + buildreq.add_buildreq('jdk-%s' % s)
+        except:
+            if verbose > 0:
+                print("Unknown maven jar match: ", s)
+
+
 def parse_build_results(filename, returncode):
     global must_restart
     global success
@@ -835,6 +853,8 @@ def parse_build_results(filename, returncode):
         failed_pattern_ruby_table(line, r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:\/]+)")
         failed_pattern_ruby_table(line, r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)")
         failed_pattern_go(line, r".*\.go:.*cannot find package \"(.*)\" in any of:")
+        failed_pattern_maven(line, "\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*")
+        failed_pattern_maven(line, "\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[jar|pom]+:.* has not been downloaded from it before.*")
 
         if infiles == 1 and line.find("RPM build errors") >= 0:
             infiles = 2

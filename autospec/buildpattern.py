@@ -487,6 +487,15 @@ def write_golang_pattern(file):
             file.write_strip("go test -v -x " + library_path + tolerance)
 
 
+def write_maven_pattern(file):
+    write_prep(file)
+    file.write_strip("%build")
+    file.write_strip("python3 /usr/share/java-utils/mvn_build.py")
+    file.write_strip("\n")
+    file.write_strip("%install")
+    file.write_strip("xmvn-install  -R .xmvn-reactor -n maven-parent -d %{buildroot}")
+
+
 def set_build_pattern(pattern, strength):
     global default_pattern
     global pattern_strengh
