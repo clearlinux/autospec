@@ -49,7 +49,7 @@ def commit_to_git(path):
         call("git add %s" % unit, cwd=path)
     call("git add Makefile", cwd=path)
     call("git add upstream", cwd=path)
-    call("git add *.spec", cwd=path)
+    call("bash -c 'shopt -s failglob; git add *.spec'", cwd=path)
     if test.unit_pass_written:
         call("git add unit_tests_must_pass", cwd=path)
     call("git add %s.tmpfiles" % tarball.name, check=False, stderr=subprocess.DEVNULL, cwd=path)
@@ -58,7 +58,7 @@ def commit_to_git(path):
     call("git add series", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add make_check_command", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add keepstatic", check=False, stderr=subprocess.DEVNULL, cwd=path)
-    call("git add *.patch", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("bash -c 'shopt -s failglob; git add *.patch'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     for item in docs.transforms.values():
         call("git add {}".format(item), check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add release", cwd=path)
