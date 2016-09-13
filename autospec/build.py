@@ -123,8 +123,6 @@ def setup_patterns():
     failed_commands["less"] = "less"
     failed_commands["pam_authenticate"] = "Linux-PAM-dev"
     failed_commands["vim"] = "vim"
-    failed_commands["valac"] = "vala-dev"
-    failed_commands["vapigen"] = "vala-dev"
     failed_commands["CLUTTER"] = "clutter-dev"
     failed_commands["asciidoc"] = "asciidoc"
     failed_commands["webp/decode.h"] = "libwebp-dev"
