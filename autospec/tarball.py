@@ -183,6 +183,18 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             if b >= 0:
                 version = version[:b]
 
+    # maven
+    if url_argument.find("maven.org") > 0:
+        buildpattern.set_build_pattern("maven", 10)
+        buildreq.add_buildreq("apache-maven")
+        buildreq.add_buildreq("xmvn")
+        buildreq.add_buildreq("openjdk-dev")
+        buildreq.add_buildreq("javapackages-tools")
+        buildreq.add_buildreq("python3")
+        buildreq.add_buildreq("six")
+        buildreq.add_buildreq("lxml")
+        buildreq.add_buildreq("jdk-plexus-classworlds")
+
     # override from commandline
     if name_argument and name_argument[0] != name:
         pattern = name_argument[0] + r"[\-]*(.*)\.(tgz|tar|zip)"
