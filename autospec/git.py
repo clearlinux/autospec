@@ -54,6 +54,7 @@ def commit_to_git(path):
         call("git add unit_tests_must_pass", cwd=path)
     call("git add %s.tmpfiles" % tarball.name, check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add make_install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add prep_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add funroll-loops", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add series", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add make_check_command", check=False, stderr=subprocess.DEVNULL, cwd=path)

@@ -38,6 +38,7 @@ extra_cmake = ""
 extra_make_install = ""
 install_macro = "%make_install"
 make_install_append = []
+prep_append = []
 subdir = ""
 sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
 source_index = {}
@@ -69,6 +70,7 @@ def write_prep(file, ruby_pattern=False):
                                  archive_details[archive + "destination"]))
     patches.apply_patches(file)
     file.write_strip("\n")
+    write_prep_append(file)
 
 
 def write_variables(file):
@@ -543,6 +545,14 @@ def write_make_install_append(file):
         for line in make_install_append:
             file.write_strip("%s\n" % line)
         file.write_strip("## make_install_append end")
+
+
+def write_prep_append(file):
+    """write out any custom supplied commands at the very end of the %prep section"""
+    if prep_append and prep_append[0]:
+        for line in prep_append:
+            file.write_strip("%s\n" % line)
+        file.write_strip("\n")
 
 
 def write_systemd_units(file):

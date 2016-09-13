@@ -318,5 +318,6 @@ def parse_config_files(path, bump):
         buildreq.add_buildreq("llvm-dev")
 
     buildpattern.make_install_append = read_conf_file("make_install_append")
+    buildpattern.prep_append = read_conf_file("prep_append")
 
     profile_payload = read_conf_file("profile_payload")
