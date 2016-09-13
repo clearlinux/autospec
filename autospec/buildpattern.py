@@ -109,6 +109,8 @@ def write_variables(file):
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
         file.write_strip("export NM=gcc-nm\n")
+    if config.fast_math:
+        flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
     if config.pgo:
         flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
     if tarball.gcov_file:

@@ -42,6 +42,7 @@ keepstatic = 0
 asneeded = 1
 optimize_size = False
 optimize_speed = False
+fast_math = False
 insecure_build = False
 conservative_flags = False
 broken_cpp = False
@@ -108,6 +109,7 @@ def parse_config_files(path, bump):
     global asneeded
     global optimize_size
     global optimize_speed
+    global fast_math
     global insecure_build
     global conservative_flags
     global clang_flags
@@ -243,6 +245,9 @@ def parse_config_files(path, bump):
         optimize_size = True
     if file_exists("funroll-loops"):
         optimize_speed = True
+    if file_exists("fast-math"):
+        print("Using -ffast-math")
+        fast_math = True
     if file_exists("insecure_build"):
         insecure_build = True
     if file_exists("conservative_flags"):
