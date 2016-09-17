@@ -853,6 +853,7 @@ def parse_build_results(filename, returncode):
         failed_pattern_go(line, r".*\.go:.*cannot find package \"(.*)\" in any of:")
         failed_pattern_maven(line, "\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*")
         failed_pattern_maven(line, "\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[jar|pom]+:.* has not been downloaded from it before.*")
+        failed_pattern_maven(line, "\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information available")
 
         if infiles == 1 and line.find("RPM build errors") >= 0:
             infiles = 2
