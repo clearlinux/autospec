@@ -221,7 +221,21 @@ gems = {"hoe": "rubygem-hoe",
         "test/unit": "rubygem-test-unit",
         }
 
-maven_jars = {"apache": "jdk-apache-parent"
+maven_jars = {"apache": "jdk-apache-parent",
+              "aether-api": "jdk-aether",
+              "aether-spi": "jdk-aether",
+              "aether-util": "jdk-aether",
+              "aether-impl": "jdk-aether",
+              "org.eclipse.sisu.plexus": "jdk-sisu",
+              "plexus-component-annotations": "jdk-plexus-containers",
+              "maven-monitor": "apache-maven2",
+              "asm": "jdk-objectweb-asm",
+              "maven-project": "apache-maven2",
+              "javax.inject": "jdk-atinject",
+              "plexus-container-default": "jdk-plexus-containers",
+              "wagon-provider-api": "jdk-wagon",
+              "xbean-reflect": "jdk-xbean",
+              "maven-enforcer-plugin": "jdk-enforcer",
               }
 
 
