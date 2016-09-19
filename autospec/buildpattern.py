@@ -494,7 +494,7 @@ def write_golang_pattern(file):
 def write_maven_pattern(file):
     write_prep(file)
     file.write_strip("%build")
-    file.write_strip("python3 /usr/share/java-utils/mvn_build.py")
+    file.write_strip("python3 /usr/share/java-utils/mvn_build.py " + extra_make)
     file.write_strip("\n")
     file.write_strip("%install")
     file.write_strip("xmvn-install  -R .xmvn-reactor -n maven-parent -d %{buildroot}")
