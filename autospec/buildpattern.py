@@ -247,6 +247,8 @@ def write_make_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     if subdir:
         file.write_strip("pushd %s" % subdir)
@@ -262,6 +264,8 @@ def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     if config.profile_payload and config.profile_payload[0]:
         file.write_strip(get_profile_generate_flags() + "%autogen " + disable_static + " " + config.extra_configure)
@@ -282,6 +286,8 @@ def write_distutils_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("\n")
@@ -302,6 +308,8 @@ def write_distutils3_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
     file.write_strip("\n")
@@ -322,6 +330,8 @@ def write_distutils23_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
@@ -345,6 +355,8 @@ def write_R_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     file.write_strip("\n")
 
     file.write_strip("%install")
@@ -403,6 +415,8 @@ def write_cmake_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    if config.asneeded == 0:
+        file.write_strip("unset LD_AS_NEEDED\n")
     file.write_strip("mkdir clr-build")
     file.write_strip("pushd clr-build")
     write_variables(file)
