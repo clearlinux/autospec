@@ -779,6 +779,7 @@ def parse_build_results(filename, returncode):
         failed_pattern(
             line, r"checking for (.*) in default path\.\.\. not found")
         failed_pattern(line, r" ([a-zA-Z0-9\-]*\.m4) not found")
+        failed_pattern(line, r" exec: ([a-zA-Z0-9\-]+): not found")
         failed_pattern(line, r"configure\: error\: Unable to locate (.*)")
         failed_pattern(line, r"No rule to make target `(.*)',")
         failed_pattern(line, r"ImportError\: No module named (.*)")
