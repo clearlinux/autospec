@@ -48,6 +48,7 @@ conservative_flags = False
 broken_cpp = False
 clang_flags = False
 want_clang = False
+want_lto = False
 pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
@@ -125,6 +126,7 @@ def parse_config_files(path, bump):
     global config_file
     global profile_payload
     global broken_cpp
+    global want_lto
 
     config_path = path
 
@@ -290,6 +292,9 @@ def parse_config_files(path, bump):
 
     if file_exists("broken_c++"):
         broken_cpp = True
+
+    if file_exists("use_lto"):
+        want_lto = True
 
     content = read_conf_file("make_check_command")
     if content and content[0]:

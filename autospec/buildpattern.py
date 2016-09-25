@@ -108,6 +108,8 @@ def write_variables(file):
         file.write_strip("unset LDFLAGS\n")
     if config.optimize_speed:
         flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
+    if config.want_lto:
+        flags.extend(["-O3", "-flto"])
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
         file.write_strip("export NM=gcc-nm\n")
