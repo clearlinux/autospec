@@ -121,7 +121,7 @@ def write_variables(file):
         flags = list(filter(("-flto").__ne__, flags))
         flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(source_index[sources["gcov"][0]])])
     if flags:
-        flags = list(set(flags))
+        flags = sorted(list(set(flags)))
         file.write_strip("export CFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
         file.write_strip("export FCFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
         file.write_strip("export FFLAGS=\"$CFLAGS {0} \"\n".format(" ".join(flags)))
