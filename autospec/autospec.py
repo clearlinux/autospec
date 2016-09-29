@@ -230,6 +230,13 @@ def main():
     if build.success == 0:
         print("Build failed")
         return
+    elif os.path.isfile(tarball.path + "/README.clear"):
+        try:
+            print("\n")
+            with open(tarball.path + "/README.clear", "r") as readme_f:
+                print(readme_f.read())
+        except:
+            pass
 
     examine_abi(build.download_path)
 
