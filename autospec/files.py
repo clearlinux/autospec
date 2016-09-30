@@ -154,7 +154,7 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"):
         return
-    if file_pat_match(filename, r"^/usr/share/gir-1\.0/.*\.gir\$", "data", "/usr/share/gir-1.0/*.gir"):
+    if file_pat_match(filename, r"^/usr/share/gir-1\.0/.*\.gir\$", "dev", "/usr/share/gir-1.0/*.gir"):
         return
     if file_pat_match(filename, r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"):
         return
