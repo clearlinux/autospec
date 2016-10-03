@@ -21,6 +21,7 @@
 
 import os
 import re
+import ast
 
 import buildpattern
 import patches
@@ -270,7 +271,7 @@ def Rakefile(filename):
                 print("Rakefile-new: rubygem-" + s)
 
 
-def clean_python_req(str):
+def clean_python_req(str, add_python=True):
     if str.find("#") == 0:
         return ""
     ret = str.rstrip("\n\r").strip()
@@ -293,7 +294,7 @@ def clean_python_req(str):
     if i > 0:
         ret = ret[:i]
     # is ret actually a valid (non-empty) string?
-    if ret:
+    if ret and add_python:
         ret = ret.strip() + "-python"
     # use the dictionary to translate funky names to our current pgk names
     ret = util.translate(ret)
@@ -314,6 +315,102 @@ def setup_py_python3(filename):
     except:
         return 0
     return 0
+
+def add_setup_py_requires(filename):
+    """
+    Detect build requirements listed in setup.py in the install_requires and
+    setup_requires lists.
+
+    Handles the following patterns:
+    install_requires='one'
+    install_requires=['one', 'two', 'three']
+    install_requires=['one',
+                      'two',
+                      'three']
+    setup_requires=[
+        'one>=2.1',   # >=2.1 is removed
+        'two',
+        'three'
+    ]
+    setuptools.setup(
+        setup_requires=['one', 'two'],
+        ...)
+    setuptools.setup(setup_requires=['one', 'two'], ...)
+
+    Does not evaluate lists of variables.
+    """
+    py_dep_string = None
+    try:
+        with open(filename) as FILE:
+            for line in FILE.readlines():
+                if "install_requires" in line or "setup_requires" in line:
+                    # find the value for *_requires
+                    line = line.split("=", 1)[1].strip()
+                    # check for end bracket on this line
+                    end_bracket = line.find("]")
+                    # easy, one-line case
+                    if line.startswith("[") and end_bracket > 0:
+                        line = line[:end_bracket + 1]
+                        # eval the string and add requirements
+                        for dep in ast.literal_eval(line):
+                            print(dep)
+                            add_buildreq(clean_python_req(dep, False))
+                        continue
+                    # more complicated, multi-line list.
+                    # this sets the py_dep_string with the current line, which
+                    # is the beginning of a multi-line list. py_dep_string
+                    # acts as a flag to the below conditional
+                    # `if py_dep_string`.
+                    elif line.startswith("["):
+                        py_dep_string = line
+                    # if the line doesn't start with '[' it is the case where
+                    # there is a single dependency as a string
+                    else:
+                        start_quote = line[0]
+                        # end_quote remains -1 if start_quote is not a quote or
+                        # there is no end quote on this line
+                        end_quote = -1
+                        if start_quote is "'":
+                            end_quote = line[1:].find("'")
+                            # account for first character
+                            end_quote += 1
+                        elif start_quote is '"':
+                            end_quote = line[1:].find('"')
+                            # account for first character
+                            end_quote += 1
+
+                        # at this point, end_quote is only > 0 if there was a
+                        # matching start quote
+                        if end_quote > 0:
+                            line = line[:end_quote + 1]
+                            py_deps = ast.literal_eval(line)
+                            add_buildreq(clean_python_req(py_deps, False))
+                            continue
+
+                # if py_dep_string was set above when a multi-line list was
+                # detected, add the stripped line to the string.
+                # when the end of the list is detected (line ends with ']'),
+                # the string-list is literal_evaled into a list of strings.
+                if py_dep_string:
+                    # py_dep_string is a copy of the line when it is set,
+                    # only append line when line has been incremented
+                    if py_dep_string is not line:
+                        py_dep_string += line.strip(" \n")
+                    # look for the end of the list
+                    end_bracket = py_dep_string.find("]")
+                    if end_bracket > 0:
+                        # eval the string and add requirements
+                        py_deps = ast.literal_eval(
+                                py_dep_string[:end_bracket + 1])
+                        for dep in py_deps:
+                            add_buildreq(clean_python_req(dep, False))
+                        continue
+
+    except:
+        # this except clause will be invoked in the case the install_requires
+        # list contains variables instead of strings as well as the normal
+        # error case
+        pass
 
 
 def scan_for_configure(package, dir, autospecdir):
@@ -343,6 +440,7 @@ def scan_for_configure(package, dir, autospecdir):
             add_buildreq("setuptools")
             add_buildreq("pbr")
             add_buildreq("pip")
+            add_setup_py_requires(dirpath + '/setup.py')
             if setup_py_python3(dirpath + '/setup.py') or setup_py_python3(dirpath + '/PKG-INFO'):
                 add_buildreq("python3-dev")
                 buildpattern.set_build_pattern("distutils23", default_score)
