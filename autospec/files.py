@@ -154,13 +154,14 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"):
         return
-    if file_pat_match(filename, r"^/usr/share/gir-1\.0/.*\.gir\$", "dev", "/usr/share/gir-1.0/*.gir"):
+    if file_pat_match(filename, r"^/usr/share/gir-[0-9\.]+/[a-zA-Z0-9\.\_\-\+]*\.gir", "dev", "/usr/share/gir-1.0/*.gir"):
+        print("HIT GIR\n")
         return
     if file_pat_match(filename, r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"):
         return
     if file_pat_match(filename, r"^/usr/share/cmake-3.1/", "data", "/usr/share/cmake-3.1/*"):
         return
-    if file_pat_match(filename, r"^/usr/share/girepository-1\.0/.*\.typelib\$", "data", "/usr/share/girepository-1.0/*.typelib"):
+    if file_pat_match(filename, r"^/usr/share/girepository-1\.0/.*\.typelib\$", "dev", "/usr/share/girepository-1.0/*.typelib"):
         return
 
     if file_pat_match(filename, r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hxx", "dev", "/usr/include/*.hxx"):
