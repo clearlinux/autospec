@@ -30,6 +30,8 @@ import shutil
 import subprocess
 import urllib
 import urllib.request
+import pycurl
+from io import BytesIO
 from util import call
 # from util import golang_name
 # from util import golang_libpath
@@ -54,9 +56,13 @@ def get_sha1sum(filename):
 
 
 def really_download(url, destination, tarfile):
-    with urllib.request.urlopen(url) as response:
-        with open(destination, "wb") as dfile:
-            dfile.write(response.read())
+    with open(destination, 'wb') as dfile:
+        c = pycurl.Curl()
+        c.setopt(c.URL, url)
+        c.setopt(c.WRITEDATA, dfile)
+        c.setopt(c.FOLLOWLOCATION, True)
+        c.perform()
+        c.close()
 
 
 def check_or_get_file(url, tarfile):

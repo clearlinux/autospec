@@ -23,8 +23,10 @@
 
 import os
 import tarball
+import pycurl
 import urllib
 import config
+from io import BytesIO
 
 default_license = "TO BE DETERMINED"
 
@@ -217,13 +219,21 @@ def license_from_copying_hash(copying):
     if config.license_fetch:
         with open(copying, "r", encoding="latin-1") as myfile:
             data = myfile.read()
-            url = config.license_fetch
             values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
             data = urllib.parse.urlencode(values)
             data = data.encode('utf-8')
-            req = urllib.request.Request(url, data)
-            response = urllib.request.urlopen(req)
-            the_page = response.read().decode('utf-8')
+
+            buffer = BytesIO()
+            c = pycurl.Curl()
+            c.setopt(c.URL, config.license_fetch)
+            c.setopt(c.WRITEDATA, buffer)
+            c.setopt(c.POSTFIELDS, data)
+            c.perform()
+            c.close()
+
+            response = buffer.getvalue()
+            the_page = response.decode('utf-8')
+
             if len(the_page.strip()) > 0:
                 print("License     : ", the_page.strip(), " (server) (", hash_sum, ")")
                 add_license(the_page.strip())
