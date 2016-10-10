@@ -203,6 +203,7 @@ def main():
     config.parse_config_files(build.download_path, args.bump)
     config.parse_existing_spec(build.download_path, tarball.name)
 
+    buildreq.set_build_req()
     buildreq.scan_for_configure(name, dir, build.download_path)
     specdescription.scan_for_description(name, dir)
     license.scan_for_licenses(name, dir)

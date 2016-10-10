@@ -255,6 +255,21 @@ maven_jars = {"apache": "jdk-apache-parent",
               }
 
 
+def set_build_req():
+    if buildpattern.default_pattern == "maven":
+        add_buildreq("apache-maven")
+        add_buildreq("xmvn")
+        add_buildreq("openjdk-dev")
+        add_buildreq("javapackages-tools")
+        add_buildreq("python3")
+        add_buildreq("six")
+        add_buildreq("lxml")
+        add_buildreq("jdk-plexus-classworlds")
+    if buildpattern.default_pattern == "ruby":
+        add_buildreq("ruby")
+        add_buildreq("rubygem-rdoc")
+
+
 def Rakefile(filename):
     global gems
     file = open(filename, "r", encoding="latin-1")

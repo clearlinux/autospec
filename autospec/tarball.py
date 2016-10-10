@@ -174,8 +174,6 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         p = re.compile(r"(.*?)[\-_](v*[0-9]+[alpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.gem")
         m = p.search(tarfile)
         if m:
-            buildreq.add_buildreq("ruby")
-            buildreq.add_buildreq("rubygem-rdoc")
             name = "rubygem-" + m.group(1).strip()
             rawname = m.group(1).strip()
             version = m.group(2).strip()
@@ -186,14 +184,6 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
     # maven
     if url_argument.find("maven.org") > 0:
         buildpattern.set_build_pattern("maven", 10)
-        buildreq.add_buildreq("apache-maven")
-        buildreq.add_buildreq("xmvn")
-        buildreq.add_buildreq("openjdk-dev")
-        buildreq.add_buildreq("javapackages-tools")
-        buildreq.add_buildreq("python3")
-        buildreq.add_buildreq("six")
-        buildreq.add_buildreq("lxml")
-        buildreq.add_buildreq("jdk-plexus-classworlds")
 
     # override from commandline
     if name_argument and name_argument[0] != name:
