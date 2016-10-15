@@ -66,6 +66,7 @@ def setup_patterns():
     failed_commands["jpeglib.h"] = "libjpeg-turbo-dev"
     failed_commands["JPEG"] = "libjpeg-turbo-dev"
     failed_commands["expat.h"] = "expat-dev"
+    failed_commands["lber.h"] = "openldap-dev"
     failed_commands["Expat"] = "expat-dev"
     failed_commands["bison"] = "bison"
     failed_commands["numa.h"] = "numactl-dev"
