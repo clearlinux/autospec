@@ -49,6 +49,7 @@ broken_cpp = False
 clang_flags = False
 want_clang = False
 want_lto = False
+want_avx2 = False
 pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
@@ -127,6 +128,7 @@ def parse_config_files(path, bump):
     global profile_payload
     global broken_cpp
     global want_lto
+    global want_avx2
 
     config_path = path
 
@@ -295,6 +297,8 @@ def parse_config_files(path, bump):
 
     if file_exists("use_lto"):
         want_lto = True
+    if file_exists("use_avx2"):
+        want_avx2 = True
 
     content = read_conf_file("make_check_command")
     if content and content[0]:

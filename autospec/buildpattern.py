@@ -30,6 +30,8 @@ import test
 
 default_pattern = "make"
 pattern_strengh = 0
+need_avx2_flags = False
+
 
 disable_static = "--disable-static"
 
@@ -74,6 +76,7 @@ def write_prep(file, ruby_pattern=False):
 
 
 def write_variables(file):
+    global need_avx2_flags
     flags = []
     if config.want_clang:
         file.write_strip("export CC=clang\n")
@@ -81,6 +84,8 @@ def write_variables(file):
         file.write_strip("export LD=ld.gold\n")
     if config.optimize_size:
         flags.extend(["-Os", "-ffunction-sections"])
+    if need_avx2_flags:
+        flags.extend(["-O3", "-mavx2"])
     if config.broken_cpp:
         flags.extend(["-std=gnu++98"])
     if config.insecure_build:
@@ -156,11 +161,24 @@ def write_check(file):
 
 
 def write_make_install(file):
+    global need_avx2_flags
     file.write_strip("%install")
     file.write_strip("rm -rf %{buildroot}")
     if subdir:
         file.write_strip("pushd %s" % subdir)
     file.write_strip("%s %s\n" % (install_macro, extra_make_install))
+    
+    
+    if config.want_avx2:
+        need_avx2_flags = True
+        write_variables(file)
+        file.write_strip("make clean")
+        file.write_strip("%configure " + disable_static + " " + config.extra_configure + "--libdir=/usr/lib64/avx2")
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        file.write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")        
+        file.write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.la")
+        file.write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.lo")
+        
     if subdir:
         file.write_strip("popd")
     lang.write_find_lang(file)

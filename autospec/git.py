@@ -67,6 +67,7 @@ def commit_to_git(path):
     call("git add used_libs", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add use_clang", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add use_lto", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add use_avx2", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add fast-math", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add broken_c++", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add skip_test_suite", check=False, stderr=subprocess.DEVNULL, cwd=path)
