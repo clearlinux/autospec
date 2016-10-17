@@ -40,6 +40,9 @@ autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "
 def add_buildreq(req):
     global verbose
     new = True
+    
+    req.strip()
+    
     if req in banned_buildreqs:
         return False
     if req in buildreqs:
@@ -54,9 +57,13 @@ def add_buildreq(req):
 def add_pythonreq(req):
     global verbose
     new = True
+    
+    req.strip()
 
     if req in pythonreqs:
         new = False
+    if req in banned_buildreqs:
+        return False
     if new:
         # print("Adding python requirement:", req)
         pythonreqs.add(req)
@@ -308,6 +315,8 @@ def clean_python_req(str, add_python=True):
     i = ret.find("!")
     if i > 0:
         ret = ret[:i]
+        
+    ret = ret.strip()
     # is ret actually a valid (non-empty) string?
     if ret and add_python:
         ret = ret.strip() + "-python"
