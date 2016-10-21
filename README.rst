@@ -312,6 +312,18 @@ Controlling flags and optimisation
     the package with profile-guided optimization data. It will add ``-O3``,
     ``-fprofile-use``, ``-fprofile-correction`` and ``-fprofile-dir=pgo``.
 
+**use_lto**
+
+    If this file exists, link time optimization is enabled for the build
+
+**use_avx2**
+
+    If this file exists, a second set of libraries, for AVX2, is built
+
+**fast-math**
+
+    If this file exists, -ffast-math is passed to the compiler
+
 
 Name and version resolution
 ===========================

@@ -40,6 +40,9 @@ autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "
 def add_buildreq(req):
     global verbose
     new = True
+    
+    req.strip()
+    
     if req in banned_buildreqs:
         return False
     if req in buildreqs:
@@ -54,9 +57,13 @@ def add_buildreq(req):
 def add_pythonreq(req):
     global verbose
     new = True
+    
+    req.strip()
 
     if req in pythonreqs:
         new = False
+    if req in banned_buildreqs:
+        return False
     if new:
         # print("Adding python requirement:", req)
         pythonreqs.add(req)
@@ -265,6 +272,31 @@ def set_build_req():
         add_buildreq("six")
         add_buildreq("lxml")
         add_buildreq("jdk-plexus-classworlds")
+        add_buildreq("jdk-aether")
+        add_buildreq("jdk-aopalliance")
+        add_buildreq("jdk-atinject")
+        add_buildreq("jdk-cdi-api")
+        add_buildreq("jdk-commons-cli")
+        add_buildreq("jdk-commons-codec")
+        add_buildreq("jdk-commons-io")
+        add_buildreq("jdk-commons-lang")
+        add_buildreq("jdk-commons-lang3")
+        add_buildreq("jdk-commons-logging")
+        add_buildreq("jdk-guice")
+        add_buildreq("jdk-guava")
+        add_buildreq("jdk-httpcomponents-client")
+        add_buildreq("jdk-httpcomponents-core")
+        add_buildreq("jdk-jsoup")
+        add_buildreq("jdk-jsr-305")
+        add_buildreq("jdk-wagon")
+        add_buildreq("jdk-objectweb-asm")
+        add_buildreq("jdk-sisu")
+        add_buildreq("jdk-plexus-containers")
+        add_buildreq("jdk-plexus-interpolation")
+        add_buildreq("jdk-plexus-cipher")
+        add_buildreq("jdk-plexus-sec-dispatcher")
+        add_buildreq("jdk-plexus-utils")
+        add_buildreq("jdk-slf4j")
     if buildpattern.default_pattern == "ruby":
         add_buildreq("ruby")
         add_buildreq("rubygem-rdoc")
@@ -308,6 +340,8 @@ def clean_python_req(str, add_python=True):
     i = ret.find("!")
     if i > 0:
         ret = ret[:i]
+        
+    ret = ret.strip()
     # is ret actually a valid (non-empty) string?
     if ret and add_python:
         ret = ret.strip() + "-python"
