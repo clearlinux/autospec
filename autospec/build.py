@@ -45,6 +45,7 @@ def setup_patterns():
     failed_commands["dot"] = "graphviz"
     failed_commands["nroff"] = "groff"
     failed_commands["flex"] = "flex"
+    failed_commands["help2man"] = "help2man"
     failed_commands["Berkeley DB"] = "db"
     failed_commands["libdb"] = "db"
     failed_commands["lex"] = "flex"
