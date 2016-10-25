@@ -348,12 +348,6 @@ def write_files_header(file):
         file.write("\n")
 
 
-def escape_filename(filename):
-    if " " in filename:
-        filename = '"{}"'.format(filename)
-    return filename
-
-
 def write_files(file):
     global files
     global packages
@@ -362,7 +356,7 @@ def write_files(file):
     file.write("%defattr(-,root,root,-)\n")
     if "main" in packages:
         for filename in sorted(packages["main"]):
-            file.write('{}\n'.format(escape_filename(filename)))
+            file.write(filename + "\n")
 
     for pkg in sorted(packages):
         if pkg == "ignore":
@@ -374,7 +368,7 @@ def write_files(file):
         file.write("\n%files " + pkg + "\n")
         file.write("%defattr(-,root,root,-)\n")
         for filename in sorted(packages[pkg]):
-            file.write('{}\n'.format(escape_filename(filename)))
+            file.write(filename + "\n")
 
 
 def write_scriplets(file):
