@@ -23,6 +23,7 @@ gopkg.in/yaml.v2=golang-github-go-yaml-yaml
 hacking-python=hacking
 httplib2-python=httplib2
 ironicclient-python=python-ironicclient
+jinja2=Jinja2
 jinja2-python=Jinja2
 Jinja2-python=Jinja2
 jsonpath_rw_ext=jsonpath-rw-ext
