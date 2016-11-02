@@ -36,6 +36,7 @@ import specdescription
 import tarball
 import test
 import commitmessage
+import verify_sign
 
 from tarball import name
 from util import _file_write, print_fatal
@@ -171,7 +172,8 @@ def main():
     parser.add_argument("-t", "--target", dest="target", action="store",
                         default=None,
                         help="Target location to create or reuse")
-
+    parser.add_argument("-sig", "--verify_sign", action="store_true",
+                        default=False)
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(
@@ -187,6 +189,7 @@ def main():
 
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
     _dir = tarball.path
+
     if args.license_only:
         try:
             with open(os.path.join(build.download_path,
@@ -219,6 +222,10 @@ def main():
     write_spec(build.download_path + "/" + tarball.name + ".spec")
 
     print("\n")
+
+    if args.verify_sign == True:
+        verify_sign.from_url(args.url, build.download_path)
+
     while 1:
         build.package()
         write_spec(build.download_path + "/" + tarball.name + ".spec")
