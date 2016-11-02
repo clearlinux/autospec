@@ -186,7 +186,7 @@ def main():
     build.setup_patterns()
 
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
-    dir = tarball.path
+    _dir = tarball.path
     if args.license_only:
         try:
             with open(os.path.join(build.download_path,
@@ -196,7 +196,7 @@ def main():
                         license.add_license(word)
         except:
             pass
-        license.scan_for_licenses(name, dir)
+        license.scan_for_licenses(name, _dir)
         exit(0)
 
     config.config_file = args.config
@@ -204,12 +204,12 @@ def main():
     config.parse_existing_spec(build.download_path, tarball.name)
 
     buildreq.set_build_req()
-    buildreq.scan_for_configure(name, dir, build.download_path)
-    specdescription.scan_for_description(name, dir)
-    license.scan_for_licenses(name, dir)
-    docs.scan_for_changes(build.download_path, dir)
+    buildreq.scan_for_configure(name, _dir, build.download_path)
+    specdescription.scan_for_description(name, _dir)
+    license.scan_for_licenses(name, _dir)
+    docs.scan_for_changes(build.download_path, _dir)
     add_sources(build.download_path, args.archives)
-    test.scan_for_tests(dir)
+    test.scan_for_tests(_dir)
 
     #
     # Now, we have enough to write out a specfile, and try to build it.
