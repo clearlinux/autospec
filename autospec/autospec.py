@@ -173,7 +173,8 @@ def main():
                         default=None,
                         help="Target location to create or reuse")
     parser.add_argument("-sig", "--verify_sign", action="store_true",
-                        default=False)
+                        default=False,
+                        help="Attempt to download and verify package signature")
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(

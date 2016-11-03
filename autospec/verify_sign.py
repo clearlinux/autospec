@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+import os
 import argparse
 import shutil, tempfile
-import os
 import pycurl
+import base64
 from io import BytesIO
 from contextlib import contextmanager
 from socket import timeout
@@ -80,10 +81,9 @@ def cli_gpg_ctx(pubkey=None, gpghome=None):
             _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome') if gpghome is None else gpghome
             yield GPGCli(pubkey, _gpghome)
         finally:
-            pass
-            #if gpghome is None:
-            #    del os.environ['GNUPGHOME']
-            #    shutil.rmtree(_gpghome, ignore_errors=True)
+            if gpghome is None:
+                del os.environ['GNUPGHOME']
+                shutil.rmtree(_gpghome, ignore_errors=True)
 
 @contextmanager
 def gpg_ctx(pubkey=None, gpghome=None):
@@ -150,6 +150,30 @@ def save_file_conditionally(data, filename):
     return data
 
 
+def is_b64(line):
+    if line == '' or "----" in line or \
+       "Version" in line or "Comment" in line:
+        return False
+    return True
+
+
+def parse_sign(filename):
+    with open(filename, 'r') as f:
+        lines = f.read().split('\n')
+        sign = ''.join([l for l in lines if is_b64(l.strip())])
+        return sign
+
+def parse_keyid(sign):
+    sign = base64.b64decode(sign)
+    return ''.join(['%02x'%x for x in sign[19:27]])
+
+
+def get_keyid(sig_filename):
+    sign = parse_sign(sig_filename)
+    keyid = parse_keyid(sign)
+    return keyid.upper()
+
+
 def attempt_download_sign(url, sign_filename=None):
     """Download file helper"""
     with open(sign_filename, 'wb') as f:
@@ -167,7 +191,6 @@ def attempt_download_sign(url, sign_filename=None):
 
 
 def from_url(url, download_path):
-    pub_keys = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "pub.keys"])
     tarfile = os.path.basename(url)
     tarfile_path = os.path.join(download_path, tarfile)
     print("""Verifying signature for {}
@@ -182,11 +205,16 @@ def from_url(url, download_path):
         if code is None:
             return
         elif code == 200:
-            sign_status = verify(pub_keys, tarfile_path, tarfile_sign_file)
-            if sign_status is None:
-                print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(tarfile))
+            keyid = get_keyid(tarfile_sign_file)
+            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey".format(keyid)])
+            if os.path.exists(pub_key) == False:
+                print("Verification \033[91mFAILED\033[0m\nPublic key id {} was not found in keyring".format(pub_key))
             else:
-                print("Verification {} \033[91mFAILED\033[0m with {}".format(tarfile, sign_status.strerror))
+                sign_status = verify(pub_key, tarfile_path, tarfile_sign_file)
+                if sign_status is None:
+                    print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(tarfile))
+                else:
+                    print("Verification {} \033[91mFAILED\033[0m with {}".format(tarfile, sign_status.strerror))
         else:
             print("Verification \033[91mFAILED\033[0m attempt to download signature returned {}".format(code))
     print("--------------------------------------------------------------------------------")
