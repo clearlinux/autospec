@@ -205,7 +205,7 @@ def push_file(filename):
     if file_pat_match(filename, r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"):
         return
 
-    if file_pat_match(filename, r"^/usr/share/doc/" + tarball.name + "/", "doc", "%doc /usr/share/doc/" + tarball.name + "/*"):
+    if file_pat_match(filename, r"^/usr/share/doc/" + re.escape(tarball.name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(tarball.name) + "/*"):
         return
     if file_pat_match(filename, r"^/usr/share/gtk-doc/html", "doc"):
         return
