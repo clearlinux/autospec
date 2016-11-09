@@ -83,6 +83,34 @@ def build_untar(tarball_path):
     return extract_cmd, tarball_prefix
 
 
+def build_unzip(zip_path):
+    """Return correct unzip command and the prefix folder name of the contents of zip file
+
+    This function will run the zip file through a content list, parsing that list to get the
+    root folder name containing the zip file's contents.
+
+    The output of the unzip -l command has the following format:
+    ***snip***
+    Archive:  file.zip
+    (optional) hash
+    Length      Date    Time    Name
+    ---------  ---------- -----   ----
+            0  01-01-2000 00:00   prefix-dir/sub_dir1/subdir2
+    ***snip***
+    and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
+    """
+    contents = subprocess.check_output(["unzip", "-l", zip_path], universal_newlines=True)
+    lines = contents.splitlines() if contents else []
+    # looking for directory prefix in unzip output as it may differ from default
+    if len(lines) > 3:
+        # In some cases there is a hash line so we detect this based on the header
+        # separator character '-'
+        prefix_line = 4 if len(lines) > 4 and lines[3][0] == '-' else 3
+        prefix = lines[prefix_line].split("/")[0].split()[-1]
+    extract_cmd = "unzip -d {0} {1}".format(build.base_path, zip_path)
+    return extract_cmd, prefix
+
+
 def download_tarball(url_argument, name_argument, archives, target_dir):
     global name
     global rawname
@@ -247,12 +275,7 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
 
     tarball_prefix = name + "-" + version
     if tarfile.lower().endswith('.zip'):
-        tarball_contents = subprocess.check_output(
-            ["unzip", "-l", tarball_path], universal_newlines=True)
-        if tarball_contents and len(tarball_contents.splitlines()) > 3:
-            tarball_prefix = tarball_contents.splitlines()[3].rsplit("/")[0].split()[-1]
-        extract_cmd = "unzip -d {0} {1}".format(build.base_path, tarball_path)
-
+        extract_cmd, tarball_prefix = build_unzip(tarball_path)
     elif tarfile.lower().endswith('.gem'):
         tarball_contents = subprocess.check_output(
             ["gem", "unpack", "--verbose", tarball_path], universal_newlines=True)
@@ -296,11 +319,7 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
     for archive, destination in zip(archives[::2], archives[1::2]):
         source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
         if source_tarball_path.lower().endswith('.zip'):
-            tarball_contents = subprocess.check_output(
-                ["unzip", "-l", source_tarball_path], universal_newlines=True)
-            if tarball_contents and len(tarball_contents.splitlines()) > 3:
-                source_tarball_prefix = tarball_contents.splitlines()[3].rsplit("/")[0].split()[-1]
-            extract_cmd = "unzip -d {0} {1}".format(build.base_path, source_tarball_path)
+            tarball_contents, source_tarball_prefix = build_unzip(source_tarball_path)
         else:
             extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
         buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
