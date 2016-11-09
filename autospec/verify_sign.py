@@ -123,24 +123,41 @@ def verify_cli(pubkey, tarball, signature, gpghome=None):
         return ctx.verify(pubkey, tarball, signature)
     raise Exception('Verification did not take place using cli')
 
-def verify(*args):
-    return {
-        True: verify_cli,
-        False: verify_gpgme,
-    }[GPG_CLI](*args)
 
-#
-# Utility methods    
-#
+## GPG Verification
+class Verifier(object):
+    def __init__(self, _type):
+        self.type = _type
 
-def is_verifiable(filename):    
+    def verify(self, *args):
+        return
+
+
+class GPGVerifier(Verifier):
+
+    def __init__(self):
+        Verifier.__init__(self, 'GPG')
+
+    def verify(self, *args):
+       sign_status = {
+            True: verify_cli,
+            False: verify_gpgme,
+       }[GPG_CLI](*args)
+       if sign_status is None:
+           print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(args[1]))
+       else:
+           print("Verification {} \033[91mFAILED\033[0m with {}".format(args[1], sign_status.strerror))
+
+
+       
+def get_verifier(filename):    
     """Is this file type supported? this initial implementation 
-       supports only gpg verification"""
+        supports only gpg verification"""
     _, ext = os.path.splitext(filename)
     if ext == '.gz':
-        return True
+        return GPGVerifier
     else:
-        return False
+        return None
 
 
 def save_file_conditionally(data, filename):
@@ -154,6 +171,8 @@ def is_b64(line):
     if line == '' or "----" in line or \
        "Version" in line or "Comment" in line:
         return False
+    elif line[-5] == '=':
+        return False
     return True
 
 
@@ -163,15 +182,22 @@ def parse_sign(filename):
         sign = ''.join([l for l in lines if is_b64(l.strip())])
         return sign
 
-def parse_keyid(sign):
-    sign = base64.b64decode(sign)
-    return ''.join(['%02x'%x for x in sign[19:27]])
+def parse_keyid(sig_filename):
+    args = ["gpg", "--list-packet", sig_filename]
+    out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+    if err.decode('utf-8') != '':
+        print(err.decode('utf-8'))
+        return None
+    out = out.decode('utf-8')
+    ai = out.index('keyid') + 6
+    bi = ai + 16
+    return out[ai:bi]
 
 
 def get_keyid(sig_filename):
-    sign = parse_sign(sig_filename)
-    keyid = parse_keyid(sign)
+    keyid = parse_keyid(sig_filename)
     return keyid.upper()
+
 
 
 def attempt_download_sign(url, sign_filename=None):
@@ -195,7 +221,8 @@ def from_url(url, download_path):
     tarfile_path = os.path.join(download_path, tarfile)
     print("""Verifying signature for {}
 --------------------------------------------------------------------------------""".format(tarfile))
-    if is_verifiable(tarfile) == False:
+    verifier = get_verifier(tarfile)
+    if verifier is None:
         print("File {} is not verifiable (yet)".format(tarfile))
     else:
         tarfile_sign = tarfile + '.asc'
@@ -210,11 +237,12 @@ def from_url(url, download_path):
             if os.path.exists(pub_key) == False:
                 print("Verification \033[91mFAILED\033[0m\nPublic key id {} was not found in keyring".format(pub_key))
             else:
-                sign_status = verify(pub_key, tarfile_path, tarfile_sign_file)
-                if sign_status is None:
-                    print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(tarfile))
-                else:
-                    print("Verification {} \033[91mFAILED\033[0m with {}".format(tarfile, sign_status.strerror))
+                v = verifier()
+                v.verify(pub_key, tarfile_path, tarfile_sign_file)
+        #        if sign_status is None:
+        #            print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(tarfile))
+        #        else:
+        #            print("Verification {} \033[91mFAILED\033[0m with {}".format(tarfile, sign_status.strerror))
         else:
             print("Verification \033[91mFAILED\033[0m attempt to download signature returned {}".format(code))
     print("--------------------------------------------------------------------------------")
