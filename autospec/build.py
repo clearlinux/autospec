@@ -531,6 +531,11 @@ def setup_patterns():
     failed_commands["wx-config"] = "wxGTK-dev"
     failed_commands["gem"] = "ruby"
     failed_commands["go"] = "go"
+    failed_commands["NETTLE"] = "nettle-dev"
+    failed_commands["LIBTASN1"] = "libtasn1-dev"
+    failed_commands["gnutls"] = "gnutls-dev"
+    failed_commands["acl_get_fd"] = "acl-dev"
+    failed_commands["library ldap"] = "openldap-dev"
 
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
@@ -768,6 +773,8 @@ def parse_build_results(filename, returncode):
         failed_pattern(line, r"checking for library containing (.*)... no")
         failed_pattern(line, r"checking for (.*?)\.\.\. not_found")
         failed_pattern(line, r"checking for (.*?)\.\.\. not found")
+        failed_pattern(line, r"Checking for (.*?)\s>=.*\s*: not found")
+        failed_pattern(line, r"Checking for (.*?)\s*: not found")
         failed_pattern(line, r"configure: error: pkg-config missing (.*)")
         failed_pattern(line, r"configure: error: Cannot find (.*)\. Make sure")
         failed_pattern(line, r"checking for (.*?)\.\.\. no")
