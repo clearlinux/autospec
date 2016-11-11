@@ -73,6 +73,7 @@ def commit_to_git(path):
     call("git add skip_test_suite", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add testresults", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add profile_payload", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add optimize_size", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     if build.success == 0:
         return
