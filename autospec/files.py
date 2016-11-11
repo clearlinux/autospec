@@ -33,6 +33,7 @@ packages = OrderedDict()
 main_requires = OrderedDict()
 
 # global file list to weed out dupes
+autostart = []
 files = []
 files_blacklist = []
 excludes = []
@@ -96,6 +97,7 @@ def file_is_locale(filename):
 
 
 def push_file(filename):
+    global autostart
     global files
     global files_blacklist
     global extras
@@ -111,6 +113,11 @@ def push_file(filename):
 
     if file_is_locale(filename):
         return
+
+    # autostart
+    if filename in autostart:
+        push_package_file(filename, "autostart")
+        excludes.append(filename)
 
     # extras
     if filename in extras:

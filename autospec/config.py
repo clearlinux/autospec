@@ -214,6 +214,11 @@ def parse_config_files(path, bump):
             print("extras for: %s." % extra)
     files.extras += content
 
+    content = read_conf_file("autostart")
+    for autostart in content:
+            print("extras for: %s." % autostart)
+    files.autostart += content
+
     content = read_conf_file("setuid")
     for suid in content:
             print("setuid for: %s." % suid)
