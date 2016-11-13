@@ -325,6 +325,7 @@ def setup_patterns():
     failed_commands["fontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["Fontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["FcInit in -lfontconfig"] = "pkgconfig(fontconfig)"
+    failed_commands["FcPatternCreate in -lfontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["more"] = "util-linux"
     failed_commands["OpenGL library"] = "mesa-dev"
     failed_commands["OpenGL"] = "mesa-dev"
@@ -536,7 +537,8 @@ def setup_patterns():
     failed_commands["gnutls"] = "gnutls-dev"
     failed_commands["acl_get_fd"] = "acl-dev"
     failed_commands["library ldap"] = "openldap-dev"
-
+    failed_commands["X11/Xft/Xft.h"] = "pkgconfig(xft)"
+    failed_commands["libpng/png.h"] = "pkgconfig(libpng)"
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     global must_restart
