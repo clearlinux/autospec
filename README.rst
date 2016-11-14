@@ -218,14 +218,6 @@ Controlling the build process
 Controlling files and subpackages
 ---------------------------------
 
-**autostart**
-
-    Each line in the file should be a full path within the resulting package,
-    that you wish to be placed into an automatic ``-autostart`` subpackage. The
-    paths listed are to symlinks for systemd units that will be auto started (each
-    path must have been either created by the package's build process or created
-    with a make_install_append line).
-
 **excludes**
 
     This file is used to generate ``%exclude`` lines in the ``.spec``. This
@@ -243,6 +235,11 @@ Controlling files and subpackages
     that you wish to be placed into an automatic ``-extras`` subpackage. This
     allows one to keep the main package slim and split out optional functionality
     or files.
+
+**no_autostart**
+
+    If this file exists, the autostart subpackage (which contains all files matching
+    /usr/lib/systemd/system/*.target.wants/) will not be required by the base package.
 
 **setuid**
 

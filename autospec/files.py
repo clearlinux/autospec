@@ -33,7 +33,6 @@ packages = OrderedDict()
 main_requires = OrderedDict()
 
 # global file list to weed out dupes
-autostart = []
 files = []
 files_blacklist = []
 excludes = []
@@ -97,7 +96,6 @@ def file_is_locale(filename):
 
 
 def push_file(filename):
-    global autostart
     global files
     global files_blacklist
     global extras
@@ -115,7 +113,8 @@ def push_file(filename):
         return
 
     # autostart
-    if filename in autostart:
+    part = re.compile("^/usr/lib/systemd/system/.+\.target\.wants/.+")
+    if part.search(filename):
         push_package_file(filename, "autostart")
         excludes.append(filename)
 
@@ -402,6 +401,8 @@ def write_main_subpackage_requires(file):
     global main_requires
 
     for pkg in packages:
+        if pkg == "autostart" and config.no_autostart:
+            continue
         if pkg == "ignore":
             continue
         if pkg == "main":

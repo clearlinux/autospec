@@ -40,6 +40,7 @@ from util import call
 extra_configure = ""
 keepstatic = 0
 asneeded = 1
+no_autostart = False
 optimize_size = False
 optimize_speed = False
 fast_math = False
@@ -109,6 +110,7 @@ def parse_config_files(path, bump):
     global extra_configure
     global keepstatic
     global asneeded
+    global no_autostart
     global optimize_size
     global optimize_speed
     global fast_math
@@ -214,11 +216,6 @@ def parse_config_files(path, bump):
             print("extras for: %s." % extra)
     files.extras += content
 
-    content = read_conf_file("autostart")
-    for autostart in content:
-            print("extras for: %s." % autostart)
-    files.autostart += content
-
     content = read_conf_file("setuid")
     for suid in content:
             print("setuid for: %s." % suid)
@@ -250,6 +247,8 @@ def parse_config_files(path, bump):
         print("Disabling LD_AS_NEEDED\n")
         asneeded = 0
 
+    if file_exists("no_autostart"):
+        no_autostart = True
     if file_exists("optimize_size"):
         optimize_size = True
     if file_exists("funroll-loops"):
