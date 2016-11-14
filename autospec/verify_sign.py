@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 
 import os
+import re
 import argparse
 import shutil, tempfile
 import pycurl
 import base64
+import hashlib
+import json
 from io import BytesIO
 from contextlib import contextmanager
 from socket import timeout
@@ -124,40 +127,117 @@ def verify_cli(pubkey, tarball, signature, gpghome=None):
     raise Exception('Verification did not take place using cli')
 
 
-## GPG Verification
 class Verifier(object):
-    def __init__(self, _type):
-        self.type = _type
 
-    def verify(self, *args):
-        return
+    def __init__(self, **kwargs):
+        self.url = kwargs.get('url', None)
+        self.package_path = kwargs.get('package_path', None)
+        print("-----------------------------------------------------------------------")
 
+    @staticmethod
+    def download_key(url, destination):
+        return attempt_to_download(url, destination)
 
+    def print_result(self, result, err_msg=''):
+        package_name = os.path.basename(self.url)
+        if result:
+           print_success("{} verification was successful".format(package_name))
+        else:
+           print_error("{} verification failed {}".format(package_name, err_msg))
+
+    def __del__(self):
+        print("-----------------------------------------------------------------------")
+
+## GPG Verification
 class GPGVerifier(Verifier):
 
-    def __init__(self):
-        Verifier.__init__(self, 'GPG')
+    def __init__(self, **kwargs):
+        Verifier.__init__(self, **kwargs)
+        self.key_url = kwargs.get('key_url', None)
+        if self.key_url is None:
+            self.key_url = self.url + '.asc'
+        self.package_sign_path = self.package_path + '.asc'
 
-    def verify(self, *args):
-       sign_status = {
+
+    def verify(self, tarfile_path):
+        print("Performing GPG signature validation for package\n")
+        code = self.download_key(self.key_url, self.package_sign_path)
+        if code == 200:
+            keyid = get_keyid(self.package_sign_path)
+            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey".format(keyid)])
+            if not os.path.exists(pub_key):
+                return print_error("Public key id {} was not found in keyring".format(keyid))
+        else:
+            return print_error("Unable to download file {}, returned code {}".format(self.key_url, code))
+        sign_status = {
             True: verify_cli,
             False: verify_gpgme,
-       }[GPG_CLI](*args)
-       if sign_status is None:
-           print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(args[1]))
-       else:
-           print("Verification {} \033[91mFAILED\033[0m with {}".format(args[1], sign_status.strerror))
+        }[GPG_CLI](*[pub_key, self.package_path, self.package_sign_path])
+        if sign_status is None:
+            self.print_result(tarfile_path)
+        else:
+            print_error(tarfile_path, sign_status.strerror)
 
 
-       
-def get_verifier(filename):    
-    """Is this file type supported? this initial implementation 
-        supports only gpg verification"""
-    _, ext = os.path.splitext(filename)
-    if ext == '.gz':
-        return GPGVerifier
-    else:
-        return None
+## GEM Verifier
+class GEMHashVerifier(Verifier):
+
+    def __init__(self, **kwargs):
+        Verifier.__init__(self, **kwargs)
+
+    @staticmethod
+    def get_rubygems_info(package_name):
+        url = "https://rubygems.org/api/v1/versions/{}.json".format(package_name)
+        data = BytesIO()
+        curl = pycurl.Curl()
+        curl.setopt(curl.URL, url)
+        curl.setopt(curl.WRITEFUNCTION, data.write)
+        curl.perform()
+        json_data = json.loads(data.getvalue().decode('utf-8'))
+        return json_data
+
+    @staticmethod
+    def get_gemnumber_sha(gems, number):
+        mygem = [gem for gem in gems if gem.get('number', -100) == number]
+        if len(mygem) == 1:
+            return mygem[0].get('sha', None)
+        else:
+            return None
+
+    def calc_sha(self, gemfile_path):
+        BLOCK_SIZE = 4096
+        with open(gemfile_path, 'rb') as gem:
+            sha256 = hashlib.sha256()
+            for block in iter(lambda: gem.read(BLOCK_SIZE), b''):
+                sha256.update(block)
+            return sha256.hexdigest()
+
+    def verify(self, gemfile_path):
+        print("Performing sha validation for package\n")
+        gemname = os.path.basename(gemfile_path).replace('.gem', '')
+        name, _ = re.split('-\d+\.', gemname)
+        number = gemname.replace(name+'-', '')
+        geminfo = self.get_rubygems_info(name)
+        gemsha = self.get_gemnumber_sha(geminfo, number)
+
+        if geminfo is None:
+            print_error("unable to parse info for gem {}".format(gemname))
+        else:
+            calcsha = self.calc_sha(gemfile_path)
+            self.print_result(gemsha == calcsha)
+
+VERIFIERS = {
+    '.gz':  GPGVerifier,
+    '.gem': GEMHashVerifier,
+}
+
+
+def get_file_ext(filename):
+    return os.path.splitext(filename)[1]
+
+def get_verifier(filename):
+    ext = get_file_ext(filename)
+    return VERIFIERS.get(ext, None) 
 
 
 def save_file_conditionally(data, filename):
@@ -200,7 +280,7 @@ def get_keyid(sig_filename):
 
 
 
-def attempt_download_sign(url, sign_filename=None):
+def attempt_to_download(url, sign_filename=None):
     """Download file helper"""
     with open(sign_filename, 'wb') as f:
         curl = pycurl.Curl()
@@ -215,37 +295,25 @@ def attempt_download_sign(url, sign_filename=None):
         return code
     return None
 
+def filename_from_url(url):
+    return os.path.basename(url)
+
+
+def print_success(msg):
+    print("\033[92mSUCCESS:\033[0m {}".format(msg))
+
+def print_error(msg):
+    print("\033[91mERROR  :\033[0m {}".format(msg))
 
 def from_url(url, download_path):
-    tarfile = os.path.basename(url)
-    tarfile_path = os.path.join(download_path, tarfile)
-    print("""Verifying signature for {}
---------------------------------------------------------------------------------""".format(tarfile))
-    verifier = get_verifier(tarfile)
+    package_name = filename_from_url(url)
+    package_path = os.path.join(download_path, package_name)
+    verifier = get_verifier(package_name)
     if verifier is None:
-        print("File {} is not verifiable (yet)".format(tarfile))
+        print_error("File {} is not verifiable (yet)".format(package_name))
     else:
-        tarfile_sign = tarfile + '.asc'
-        tarfile_sign_url = url + '.asc' # Right now assuming gpg only
-        tarfile_sign_file = os.path.join(download_path, tarfile_sign)
-        code = attempt_download_sign(tarfile_sign_url, tarfile_sign_file)
-        if code is None:
-            return
-        elif code == 200:
-            keyid = get_keyid(tarfile_sign_file)
-            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey".format(keyid)])
-            if os.path.exists(pub_key) == False:
-                print("Verification \033[91mFAILED\033[0m\nPublic key id {} was not found in keyring".format(pub_key))
-            else:
-                v = verifier()
-                v.verify(pub_key, tarfile_path, tarfile_sign_file)
-        #        if sign_status is None:
-        #            print("{} signature verification was \033[92mSUCCESSFUL\033[0m".format(tarfile))
-        #        else:
-        #            print("Verification {} \033[91mFAILED\033[0m with {}".format(tarfile, sign_status.strerror))
-        else:
-            print("Verification \033[91mFAILED\033[0m attempt to download signature returned {}".format(code))
-    print("--------------------------------------------------------------------------------")
+        v = verifier(package_path=package_path, url=url)
+        v.verify(package_path)
 
 def parse_args():
     parser = argparse.ArgumentParser(usage=USAGE, description=DESCRIPTION)
