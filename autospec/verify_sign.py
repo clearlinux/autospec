@@ -3,7 +3,8 @@
 import os
 import re
 import argparse
-import shutil, tempfile
+import shutil
+import tempfile
 import pycurl
 import base64
 import hashlib
@@ -14,25 +15,31 @@ from socket import timeout
 from urllib.error import HTTPError, URLError
 from html.parser import HTMLParser
 
-
-GPG_CLI = False 
-DESCRIPTION = "Performs package signature verification for packages signed with gpg."
-
+GPG_CLI = False
+DESCRIPTION = "Performs package signature verification for packages signed with\
+gpg."
 USAGE = """
 Verify package signature when public key present in default keyring:
 {fn} --sig package.tar.gz.asc --tar package.tar.gz
 
-Verify package signature when public key is provided as cleartext 
-{fn} --sig package.tar.gz.asc --tar package.tar.gz --pubkey package_author.pubkey
+Verify package signature when public key is provided as cleartext
+{fn} --sig package.tar.gz.asc --tar package.tar.gz --pubkey package_author\
+.pubkey
 
-Verify package signature when public key is in a keyring different from default keyring
+Verify package signature when public key is in a keyring different from \
+default keyring
 {fn} --sig package.tar.gs.asc --tar package.tar.gz --gnupghome /opt/pki/gpghome
 
-Verify package signature when public key is provided as a file and keyring is different from default
-{fn} --sig package.tar.gs.asc --tar package.tar.gs --pubkey package_author.pubkey --gnupghome /opt/pki/gpghome
+Verify package signature when public key is provided as a file and keyring is \
+different from default
+{fn} --sig package.tar.gs.asc --tar package.tar.gs --pubkey package_author.\
+pubkey --gnupghome /opt/pki/gpghome
 
 """.format(fn=__file__)
 
+SEPT = """\
+-------------------------------------------------------------------------------\
+"""
 
 # Use gpgme if available
 try:
@@ -41,11 +48,13 @@ except Exception as e:
     from subprocess import Popen, PIPE
     GPG_CLI = True
 
+
 # CLI interface to gpg command
 class GPGCliStatus(object):
-    """Mock gpgmeerror""" 
+    """Mock gpgmeerror"""
     def __init__(self, strerror):
         self.strerror = strerror
+
 
 class GPGCli(object):
     """cli wrapper for gpg"""
@@ -58,14 +67,14 @@ class GPGCli(object):
 
     def __init__(self, pubkey=None, home=None):
         if pubkey is not None:
-            _gpghome = home if home is not None else tempfile.mkdtemp(prefix='tmp.gpghome')
+            _gpghome = home
+            if _gpghome is None:
+                _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
             os.environ['GNUPGHOME'] = _gpghome
             args = ['gpg', '--import', pubkey]
             output, err, code = self.exec_cmd(args)
             if code != 0:
-               raise Exception(err.decode('utf-8'))
-            #self.args = ['gpg', '--keyring', os.path.join(_gpghome, 'pubring.gpg'), '--verify']
-        #else:
+                raise Exception(err.decode('utf-8'))
         self.args = ['gpg', '--verify']
 
     def verify(self, _, tarfile, signature):
@@ -75,18 +84,22 @@ class GPGCli(object):
             return None
         return GPGCliStatus(err.decode('utf-8'))
 
+
 @contextmanager
 def cli_gpg_ctx(pubkey=None, gpghome=None):
     if pubkey is None:
         yield GPGCli()
     else:
         try:
-            _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome') if gpghome is None else gpghome
+            _gpghome = gpghome
+            if _gpghome is None:
+                _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
             yield GPGCli(pubkey, _gpghome)
         finally:
             if gpghome is None:
                 del os.environ['GNUPGHOME']
                 shutil.rmtree(_gpghome, ignore_errors=True)
+
 
 @contextmanager
 def gpg_ctx(pubkey=None, gpghome=None):
@@ -109,6 +122,7 @@ def gpg_ctx(pubkey=None, gpghome=None):
                 del os.environ['GNUPGHOME']
                 shutil.rmtree(_gpghome, ignore_errors=True)
 
+
 # Use gpgme python wrapper
 def verify_gpgme(pubkey, tarball, signature, gpghome=None):
     with open(signature, 'rb') as f:
@@ -119,6 +133,7 @@ def verify_gpgme(pubkey, tarball, signature, gpghome=None):
         sigs = ctx.verify(signature, tarball, None)
         return sigs[0].status
     raise Exception('Verification did not take place')
+
 
 # Use gpg command line
 def verify_cli(pubkey, tarball, signature, gpghome=None):
@@ -132,7 +147,7 @@ class Verifier(object):
     def __init__(self, **kwargs):
         self.url = kwargs.get('url', None)
         self.package_path = kwargs.get('package_path', None)
-        print("-----------------------------------------------------------------------")
+        print(SEPT)
 
     @staticmethod
     def download_key(url, destination):
@@ -141,14 +156,17 @@ class Verifier(object):
     def print_result(self, result, err_msg=''):
         package_name = os.path.basename(self.url)
         if result:
-           print_success("{} verification was successful".format(package_name))
+            msg = "{} verification was successful".format(package_name)
+            print_success(msg)
         else:
-           print_error("{} verification failed {}".format(package_name, err_msg))
+            msg = "{} verification failed {}".format(package_name, err_msg)
+            print_error(msg)
 
     def __del__(self):
-        print("-----------------------------------------------------------------------")
+        print(SEPT)
 
-## GPG Verification
+
+# GPG Verification
 class GPGVerifier(Verifier):
 
     def __init__(self, **kwargs):
@@ -158,17 +176,19 @@ class GPGVerifier(Verifier):
             self.key_url = self.url + '.asc'
         self.package_sign_path = self.package_path + '.asc'
 
-
     def verify(self, tarfile_path):
         print("Performing GPG signature validation for package\n")
         code = self.download_key(self.key_url, self.package_sign_path)
         if code == 200:
             keyid = get_keyid(self.package_sign_path)
-            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey".format(keyid)])
+            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)),
+                               "keyring", "{}.pkey".format(keyid)])
             if not os.path.exists(pub_key):
-                return print_error("Public key id {} was not found in keyring".format(keyid))
+                msg = "Public key id {} was not found in keyring".format(keyid)
+                return print_error(msg)
         else:
-            return print_error("Unable to download file {}, returned code {}".format(self.key_url, code))
+            msg = "Unable to download file {} http code {}"
+            return print_error(msg.format(self.key_url, code))
         sign_status = {
             True: verify_cli,
             False: verify_gpgme,
@@ -179,7 +199,10 @@ class GPGVerifier(Verifier):
             print_error(tarfile_path, sign_status.strerror)
 
 
-## GEM Verifier
+RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
+
+
+# GEM Verifier
 class GEMHashVerifier(Verifier):
 
     def __init__(self, **kwargs):
@@ -187,7 +210,7 @@ class GEMHashVerifier(Verifier):
 
     @staticmethod
     def get_rubygems_info(package_name):
-        url = "https://rubygems.org/api/v1/versions/{}.json".format(package_name)
+        url = RUBYORG_API.format(package_name)
         data = BytesIO()
         curl = pycurl.Curl()
         curl.setopt(curl.URL, url)
@@ -235,9 +258,10 @@ VERIFIERS = {
 def get_file_ext(filename):
     return os.path.splitext(filename)[1]
 
+
 def get_verifier(filename):
     ext = get_file_ext(filename)
-    return VERIFIERS.get(ext, None) 
+    return VERIFIERS.get(ext, None)
 
 
 def save_file_conditionally(data, filename):
@@ -256,12 +280,6 @@ def is_b64(line):
     return True
 
 
-def parse_sign(filename):
-    with open(filename, 'r') as f:
-        lines = f.read().split('\n')
-        sign = ''.join([l for l in lines if is_b64(l.strip())])
-        return sign
-
 def parse_keyid(sig_filename):
     args = ["gpg", "--list-packet", sig_filename]
     out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
@@ -279,7 +297,6 @@ def get_keyid(sig_filename):
     return keyid.upper()
 
 
-
 def attempt_to_download(url, sign_filename=None):
     """Download file helper"""
     with open(sign_filename, 'wb') as f:
@@ -295,6 +312,7 @@ def attempt_to_download(url, sign_filename=None):
         return code
     return None
 
+
 def filename_from_url(url):
     return os.path.basename(url)
 
@@ -302,8 +320,10 @@ def filename_from_url(url):
 def print_success(msg):
     print("\033[92mSUCCESS:\033[0m {}".format(msg))
 
+
 def print_error(msg):
     print("\033[91mERROR  :\033[0m {}".format(msg))
+
 
 def from_url(url, download_path):
     package_name = filename_from_url(url)
@@ -315,17 +335,22 @@ def from_url(url, download_path):
         v = verifier(package_path=package_path, url=url)
         v.verify(package_path)
 
+
 def parse_args():
     parser = argparse.ArgumentParser(usage=USAGE, description=DESCRIPTION)
-    parser.add_argument('--tar', help='tar file to check signature', required=True)
-    parser.add_argument('--sig', help='Signature file', required=True)
-    parser.add_argument('--pubkey', help='Public key to use for signature verification', required=False, default=None)
-    parser.add_argument('--gnupghome', help='GNUPGHOME', required=False, default=None)
+    parser.add_argument('--tar', required=True,
+                        help='tar file to check signature')
+    parser.add_argument('--sig', required=True,
+                        help='Signature file')
+    parser.add_argument('--pubkey', required=False, default=None,
+                        help='Public key to use for signature verification')
+    parser.add_argument('--gnupghome', required=False, default=None,
+                        help='GNUPGHOME')
     return parser.parse_args()
 
 
 def main(args):
-    if is_verifiable(args.tar) == False:
+    if is_verifiable(args.tar) is False:
         print("File {} type is not verifiable (yet)".format(args.tar))
     sign_status = verify(args.pubkey, args.tar, args.sig, args.gnupghome)
     if sign_status is None:
@@ -338,4 +363,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(parse_args())
-
