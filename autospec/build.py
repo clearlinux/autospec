@@ -541,6 +541,7 @@ def setup_patterns():
     failed_commands["X11/Xft/Xft.h"] = "pkgconfig(xft)"
     failed_commands["libpng/png.h"] = "pkgconfig(libpng)"
 
+
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     global must_restart
     pat = re.compile(pattern)

@@ -255,7 +255,7 @@ class GEMShaVerifier(Verifier):
         print("Performing SHA256 checksum for package\n")
         gemname = os.path.basename(self.package_path).replace('.gem', '')
         name, _ = re.split('-\d+\.', self.package_path)
-        number = gemname.replace(name+'-', '')
+        number = gemname.replace(name + '-', '')
         geminfo = self.get_rubygems_info(name)
         gemsha = self.get_gemnumber_sha(geminfo, number)
 
@@ -267,7 +267,7 @@ class GEMShaVerifier(Verifier):
             return gemsha == calcsha
 
 VERIFIER_TYPES = {
-    '.gz':  GPGVerifier,
+    '.gz': GPGVerifier,
     '.gem': GEMShaVerifier,
 }
 

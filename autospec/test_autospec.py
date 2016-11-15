@@ -15,6 +15,7 @@ IGNORES = set(['expectations.py',
                'spec-expectations',
                '__pychache__',
                'autospecdir'])
+NOT_PACKAGE = set(['tar', 'test', 'autospec.conf'])
 BASEDIR = os.getcwd()
 TESTDIR = BASEDIR + '/testfiles'
 
@@ -188,10 +189,7 @@ def main():
     results_list = []
 
     pool = multiprocessing.Pool()
-    packages = (ent for ent in os.listdir(TESTDIR)
-                if 'tar' not in ent
-                and 'test-' not in ent
-                and 'autospec.conf' not in ent)
+    packages = set(os.listdir(TESTDIR)).difference(NOT_PACKAGE)
     for entry in packages:
         test_results[entry] = []
         res = pool.apply_async(process_source, (entry, test_results))

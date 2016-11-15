@@ -224,7 +224,7 @@ def main():
 
     print("\n")
 
-    if args.verify_sign == True:
+    if args.verify_sign:
         verify_sign.from_url(args.url, build.download_path)
 
     while 1:
