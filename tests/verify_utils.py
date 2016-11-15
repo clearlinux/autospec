@@ -12,8 +12,18 @@ from verify_sign import (get_verifier,
 
 ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
+NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5.tgz"
+GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 
-# TODO add TestGEMVerifier
+
+class testGEMShaVerifier(unittest.TestCase):
+
+    def test_from_url(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
+            attempt_to_download(GEM_PKT, out_file)
+            result = from_url(GEM_PKT, tmpd)
+            self.assertTrue(result)
 
 
 class TestGPGVerifier(unittest.TestCase):
@@ -41,6 +51,13 @@ class TestGPGVerifier(unittest.TestCase):
     def test_result_on_non_existent_pkg_path(self):
         result = from_disk('NonExistentPKG.tar.gz', 'NonExistentKey.asc')
         self.assertTrue(result is None)
+
+    def test_result_on_nosign_package(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(NO_SIGN_PKT_URL))
+            attempt_to_download(NO_SIGN_PKT_URL, out_file)
+            result = from_url(NO_SIGN_PKT_URL, tmpd)
+            self.assertTrue(result is None)
 
 
 class TestUtils(unittest.TestCase):
