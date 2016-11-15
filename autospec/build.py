@@ -34,7 +34,7 @@ must_restart = 0
 failed_commands = dict()
 base_path = "/tmp/" + getpass.getuser() + "/"
 output_path = base_path + "output"
-download_path = output_path
+download_path = output_path + "/" + tarball.name
 mock_cmd = '/usr/bin/mock'
 
 
