@@ -203,7 +203,7 @@ RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 
 
 # GEM Verifier
-class GEMHashVerifier(Verifier):
+class GEMShaVerifier(Verifier):
 
     def __init__(self, **kwargs):
         Verifier.__init__(self, **kwargs)
@@ -251,7 +251,7 @@ class GEMHashVerifier(Verifier):
 
 VERIFIERS = {
     '.gz':  GPGVerifier,
-    '.gem': GEMHashVerifier,
+    '.gem': GEMShaVerifier,
 }
 
 
