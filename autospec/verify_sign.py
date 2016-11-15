@@ -6,14 +6,11 @@ import argparse
 import shutil
 import tempfile
 import pycurl
-import base64
 import hashlib
 import json
 from io import BytesIO
 from contextlib import contextmanager
-from socket import timeout
-from urllib.error import HTTPError, URLError
-from html.parser import HTMLParser
+from subprocess import Popen, PIPE
 
 GPG_CLI = False
 DESCRIPTION = "Performs package signature verification for packages signed with\
@@ -38,13 +35,7 @@ pubkey --gnupghome /opt/pki/gpghome
 """.format(fn=__file__)
 
 SEPT = "-------------------------------------------------------------------------------"
-
-# Use gpgme if available
-try:
-    import gpgme as _gpg
-except Exception as e:
-    from subprocess import Popen, PIPE
-    GPG_CLI = True
+RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 
 
 # CLI interface to gpg command
@@ -97,40 +88,6 @@ def cli_gpg_ctx(pubkey=None, gpghome=None):
             if gpghome is None:
                 del os.environ['GNUPGHOME']
                 shutil.rmtree(_gpghome, ignore_errors=True)
-
-
-@contextmanager
-def gpg_ctx(pubkey=None, gpghome=None):
-
-    if pubkey is None:
-        yield _gpg.Context()
-    else:
-        _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
-        os.environ['GNUPGHOME'] = _gpghome
-        try:
-            ctx = _gpg.Context()
-            with open(pubkey, 'rb') as f:
-                _pubkey = BytesIO(f.read())
-            result = ctx.import_(_pubkey)
-            key = ctx.get_key(result.imports[0][0])
-            ctx.signers = [key]
-            yield ctx
-        finally:
-            if gpghome is None:
-                del os.environ['GNUPGHOME']
-                shutil.rmtree(_gpghome, ignore_errors=True)
-
-
-# Use gpgme python wrapper
-def verify_gpgme(pubkey, tarball, signature, gpghome=None):
-    with open(signature, 'rb') as f:
-        signature = BytesIO(f.read())
-    with open(tarball, 'rb') as f:
-        tarball = BytesIO(f.read())
-    with gpg_ctx(pubkey, gpghome) as ctx:
-        sigs = ctx.verify(signature, tarball, None)
-        return sigs[0].status
-    raise Exception('Verification did not take place')
 
 
 # Use gpg command line
@@ -204,10 +161,7 @@ class GPGVerifier(Verifier):
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
             return None
-        sign_status = {
-            True: verify_cli,
-            False: verify_gpgme,
-        }[GPG_CLI](*[pub_key, self.package_path, self.package_sign_path])
+        sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
         if sign_status is None:
             self.print_result(self.package_path)
             return True
@@ -215,13 +169,11 @@ class GPGVerifier(Verifier):
             self.print_result(False, err_msg=sign_status.strerror)
 
 
-RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
-
-
 # GEM Verifier
 class GEMShaVerifier(Verifier):
 
     def __init__(self, **kwargs):
+        self.package_path = kwargs.get('package_path', None)
         Verifier.__init__(self, **kwargs)
 
     @staticmethod
@@ -254,7 +206,7 @@ class GEMShaVerifier(Verifier):
     def verify(self):
         print("Performing SHA256 checksum for package\n")
         gemname = os.path.basename(self.package_path).replace('.gem', '')
-        name, _ = re.split('-\d+\.', self.package_path)
+        name, _ = re.split('-\d+\.', gemname)
         number = gemname.replace(name+'-', '')
         geminfo = self.get_rubygems_info(name)
         gemsha = self.get_gemnumber_sha(geminfo, number)
@@ -266,8 +218,10 @@ class GEMShaVerifier(Verifier):
             self.print_result(gemsha == calcsha)
             return gemsha == calcsha
 
+
 VERIFIER_TYPES = {
     '.gz':  GPGVerifier,
+    '.tgz': GPGVerifier,
     '.gem': GEMShaVerifier,
 }
 
