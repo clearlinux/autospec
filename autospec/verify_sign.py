@@ -37,9 +37,7 @@ pubkey --gnupghome /opt/pki/gpghome
 
 """.format(fn=__file__)
 
-SEPT = """\
--------------------------------------------------------------------------------\
-"""
+SEPT = "-------------------------------------------------------------------------------"
 
 # Use gpgme if available
 try:
@@ -146,15 +144,17 @@ class Verifier(object):
 
     def __init__(self, **kwargs):
         self.url = kwargs.get('url', None)
-        self.package_path = kwargs.get('package_path', None)
+        self.package_sign_path = kwargs.get('package_sign_path', None)
         print(SEPT)
 
     @staticmethod
-    def download_key(url, destination):
+    def download_file(url, destination):
         return attempt_to_download(url, destination)
 
     def print_result(self, result, err_msg=''):
-        package_name = os.path.basename(self.url)
+        package_name = ''
+        if self.url is not None:
+            package_name = os.path.basename(self.url)
         if result:
             msg = "{} verification was successful".format(package_name)
             print_success(msg)
@@ -172,31 +172,47 @@ class GPGVerifier(Verifier):
     def __init__(self, **kwargs):
         Verifier.__init__(self, **kwargs)
         self.key_url = kwargs.get('key_url', None)
-        if self.key_url is None:
+        self.package_path = kwargs.get('package_path', None)
+        if self.key_url is None and self.url is not None:
             self.key_url = self.url + '.asc'
-        self.package_sign_path = self.package_path + '.asc'
+        if self.package_sign_path is None:
+            self.package_sign_path = self.package_path + '.asc'
 
-    def verify(self, tarfile_path):
-        print("Performing GPG signature validation for package\n")
-        code = self.download_key(self.key_url, self.package_sign_path)
+    def get_pubkey_path(self):
+        keyid = get_keyid(self.package_sign_path)
+        return '/'.join([os.path.dirname(os.path.abspath(__file__)),
+                        "keyring", "{}.pkey".format(keyid)])
+
+    def get_sign(self):
+        code = self.download_file(self.key_url, self.package_sign_path)
         if code == 200:
-            keyid = get_keyid(self.package_sign_path)
-            pub_key = '/'.join([os.path.dirname(os.path.abspath(__file__)),
-                               "keyring", "{}.pkey".format(keyid)])
-            if not os.path.exists(pub_key):
-                msg = "Public key id {} was not found in keyring".format(keyid)
-                return print_error(msg)
+            return True
         else:
             msg = "Unable to download file {} http code {}"
-            return print_error(msg.format(self.key_url, code))
+            print_error(msg.format(self.key_url, code))
+
+    def verify(self):
+        print("Performing GPG signature verification for package\n")
+        if os.path.exists(self.package_path) is False:
+            self.print_result(False, err_msg='{} not found'.format(self.package_path))
+            return None
+        if os.path.exists(self.package_sign_path) is False and self.get_sign() is not True:
+            self.print_result(False, err_msg='{} not found'.format(self.package_sign_path))
+            return None
+        pub_key = self.get_pubkey_path()
+        if os.path.exists(pub_key) is False:
+            key_id = get_keyid(self.package_sign_path)
+            self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
+            return None
         sign_status = {
             True: verify_cli,
             False: verify_gpgme,
         }[GPG_CLI](*[pub_key, self.package_path, self.package_sign_path])
         if sign_status is None:
-            self.print_result(tarfile_path)
+            self.print_result(self.package_path)
+            return True
         else:
-            print_error(tarfile_path, sign_status.strerror)
+            self.print_result(False, err_msg=sign_status.strerror)
 
 
 RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
@@ -235,10 +251,10 @@ class GEMShaVerifier(Verifier):
                 sha256.update(block)
             return sha256.hexdigest()
 
-    def verify(self, gemfile_path):
-        print("Performing sha validation for package\n")
-        gemname = os.path.basename(gemfile_path).replace('.gem', '')
-        name, _ = re.split('-\d+\.', gemname)
+    def verify(self):
+        print("Performing SHA256 checksum for package\n")
+        gemname = os.path.basename(self.package_path).replace('.gem', '')
+        name, _ = re.split('-\d+\.', self.package_path)
         number = gemname.replace(name+'-', '')
         geminfo = self.get_rubygems_info(name)
         gemsha = self.get_gemnumber_sha(geminfo, number)
@@ -246,10 +262,11 @@ class GEMShaVerifier(Verifier):
         if geminfo is None:
             print_error("unable to parse info for gem {}".format(gemname))
         else:
-            calcsha = self.calc_sha(gemfile_path)
+            calcsha = self.calc_sha(self.package_path)
             self.print_result(gemsha == calcsha)
+            return gemsha == calcsha
 
-VERIFIERS = {
+VERIFIER_TYPES = {
     '.gz':  GPGVerifier,
     '.gem': GEMShaVerifier,
 }
@@ -261,23 +278,7 @@ def get_file_ext(filename):
 
 def get_verifier(filename):
     ext = get_file_ext(filename)
-    return VERIFIERS.get(ext, None)
-
-
-def save_file_conditionally(data, filename):
-    if filename is not None:
-        with open(filename, 'w') as f:
-            f.write(data)
-    return data
-
-
-def is_b64(line):
-    if line == '' or "----" in line or \
-       "Version" in line or "Comment" in line:
-        return False
-    elif line[-5] == '=':
-        return False
-    return True
+    return VERIFIER_TYPES.get(ext, None)
 
 
 def parse_keyid(sig_filename):
@@ -287,9 +288,9 @@ def parse_keyid(sig_filename):
         print(err.decode('utf-8'))
         return None
     out = out.decode('utf-8')
-    ai = out.index('keyid') + 6
-    bi = ai + 16
-    return out[ai:bi]
+    ai = out.index('keyid') + len('keyid ')
+    bi = ai + out[ai:].index('\n')
+    return out[ai:bi].strip()
 
 
 def get_keyid(sig_filename):
@@ -304,7 +305,11 @@ def attempt_to_download(url, sign_filename=None):
         curl.setopt(curl.URL, url)
         curl.setopt(curl.WRITEDATA, f)
         curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.perform()
+        try:
+            curl.perform()
+        except pycurl.error as e:
+            print(e.args)
+            return None
         code = curl.getinfo(pycurl.HTTP_CODE)
         curl.close()
         if code != 200:
@@ -333,7 +338,16 @@ def from_url(url, download_path):
         print_error("File {} is not verifiable (yet)".format(package_name))
     else:
         v = verifier(package_path=package_path, url=url)
-        v.verify(package_path)
+        return v.verify()
+
+
+def from_disk(package_path, package_check):
+    verifier = get_verifier(package_path)
+    if verifier is None:
+        print("File {} is not verifiable".format(package_path))
+    else:
+        v = verifier(package_path=package_path, package_check=package_check)
+        return v.verify()
 
 
 def parse_args():
@@ -350,15 +364,7 @@ def parse_args():
 
 
 def main(args):
-    if is_verifiable(args.tar) is False:
-        print("File {} type is not verifiable (yet)".format(args.tar))
-    sign_status = verify(args.pubkey, args.tar, args.sig, args.gnupghome)
-    if sign_status is None:
-        print('OK')
-        exit(0)
-    else:
-        print(sign_status.strerror)
-        exit(1)
+    from_disk(args.tar, args.sig)
 
 
 if __name__ == '__main__':
