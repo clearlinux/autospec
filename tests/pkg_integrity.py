@@ -1,13 +1,13 @@
 import os
 import unittest
 import tempfile
-from verify_sign import (get_verifier,
-                         parse_keyid,
-                         from_url,
-                         from_disk,
-                         attempt_to_download,
-                         GPGVerifier,
-                         GEMShaVerifier,)
+from autospec.pkg_integrity import (get_verifier,
+                                    parse_keyid,
+                                    from_url,
+                                    from_disk,
+                                    attempt_to_download,
+                                    GPGVerifier,
+                                    GEMShaVerifier,)
 
 
 ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
@@ -16,7 +16,7 @@ NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 
 
-class testGEMShaVerifier(unittest.TestCase):
+class TestGEMShaVerifier(unittest.TestCase):
 
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:

@@ -36,7 +36,7 @@ import specdescription
 import tarball
 import test
 import commitmessage
-import verify_sign
+import pkg_integrity
 
 from tarball import name
 from util import _file_write, print_fatal
@@ -172,7 +172,7 @@ def main():
     parser.add_argument("-t", "--target", dest="target", action="store",
                         default=None,
                         help="Target location to create or reuse")
-    parser.add_argument("-sig", "--verify_sign", action="store_true",
+    parser.add_argument("-i", "--integrity", action="store_true",
                         default=False,
                         help="Attempt to download and verify package signature")
     args = parser.parse_args()
@@ -224,8 +224,8 @@ def main():
 
     print("\n")
 
-    if args.verify_sign == True:
-        verify_sign.from_url(args.url, build.download_path)
+    if args.integrity == True:
+        pkg_integrity.from_url(args.url, build.download_path)
 
     while 1:
         build.package()
