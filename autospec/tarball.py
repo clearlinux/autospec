@@ -349,7 +349,8 @@ def write_nvr(file):
     global version
     global release
     global url
-    url = re.sub(config.urlban, "localhost", url)
+    if config.urlban:
+        url = re.sub(config.urlban, "localhost", url)
     file.write("Name     : " + name + "\n")
     file.write("Version  : " + version + "\n")
     file.write("Release  : " + str(release) + "\n")

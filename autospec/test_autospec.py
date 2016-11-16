@@ -44,7 +44,6 @@ def build_and_run(srctar, expectations, entry, test_results):
         output = subprocess.check_output(
             ['python3', '{}/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
-             '--config', '{}/autospec.conf'.format(TESTDIR),
              'file://{}/{}'.format(TESTDIR, srctar)])
     except Exception:
         pass
