@@ -169,6 +169,10 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/share/cmake-3.1/", "data", "/usr/share/cmake-3.1/*"):
         return
+    if file_pat_match(filename, r"^/usr/share/cmake-3.7/", "dev", "/usr/share/cmake-3.7/*"):
+        return
+    if file_pat_match(filename, r"^/usr/share/cmake-3.6/", "dev", "/usr/share/cmake-3.6/*"):
+        return
     if file_pat_match(filename, r"^/usr/share/girepository-1\.0/.*\.typelib\$", "dev", "/usr/share/girepository-1.0/*.typelib"):
         return
 

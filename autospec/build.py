@@ -326,6 +326,7 @@ def setup_patterns():
     failed_commands["Fontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["FcInit in -lfontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["FcPatternCreate in -lfontconfig"] = "pkgconfig(fontconfig)"
+    failed_commands["X11/fonts/libxfont2.h"] = "libXfont2-dev"
     failed_commands["more"] = "util-linux"
     failed_commands["OpenGL library"] = "mesa-dev"
     failed_commands["OpenGL"] = "mesa-dev"
