@@ -1,0 +1,17 @@
+[autospec]
+broken_c++ = false
+use_lto = false
+use_avx2 = false
+keepstatic = false
+asneeded = false
+allow_test_failures = false
+no_autostart = false
+optimize_size = false
+funroll-loops = false
+fast-math = false
+insecure_build = false
+conservative_flags = false
+broken_parallel_build = false
+pgo = false
+use_clang = false
+

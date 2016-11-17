@@ -15,7 +15,7 @@ IGNORES = set(['expectations.py',
                'spec-expectations',
                '__pychache__',
                'autospecdir'])
-NOT_PACKAGE = set(['tar', 'test', 'autospec.conf'])
+NOT_PACKAGE = ['.tar', 'test', 'autospec.conf', 'results']
 BASEDIR = os.getcwd()
 TESTDIR = BASEDIR + '/testfiles'
 
@@ -53,6 +53,8 @@ def build_and_run(srctar, expectations, entry, test_results):
         with open('{}.spec'.format(entry), 'r') as spec_file:
             spc = spec_file.read()
             check_spec(spc, expectations, entry, test_results)
+        with open('options.conf', 'r') as conf_file:
+            check_conf(conf_file.read(), expectations, entry, test_results)
 
     os.chdir(BASEDIR)
 
@@ -82,6 +84,14 @@ def check_output(output, expectations, entry, test_results):
         test_results[entry].append('FAIL: Build status - failed, '
                                    'skipping remaining tests')
         print('{} build failed'.format(entry))
+        try:
+            shutil.copy2('{}/test-{}/results/build.log'.format(TESTDIR, entry),
+                         '{}/results/{}.log'.format(TESTDIR, entry))
+            print('check {}/results/{}.log for more information'
+                  .format(TESTDIR, entry))
+        except Exception:
+            print('no build log found')
+
         return False
 
     for item in expectations.output_strings:
@@ -129,6 +139,24 @@ def check_spec(spec_contents, expectations, entry, test_results):
                                        'successfully detected'.format(item))
 
 
+def check_conf(conf_contents, expectations, entry, test_results):
+    """test the specfile against the expected specfile in spec-expectations"""
+    diff = list(unified_diff(expectations.conffile,
+                             conf_contents.split('\n'),
+                             fromfile='expected_conffile',
+                             tofile='generated_conffile'))
+    if len(diff):
+        test_results[entry].append('FAIL: generated conf file different from '
+                                   'expected\n')
+        for line in diff:
+            test_results[entry][-1] += '\n{}'.format(line)
+
+        test_results[entry][-1] += '\n'
+    else:
+        test_results[entry].append('PASS: generated configuration file '
+                                   'matches expected')
+
+
 def clean_up(entry):
     """clean up generated files and directories"""
     # try to remove each directory/file in turn
@@ -172,14 +200,14 @@ def print_results(entry, test_results):
 
 def process_source(entry, test_results):
     """run autospec against entry and store the test results in test_results"""
-    shutil.rmtree('{}/test-{}'.format(TESTDIR, entry), ignore_errors=True)
+    clean_up(entry)
     expectations = importlib.import_module('testfiles.{}.expectations'
                                            .format(entry))
     tar_source(entry)
     print('Building {}'.format(entry))
     build_and_run('{}.tar.gz'.format(entry), expectations, entry, test_results)
-    clean_up(entry)
     print_results(entry, test_results)
+    clean_up(entry)
 
 
 def main():
@@ -188,8 +216,10 @@ def main():
     results_list = []
 
     pool = multiprocessing.Pool()
-    packages = set(os.listdir(TESTDIR)).difference(NOT_PACKAGE)
-    for entry in packages:
+    for entry in os.listdir(TESTDIR):
+        if any(x in entry for x in NOT_PACKAGE):
+            continue
+
         test_results[entry] = []
         res = pool.apply_async(process_source, (entry, test_results))
         results_list.append(res)
