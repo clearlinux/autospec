@@ -149,7 +149,7 @@ class GPGVerifier(Verifier):
             print_error(msg.format(self.key_url, code))
 
     def verify(self):
-        print("Performing GPG signature verification for package\n")
+        print("Verifying GPG signature\n")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
             return None
@@ -204,10 +204,10 @@ class GEMShaVerifier(Verifier):
             return sha256.hexdigest()
 
     def verify(self):
-        print("Performing SHA256 checksum for package\n")
         gemname = os.path.basename(self.package_path).replace('.gem', '')
+        print("Verifying SHA256 checksum\n")
         name, _ = re.split('-\d+\.', gemname)
-        number = gemname.replace(name+'-', '')
+        number = gemname.replace(name + '-', '')
         geminfo = self.get_rubygems_info(name)
         gemsha = self.get_gemnumber_sha(geminfo, number)
 
@@ -220,8 +220,9 @@ class GEMShaVerifier(Verifier):
 
 
 VERIFIER_TYPES = {
-    '.gz':  GPGVerifier,
+    '.gz': GPGVerifier,
     '.tgz': GPGVerifier,
+    '.tar': GPGVerifier,
     '.gem': GEMShaVerifier,
 }
 
@@ -284,24 +285,55 @@ def print_error(msg):
     print("\033[91mERROR  :\033[0m {}".format(msg))
 
 
+def print_info(msg):
+    print("\033[93mINFO   :\033[0m {}".format(msg))
+
+
+def apply_verification(verifier, **kwargs):
+    if verifier is None:
+        print_error("Package is not verifiable (yet)")
+    else:
+        v = verifier(**kwargs)
+        return v.verify()
+
+
 def from_url(url, download_path):
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
     verifier = get_verifier(package_name)
-    if verifier is None:
-        print_error("File {} is not verifiable (yet)".format(package_name))
-    else:
-        v = verifier(package_path=package_path, url=url)
-        return v.verify()
+    return apply_verification(verifier, **{
+                              'package_path': package_path,
+                              'url': url, })
 
 
 def from_disk(package_path, package_check):
     verifier = get_verifier(package_path)
-    if verifier is None:
-        print("File {} is not verifiable".format(package_path))
+    return apply_verification(verifier, **{
+                              'package_path': package_path,
+                              'package_check': package_check, })
+
+
+def get_integrity_file(package_path):
+    if os.path.exists(package_path + '.asc'):
+        return package_path + '.asc'
+    elif os.path.exists(package_path + '.sha256'):
+        return package_path + '.sha256'
+
+
+def check(url, download_path):
+    package_name = filename_from_url(url)
+    package_path = os.path.join(download_path, package_name)
+    package_check = get_integrity_file(package_path)
+    print(SEPT)
+    print('Performing package integrity verification\n')
+    if package_check is not None:
+        return from_disk(package_path, package_check)
+    elif package_path[-4:] == '.gem':
+        return from_url(url, download_path)
     else:
-        v = verifier(package_path=package_path, package_check=package_check)
-        return v.verify()
+        print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
+        print_info('Attempting to download {}.asc'.format(url))
+        return from_url(url, download_path)
 
 
 def parse_args():

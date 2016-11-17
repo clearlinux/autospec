@@ -1,7 +1,8 @@
 import os
 import unittest
 import tempfile
-from autospec.pkg_integrity import (get_verifier,
+from autospec.pkg_integrity import (check,
+                                    get_verifier,
                                     parse_keyid,
                                     from_url,
                                     from_disk,
@@ -14,6 +15,34 @@ ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5.tgz"
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
+NOSIGN_PKT_URL = "http://mirrors.kernel.org/gnu/autoconf/autoconf-2.69.tar.gz"
+NOSIGN_SIGN_URL = "http://mirrors.kernel.org/gnu/autoconf/autoconf-2.69.tar.gz.sig"
+
+
+class TestCheckFn(unittest.TestCase):
+
+    def test_check_no_matching_sign_url(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
+            attempt_to_download(NOSIGN_PKT_URL, out_file)
+            result = check(NOSIGN_PKT_URL, tmpd)
+            self.assertEqual(result, None)
+
+    def test_check_matching_sign_url(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
+            attempt_to_download(ALEMBIC_PKT_URL, out_file)
+            result = check(ALEMBIC_PKT_URL, tmpd)
+            self.assertTrue(result)
+
+    def test_check_with_existing_sign(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
+            attempt_to_download(NOSIGN_PKT_URL, out_file)
+            key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
+            attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
+            result = check(NOSIGN_PKT_URL, tmpd)
+            self.assertTrue(result)
 
 
 class TestGEMShaVerifier(unittest.TestCase):
