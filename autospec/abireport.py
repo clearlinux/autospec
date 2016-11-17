@@ -259,8 +259,9 @@ def examine_abi(download_path):
     for library in sorted(collected_files):
         soname = get_soname(library)
         if not soname:
-            util.print_fatal("Failed to determine soname of valid library!")
-            sys.exit(1)
+            warn = "Failed to determine soname of: {}".format(library)
+            util.print_warning(warn)
+            soname = os.path.basename(library)
         symbols = dump_symbols(library)
         if symbols and len(symbols) > 0:
             if soname not in abi_report:

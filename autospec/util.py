@@ -88,3 +88,7 @@ def golang_libpath(some_str):
 
 def print_fatal(message):
     print("[\033[1m\033[91mFATAL\033[0m] {}".format(message))
+
+
+def print_warning(message):
+    print("[\033[31;1mWARNING\033[0m] {}".format(message))
