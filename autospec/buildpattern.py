@@ -78,20 +78,20 @@ def write_prep(file, ruby_pattern=False):
 def write_variables(file):
     global need_avx2_flags
     flags = []
-    if config.want_clang:
+    if config.config_opts['use_clang']:
         file.write_strip("export CC=clang\n")
         file.write_strip("export CXX=clang++\n")
         file.write_strip("export LD=ld.gold\n")
-    if config.optimize_size:
+    if config.config_opts['optimize_size']:
         flags.extend(["-Os", "-ffunction-sections"])
     if need_avx2_flags:
         flags.extend(["-O3", "-mavx2"])
-    if config.broken_cpp:
+    if config.config_opts['broken_c++']:
         flags.extend(["-std=gnu++98"])
-    if config.insecure_build:
+    if config.config_opts['insecure_build']:
         file.write_strip("export CFLAGS=\"-O3 -g -fopt-info-vec \"\n")
         file.write_strip("unset LDFLAGS\n")
-    if config.conservative_flags:
+    if config.config_opts['conservative_flags']:
         file.write_strip("export CFLAGS=\"-O2 -g -Wp,-D_FORTIFY_SOURCE=2 "
                          "-fexceptions -fstack-protector "
                          "--param=ssp-buffer-size=32 -Wformat "
@@ -100,7 +100,7 @@ def write_variables(file):
                          "-march=westmere -mtune=haswell\"\n")
         file.write_strip("export CXXFLAGS=$CFLAGS\n")
         file.write_strip("unset LDFLAGS\n")
-    if config.clang_flags:
+    if config.config_opts['use_clang']:
         file.write_strip("export CFLAGS=\"-g -O3 "
                          "-feliminate-unused-debug-types  -pipe -Wall "
                          "-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector "
@@ -111,16 +111,16 @@ def write_variables(file):
                          "-Wl,-z -Wl,now -Wl,-z -Wl,relro \"\n")
         file.write_strip("export CXXFLAGS=$CFLAGS\n")
         file.write_strip("unset LDFLAGS\n")
-    if config.optimize_speed:
+    if config.config_opts['funroll-loops']:
         flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
-    if config.want_lto:
+    if config.config_opts['use_lto']:
         flags.extend(["-O3", "-flto"])
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
         file.write_strip("export NM=gcc-nm\n")
-    if config.fast_math:
+    if config.config_opts['fast-math']:
         flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
-    if config.pgo:
+    if config.config_opts['pgo']:
         flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
     if tarball.gcov_file:
         flags = list(filter(("-flto").__ne__, flags))
@@ -168,7 +168,7 @@ def write_make_install(file):
         file.write_strip("pushd %s" % subdir)
     file.write_strip("%s %s\n" % (install_macro, extra_make_install))
 
-    if config.want_avx2:
+    if config.config_opts['use_avx2']:
         need_avx2_flags = True
         write_variables(file)
         file.write_strip("make clean")
@@ -203,7 +203,7 @@ def write_configure_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
 
@@ -235,7 +235,7 @@ def write_configure_ac_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     # Prep it for PGO
@@ -266,7 +266,7 @@ def write_make_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     if subdir:
@@ -283,7 +283,7 @@ def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     if config.profile_payload and config.profile_payload[0]:
@@ -305,7 +305,7 @@ def write_distutils_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
@@ -327,7 +327,7 @@ def write_distutils3_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python3 setup.py build -b py3 " + config.extra_configure)
@@ -349,7 +349,7 @@ def write_distutils23_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
     file.write_strip("python2 setup.py build -b py2 " + config.extra_configure)
@@ -374,7 +374,7 @@ def write_R_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     file.write_strip("\n")
 
@@ -434,7 +434,7 @@ def write_cmake_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    if config.asneeded == 0:
+    if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     file.write_strip("mkdir clr-build")
     file.write_strip("pushd clr-build")
@@ -510,7 +510,7 @@ def write_golang_pattern(file):
     write_make_install_append(file)
     file.write_strip("\n")
     if not test.skip_tests:
-        if test.allow_test_failures:
+        if config.config_opts["allow_test_failures"]:
             tolerance = " || :"
         file.write_strip("%check")
         file.write_strip("export http_proxy=http://127.0.0.1:9/")

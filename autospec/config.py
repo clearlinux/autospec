@@ -38,20 +38,6 @@ from os.path import exists as file_exists
 from util import call
 
 extra_configure = ""
-keepstatic = 0
-asneeded = 1
-no_autostart = False
-optimize_size = False
-optimize_speed = False
-fast_math = False
-insecure_build = False
-conservative_flags = False
-broken_cpp = False
-clang_flags = False
-want_clang = False
-want_lto = False
-want_avx2 = False
-pgo = False
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
 config_path = ""
@@ -64,6 +50,56 @@ config_file = None
 old_version = None
 old_patches = list()
 profile_payload = None
+
+config_opts = {}
+config_options = [
+    "broken_c++",             # extend flags with '-std=gnu++98"
+    "use_lto",                # configure build for lto
+    "use_avx2",               # configure build for avx2
+    "keepstatic",             # do not remove static libraries
+    "asneeded",               # unset %build LD_AS_NEEDED variable
+    "allow_test_failures",    # allow package to build with test failures
+    "no_autostart",           # do not require autostart suepackage
+    "optimize_size",          # optimize build for size over speed
+    "funroll-loops",          # optimize build for speed over size
+    "fast-math",              # pass -ffast-math to compiler
+    "insecure_build",         # set flags to smallest -02 flags possible
+    "conservative_flags",     # set conservative build flags
+    "broken_parallel_build",  # disable parallelization during build
+    "pgo",                    # set profile for pgo
+    "use_clang"]              # add clang flags
+
+def create_conf():
+    config_f = configparser.ConfigParser()
+    config_f['autospec'] = {}
+    for fname in config_options:
+        if file_exists(fname):
+            config_f['autospec'][fname] = 'true'
+            os.remove(fname)
+        else:
+            config_f['autospec'][fname] = 'false'
+
+    write_config(config_f)
+
+
+def write_config(config_f):
+    with open('options.conf', 'w') as configfile:
+        config_f.write(configfile)
+
+
+def read_config_opts():
+    global config_opts
+    if not file_exists('options.conf'):
+        create_conf()
+
+    config_f = configparser.ConfigParser()
+    config_f.read('options.conf')
+    if "autospec" not in config_f.sections():
+        print("Missing autospec section in options.conf")
+        sys.exit(1)
+
+    for key in config_f['autospec']:
+        config_opts[key] = config_f['autospec'].getboolean(key)
 
 
 def filter_blanks(lines):
@@ -108,17 +144,6 @@ def parse_existing_spec(path, name):
 
 def parse_config_files(path, bump):
     global extra_configure
-    global keepstatic
-    global asneeded
-    global no_autostart
-    global optimize_size
-    global optimize_speed
-    global fast_math
-    global insecure_build
-    global conservative_flags
-    global clang_flags
-    global want_clang
-    global pgo
     global config_files
     global config_path
     global parallel_build
@@ -128,11 +153,11 @@ def parse_config_files(path, bump):
     global urlban
     global config_file
     global profile_payload
-    global broken_cpp
-    global want_lto
-    global want_avx2
+    global config_opts
 
     config_path = path
+
+    read_config_opts()
 
     # Require autospec.conf for additional features
     if os.path.exists(config_file):
@@ -239,30 +264,9 @@ def parse_config_files(path, bump):
     content = read_conf_file("configure")
     extra_configure = " \\\n".join(content)
 
-    if file_exists("keepstatic"):
-        keepstatic = 1
+    if config_opts["keepstatic"]:
         buildpattern.disable_static = ""
-
-    if file_exists("asneeded"):
-        print("Disabling LD_AS_NEEDED\n")
-        asneeded = 0
-
-    if file_exists("no_autostart"):
-        no_autostart = True
-    if file_exists("optimize_size"):
-        optimize_size = True
-    if file_exists("funroll-loops"):
-        optimize_speed = True
-    if file_exists("fast-math"):
-        print("Using -ffast-math")
-        fast_math = True
-    if file_exists("insecure_build"):
-        insecure_build = True
-    if file_exists("conservative_flags"):
-        conservative_flags = True
-    if file_exists("pgo"):
-        pgo = True
-    if file_exists("broken_parallel_build"):
+    if config_opts['broken_parallel_build']:
         parallel_build = ""
 
     content = read_conf_file("make_args")
@@ -290,27 +294,9 @@ def parse_config_files(path, bump):
         buildpattern.set_build_pattern(content[0], 20)
         patches.autoreconf = False
 
-    if file_exists("skip_test_suite"):
-        test.skip_tests = True
-
-    if file_exists("unit_tests_must_pass"):
-        test.new_pkg = False
-
-    if file_exists("broken_c++"):
-        broken_cpp = True
-
-    if file_exists("use_lto"):
-        want_lto = True
-    if file_exists("use_avx2"):
-        want_avx2 = True
-
     content = read_conf_file("make_check_command")
     if content and content[0]:
         test.tests_config = content[0]
-
-    content = read_conf_file("allow_test_failures")
-    if content and content[0]:
-        test.allow_test_failures = True
 
     content = read_conf_file(tarball.name + ".license")
     if content and content[0]:
@@ -324,10 +310,8 @@ def parse_config_files(path, bump):
         tarball.golibpath = content[0]
         print("golibpath   : {}".format(tarball.golibpath))
 
-    if file_exists("use_clang"):
-        clang_flags = True
-        optimize_speed = False
-        want_clang = True
+    if config_opts['use_clang']:
+        config_opts['funroll-loops'] = False
         buildreq.add_buildreq("llvm-dev")
 
     buildpattern.make_install_append = read_conf_file("make_install_append")

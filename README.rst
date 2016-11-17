@@ -156,7 +156,8 @@ Controlling the build process
 
 **broken_parallel_build**
 
-    If this file exists, then parallelisation will be disabled in the build.
+    This option is set in the ``options.conf`` file described below. If this
+    option is set, then parallelisation will be disabled in the build.
     This usually means that ``%{?_smp_mflags}`` will not be passed to ``make``
 
 **make_args**
@@ -226,7 +227,8 @@ Controlling files and subpackages
 
 **keepstatic**
 
-    If this file exists, then ``%define keepstatic 1`` is emitted in the ``.spec``.
+    This option is set in the ``options.conf`` file described below. If this
+    option is set, then ``%define keepstatic 1`` is emitted in the ``.spec``.
     As a result, any static archive (``.a``) files will not be removed by rpmbuild.
 
 **extras**
@@ -238,7 +240,8 @@ Controlling files and subpackages
 
 **no_autostart**
 
-    If this file exists, the autostart subpackage (which contains all files matching
+    This option is set in the ``options.conf`` file described below. If this
+    option is set the autostart subpackage (which contains all files matching
     /usr/lib/systemd/system/*.target.wants/) will not be required by the base package.
 
 **setuid**
@@ -279,55 +282,91 @@ can be run in the ``%check`` portion of the ``.spec``.
 
 **allow_test_failures**
 
-    The existence of this file will allow test failures, and will still emit
-    the ``%check`` code in a way that allows the build to continue.
+    This option is set in the ``options.conf`` file described below. If this
+    option is set it will allow test failures, and will still emit the
+    ``%check`` code in a way that allows the build to continue.
 
 
 Controlling flags and optimisation
------------------------------------
+----------------------------------
+
+Further control of the build can be achieved through the use of the
+``options.conf`` file. If this file does not exist it is created by autospec.
+Autospec generates this file based on the presence of deprecated 'file-exists'
+files, then removes the deprecated files.
+
+The options that can be set in ``options.conf`` are as follows:
 
 **asneeded**
 
-    If this file exists, the ``.spec`` will disable the LD_AS_NEEDED variable.
+    If this is option set, the ``.spec`` will disable the LD_AS_NEEDED variable.
     Supporting binutils (such as found in Clear Linux Project for Intel Architecture)
     will then revert to their normal behaviour, instead of enforcing ``-Wl,-as-needed``
     in the most correct sense.
 
 **optimize_size**
 
-    If this file exists, the ``CFLAGS/LDFLAGS`` will be extended to build
+    If this option is set, the ``CFLAGS/LDFLAGS`` will be extended to build
     the package optimised for *size*, and not for *speed*. Use this when
     size is more critical than performance.
 
 **funroll-loops**
 
-    If this file exists, the ``CFLAGS/LDFLAGS`` will be extended to build
+    If this option is set, the ``CFLAGS/LDFLAGS`` will be extended to build
     the package optimised for *speed*. In short this where speed is of
     paramount importance, and will use ``-03`` by default.
 
 **insecure_build**
 
-    If this file exists, the ``CFLAGS/LDFLAGS`` will be **replaced**, using
+    If this option is set, the ``CFLAGS/LDFLAGS`` will be **replaced**, using
     the smallest ``-02`` based generic flags possible. This is useful for
     operating systems employing heavy optimisations or full RELRO by default.
 
 **pgo**
 
-    If this file exists, the ``CFLAGS/CXXFLAGS`` will be extended to build
+    If this option is set, the ``CFLAGS/CXXFLAGS`` will be extended to build
     the package with profile-guided optimization data. It will add ``-O3``,
     ``-fprofile-use``, ``-fprofile-correction`` and ``-fprofile-dir=pgo``.
 
 **use_lto**
 
-    If this file exists, link time optimization is enabled for the build
+    If this option is set, link time optimization is enabled for the build.
 
 **use_avx2**
 
-    If this file exists, a second set of libraries, for AVX2, is built
+    If this option is set, a second set of libraries, for AVX2, is built.
 
 **fast-math**
 
-    If this file exists, -ffast-math is passed to the compiler
+    If this option is set, -ffast-math is passed to the compiler.
+
+**broken_c++**
+
+    If this option is set, flags are extended with -std=gnu++98.
+
+**allow_test_failures**
+
+    If this option is set it will allow test failures, and will still emit the
+    ``%check`` code in a way that allows the build to continue.
+
+**no_autostart**
+
+    If this option is set the autostart subpackage (which contains all files matching
+    /usr/lib/systemd/system/*.target.wants/) will not be required by the base package.
+
+**conservative_flags**
+
+    If this option is set autospec will set conservative build flags
+
+**use_clang**
+
+    If this option is set autospec will utilize clang. This unsets the
+    funroll-loops optimization if it is set.
+
+**keepstatic**
+
+    If this option is set, then ``%define keepstatic 1`` is emitted in the ``.spec``.
+    As a result, any static archive (``.a``) files will not be removed by rpmbuild.
 
 
 Name and version resolution

@@ -30,7 +30,6 @@ from collections import OrderedDict
 
 tests_config = ""
 skip_tests = False
-allow_test_failures = False
 new_pkg = True
 unit_pass_written = False
 
@@ -83,7 +82,6 @@ def check_regression(dir):
 def scan_for_tests(dir):
     global tests_config
     global skip_tests
-    global allow_test_failures
 
     if skip_tests:
         return
@@ -177,7 +175,7 @@ def scan_for_tests(dir):
         buildreq.add_buildreq("pluggy")
         buildreq.add_buildreq("py-python")
 
-    if tests_config != "" and allow_test_failures:
+    if tests_config != "" and config.config_opts['allow_test_failures']:
         if tarball.name.startswith("rubygem"):
             config_elements = tests_config.split("\n")
             config_elements.pop()

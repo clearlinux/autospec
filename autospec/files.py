@@ -405,7 +405,7 @@ def write_main_subpackage_requires(file):
     global main_requires
 
     for pkg in packages:
-        if pkg == "autostart" and config.no_autostart:
+        if pkg == "autostart" and config.config_opts['no_autostart']:
             continue
         if pkg == "ignore":
             continue
