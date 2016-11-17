@@ -167,18 +167,17 @@ def write_make_install(file):
     if subdir:
         file.write_strip("pushd %s" % subdir)
     file.write_strip("%s %s\n" % (install_macro, extra_make_install))
-    
-    
+
     if config.want_avx2:
         need_avx2_flags = True
         write_variables(file)
         file.write_strip("make clean")
         file.write_strip("%configure " + disable_static + " " + config.extra_configure + " --libdir=/usr/lib64/avx2")
         file.write_strip("make V=1 " + config.parallel_build + extra_make)
-        file.write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")        
+        file.write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")
         file.write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.la")
         file.write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.lo")
-        
+
     if subdir:
         file.write_strip("popd")
     lang.write_find_lang(file)

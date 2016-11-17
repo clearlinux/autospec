@@ -309,8 +309,10 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         file.write("\n")
         file.write("include ../common/Makefile.common\n")
 
-    shutil.rmtree("{}".format(build.base_path), ignore_errors=True)
-    os.makedirs("{}".format(build.output_path))
+    shutil.rmtree("{}/{}".format(build.base_path, name), ignore_errors=True)
+    if not os.path.exists("{}".format(build.output_path)):
+        os.makedirs("{}".format(build.output_path))
+
     call("mkdir -p %s" % build.download_path)
     call(extract_cmd)
 
@@ -347,7 +349,8 @@ def write_nvr(file):
     global version
     global release
     global url
-    url = re.sub(config.urlban, "localhost", url)
+    if config.urlban:
+        url = re.sub(config.urlban, "localhost", url)
     file.write("Name     : " + name + "\n")
     file.write("Version  : " + version + "\n")
     file.write("Release  : " + str(release) + "\n")

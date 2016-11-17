@@ -34,7 +34,7 @@ must_restart = 0
 failed_commands = dict()
 base_path = "/tmp/" + getpass.getuser() + "/"
 output_path = base_path + "output"
-download_path = output_path
+download_path = output_path + "/" + tarball.name
 mock_cmd = '/usr/bin/mock'
 
 
@@ -326,6 +326,7 @@ def setup_patterns():
     failed_commands["Fontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["FcInit in -lfontconfig"] = "pkgconfig(fontconfig)"
     failed_commands["FcPatternCreate in -lfontconfig"] = "pkgconfig(fontconfig)"
+    failed_commands["X11/fonts/libxfont2.h"] = "libXfont2-dev"
     failed_commands["more"] = "util-linux"
     failed_commands["OpenGL library"] = "mesa-dev"
     failed_commands["OpenGL"] = "mesa-dev"
@@ -539,6 +540,7 @@ def setup_patterns():
     failed_commands["library ldap"] = "openldap-dev"
     failed_commands["X11/Xft/Xft.h"] = "pkgconfig(xft)"
     failed_commands["libpng/png.h"] = "pkgconfig(libpng)"
+
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     global must_restart

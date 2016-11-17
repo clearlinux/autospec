@@ -1,0 +1,11 @@
+BUILDING.md
+change.log
+ChangeLog.md
+CMakeLists.txt
+coderules.txt
+libjpeg.txt
+LICENSE.md
+README.ijg
+README.md
+usage.txt
+wizard.txt

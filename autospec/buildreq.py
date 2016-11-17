@@ -40,9 +40,9 @@ autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "
 def add_buildreq(req):
     global verbose
     new = True
-    
+
     req.strip()
-    
+
     if req in banned_buildreqs:
         return False
     if req in buildreqs:
@@ -57,7 +57,7 @@ def add_buildreq(req):
 def add_pythonreq(req):
     global verbose
     new = True
-    
+
     req.strip()
 
     if req in pythonreqs:
@@ -340,7 +340,7 @@ def clean_python_req(str, add_python=True):
     i = ret.find("!")
     if i > 0:
         ret = ret[:i]
-        
+
     ret = ret.strip()
     # is ret actually a valid (non-empty) string?
     if ret and add_python:
@@ -364,6 +364,7 @@ def setup_py_python3(filename):
     except:
         return 0
     return 0
+
 
 def add_setup_py_requires(filename):
     """
@@ -449,8 +450,7 @@ def add_setup_py_requires(filename):
                     end_bracket = py_dep_string.find("]")
                     if end_bracket > 0:
                         # eval the string and add requirements
-                        py_deps = ast.literal_eval(
-                                py_dep_string[:end_bracket + 1])
+                        py_deps = ast.literal_eval(py_dep_string[:end_bracket + 1])
                         for dep in py_deps:
                             add_buildreq(clean_python_req(dep, False))
                         continue
