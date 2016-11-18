@@ -174,8 +174,6 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             name = "perl-" + name
 
     if "github.com" in url_argument:
-        # golibpath = golang_libpath(url_argument)
-        # go_pkgname = golang_name(url_argument)
         # define regex accepted for valid packages
         github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
                            r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
