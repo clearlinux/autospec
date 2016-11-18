@@ -61,13 +61,7 @@ def build_and_run(srctar, expectations, entry, test_results):
 
 def add_files(srctar, entry, dest):
     """add necessary files to the autospec test directory"""
-    try:
-        os.mkdir(dest)
-    except OSError as excep:
-        # errno 17 is a FileExists error
-        if excep.errno is not 17:
-            raise
-
+    os.makedirs(dest, exist_ok=True)
     for file in os.listdir('{}/{}/autospecdir'.format(TESTDIR, entry)):
         shutil.copy2('{}/{}/autospecdir/{}'.format(TESTDIR, entry, file), dest)
 
@@ -84,6 +78,7 @@ def check_output(output, expectations, entry, test_results):
         test_results[entry].append('FAIL: Build status - failed, '
                                    'skipping remaining tests')
         print('{} build failed'.format(entry))
+        os.makedirs('{}/results'.format(TESTDIR), exist_ok=True)
         try:
             shutil.copy2('{}/test-{}/results/build.log'.format(TESTDIR, entry),
                          '{}/results/{}.log'.format(TESTDIR, entry))
@@ -201,6 +196,10 @@ def print_results(entry, test_results):
 def process_source(entry, test_results):
     """run autospec against entry and store the test results in test_results"""
     clean_up(entry)
+    # Remove previous run failure logs
+    if os.path.exists('{}/results/{}.log'.format(TESTDIR, entry)):
+        os.remove('{}/results/{}.log'.format(TESTDIR, entry))
+
     expectations = importlib.import_module('testfiles.{}.expectations'
                                            .format(entry))
     tar_source(entry)
