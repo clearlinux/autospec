@@ -225,7 +225,7 @@ def main():
     print("\n")
 
     if args.integrity == True:
-        pkg_integrity.from_url(args.url, build.download_path)
+        pkg_integrity.check(args.url, build.download_path)
 
     while 1:
         build.package()

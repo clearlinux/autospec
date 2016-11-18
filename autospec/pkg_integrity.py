@@ -146,7 +146,7 @@ class GPGVerifier(Verifier):
             return True
         else:
             msg = "Unable to download file {} http code {}"
-            print_error(msg.format(self.key_url, code))
+            self.print_result(False, msg.format(self.key_url, code))
 
     def verify(self):
         print("Verifying GPG signature\n")
@@ -206,6 +206,9 @@ class GEMShaVerifier(Verifier):
     def verify(self):
         gemname = os.path.basename(self.package_path).replace('.gem', '')
         print("Verifying SHA256 checksum\n")
+        if os.path.exists(self.package_path) is False:
+            self.print_result(False, 'GEM was not found {}'.format(self.package_path))
+            return
         name, _ = re.split('-\d+\.', gemname)
         number = gemname.replace(name + '-', '')
         geminfo = self.get_rubygems_info(name)
