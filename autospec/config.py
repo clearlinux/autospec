@@ -52,27 +52,28 @@ old_patches = list()
 profile_payload = None
 
 config_opts = {}
-config_options = [
-    "broken_c++",             # extend flags with '-std=gnu++98"
-    "use_lto",                # configure build for lto
-    "use_avx2",               # configure build for avx2
-    "keepstatic",             # do not remove static libraries
-    "asneeded",               # unset %build LD_AS_NEEDED variable
-    "allow_test_failures",    # allow package to build with test failures
-    "no_autostart",           # do not require autostart suepackage
-    "optimize_size",          # optimize build for size over speed
-    "funroll-loops",          # optimize build for speed over size
-    "fast-math",              # pass -ffast-math to compiler
-    "insecure_build",         # set flags to smallest -02 flags possible
-    "conservative_flags",     # set conservative build flags
-    "broken_parallel_build",  # disable parallelization during build
-    "pgo",                    # set profile for pgo
-    "use_clang"]              # add clang flags
+config_options = {
+    "broken_c++": "extend flags with '-std=gnu++98",
+    "use_lto": "configure build for lto",
+    "use_avx2": "configure build for avx2",
+    "keepstatic": "do not remove static libraries",
+    "asneeded": "unset %build LD_AS_NEEDED variable",
+    "allow_test_failures": "allow package to build with test failures",
+    "no_autostart": "do not require autostart suepackage",
+    "optimize_size": "optimize build for size over speed",
+    "funroll-loops": "optimize build for speed over size",
+    "fast-math": "pass -ffast-math to compiler",
+    "insecure_build": "set flags to smallest -02 flags possible",
+    "conservative_flags": "set conservative build flags",
+    "broken_parallel_build":  "disable parallelization during build",
+    "pgo": "set profile for pgo",
+    "use_clang": "add clang flags"}
 
 def create_conf():
-    config_f = configparser.ConfigParser()
+    config_f = configparser.ConfigParser(allow_no_value=True)
     config_f['autospec'] = {}
-    for fname in config_options:
+    for fname, comment in sorted(config_options.items()):
+        config_f.set('autospec', '# {}'.format(comment))
         if file_exists(fname):
             config_f['autospec'][fname] = 'true'
             os.remove(fname)

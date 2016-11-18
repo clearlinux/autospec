@@ -1,17 +1,32 @@
 [autospec]
-broken_c++ = false
-use_lto = true
-use_avx2 = false
-keepstatic = true
-asneeded = true
+# allow package to build with test failures
 allow_test_failures = true
-no_autostart = true
-optimize_size = true
-funroll-loops = true
-fast-math = true
-insecure_build = false
-conservative_flags = false
+# unset %build ld_as_needed variable
+asneeded = true
+# extend flags with '-std=gnu++98
+broken_c++ = false
+# disable parallelization during build
 broken_parallel_build = false
+# set conservative build flags
+conservative_flags = false
+# pass -ffast-math to compiler
+fast-math = true
+# optimize build for speed over size
+funroll-loops = true
+# set flags to smallest -02 flags possible
+insecure_build = false
+# do not remove static libraries
+keepstatic = true
+# do not require autostart suepackage
+no_autostart = true
+# optimize build for size over speed
+optimize_size = true
+# set profile for pgo
 pgo = false
+# configure build for avx2
+use_avx2 = false
+# add clang flags
 use_clang = false
+# configure build for lto
+use_lto = true
 
