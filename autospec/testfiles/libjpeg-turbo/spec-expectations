@@ -14,6 +14,7 @@ Requires: libjpeg-turbo-bin
 Requires: libjpeg-turbo-lib
 Requires: libjpeg-turbo-doc
 BuildRequires : cmake
+BuildRequires : cmake-dev
 BuildRequires : nasm-bin
 
 %description
