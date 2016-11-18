@@ -476,6 +476,7 @@ def scan_for_configure(package, dir, autospecdir):
             buildpattern.set_build_pattern("golang", default_score)
         if "CMakeLists.txt" in files and "configure.ac" not in files:
             add_buildreq("cmake")
+            add_buildreq("cmake-dev")
             buildpattern.set_build_pattern("cmake", default_score)
 
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
