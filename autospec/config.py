@@ -102,6 +102,28 @@ def read_config_opts():
     for key in config_f['autospec']:
         config_opts[key] = config_f['autospec'].getboolean(key)
 
+    # Rewrite the configuration file in case of formatting changes since a
+    # configuration file may exist without any comments (either due to an older
+    # version of autospec or if it was user-created)
+    rewrite_config_opts()
+
+
+def rewrite_config_opts():
+    config_f = configparser.ConfigParser(allow_no_value=True)
+    config_f['autospec'] = {}
+
+    # Populate missing configuration options
+    # (in case of a user-created options.conf)
+    missing = set(config_options.keys()).difference(set(config_opts.keys()))
+    for option in missing:
+        config_opts[option] = False
+
+    for fname, comment in sorted(config_options.items()):
+        config_f.set('autospec', '# {}'.format(comment))
+        config_f['autospec'][fname] = 'true' if config_opts[fname] else 'false'
+
+    write_config(config_f)
+
 
 def filter_blanks(lines):
     return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
