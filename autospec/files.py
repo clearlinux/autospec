@@ -137,11 +137,11 @@ def push_file(filename):
     if file_pat_match(filename, r"^/usr/share/omf", "main", "/usr/share/omf/*"):
         return
 
-    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib", "/usr/lib/*.so.*"):
+    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib", "/usr/lib64/*.so.*"):
+    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
-    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib", "/usr/lib64/avx2/*.so.*"):
+    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
     if file_pat_match(filename, r"^/usr/lib64/gobject-introspection/", "lib"):
         return
@@ -192,19 +192,19 @@ def push_file(filename):
         return
     if want_dev_split > 0 and file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
         return
-    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev", "/usr/lib/*.so"):
+    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
         return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev", "/usr/lib64/*.so"):
+    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
         return
-    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev", "/usr/lib64/avx2/*.so"):
+    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
         return
     if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib/*.a"):
         return
     if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib64/*.a"):
         return
-    if file_pat_match(filename, r"^/usr/lib/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev", "/usr/lib/pkgconfig/*.pc"):
+    if file_pat_match(filename, r"^/usr/lib/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
         return
-    if file_pat_match(filename, r"^/usr/lib64/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev", "/usr/lib64/pkgconfig/*.pc"):
+    if file_pat_match(filename, r"^/usr/lib64/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
         return
     if file_pat_match(filename, r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal/*.ac"):
         return
