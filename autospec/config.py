@@ -59,6 +59,7 @@ config_options = {
     "keepstatic": "do not remove static libraries",
     "asneeded": "unset %build LD_AS_NEEDED variable",
     "allow_test_failures": "allow package to build with test failures",
+    "skip_tests": "Do not run test suite",
     "no_autostart": "do not require autostart suepackage",
     "optimize_size": "optimize build for size over speed",
     "funroll-loops": "optimize build for speed over size",
@@ -80,6 +81,10 @@ def create_conf():
         else:
             config_f['autospec'][fname] = 'false'
 
+    # renamed options need special care
+    if file_exists("skip_test_suite"):
+        config_f['autospec']['skip_tests'] = 'true'
+        os.remove("skip_test_suite")
     write_config(config_f)
 
 

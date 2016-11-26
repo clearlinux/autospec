@@ -29,15 +29,13 @@ import config
 from collections import OrderedDict
 
 tests_config = ""
-skip_tests = False
 new_pkg = True
 unit_pass_written = False
 
 
 def check_regression(dir):
 
-    global skip_tests
-    if skip_tests:
+    if config.config_opts['skip_tests']:
         return
 
     build_log_path = os.path.join(dir, "results/build.log")
@@ -81,9 +79,8 @@ def check_regression(dir):
 
 def scan_for_tests(dir):
     global tests_config
-    global skip_tests
 
-    if skip_tests:
+    if config.config_opts['skip_tests']:
         return
 
     if len(tests_config) > 0:
