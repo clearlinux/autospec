@@ -265,6 +265,8 @@ can be run in the ``%check`` portion of the ``.spec``.
 **skip_test_suite**
 
     If this file exists, ``autospec`` will not emit any ``%check`` functionality.
+    This file has been deprecated and will be removed during an autospec run and
+    replaced with a ``skip_tests`` option in ``options.conf``.
 
 **unit_tests_must_pass**
 

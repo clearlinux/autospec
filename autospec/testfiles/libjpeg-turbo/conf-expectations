@@ -23,6 +23,8 @@ no_autostart = false
 optimize_size = false
 # set profile for pgo
 pgo = false
+# do not run test suite
+skip_tests = false
 # configure build for avx2
 use_avx2 = false
 # add clang flags
