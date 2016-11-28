@@ -5,8 +5,8 @@
 Name     : c-helloworld
 Version  : 1
 Release  : 1
-URL      : file://{}/testfiles/c-helloworld.tar.gz
-Source0  : file://{}/testfiles/c-helloworld.tar.gz
+URL      : file://{}/tests/testfiles/c-helloworld.tar.gz
+Source0  : file://{}/tests/testfiles/c-helloworld.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : GPL-3.0

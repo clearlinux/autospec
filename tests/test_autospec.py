@@ -17,7 +17,7 @@ IGNORES = set(['expectations.py',
                'autospecdir'])
 NOT_PACKAGE = ['.tar', 'test', 'autospec.conf', 'results']
 BASEDIR = os.getcwd()
-TESTDIR = BASEDIR + '/testfiles'
+TESTDIR = BASEDIR + '/tests/testfiles'
 
 
 def tar_source(srcfiles):
@@ -42,7 +42,7 @@ def build_and_run(srctar, expectations, entry, test_results):
     # pass on any exception because the build failure will be reported later
     try:
         output = subprocess.check_output(
-            ['python3', '{}/autospec.py'.format(BASEDIR),
+            ['python3', '{}/autospec/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
              'file://{}/{}'.format(TESTDIR, srctar)])
     except Exception:

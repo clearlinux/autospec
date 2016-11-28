@@ -5,8 +5,8 @@
 Name     : libjpeg-turbo
 Version  : 1
 Release  : 21
-URL      : file://{}/testfiles/libjpeg-turbo.tar.gz
-Source0  : file://{}/testfiles/libjpeg-turbo.tar.gz
+URL      : file://{}/tests/testfiles/libjpeg-turbo.tar.gz
+Source0  : file://{}/tests/testfiles/libjpeg-turbo.tar.gz
 Summary  : A SIMD-accelerated JPEG codec that provides the libjpeg API
 Group    : Development/Tools
 License  : IJG

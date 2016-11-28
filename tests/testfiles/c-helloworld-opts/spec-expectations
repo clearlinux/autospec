@@ -6,8 +6,8 @@
 Name     : c-helloworld-opts
 Version  : 1
 Release  : 1
-URL      : file://{}/testfiles/c-helloworld-opts.tar.gz
-Source0  : file://{}/testfiles/c-helloworld-opts.tar.gz
+URL      : file://{}/tests/testfiles/c-helloworld-opts.tar.gz
+Source0  : file://{}/tests/testfiles/c-helloworld-opts.tar.gz
 Summary  : No detailed summary available
 Group    : Development/Tools
 License  : GPL-3.0
