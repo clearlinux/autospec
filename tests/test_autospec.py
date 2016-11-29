@@ -49,7 +49,7 @@ def build_and_run(srctar, expectations, entry, test_results):
         pass
 
     print('Testing output for {}'.format(entry))
-    if check_output(output, expectations, entry, test_results):
+    if check_output(output.decode('utf-8'), expectations, entry, test_results):
         with open('{}.spec'.format(entry), 'r') as spec_file:
             spc = spec_file.read()
             check_spec(spc, expectations, entry, test_results)
@@ -71,7 +71,7 @@ def check_output(output, expectations, entry, test_results):
     test the output of the autospec run against the expectations defined in
     expectations.py
     """
-    if 'build successful' in output.decode('utf-8'):
+    if 'build successful' in output:
         test_results[entry].append('PASS: Build status - successful')
         print('{} build successful'.format(entry))
     else:
