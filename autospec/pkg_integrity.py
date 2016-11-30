@@ -123,6 +123,18 @@ class Verifier(object):
         print(SEPT)
 
 
+def get_signature_url(package_url):
+    if '://pypi.' in package_url[:13]:
+        return package_url + '.asc'
+    elif '.gnu.' in package_url:
+        return package_url + '.sig'
+    elif 'mirrors.kernel.org' in package_url:
+        return package_url + '.sig'
+    else:
+        print("Unable to determine extension from url trying .sig")
+        return package_url + '.sig'
+
+
 # GPG Verification
 class GPGVerifier(Verifier):
 
@@ -131,7 +143,7 @@ class GPGVerifier(Verifier):
         self.key_url = kwargs.get('key_url', None)
         self.package_path = kwargs.get('package_path', None)
         if self.key_url is None and self.url is not None:
-            self.key_url = self.url + '.asc'
+            self.key_url = get_signature_url(self.url)
         if self.package_sign_path is None:
             self.package_sign_path = self.package_path + '.asc'
 
@@ -226,6 +238,8 @@ VERIFIER_TYPES = {
     '.gz': GPGVerifier,
     '.tgz': GPGVerifier,
     '.tar': GPGVerifier,
+    '.bz2': GPGVerifier,
+    '.xz': GPGVerifier,
     '.gem': GEMShaVerifier,
 }
 
@@ -335,7 +349,7 @@ def check(url, download_path):
         return from_url(url, download_path)
     else:
         print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
-        print_info('Attempting to download {}.asc'.format(url))
+        print_info('Attempting to download {}'.format(get_signature_url(url)))
         return from_url(url, download_path)
 
 

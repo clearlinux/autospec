@@ -7,6 +7,7 @@ from autospec.pkg_integrity import (check,
                                     from_url,
                                     from_disk,
                                     attempt_to_download,
+                                    get_signature_url,
                                     GPGVerifier,
                                     GEMShaVerifier,)
 
@@ -15,13 +16,14 @@ ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5.tgz"
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
-NOSIGN_PKT_URL = "http://mirrors.kernel.org/gnu/autoconf/autoconf-2.69.tar.gz"
-NOSIGN_SIGN_URL = "http://mirrors.kernel.org/gnu/autoconf/autoconf-2.69.tar.gz.sig"
+NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
+NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
 
 
 class TestCheckFn(unittest.TestCase):
 
     def test_check_no_matching_sign_url(self):
+        """ Test a package that does not have simple signature pattern """
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
             attempt_to_download(NOSIGN_PKT_URL, out_file)
@@ -36,6 +38,7 @@ class TestCheckFn(unittest.TestCase):
             self.assertTrue(result)
 
     def test_check_with_existing_sign(self):
+        """ Download signature for local verification """
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
             attempt_to_download(NOSIGN_PKT_URL, out_file)
@@ -95,10 +98,10 @@ class TestUtils(unittest.TestCase):
         x = get_verifier('file.abcd')
         self.assertEqual(x, None)
 
-        y = get_verifier('file.tar.gz')(package_path='', url='')
+        y = get_verifier('xorriso-1.4.6.tar.gz')(package_path='', url='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz')
         self.assertTrue(isinstance(y, GPGVerifier))
 
-        z = get_verifier('xgtcs.gem')(package_path='', url='')
+        z = get_verifier('jeweler-2.1.1.gem')(package_path='', url='https://rubygems.org/downloads/jeweler-2.1.1.gem')
         self.assertTrue(isinstance(z, GEMShaVerifier))
 
     def test_get_keyid(self):
@@ -127,6 +130,19 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(attempt_to_download(realURL, fname), 200)
 
         os.unlink(fname)
+
+    def test_get_signature_url(self):
+
+        url_from_gnu = "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz"
+        url_from_gnu1 = "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz"
+        url_from_pypi = "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz"
+        url_from_pypi1 = "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
+
+        self.assertEqual(get_signature_url(url_from_gnu)[-4:], '.sig')
+        self.assertEqual(get_signature_url(url_from_pypi)[-4:], '.asc')
+        self.assertEqual(get_signature_url(url_from_gnu1)[-4:], '.sig')
+        self.assertEqual(get_signature_url(url_from_pypi1)[-4:], '.asc')
+
 
 
 KEY_ALGO1 = b"""\
