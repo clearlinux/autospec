@@ -300,9 +300,10 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
     with open(build.download_path + "/Makefile", "w") as file:
         file.write("PKG_NAME := " + name + "\n")
         file.write("URL := " + url_argument + "\n")
-        file.write("ARCHIVES :=")
+        sep = "ARCHIVES := "
         for archive in archives:
-            file.write(" {}".format(archive))
+            file.write("{}{}".format(sep, archive))
+            sep = " " if sep != " " else " \\\n\t"
         file.write("\n")
         file.write("\n")
         file.write("include ../common/Makefile.common\n")
