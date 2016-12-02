@@ -57,6 +57,16 @@ class TestGEMShaVerifier(unittest.TestCase):
             result = from_url(GEM_PKT, tmpd)
             self.assertTrue(result)
 
+    def test_non_matchingsha(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
+            f = open(out_file, 'wb')
+            f.write(b'this is made up data that will force a failure')
+            f.close()
+            with self.assertRaises(SystemExit) as a:
+                from_url(GEM_PKT, tmpd)
+            self.assertEqual(a.exception.code, 1)
+
 
 class TestGPGVerifier(unittest.TestCase):
 
@@ -79,6 +89,16 @@ class TestGPGVerifier(unittest.TestCase):
             attempt_to_download(ALEMBIC_PKT_URL + '.asc', out_key)
             result = from_disk(out_file, out_key)
             self.assertTrue(result)
+
+    def test_non_matchingsig(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
+            f = open(out_file, 'wb')
+            f.write(b'made up date that will fail check')
+            f.close()
+            with self.assertRaises(SystemExit) as a:
+                from_url(ALEMBIC_PKT_URL, tmpd)
+            self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
         result = from_disk('NonExistentPKG.tar.gz', 'NonExistentKey.asc')

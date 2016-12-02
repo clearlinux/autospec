@@ -108,6 +108,10 @@ class Verifier(object):
     def download_file(url, destination):
         return attempt_to_download(url, destination)
 
+    def quit(self):
+        print('Critical error quitting...')
+        exit(1)
+
     def print_result(self, result, err_msg=''):
         package_name = ''
         if self.url is not None:
@@ -179,6 +183,7 @@ class GPGVerifier(Verifier):
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)
+            self.quit()
 
 
 # GEM Verifier
@@ -227,11 +232,14 @@ class GEMShaVerifier(Verifier):
         gemsha = self.get_gemnumber_sha(geminfo, number)
 
         if geminfo is None:
-            print_error("unable to parse info for gem {}".format(gemname))
+            self.print_result(False, "unable to parse info for gem {}".format(gemname))
         else:
             calcsha = self.calc_sha(self.package_path)
             self.print_result(gemsha == calcsha)
-            return gemsha == calcsha
+            result = gemsha == calcsha
+            if result is False:
+                self.quit()
+            return result
 
 
 VERIFIER_TYPES = {
