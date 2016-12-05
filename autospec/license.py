@@ -60,6 +60,7 @@ license_translations = {
     "GPL(>=-2.0)": "GPL-2.0+",
     "GPL-3.0": "GPL-3.0",
     "GPLv3": "GPL-3.0",
+    "gplv3": "GPL-3.0",
     "GPL-3": "GPL-3.0",
     "LGPL-3": "LGPL-3.0",
     "zlib": "Zlib",
