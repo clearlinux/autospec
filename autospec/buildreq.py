@@ -525,7 +525,7 @@ def scan_for_configure(package, dir, autospecdir):
         for name in files:
             if name.lower().startswith("configure."):
                 parse_configure_ac(os.path.join(dirpath, name))
-            if name.lower().startswith("rakefile"):
+            if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
                 Rakefile(os.path.join(dirpath, name))
             if name.lower() == "makefile":
                 buildpattern.set_build_pattern("make", default_score)
