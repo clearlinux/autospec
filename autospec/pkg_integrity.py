@@ -108,9 +108,19 @@ class Verifier(object):
     def download_file(url, destination):
         return attempt_to_download(url, destination)
 
-    def quit(self):
+    @staticmethod
+    def quit():
         print('Critical error quitting...')
         exit(1)
+
+    @staticmethod
+    def calc_sum(filepath, digest_algo):
+        BLOCK_SIZE = 4096
+        with open(filepath, 'rb') as fp:
+            digest = digest_algo()
+            for block in iter(lambda: fp.read(BLOCK_SIZE), b''):
+                digest.update(block)
+            return digest.hexdigest()
 
     def print_result(self, result, err_msg=''):
         package_name = ''
@@ -127,6 +137,18 @@ class Verifier(object):
         print(SEPT)
 
 
+def head_request(url):
+    curl = pycurl.Curl()
+    curl.setopt(curl.URL, url)
+    curl.setopt(curl.CUSTOMREQUEST, "HEAD")
+    curl.setopt(curl.NOBODY, True)
+    curl.setopt(curl.FOLLOWLOCATION, True)
+    curl.perform()
+    http_code = curl.getinfo(pycurl.HTTP_CODE)
+    curl.close()
+    return http_code
+
+
 def get_signature_url(package_url):
     if '://pypi.' in package_url[:13]:
         return package_url + '.asc'
@@ -135,8 +157,11 @@ def get_signature_url(package_url):
     elif 'mirrors.kernel.org' in package_url:
         return package_url + '.sig'
     else:
-        print("Unable to determine extension from url trying .sig")
-        return package_url + '.sig'
+        if head_request(package_url + '.sig') == 200:
+            return package_url + '.sig'
+        if head_request(package_url + '.asc') == 200:
+            return package_url + '.asc'
+    return None
 
 
 # GPG Verification
@@ -212,14 +237,6 @@ class GEMShaVerifier(Verifier):
         else:
             return None
 
-    def calc_sha(self, gemfile_path):
-        BLOCK_SIZE = 4096
-        with open(gemfile_path, 'rb') as gem:
-            sha256 = hashlib.sha256()
-            for block in iter(lambda: gem.read(BLOCK_SIZE), b''):
-                sha256.update(block)
-            return sha256.hexdigest()
-
     def verify(self):
         gemname = os.path.basename(self.package_path).replace('.gem', '')
         print("Verifying SHA256 checksum\n")
@@ -234,7 +251,7 @@ class GEMShaVerifier(Verifier):
         if geminfo is None:
             self.print_result(False, "unable to parse info for gem {}".format(gemname))
         else:
-            calcsha = self.calc_sha(self.package_path)
+            calcsha = self.calc_sum(self.package_path, hashlib.sha256)
             self.print_result(gemsha == calcsha)
             result = gemsha == calcsha
             if result is False:
@@ -357,8 +374,12 @@ def check(url, download_path):
         return from_url(url, download_path)
     else:
         print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
-        print_info('Attempting to download {}'.format(get_signature_url(url)))
-        return from_url(url, download_path)
+        signature_url = get_signature_url(url)
+        if signature_url is not None:
+            print_info('Attempting to download {}'.format(signature_url))
+            return from_url(url, download_path)
+        print_info('Unable to find a url for package signature')
+        return None
 
 
 def parse_args():

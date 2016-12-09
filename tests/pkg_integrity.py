@@ -164,7 +164,6 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_signature_url(url_from_pypi1)[-4:], '.asc')
 
 
-
 KEY_ALGO1 = b"""\
 -----BEGIN PGP SIGNATURE-----
 
