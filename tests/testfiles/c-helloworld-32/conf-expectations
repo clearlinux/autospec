@@ -1,10 +1,10 @@
 [autospec]
 # build 32 bit libraries
-32bit = false
+32bit = true
 # allow package to build with test failures
-allow_test_failures = true
+allow_test_failures = false
 # unset %build ld_as_needed variable
-asneeded = true
+asneeded = false
 # extend flags with '-std=gnu++98
 broken_c++ = false
 # disable parallelization during build
@@ -12,25 +12,25 @@ broken_parallel_build = false
 # set conservative build flags
 conservative_flags = false
 # pass -ffast-math to compiler
-fast-math = true
+fast-math = false
 # optimize build for speed over size
-funroll-loops = true
+funroll-loops = false
 # set flags to smallest -02 flags possible
 insecure_build = false
 # do not remove static libraries
-keepstatic = true
+keepstatic = false
 # do not require autostart suepackage
-no_autostart = true
+no_autostart = false
 # optimize build for size over speed
-optimize_size = true
+optimize_size = false
 # set profile for pgo
 pgo = false
 # do not run test suite
-skip_tests = true
+skip_tests = false
 # configure build for avx2
 use_avx2 = false
 # add clang flags
 use_clang = false
 # configure build for lto
-use_lto = true
+use_lto = false
 

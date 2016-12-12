@@ -370,6 +370,11 @@ The options that can be set in ``options.conf`` are as follows:
     If this option is set, then ``%define keepstatic 1`` is emitted in the ``.spec``.
     As a result, any static archive (``.a``) files will not be removed by rpmbuild.
 
+**32bit**
+
+    This option will trigger the creation of 32-bit libraries for a 32-bit
+    build.
+
 
 Name and version resolution
 ===========================

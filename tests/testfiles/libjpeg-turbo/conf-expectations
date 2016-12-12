@@ -1,4 +1,6 @@
 [autospec]
+# build 32 bit libraries
+32bit = false
 # allow package to build with test failures
 allow_test_failures = false
 # unset %build ld_as_needed variable
