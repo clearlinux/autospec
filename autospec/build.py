@@ -394,7 +394,7 @@ def parse_build_results(filename, returncode):
         if line.find("Installed (but unpackaged) file(s) found:") >= 0:
             infiles = 1
         else:
-            if infiles == 1:
+            if infiles == 1 and "not matching the package arch" not in line:
                 files.push_file(line.strip())
 
         if line.startswith("Sorry: TabError: inconsistent use of tabs and spaces in indentation"):

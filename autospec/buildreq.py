@@ -27,6 +27,7 @@ import buildpattern
 import patches
 import util
 import tarball
+import config
 
 buildreqs = set()
 pythonreqs = set()
@@ -71,6 +72,10 @@ def add_pythonreq(req):
 
 
 def add_pkgconfig_buildreq(preq):
+    if config.config_opts['32bit']:
+        req = "pkgconfig(32" + preq + ")"
+        add_buildreq(req)
+        
     req = "pkgconfig(" + preq + ")"
     return add_buildreq(req)
 

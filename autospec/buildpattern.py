@@ -62,6 +62,7 @@ def write_prep(file, ruby_pattern=False):
             file.write_strip("%setup -q -c -n " + tarball.tarball_prefix)
         else:
             file.write_strip("%setup -q -n " + tarball.tarball_prefix)
+
     for archive in sources["archive"]:
         file.write_strip('mkdir -p %{{_topdir}}/BUILD/{0}/{1}'
                          .format(tarball.tarball_prefix,
@@ -71,6 +72,10 @@ def write_prep(file, ruby_pattern=False):
                                  tarball.tarball_prefix,
                                  archive_details[archive + "destination"]))
     patches.apply_patches(file)
+    if config.config_opts['32bit']:
+        file.write_strip("pushd ..")
+        file.write_strip("cp -a " +  tarball.tarball_prefix + " build32")
+        file.write_strip("popd")
     file.write_strip("\n")
     write_prep_append(file)
 
@@ -164,8 +169,21 @@ def write_make_install(file):
     global need_avx2_flags
     file.write_strip("%install")
     file.write_strip("rm -rf %{buildroot}")
+        
+    if config.config_opts['32bit']:
+        file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("%make_install32 " + extra_make_install)
+        file.write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
+        file.write_strip("then")
+        file.write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
+        file.write_strip("    for i in *.pc ; do mv $i 32$i ; done")
+        file.write_strip("    popd");
+        file.write_strip("fi")
+        file.write_strip("popd")
+
     if subdir:
         file.write_strip("pushd %s" % subdir)
+        
     file.write_strip("%s %s\n" % (install_macro, extra_make_install))
 
     if config.config_opts['use_avx2']:
@@ -228,6 +246,15 @@ def write_configure_pattern(file):
     if subdir:
         file.write_strip("popd")
     file.write_strip("\n")
+    if config.config_opts['32bit']:
+        file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+        file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+        file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+        file.write_strip("%configure "+ disable_static + " " + config.extra_configure + " " + config.extra_configure32 + " --libdir=/usr/lib32 --build=i686-generic-linux-gnu --host=i686-generic-linux-gnu --target=i686-clr-linux-gnu")
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        file.write_strip("popd")
+
     write_check(file)
     write_make_install(file)
 
@@ -257,6 +284,14 @@ def write_configure_ac_pattern(file):
     file.write_strip(get_profile_use_flags() + "%reconfigure " + disable_static + " " + config.extra_configure)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     if subdir:
+        file.write_strip("popd")
+    if config.config_opts['32bit']:
+        file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+        file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+        file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+        file.write_strip("%reconfigure "+ disable_static + " " + config.extra_configure + " " + config.extra_configure32 + " --libdir=/usr/lib32 --build=i686-generic-linux-gnu --host=i686-generic-linux-gnu --target=i686-clr-linux-gnu")
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
         file.write_strip("popd")
     file.write_strip("\n")
     write_check(file)

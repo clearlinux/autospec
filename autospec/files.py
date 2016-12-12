@@ -141,6 +141,8 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
+    if file_pat_match(filename, r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib32"):
+        return
     if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
     if file_pat_match(filename, r"^/usr/lib64/gobject-introspection/", "lib"):
@@ -196,15 +198,21 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
         return
+    if file_pat_match(filename, r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev32"):
+        return
     if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
         return
     if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib/*.a"):
         return
     if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib64/*.a"):
         return
+    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev32", "/usr/lib32/*.a"):
+        return
     if file_pat_match(filename, r"^/usr/lib/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
         return
     if file_pat_match(filename, r"^/usr/lib64/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
+        return
+    if file_pat_match(filename, r"^/usr/lib32/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev32"):
         return
     if file_pat_match(filename, r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal/*.ac"):
         return
@@ -322,8 +330,10 @@ def write_files_header(file):
     deps = dict()
 
     deps["dev"] = ["lib", "bin", "data"]
+    deps["dev32"] = ["lib32", "bin", "data"]
     deps["bin"] = ["data", "config", "setuid", "attr"]
     deps["lib"] = ["data", "config"]
+    deps["lib32"] = ["data", "config"]
 
     provides = dict()
     provides["dev"] = ["devel"]
@@ -416,6 +426,10 @@ def write_main_subpackage_requires(file):
         if pkg == "active-units":
             continue
         if pkg == "extras":
+            continue
+        if pkg == "lib32":
+            continue
+        if pkg == "dev32":
             continue
         file.write("Requires: " + tarball.name + "-" + pkg + "\n")
 

@@ -38,6 +38,7 @@ from os.path import exists as file_exists
 from util import call
 
 extra_configure = ""
+extra_configure32 = ""
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
 config_path = ""
@@ -68,7 +69,8 @@ config_options = {
     "conservative_flags": "set conservative build flags",
     "broken_parallel_build":  "disable parallelization during build",
     "pgo": "set profile for pgo",
-    "use_clang": "add clang flags"}
+    "use_clang": "add clang flags",
+    "32bit" : "build 32 bit libraries"}
 
 def create_conf():
     config_f = configparser.ConfigParser(allow_no_value=True)
@@ -172,6 +174,7 @@ def parse_existing_spec(path, name):
 
 def parse_config_files(path, bump):
     global extra_configure
+    global extra_configure32
     global config_files
     global config_path
     global parallel_build
@@ -292,6 +295,9 @@ def parse_config_files(path, bump):
     content = read_conf_file("configure")
     extra_configure = " \\\n".join(content)
 
+    content = read_conf_file("configure32")
+    extra_configure32 = " \\\n".join(content)
+
     if config_opts["keepstatic"]:
         buildpattern.disable_static = ""
     if config_opts['broken_parallel_build']:
@@ -341,6 +347,13 @@ def parse_config_files(path, bump):
     if config_opts['use_clang']:
         config_opts['funroll-loops'] = False
         buildreq.add_buildreq("llvm-dev")
+        
+    if config_opts['32bit']:
+        buildreq.add_buildreq("glibc-libc32")
+        buildreq.add_buildreq("glibc-dev32")
+        buildreq.add_buildreq("gcc-dev32")
+        buildreq.add_buildreq("gcc-libgcc32")
+        buildreq.add_buildreq("gcc-libstdc++32")
 
     buildpattern.make_install_append = read_conf_file("make_install_append")
     buildpattern.prep_append = read_conf_file("prep_append")
