@@ -330,7 +330,7 @@ def write_files_header(file):
     deps = dict()
 
     deps["dev"] = ["lib", "bin", "data"]
-    deps["dev32"] = ["lib32", "bin", "data"]
+    deps["dev32"] = ["lib32", "bin", "data", "dev"]
     deps["bin"] = ["data", "config", "setuid", "attr"]
     deps["lib"] = ["data", "config"]
     deps["lib32"] = ["data", "config"]

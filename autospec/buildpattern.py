@@ -176,7 +176,7 @@ def write_make_install(file):
         file.write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
         file.write_strip("then")
         file.write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
-        file.write_strip("    for i in *.pc ; do mv $i 32$i ; done")
+        file.write_strip("    for i in *.pc ; do ln -s $i 32$i ; done")
         file.write_strip("    popd");
         file.write_strip("fi")
         file.write_strip("popd")
@@ -248,6 +248,7 @@ def write_configure_pattern(file):
     file.write_strip("\n")
     if config.config_opts['32bit']:
         file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
         file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
         file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
         file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
@@ -287,6 +288,7 @@ def write_configure_ac_pattern(file):
         file.write_strip("popd")
     if config.config_opts['32bit']:
         file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
         file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
         file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
         file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
@@ -335,6 +337,7 @@ def write_autogen_pattern(file):
     file.write_strip("\n")
     if config.config_opts['32bit']:
         file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
         file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
         file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
         file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
