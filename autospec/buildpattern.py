@@ -333,6 +333,14 @@ def write_autogen_pattern(file):
     file.write_strip(get_profile_use_flags() + "%autogen " + disable_static + " " + config.extra_configure)
     file.write_strip("make V=1 " + config.parallel_build + extra_make)
     file.write_strip("\n")
+    if config.config_opts['32bit']:
+        file.write_strip("pushd ../build32/"+subdir)
+        file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+        file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+        file.write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+        file.write_strip("%autogen  "+ disable_static + " " + config.extra_configure + " " + config.extra_configure32 + " --libdir=/usr/lib32 --build=i686-generic-linux-gnu --host=i686-generic-linux-gnu --target=i686-clr-linux-gnu")
+        file.write_strip("make V=1 " + config.parallel_build + extra_make)
+        file.write_strip("popd")
     write_check(file)
     write_make_install(file)
 
