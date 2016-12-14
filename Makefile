@@ -4,5 +4,8 @@ check: autospec/*.py
 test_pkg_integrity:
 	PYTHONPATH=`pwd` python3 tests/pkg_integrity.py
 
+test_tarball:
+	PYTHONPATH=`pwd`/autospec python3 tests/test_tarball.py
+
 test_autospec:
 	python3 tests/test_autospec.py
