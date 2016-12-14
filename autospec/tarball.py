@@ -113,7 +113,6 @@ def build_unzip(zip_path):
 
 def download_tarball(url_argument, name_argument, archives, target_dir):
     global name
-    global rawname
     global version
     global url
     global path
@@ -122,6 +121,101 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
     # go naming
     global golibpath
     global go_pkgname
+
+    tarfile = os.path.basename(url)
+
+    if not target_dir:
+        build.download_path = os.getcwd() + "/" + name
+    else:
+        build.download_path = target_dir
+    call("mkdir -p %s" % build.download_path)
+
+    gcov_path = build.download_path + "/" + name + ".gcov"
+    if os.path.isfile(gcov_path):
+        gcov_file = name + ".gcov"
+
+    tarball_path = check_or_get_file(url, tarfile)
+    sha1 = get_sha1sum(tarball_path)
+    with open(build.download_path + "/upstream", "w") as file:
+        file.write(sha1 + "/" + tarfile + "\n")
+
+    tarball_prefix = name + "-" + version
+    if tarfile.lower().endswith('.zip'):
+        extract_cmd, tarball_prefix = build_unzip(tarball_path)
+    elif tarfile.lower().endswith('.gem'):
+        tarball_contents = subprocess.check_output(
+            ["gem", "unpack", "--verbose", tarball_path], universal_newlines=True)
+        extract_cmd = "gem unpack --target={0} {1}".format(build.base_path, tarball_path)
+        if tarball_contents:
+            tarball_prefix = tarball_contents.splitlines()[-1].rsplit("/")[-1]
+            if tarball_prefix.endswith("'"):
+                tarball_prefix = tarball_prefix[:-1]
+    else:
+        extract_cmd, tarball_prefix = build_untar(tarball_path)
+
+    if version == "":
+        version = "1"
+
+    print("\n")
+
+    print("Processing", url_argument)
+    print(
+        "=============================================================================================")
+    print("Name        :", name)
+    print("Version     :", version)
+    print("Prefix      :", tarball_prefix)
+
+    with open(build.download_path + "/Makefile", "w") as file:
+        file.write("PKG_NAME := " + name + "\n")
+        file.write("URL := " + url_argument + "\n")
+        sep = "ARCHIVES := "
+        for archive in archives:
+            file.write("{}{}".format(sep, archive))
+            sep = " " if sep != " " else " \\\n\t"
+        file.write("\n")
+        file.write("\n")
+        file.write("include ../common/Makefile.common\n")
+
+    shutil.rmtree(build.base_path + name, ignore_errors=True)
+    shutil.rmtree(build.base_path + tarball_prefix, ignore_errors=True)
+    if not os.path.exists("{}".format(build.output_path)):
+        os.makedirs("{}".format(build.output_path))
+
+    call("mkdir -p %s" % build.download_path)
+    call(extract_cmd)
+
+    path = build.base_path + tarball_prefix
+
+    for archive, destination in zip(archives[::2], archives[1::2]):
+        source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
+        if source_tarball_path.lower().endswith('.zip'):
+            tarball_contents, source_tarball_prefix = build_unzip(source_tarball_path)
+        else:
+            extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
+        buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
+        call(extract_cmd)
+        tar_files = glob.glob("{0}{1}/*".format(build.base_path, source_tarball_prefix))
+        move_cmd = "mv "
+        for tar_file in tar_files:
+            move_cmd += tar_file + " "
+        move_cmd += '{0}/{1}'.format(path, destination)
+
+        mkdir_cmd = "mkdir -p "
+        mkdir_cmd += '{0}/{1}'.format(path, destination)
+
+        print("mkdir " + mkdir_cmd)
+        call(mkdir_cmd)
+        call(move_cmd)
+
+        sha1 = get_sha1sum(source_tarball_path)
+        with open(build.download_path + "/upstream", "a") as file:
+            file.write(sha1 + "/" + os.path.basename(archive) + "\n")
+
+def name_and_version(url_argument, name_argument):
+    global name
+    global rawname
+    global version
+    global url
 
     url = url_argument
     tarfile = os.path.basename(url)
@@ -255,94 +349,6 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         version = version[1:]
 
     assert name != ""
-
-    if not target_dir:
-        build.download_path = os.getcwd() + "/" + name
-    else:
-        build.download_path = target_dir
-    call("mkdir -p %s" % build.download_path)
-
-    gcov_path = build.download_path + "/" + name + ".gcov"
-    if os.path.isfile(gcov_path):
-        gcov_file = name + ".gcov"
-
-    tarball_path = check_or_get_file(url, tarfile)
-    sha1 = get_sha1sum(tarball_path)
-    with open(build.download_path + "/upstream", "w") as file:
-        file.write(sha1 + "/" + tarfile + "\n")
-
-    tarball_prefix = name + "-" + version
-    if tarfile.lower().endswith('.zip'):
-        extract_cmd, tarball_prefix = build_unzip(tarball_path)
-    elif tarfile.lower().endswith('.gem'):
-        tarball_contents = subprocess.check_output(
-            ["gem", "unpack", "--verbose", tarball_path], universal_newlines=True)
-        extract_cmd = "gem unpack --target={0} {1}".format(build.base_path, tarball_path)
-        if tarball_contents:
-            tarball_prefix = tarball_contents.splitlines()[-1].rsplit("/")[-1]
-            if tarball_prefix.endswith("'"):
-                tarball_prefix = tarball_prefix[:-1]
-    else:
-        extract_cmd, tarball_prefix = build_untar(tarball_path)
-
-    if version == "":
-        version = "1"
-
-    print("\n")
-
-    print("Processing", url_argument)
-    print(
-        "=============================================================================================")
-    print("Name        :", name)
-    print("Version     :", version)
-    print("Prefix      :", tarball_prefix)
-
-    with open(build.download_path + "/Makefile", "w") as file:
-        file.write("PKG_NAME := " + name + "\n")
-        file.write("URL := " + url_argument + "\n")
-        sep = "ARCHIVES := "
-        for archive in archives:
-            file.write("{}{}".format(sep, archive))
-            sep = " " if sep != " " else " \\\n\t"
-        file.write("\n")
-        file.write("\n")
-        file.write("include ../common/Makefile.common\n")
-
-    shutil.rmtree(build.base_path + name, ignore_errors=True)
-    shutil.rmtree(build.base_path + tarball_prefix, ignore_errors=True)
-    if not os.path.exists("{}".format(build.output_path)):
-        os.makedirs("{}".format(build.output_path))
-
-    call("mkdir -p %s" % build.download_path)
-    call(extract_cmd)
-
-    path = build.base_path + tarball_prefix
-
-    for archive, destination in zip(archives[::2], archives[1::2]):
-        source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
-        if source_tarball_path.lower().endswith('.zip'):
-            tarball_contents, source_tarball_prefix = build_unzip(source_tarball_path)
-        else:
-            extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
-        buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
-        call(extract_cmd)
-        tar_files = glob.glob("{0}{1}/*".format(build.base_path, source_tarball_prefix))
-        move_cmd = "mv "
-        for tar_file in tar_files:
-            move_cmd += tar_file + " "
-        move_cmd += '{0}/{1}'.format(path, destination)
-
-        mkdir_cmd = "mkdir -p "
-        mkdir_cmd += '{0}/{1}'.format(path, destination)
-
-        print("mkdir " + mkdir_cmd)
-        call(mkdir_cmd)
-        call(move_cmd)
-
-        sha1 = get_sha1sum(source_tarball_path)
-        with open(build.download_path + "/upstream", "a") as file:
-            file.write(sha1 + "/" + os.path.basename(archive) + "\n")
-
 
 def write_nvr(file):
     global name

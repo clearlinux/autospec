@@ -188,6 +188,7 @@ def main():
     #
     build.setup_patterns()
 
+    tarball.name_and_version(args.url, args.name)
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
     _dir = tarball.path
 
