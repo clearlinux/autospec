@@ -219,10 +219,11 @@ def name_and_version(url_argument, name_argument):
 
     url = url_argument
     tarfile = os.path.basename(url)
+    # it is important for the more specific patterns to come first
     pattern_options = [
+        r"(.*?)[\-_](v*[0-9]+[a-zalpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.orig\.tar",
         r"(.*?)[\-_](v*[0-9]+[alpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.src\.(tgz|tar|zip)",
         r"(.*?)[\-_](v*[0-9]+[alpha\+_sbpfourcesigedsvstableP0-9\.\-\~]*)\.(tgz|tar|zip)",
-        r"(.*?)[\-_](v*[0-9]+[a-zalpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.orig\.tar",
         r"(.*?)[\-_](v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~]*)(-.*?)?\.tar",
     ]
     for pattern in pattern_options:
@@ -268,9 +269,11 @@ def name_and_version(url_argument, name_argument):
             name = "perl-" + name
 
     if "github.com" in url_argument:
-        # define regex accepted for valid packages
+        # define regex accepted for valid packages, important for specific
+        # patterns to come before general ones
         github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
                            r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
+                           r"https://github.com/.*/(.*?)/archive/v?(.*).orig.tar",
                            r"https://github.com/.*/(.*?)/archive/(.*).zip",
                            r"https://github.com/.*/(.*?)/archive/v?(.*).tar"]
 
@@ -279,10 +282,15 @@ def name_and_version(url_argument, name_argument):
             m = p.search(url_argument)
             if m:
                 name = m.group(1).strip()
-                version = m.group(2).strip()
-                b = version.find("-")
+                # convert from 7_4_2 to 7.4.2
+                version = m.group(2).strip().replace('_', '.')
+                # remove release candidate tag
+                b = version.find("-rc")
                 if b > 0:
                     version = version[:b]
+                b = version.find("-")
+                if b > 0:
+                    version = version[b + 1:]
                 break
 
     if url_argument.find("bitbucket.org") > 0:
@@ -290,6 +298,7 @@ def name_and_version(url_argument, name_argument):
         m = p.search(url_argument)
         if m:
             name = m.group(1).strip()
+            # convert from 7_4_2 to 7.4.2
             version = m.group(2).strip().replace('_', '.')
         else:
             version = "1"
@@ -301,6 +310,10 @@ def name_and_version(url_argument, name_argument):
         m = p.search(tarfile)
         if m:
             name = "rubygem-" + m.group(1).strip()
+            # remove release candidate tag
+            b = name.find("-rc")
+            if b > 0:
+                name = name[:b]
             rawname = m.group(1).strip()
             version = m.group(2).strip()
             b = version.find("-")
@@ -345,8 +358,15 @@ def name_and_version(url_argument, name_argument):
         b = b + 1
         version = version[b:]
 
-    if len(version) > 0 and version[0] in ['v', 'r']:
+    if len(version) > 0 and version[0].lower() in ['v', 'r']:
         version = version[1:]
+
+    # remove package name from beginning of version
+    if version.lower().startswith(name.lower()):
+        pat = re.compile(re.escape(name), re.IGNORECASE)
+        version = pat.sub('', version)
+        if version[0] in ['.', '-', '_']:
+            version = version[1:]
 
     assert name != ""
 

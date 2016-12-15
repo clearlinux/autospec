@@ -4,10 +4,10 @@ import build  # needs to be imported before tarball due to dependencies
 import tarball
 
 
-class TestDownloadTarball(unittest.TestCase):
+class TestTarballVersionName(unittest.TestCase):
 
     @unittest.mock.patch('tarball.build')
-    def test_them_all(self, mock_build):
+    def test_packageurls(self, mock_build):
         """
         Test the name and version detection from tarball url
 
