@@ -172,6 +172,7 @@ license_blacklist = {
     "domain": True,
     "Commercial": True,
     "ndg/httpsclient/LICENCE": True,
+    "License-2.0": True,
     "License(==-2.0)": True,
 }
 
