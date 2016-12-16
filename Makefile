@@ -7,5 +7,8 @@ test_pkg_integrity:
 test_tarball:
 	PYTHONPATH=`pwd`/autospec python3 tests/test_tarball.py
 
+test_specfile:
+	PYTHONPATH=`pwd`/autospec python3 tests/test_specfile.py
+
 test_autospec:
 	python3 tests/test_autospec.py

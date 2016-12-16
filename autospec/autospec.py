@@ -37,9 +37,9 @@ import tarball
 import test
 import commitmessage
 import pkg_integrity
+import specfiles
 
 from tarball import name
-from specfile import Specfile
 from util import _file_write, print_fatal
 from abireport import examine_abi
 
@@ -191,7 +191,7 @@ def main():
     # We will then analyze the build result and learn information until the
     # package builds
     #
-    specfile = Specfile(tarball.url, tarball.version, tarball.name, tarball.release)
+    specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release)
     load_specfile(specfile)
     specfile.write_spec(build.download_path)
 

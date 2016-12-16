@@ -100,7 +100,6 @@ class Specfile(object):
         """
         Write name, version, and release information.
         """
-        print("specrelease", self.release)
         if self.urlban:
             self.url = re.sub(self.urlban, "localhost", self.url)
         self._write("Name     : {}\n".format(self.name))
@@ -269,9 +268,9 @@ class Specfile(object):
         if not self.locales:
             return
 
-        self._write("\n%files locales ")
+        self._write("\n%files locales")
         for lang in self.locales:
-            self._write("-f {}.lang".format(lang))
+            self._write(" -f {}.lang".format(lang))
 
         self._write("\n%defattr(-,root,root,-)\n\n")
 
