@@ -557,9 +557,3 @@ def scan_for_configure(package, dir, autospecdir):
         count = count + 1
         print(lic + " ", end="")
     print("")
-
-
-def write_buildreq(file):
-    if len(buildreqs) > 0:
-        for lic in sorted(buildreqs):
-            file.write("BuildRequires : " + lic + "\n")

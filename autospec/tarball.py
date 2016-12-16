@@ -55,7 +55,7 @@ def get_sha1sum(filename):
     return sh.hexdigest()
 
 
-def really_download(url, destination, tarfile):
+def really_download(url, destination):
     with open(destination, 'wb') as dfile:
         c = pycurl.Curl()
         c.setopt(c.URL, url)
@@ -68,7 +68,7 @@ def really_download(url, destination, tarfile):
 def check_or_get_file(url, tarfile):
     tarball_path = build.download_path + "/" + tarfile
     if not os.path.isfile(tarball_path):
-        really_download(url, tarball_path, tarfile)
+        really_download(url, tarball_path)
     return tarball_path
 
 
@@ -369,16 +369,3 @@ def name_and_version(url_argument, name_argument):
             version = version[1:]
 
     assert name != ""
-
-def write_nvr(file):
-    global name
-    global version
-    global release
-    global url
-    if config.urlban:
-        url = re.sub(config.urlban, "localhost", url)
-    file.write("Name     : " + name + "\n")
-    file.write("Version  : " + version + "\n")
-    file.write("Release  : " + str(release) + "\n")
-    file.write("URL      : " + url + "\n")
-    file.write("Source0  : " + url + "\n")

@@ -40,13 +40,3 @@ def add_lang(lang):
 def write_find_lang(file):
     for lang in locales:
         file.write("%find_lang " + lang + "\n")
-
-
-def write_lang_files(file):
-    global locales
-    if len(locales) == 0:
-        return
-    file.write("\n%files locales ")
-    for lang in locales:
-        file.write("-f " + lang + ".lang ")
-    file.write("\n%defattr(-,root,root,-)\n\n")

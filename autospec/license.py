@@ -294,11 +294,3 @@ def scan_for_licenses(package, dir):
         quit()
     else:
         print("Licenses    : ", " ".join(sorted(licenses)))
-
-
-def write_license(file):
-    if len(licenses) == 0:
-        file.write("License  : " + default_license + "\n")
-    else:
-        file.write("License  : " + " ".join(sorted(licenses)))
-        file.write("\n")

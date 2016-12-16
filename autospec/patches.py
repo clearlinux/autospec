@@ -24,13 +24,6 @@ patches = []
 autoreconf = False
 
 
-def write_patch_header(file):
-    counter = 1
-    for p in patches:
-        file.write("Patch" + str(counter) + ": " + p.split()[0] + "\n")
-        counter = counter + 1
-
-
 def apply_patches(file):
     counter = 1
     for p in patches:

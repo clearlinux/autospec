@@ -271,23 +271,3 @@ def scan_for_description(package, dir):
                 description_from_readme(os.path.join(dirpath, name))
 
     print("Summary     :", default_summary.strip())
-
-#  print("Summary: ", default_summary)
-#  print("%description")
-#  print(default_description)
-
-
-def write_summary(file):
-    global default_summary
-    global default_group
-    file.write("Summary  : " + default_summary.strip() + "\n")
-    file.write("Group    : " + default_group.strip() + "\n")
-
-
-def write_description(file, package=""):
-    global default_description
-    if len(package) == 0:
-        file.write("\n%description\n" + default_description.strip() + "\n")
-    else:
-        file.write("\n%description " + package +
-                   "\n Subpackage " + package + "\n\n")
