@@ -360,7 +360,11 @@ def from_disk(package_path, package_check):
 def get_integrity_file(package_path):
     if os.path.exists(package_path + '.asc'):
         return package_path + '.asc'
-    elif os.path.exists(package_path + '.sha256'):
+    if os.path.exists(package_path + '.sig'):
+        return package_path + '.sig'
+    if os.path.exists(package_path + '.sign'):
+        return package_path + '.sign'
+    if os.path.exists(package_path + '.sha256'):
         return package_path + '.sha256'
 
 
