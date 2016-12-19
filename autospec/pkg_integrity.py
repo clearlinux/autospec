@@ -156,11 +156,15 @@ def get_signature_url(package_url):
         return package_url + '.sig'
     elif 'mirrors.kernel.org' in package_url:
         return package_url + '.sig'
+    elif 'www.kernel.org' in package_url:
+        return package_url + '.sign'
     else:
         if head_request(package_url + '.sig') == 200:
             return package_url + '.sig'
         if head_request(package_url + '.asc') == 200:
             return package_url + '.asc'
+        if head_request(package_url + '.sign') == 200:
+            return package_url + '.sign'
     return None
 
 
