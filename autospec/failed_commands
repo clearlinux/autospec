@@ -128,7 +128,6 @@ Qt4, qt-everywhere-opensource-src-dev
 FindQt4, qt-everywhere-opensource-src-dev
 Phonon, phonon-dev
 xdg-user-dirs-update, xdg-user-dirs
-gtk-builder-convert, compat-gtk2-dev
 DGA, libXxf86dga-dev
 DMXMODULES, libdmx-dev
 ImathInt64.h, pkgconfig(IlmBase)
@@ -196,7 +195,6 @@ Xcursor, pkgconfig(xcursor)
 -lXrandr, pkgconfig(xrandr)
 xrandr, pkgconfig(xrandr)
 mateconf-sanity-check-2, mate-conf-dev
-DEPENDENT_WITH_GTK, compat-gtk2-dev
 zenity, zenity
 gobject-introspection, gobject-introspection-dev
 XCOMPOSITE extension, libXcomposite-dev
