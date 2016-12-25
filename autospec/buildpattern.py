@@ -119,7 +119,7 @@ def write_variables(file):
     if config.config_opts['funroll-loops']:
         flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
     if config.config_opts['use_lto']:
-        flags.extend(["-O3", "-flto"])
+        flags.extend(["-O3", "-flto", "-ffat-lto-objects"])
         file.write_strip("export AR=gcc-ar\n")
         file.write_strip("export RANLIB=gcc-ranlib\n")
         file.write_strip("export NM=gcc-nm\n")
@@ -202,6 +202,28 @@ def write_make_install(file):
     lang.write_find_lang(file)
 
 
+def write_cmake_install(file):
+    global need_avx2_flags
+    file.write_strip("%install")
+    file.write_strip("rm -rf %{buildroot}")
+        
+    if config.config_opts['32bit']:
+        file.write_strip("pushd clr-build32")
+        file.write_strip("%make_install32 " + extra_make_install)
+        file.write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
+        file.write_strip("then")
+        file.write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
+        file.write_strip("    for i in *.pc ; do ln -s $i 32$i ; done")
+        file.write_strip("    popd");
+        file.write_strip("fi")
+        file.write_strip("popd")
+
+    file.write_strip("pushd clr-build")
+    file.write_strip("%s %s\n" % (install_macro, extra_make_install))
+    file.write_strip("popd")
+    lang.write_find_lang(file)
+
+
 def get_profile_generate_flags():
     if config.profile_payload and config.profile_payload[0]:
         return "CFLAGS=\"${CFLAGS_GENERATE}\" CXXFLAGS=\"${CXXFLAGS_GENERATE}\" FFLAGS=\"${FFLAGS_GENERATE}\" FCFLAGS=\"${FCFLAGS_GENERATE}\" "
@@ -222,6 +244,7 @@ def write_configure_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    file.write_strip("export SOURCE_DATE_EPOCH=`date +%s -r configure`")
     if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -264,6 +287,7 @@ def write_configure_ac_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    file.write_strip("export SOURCE_DATE_EPOCH=`date +%s -r configure.ac`")
     if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -321,6 +345,7 @@ def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
+    file.write_strip("export SOURCE_DATE_EPOCH=`date +%s -r autogen.sh`")
     if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -490,12 +515,30 @@ def write_cmake_pattern(file):
                      "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
                      "-DLIB_INSTALL_DIR:PATH=%{_libdir} "
                      "-DCMAKE_AR=/usr/bin/gcc-ar "
+                     "-DLIB_SUFFIX=64 "
                      "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + extra_cmake)
     file.write_strip("make VERBOSE=1 " + config.parallel_build + extra_make)
     file.write_strip("popd")
+
+
+    if config.config_opts['32bit']:
+        file.write_strip("mkdir clr-build32")
+        file.write_strip("pushd clr-build32")
+        write_variables(file)
+        file.write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
+        file.write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+        file.write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+        file.write_strip("cmake .. -G \"Unix Makefiles\" "
+                         "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                         "-DLIB_INSTALL_DIR:PATH=%{_libdir}32 "
+                         "-DCMAKE_AR=/usr/bin/gcc-ar "
+                         "-DLIB_SUFFIX=32 "
+                         "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + extra_cmake)
+        file.write_strip("make VERBOSE=1 " + config.parallel_build + extra_make)
+        file.write_strip("popd")
     file.write_strip("\n")
     write_check(file)
-    write_make_install(file)
+    write_cmake_install(file)
 
 
 def write_cpan_pattern(file):
