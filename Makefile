@@ -12,3 +12,5 @@ test_specfile:
 
 test_autospec:
 	python3 tests/test_autospec.py
+
+unittests: test_specfile test_pkg_integrity test_tarball

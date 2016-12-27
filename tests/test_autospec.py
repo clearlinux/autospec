@@ -3,6 +3,7 @@ autospec test suite
 """
 import tarfile
 import os
+import re
 import shutil
 import subprocess
 import importlib
@@ -101,6 +102,10 @@ def check_output(output, expectations, entry, test_results):
 
 def check_spec(spec_contents, expectations, entry, test_results):
     """test the specfile against the expected specfile in spec-expectations"""
+    # replace the epoch time with a 1 so it can be tested for
+    spec_contents = re.sub(r'SOURCE_DATE_EPOCH=[0-9]+\n',
+                           'SOURCE_DATE_EPOCH=1\n',
+                           spec_contents)
     diff = list(unified_diff(expectations.specfile,
                              spec_contents.split('\n'),
                              fromfile='expected_specfile',

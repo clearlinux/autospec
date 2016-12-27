@@ -68,6 +68,7 @@ lib components for the libjpeg-turbo package.
 
 %build
 export LANG=C
+export SOURCE_DATE_EPOCH=1
 export CFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-semantic-interposition "
 export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-semantic-interposition "
 export FFLAGS="$CFLAGS -O3 -falign-functions=32 -fno-semantic-interposition "
