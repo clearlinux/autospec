@@ -211,6 +211,7 @@ GL/glx.h, pkgconfig(gl)
 lzma.h, xz-dev
 lzma, xz-dev
 liblzma, xz-dev
+-llzma, xz-dev
 boost/unordered_map.hpp, boost-dev
 Boost, boost-dev
 Eigen/Core, eigen-dev

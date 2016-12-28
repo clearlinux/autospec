@@ -173,6 +173,7 @@ license_blacklist = {
     "Commercial": True,
     "ndg/httpsclient/LICENCE": True,
     "License-2.0": True,
+    "BSD-style": True,
     "License(==-2.0)": True,
 }
 
