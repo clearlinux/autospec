@@ -180,8 +180,9 @@ class GPGVerifier(Verifier):
 
     def get_pubkey_path(self):
         keyid = get_keyid(self.package_sign_path)
-        return '/'.join([os.path.dirname(os.path.abspath(__file__)),
-                        "keyring", "{}.pkey".format(keyid)])
+        if keyid:
+            return '/'.join([os.path.dirname(os.path.abspath(__file__)),
+                            "keyring", "{}.pkey".format(keyid)])
 
     def get_sign(self):
         code = self.download_file(self.key_url, self.package_sign_path)
@@ -200,7 +201,7 @@ class GPGVerifier(Verifier):
             self.print_result(False, err_msg='{} not found'.format(self.package_sign_path))
             return None
         pub_key = self.get_pubkey_path()
-        if os.path.exists(pub_key) is False:
+        if not pub_key or os.path.exists(pub_key) is False:
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
             return None
@@ -294,7 +295,7 @@ def parse_keyid(sig_filename):
 
 def get_keyid(sig_filename):
     keyid = parse_keyid(sig_filename)
-    return keyid.upper()
+    return keyid.upper() if keyid else None
 
 
 def attempt_to_download(url, sign_filename=None):

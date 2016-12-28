@@ -4,6 +4,7 @@ import tempfile
 from autospec.pkg_integrity import (check,
                                     get_verifier,
                                     parse_keyid,
+                                    get_keyid,
                                     from_url,
                                     from_disk,
                                     attempt_to_download,
@@ -135,6 +136,10 @@ class TestUtils(unittest.TestCase):
 
         check_algo(KEY_ALGO17, '8AFAFCD242818A52')
         check_algo(KEY_ALGO1, '330239C1C4DAFEE1')
+
+    def test_get_keyid_none(self):
+        false_name = '/false/name'
+        self.assertTrue(get_keyid(false_name) is None)
 
     def test_attempt_to_download(self):
         fakeURL = "https://download.my.url.com/file.tar.gz"
