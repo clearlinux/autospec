@@ -369,3 +369,9 @@ def name_and_version(url_argument, name_argument):
             version = version[1:]
 
     assert name != ""
+
+def load_specfile(specfile):
+    specfile.tarball_prefix = tarball_prefix
+    specfile.gcov_file = gcov_file
+    specfile.rawname = rawname
+    specfile.golibpath = golibpath

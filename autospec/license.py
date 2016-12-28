@@ -295,3 +295,8 @@ def scan_for_licenses(package, dir):
         quit()
     else:
         print("Licenses    : ", " ".join(sorted(licenses)))
+
+
+def load_specfile(specfile):
+    lics = licenses if licenses else [default_license]
+    specfile.licenses = lics

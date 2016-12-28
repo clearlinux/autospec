@@ -20,12 +20,12 @@
 #
 
 import buildpattern
+import build
 import buildreq
 import files
 import license
 import os
 import sys
-import patches
 import re
 import subprocess
 import tarball
@@ -43,6 +43,16 @@ config_files = set()
 parallel_build = " %{?_smp_mflags} "
 config_path = ""
 urlban = ""
+extra_make = ""
+extra_make_install = ""
+extra_cmake = ""
+prep_append = []
+subdir = ""
+install_macro = "%make_install"
+disable_static = "--disable-static"
+make_install_append = []
+patches = []
+autoreconf = False
 
 license_fetch = None
 license_show = None
@@ -167,7 +177,7 @@ def parse_existing_spec(path, name):
                 old_patches.append(value)
 
     # Ignore nopatch
-    cves = [p for p in patches.patches if p.lower() not in old_patches and p.lower().endswith(".patch") and p.lower().startswith("cve-")]
+    cves = [p for p in patches if p.lower() not in old_patches and p.lower().endswith(".patch") and p.lower().startswith("cve-")]
     for cve in cves:
         commitmessage.new_cve(cve.upper().split(".PATCH")[0])
 
@@ -185,6 +195,16 @@ def parse_config_files(path, bump):
     global config_file
     global profile_payload
     global config_opts
+    global extra_make
+    global extra_make_install
+    global extra_cmake
+    global prep_append
+    global subdir
+    global install_macro
+    global disable_static
+    global make_install_append
+    global patches
+    global autoreconf
 
     config_path = path
 
@@ -285,12 +305,12 @@ def parse_config_files(path, bump):
             print("attr for: %s." % filename)
             files.attrs[filename] = attr
 
-    patches.patches += read_conf_file("series")
-    pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches.patches]
+    patches += read_conf_file("series")
+    pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
     cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
         " ".join(pfiles)
-    if len(patches.patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
-        patches.autoreconf = True
+    if len(patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+        autoreconf = True
 
     content = read_conf_file("configure")
     extra_configure = " \\\n".join(content)
@@ -299,34 +319,34 @@ def parse_config_files(path, bump):
     extra_configure32 = " \\\n".join(content)
 
     if config_opts["keepstatic"]:
-        buildpattern.disable_static = ""
+        disable_static = ""
     if config_opts['broken_parallel_build']:
         parallel_build = ""
 
     content = read_conf_file("make_args")
     if content and content[0]:
-        buildpattern.extra_make = content[0]
+        extra_make = content[0]
 
     content = read_conf_file("make_install_args")
     if content and content[0]:
-        buildpattern.extra_make_install = content[0]
+        extra_make_install = content[0]
 
     content = read_conf_file("install_macro")
     if content and content[0]:
-        buildpattern.install_macro = content[0]
+        install_macro = content[0]
 
     content = read_conf_file("cmake_args")
     if content and content[0]:
-        buildpattern.extra_cmake = content[0]
+        extra_cmake = content[0]
 
     content = read_conf_file("subdir")
     if content and content[0]:
-        buildpattern.subdir = content[0]
+        subdir = content[0]
 
     content = read_conf_file("build_pattern")
     if content and content[0]:
         buildpattern.set_build_pattern(content[0], 20)
-        patches.autoreconf = False
+        autoreconf = False
 
     content = read_conf_file("make_check_command")
     if content and content[0]:
@@ -347,7 +367,7 @@ def parse_config_files(path, bump):
     if config_opts['use_clang']:
         config_opts['funroll-loops'] = False
         buildreq.add_buildreq("llvm-dev")
-        
+
     if config_opts['32bit']:
         buildreq.add_buildreq("glibc-libc32")
         buildreq.add_buildreq("glibc-dev32")
@@ -355,7 +375,22 @@ def parse_config_files(path, bump):
         buildreq.add_buildreq("gcc-libgcc32")
         buildreq.add_buildreq("gcc-libstdc++32")
 
-    buildpattern.make_install_append = read_conf_file("make_install_append")
-    buildpattern.prep_append = read_conf_file("prep_append")
+    make_install_append = read_conf_file("make_install_append")
+    prep_append = read_conf_file("prep_append")
 
     profile_payload = read_conf_file("profile_payload")
+
+def load_specfile(specfile):
+    specfile.urlban = urlban
+    specfile.keepstatic = config_opts['keepstatic']
+    specfile.no_autostart = config_opts['no_autostart']
+    specfile.extra_make = extra_make
+    specfile.extra_make_install = extra_make_install
+    specfile.extra_cmake = extra_cmake
+    specfile.prep_append = prep_append
+    specfile.subdir = subdir
+    specfile.install_macro = install_macro
+    specfile.disable_static = disable_static
+    specfile.make_install_append = make_install_append
+    specfile.patches = patches
+    specfile.autoreconf = autoreconf

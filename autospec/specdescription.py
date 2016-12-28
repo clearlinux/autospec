@@ -271,3 +271,9 @@ def scan_for_description(package, dir):
                 description_from_readme(os.path.join(dirpath, name))
 
     print("Summary     :", default_summary.strip())
+
+def load_specfile(specfile):
+    specfile.default_sum = default_summary
+    specfile.default_grp = default_group
+    specfile.default_desc = default_description
+

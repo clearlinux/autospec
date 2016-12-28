@@ -21,7 +21,6 @@
 
 import build
 from collections import OrderedDict
-import lang
 import re
 import tarball
 import buildreq
@@ -39,6 +38,7 @@ excludes = []
 extras = []
 setuid = []
 attrs = {}
+locales = []
 
 newfiles_printed = 0
 
@@ -89,7 +89,7 @@ def file_is_locale(filename):
     match = pat.search(filename)
     if match:
         l = match.group(1)
-        lang.add_lang(l)
+        add_lang(l)
         return True
     else:
         return False
@@ -286,7 +286,7 @@ def push_file(filename):
     if file_pat_match(filename, r"^/usr/lib32/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib32"):
         return
 
-# locale data gets picked up via find_lang
+    # locale data gets picked up via find_lang
     if file_pat_match(filename, r"^/usr/share/locale/", "ignore"):
         return
 
@@ -316,3 +316,24 @@ def remove_file(file):
         if file not in files_blacklist:
             files_blacklist.append(file)
         build.must_restart = build.must_restart + 1
+
+
+def add_lang(lang):
+    global locales
+    global packages
+    if lang in locales:
+        return
+    locales.append(lang)
+    print("  New locale:", lang)
+
+    if "locales" in packages:
+        return
+    packages["locales"] = []
+
+
+def load_specfile(specfile):
+    specfile.packages = packages
+    specfile.main_requires = main_requires
+    specfile.excludes = excludes
+    specfile.locales = locales
+

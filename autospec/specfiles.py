@@ -21,10 +21,11 @@
 
 import types
 import re
+import time
+import inspect
 from collections import OrderedDict
 
 import config
-import buildpattern
 
 from util import _file_write
 
@@ -44,6 +45,7 @@ class Specfile(object):
         self.no_autostart = False
         self.specfile = None
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
+        self.source_index = {}
         self.default_sum = ""
         self.default_grp = ""
         self.licenses = []
@@ -54,6 +56,24 @@ class Specfile(object):
         self.patches = []
         self.default_desc = ""
         self.locales = []
+        self.default_pattern = ""
+        self.autoreconf = False
+        self.extra_make = ""
+        self.extra_make_install = ""
+        self.tarball_prefix = ""
+        self.gcov_file = ""
+        self.rawname = ""
+        self.golibpath = ""
+        self.archive_details = {}
+        self.prep_append = []
+        self.need_avx2_flags = False
+        self.tests_config = ""
+        self.subdir = ""
+        self.install_macro = "%make_install"
+        self.disable_static = "--disable-static"
+        self.extra_cmake = ""
+        self.make_install_append = []
+        self.excludes = []
 
     def write_spec(self, path):
         """
@@ -117,7 +137,7 @@ class Specfile(object):
                                               self.sources["archive"] +
                                               self.sources["tmpfile"] +
                                               self.sources["gcov"])):
-            buildpattern.source_index[source] = count + 1  # needed?
+            self.source_index[source] = count + 1
             self._write("Source{0}  : {1}\n".format(count + 1, source))
 
     def write_summary(self):
@@ -226,7 +246,15 @@ class Specfile(object):
 
         Currently depends on buildpattern.py due to pattern-matched methods
         """
-        buildpattern.write_buildpattern(self.specfile)
+        self._write_strip("\n")
+        methods = inspect.getmembers(self, predicate=inspect.ismethod)
+        pattern_method = getattr(self, 'write_{}_pattern'.format(self.default_pattern))
+        if pattern_method:
+            pattern_method()
+
+        self.write_sources()
+        self.write_make_install_append()
+        # self.write_systemd_units()
 
     def write_scriplets(self):
         """
@@ -274,5 +302,680 @@ class Specfile(object):
 
         self._write("\n%defattr(-,root,root,-)\n\n")
 
+    def write_lang_c(self, export_epoch=False):
+        """Write C language pattern"""
+        self._write_strip("%build")
+        self._write_strip("export LANG=C")
+        if export_epoch:
+            # time.time() returns a float, but we only need second-precision
+            self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
+        if config.config_opts['asneeded']:
+            self._write_strip("unset LD_AS_NEEDED\n")
+
+    def write_make_line(self):
+        """
+        Write make line to spec file
+
+        make V=1 <config.parallel_build> <extra_make>
+        """
+        self._write_strip("make V=1 {}{}".format(config.parallel_build, self.extra_make))
+
+    def write_prep(self, ruby_pattern=False):
+        """Write prep section to spec file"""
+        self._write_strip("%prep")
+        for archive in self.sources["archive"]:
+            self._write_strip("tar -xf %{{SOURCE{}}}".format(self.source_index[archive]))
+        if self.sources["archive"]:
+            self._write_strip("cd ..")
+        if ruby_pattern:
+            self._write_strip("gem unpack %{SOURCE0}")
+            self._write_strip("%setup -q -D -T -n " + self.tarball_prefix)
+            self._write_strip("gem spec %{{SOURCE0}} -l --ruby > {}.gemspec".format(self.name))
+        else:
+            if self.default_pattern == 'R':
+                self._write_strip("%setup -q -c -n " + self.tarball_prefix)
+            else:
+                self._write_strip("%setup -q -n " + self.tarball_prefix)
+
+        for archive in self.sources["archive"]:
+            self._write_strip('mkdir -p %{{_topdir}}/BUILD/{0}/{1}'
+                              .format(self.tarball_prefix,
+                                      self.archive_details[archive + "destination"]))
+            self._write_strip('mv %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}'
+                              .format(self.archive_details[archive + "prefix"],
+                                      self.tarball_prefix,
+                                      self.archive_details[archive + "destination"]))
+        self.apply_patches()
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} build32".format(self.tarball_prefix))
+            self._write_strip("popd")
+        self._write_strip("\n")
+        self.write_prep_append()
+
+    def write_prep_append(self):
+        """write out any custom supplied commands at the very end of the %prep section"""
+        if self.prep_append and self.prep_append[0]:
+            for line in self.prep_append:
+                sfile.write_strip("{}\n".format(line))
+
+            sfile.write_strip("\n")
+
+    def write_variables(self):
+        """Write variable exports to spec file"""
+        flags = []
+        if config.config_opts['use_clang']:
+            self._write_strip("export CC=clang\n")
+            self._write_strip("export CXX=clang++\n")
+            self._write_strip("export LD=ld.gold\n")
+        if config.config_opts['optimize_size']:
+            flags.extend(["-Os", "-ffunction-sections"])
+        if self.need_avx2_flags:
+            flags.extend(["-O3", "-mavx2"])
+        if config.config_opts['broken_c++']:
+            flags.extend(["-std=gnu++98"])
+        if config.config_opts['insecure_build']:
+            self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
+            self._write_strip("unset LDFLAGS\n")
+        if config.config_opts['conservative_flags']:
+            self._write_strip('export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
+                              "-fexceptions -fstack-protector "
+                              "--param=ssp-buffer-size=32 -Wformat "
+                              "-Wformat-security -Wno-error -Wl,-z -Wl,now "
+                              "-Wl,-z -Wl,relro -Wl,-z,max-page-size=0x1000 -m64 "
+                              '-march=westmere -mtune=haswell"\n')
+            self._write_strip("export CXXFLAGS=$CFLAGS\n")
+            self._write_strip("unset LDFLAGS\n")
+        if config.config_opts['use_clang']:
+            self._write_strip("export CFLAGS=\"-g -O3 "
+                              "-feliminate-unused-debug-types  -pipe -Wall "
+                              "-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector "
+                              "--param=ssp-buffer-size=32 -Wformat "
+                              "-Wformat-security -Wl,--copy-dt-needed-entries -m64 "
+                              "-march=westmere  -mtune=native "
+                              "-fasynchronous-unwind-tables -D_REENTRANT  "
+                              '-Wl,-z -Wl,now -Wl,-z -Wl,relro "\n')
+            self._write_strip("export CXXFLAGS=$CFLAGS\n")
+            self._write_strip("unset LDFLAGS\n")
+        if config.config_opts['funroll-loops']:
+            flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
+        if config.config_opts['use_lto']:
+            flags.extend(["-O3", "-flto", "-ffat-lto-objects"])
+            self._write_strip("export AR=gcc-ar\n")
+            self._write_strip("export RANLIB=gcc-ranlib\n")
+            self._write_strip("export NM=gcc-nm\n")
+        if config.config_opts['fast-math']:
+            flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
+        if config.config_opts['pgo']:
+            flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
+        if self.gcov_file:
+            flags = list(filter(("-flto").__ne__, flags))
+            flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
+        if flags:
+            flags = sorted(list(set(flags)))
+            self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('export FCFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('export FFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('export CXXFLAGS="$CXXFLAGS {0} "\n'.format(" ".join(flags)))
+
+        if config.profile_payload and config.profile_payload[0]:
+            genflags = []
+            useflags = []
+            genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo"])
+            useflags.extend(["-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
+
+            self._write_strip('export CFLAGS_GENERATE="$CFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export FCFLAGS_GENERATE="$FCFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export FFLAGS_GENERATE="$FFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export CXXFLAGS_GENERATE="$CXXFLAGS {0} "\n'.format(" ".join(genflags)))
+
+            self._write_strip('export CFLAGS_USE="$CFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export FCFLAGS_USE="$FCFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export FFLAGS_USE="$FFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export CXXFLAGS_USE="$CXXFLAGS {0} "\n'.format(" ".join(useflags)))
+
+    def write_check(self):
+        """Write check section to spec file"""
+        if self.tests_config and not config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            self._write_strip("export LANG=C")
+            self._write_strip("export http_proxy=http://127.0.0.1:9/")
+            self._write_strip("export https_proxy=http://127.0.0.1:9/")
+            self._write_strip("export no_proxy=localhost")
+            self._write_strip(self.tests_config)
+            self._write_strip("\n")
+
+    def write_make_install(self):
+        """Write install section to spec file for make builds"""
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("%make_install32 " + self.extra_make_install)
+            self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
+            self._write_strip("then")
+            self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
+            self._write_strip("    for i in *.pc ; do ln -s $i 32$i ; done")
+            self._write_strip("    popd")
+            self._write_strip("fi")
+            self._write_strip("popd")
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
+        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+
+        if config.config_opts['use_avx2']:
+            self.need_avx2_flags = True
+            self.write_variables()
+            self.need_avx2_flags = False
+            self._write_strip("make clean")
+            self._write_strip("%configure {0}{1} --libdir=/usr/lib64/avx2"
+                              .format(self.disable_static, config.extra_configure))
+            self.write_make_line()
+            self._write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")
+            self._write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.la")
+            self._write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.lo")
+
+        if self.subdir:
+            self._write_strip("popd")
+
+        self.write_find_lang()
+
+    def write_make_install_append(self):
+        """write out any custom supplied commands at the very end of the %install section"""
+        if self.make_install_append and self.make_install_append[0]:
+            sfile.write_strip("## make_install_append content")
+            for line in self.make_install_append:
+                sfile.write_strip("{}\n".format(line))
+            sfile.write_strip("## make_install_append end")
+
+    def write_cmake_install(self):
+        """Write install section to spec file for cmake builds"""
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+
+        if config.config_opts['32bit']:
+            self._write_strip("pushd clr-build32")
+            self._write_strip("%make_install32 " + self.extra_make_install)
+            self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
+            self._write_strip("then")
+            self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
+            self._write_strip("    for i in *.pc ; do ln -s $i 32$i ; done")
+            self._write_strip("    popd")
+            self._write_strip("fi")
+            self._write_strip("popd")
+
+        self._write_strip("pushd clr-build")
+        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+        self._write_strip("popd")
+        self.write_find_lang()
+
+    @staticmethod
+    def get_profile_generate_flags():
+        """
+        Return profile generate flags if proper configuration is set
+
+        If config.profile_payload is non-empty, returns
+                'CFLAGS="${CFLAGS_GENERATE}" '
+                'CXXFLAGS="${CXXFLAGS_GENERATE}" '
+                'FFLAGS="${FFLAGS_GENERATE}" '
+                'FCFLAGS="${FCFLAGS_GENERATE}" '
+
+        otherwise an empty string is returned
+        """
+        if config.profile_payload and config.profile_payload[0]:
+            return 'CFLAGS="${CFLAGS_GENERATE}" '     \
+                   'CXXFLAGS="${CXXFLAGS_GENERATE}" ' \
+                   'FFLAGS="${FFLAGS_GENERATE}" '     \
+                   'FCFLAGS="${FCFLAGS_GENERATE}" '
+        return ""
+
+    @staticmethod
+    def get_profile_use_flags():
+        """
+        Return profile generate flags if proper configuration is set
+
+        If config.profile_payload is non-empty, returns
+                'CFLAGS="${CFLAGS_USE}" '
+                'CXXFLAGS="${CXXFLAGS_USE}" '
+                'FFLAGS="${FFLAGS_USE}" '
+                'FCFLAGS="${FCFLAGS_USE}" '
+
+        otherwise an empty string is returned
+        """
+        if config.profile_payload and config.profile_payload[0]:
+            return 'CFLAGS="${CFLAGS_USE}" '     \
+                   'CXXFLAGS="${CXXFLAGS_USE}" ' \
+                   'FFLAGS="${FFLAGS_USE}" '     \
+                   'FCFLAGS="${FCFLAGS_USE}" '
+        return ""
+
+    def get_systemd_units(self):
+        """get systemd unit files from the files module"""
+        service_file_section = "config"
+        systemd_service_pattern = r"^/usr/lib/systemd/system/[^/]*\.(mount|service|socket|target)$"
+        systemd_units = []
+
+        if service_file_section not in self.packages:
+            return systemd_units
+
+        for serv_f in self.packages[service_file_section]:
+            if re.search(systemd_service_pattern, serv_f) and serv_f not in self.excludes:
+                systemd_units.append(serv_f)
+
+        return systemd_units
+
+    def write_systemd_units(self):
+        """write out installs for systemd unit files"""
+        units = self.get_systemd_units()
+        for unit in units:
+            self._write("systemctl --root=%{{buildroot}} enable {0}\n".format(os.path.basename(unit)))
+
+    def write_configure_pattern(self):
+        """Write configure build pattern to spec file"""
+        if self.autoreconf:
+            # Patches affecting configure.* or Makefile.*, reconf instead
+            self.write_configure_ac_pattern()
+            return
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+
+        # Prep it for PGO
+        if config.profile_payload and config.profile_payload[0]:
+            if self.subdir:
+                self._write_strip("pushd " + self.subdir)
+            self._write_strip("{0}%configure {1} {2}"
+                              .format(self.get_profile_generate_flags(),
+                                      self.disable_static,
+                                      config.extra_configure))
+            self.write_make_line()
+            if self.subdir:
+                self._write_strip("popd")
+            self._write_strip("\n")
+
+            self._write_strip("\n".join(config.profile_payload))
+            self._write_strip("\nmake clean\n")
+
+        if self.subdir:
+            self._write_strip("pushd {}".format(self.subdir))
+        self._write_strip("{0}%configure {1} {2}"
+                          .format(self.get_profile_use_flags(),
+                                  self.disable_static,
+                                  config.extra_configure))
+        self.write_make_line()
+        if self.subdir:
+            self._write_strip("popd")
+        self._write_strip("\n")
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+            self._write_strip("%configure {0} {1} {2} "
+                              " --libdir=/usr/lib32 "
+                              "--build=i686-generic-linux-gnu "
+                              "--host=i686-generic-linux-gnu "
+                              "--target=i686-clr-linux-gnu"
+                              .format(self.disable_static,
+                                      config.extra_configure,
+                                      config.extra_configure32))
+            self.write_make_line()
+            self._write_strip("popd")
+
+        self.write_check()
+        self.write_make_install()
+
+    def write_configure_ac_pattern(self):
+        """Write build pattern for configure.ac style build"""
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+        # Prep it for PGO
+        if config.profile_payload and config.profile_payload[0]:
+            if self.subdir:
+                self._write_strip("pushd " + self.subdir)
+            self._write_strip("{0}%reconfigure {1} {2}"
+                              .format(self.get_profile_generate_flags(),
+                                      self.disable_static,
+                                      config.extra_configure))
+            self.write_make_line()
+            if self.subdir:
+                self._write_strip("popd")
+            self._write_strip("\n")
+
+            self._write_strip("\n".join(config.profile_payload))
+            self._write_strip("\nmake clean\n")
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+        self._write_strip("{0}%reconfigure {1} {2}"
+                          .format(self.get_profile_generate_flags(),
+                                  self.disable_static,
+                                  config.extra_configure))
+        self.write_make_line()
+        if self.subdir:
+            self._write_strip("popd")
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+            self._write_strip("%reconfigure {0} {1} {2} "
+                              "--libdir=/usr/lib32 "
+                              "--build=i686-generic-linux-gnu "
+                              "--host=i686-generic-linux-gnu "
+                              "--target=i686-clr-linux-gnu"
+                              .format(self.disable_static,
+                                      config.extra_configure,
+                                      config.extra_configure32))
+            self.write_make_line()
+            self._write_strip("popd")
+        self._write_strip("\n")
+        self.write_check()
+        self.write_make_install()
+
+    def write_make_pattern(self):
+        """Write build pattern for make"""
+        self.write_prep()
+        self.write_lang_c()
+        self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+        self.write_make_line()
+        if self.subdir:
+            self._write_strip("popd")
+        self._write_strip("\n")
+        self.write_check()
+        self.write_make_install()
+
+    def write_autogen_pattern(self):
+        """Write build pattern for autogen packages"""
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+        if config.profile_payload and config.profile_payload[0]:
+            self._write_strip("{0}%autogen {1} {2}"
+                              .format(self.get_profile_generate_flags(),
+                                      self.disable_static,
+                                      config.extra_configure))
+            self.write_make_line()
+            self._write_strip("\n")
+
+            self._write_strip("\n".join(config.profile_payload))
+            self._write_strip("\nmake clean\n")
+
+        self._write_strip("{0}%autogen {1} {2}"
+                          .format(self.get_profile_use_flags(),
+                                  self.disable_static,
+                                  config.extra_configure))
+        self.write_make_line()
+        self._write_strip("\n")
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
+            self._write_strip('export CFLAGS="$CFLAGS -m32"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
+            self._write_strip("%autogen {0} {1} {2} "
+                              "--libdir=/usr/lib32 "
+                              "--build=i686-generic-linux-gnu "
+                              "--host=i686-generic-linux-gnu "
+                              "--target=i686-clr-linux-gnu"
+                              .format(self.disable_static,
+                                      config.extra_configure,
+                                      config.extra_configure32))
+            self.write_make_line()
+            self._write_strip("popd")
+        self.write_check()
+        self.write_make_install()
+
+    def write_distutils_pattern(self):
+        """Write build pattern for python packages using distutils"""
+        self.write_prep()
+        self.write_lang_c()
+        self.write_variables()
+        self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
+        self._write_strip("\n")
+        if self.tests_config and not config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            # Prevent setuptools from hitting the internet
+            self._write_strip("export http_proxy=http://127.0.0.1:9/")
+            self._write_strip("export https_proxy=http://127.0.0.1:9/")
+            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self._write_strip(self.tests_config)
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot}")
+        self.write_find_lang()
+
+    def write_distutils3_pattern(self):
+        """Write build pattern for python packages using distutils3"""
+        self.write_prep()
+        self.write_lang_c()
+        self.write_variables()
+        self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
+        self._write_strip("\n")
+        if self.tests_config and not config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            # Prevent setuptools from hitting the internet
+            self._write_strip("export http_proxy=http://127.0.0.1:9/")
+            self._write_strip("export https_proxy=http://127.0.0.1:9/")
+            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self._write_strip(self.tests_config)
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot}")
+        self.write_find_lang()
+
+    def write_distutils23_pattern(self):
+        """Write build pattern for python packages using distutils2 and 32 and 3"""
+        self.write_prep()
+        self.write_lang_c()
+        self.write_variables()
+        self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
+        self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
+        self._write_strip("\n")
+        if self.tests_config and not config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            # Prevent setuptools from hitting the internet
+            self._write_strip("export http_proxy=http://127.0.0.1:9/")
+            self._write_strip("export https_proxy=http://127.0.0.1:9/")
+            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self._write_strip(self.tests_config)
+
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot}")
+        self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot}")
+        self.write_find_lang()
+
+    def write_R_pattern(self):
+        """Write build pattern for R packages"""
+        self.write_prep()
+        self.write_lang_c()
+        self._write_strip("\n")
+
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("export LANG=C")
+        self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('export FCFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('export FFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip("export AR=gcc-ar\n")
+        self._write_strip("export RANLIB=gcc-ranlib\n")
+        self._write_strip('export LDFLAGS="$LDFLAGS  -Wl,-z -Wl,relro"\n')
+
+        self._write_strip("mkdir -p %{buildroot}/usr/lib64/R/library")
+        self._write_strip("R CMD INSTALL "
+                          "--install-tests "
+                          "--build  -l "
+                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+        self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
+        self.write_find_lang()
+        self.write_check()
+
+    def write_ruby_pattern(self):
+        """Write build pattern for ruby packages"""
+        self.write_prep(ruby_pattern=True)
+        self._write_strip("%build")
+        self._write_strip("export LANG=C")
+        self._write_strip("gem build {}.gemspec".format(self.name))
+        self._write_strip("\n")
+
+        self._write_strip("%install")
+        self._write_strip("%global gem_dir $(ruby -e'puts Gem.default_dir')")
+        self._write_strip("gem install -V \\")
+        self._write_strip("  --local \\")
+        self._write_strip("  --force \\")
+        self._write_strip("  --install-dir .%{gem_dir} \\")
+        self._write_strip("  --bindir .%{_bindir} \\")
+        self._write_strip(" {}.gem".format(self.tarball_prefix))
+        self._write_strip("\n")
+
+        self._write_strip("mkdir -p %{buildroot}%{gem_dir}")
+        self._write_strip("cp -pa .%{gem_dir}/* \\")
+        self._write_strip("        %{buildroot}%{gem_dir}")
+        self._write_strip("\n")
+
+        self._write_strip("if [ -d .%{_bindir} ]; then")
+        self._write_strip("    mkdir -p %{buildroot}%{_bindir}")
+        self._write_strip("    cp -pa .%{_bindir}/* \\")
+        self._write_strip("        %{buildroot}%{_bindir}/")
+        self._write_strip("fi")
+        self._write_strip("\n")
+        self.write_find_lang()
+        self.write_check()
+
+    def write_cmake_pattern(self):
+        """Write cmake pattern to spec file"""
+        self.subdir = "clr-build"
+        self.write_prep()
+        self.write_lang_c()
+        self._write_strip("mkdir clr-build")
+        self._write_strip("pushd clr-build")
+        self.write_variables()
+        self._write_strip("cmake .. -G \"Unix Makefiles\" "
+                          "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                          "-DLIB_INSTALL_DIR:PATH=%{_libdir} "
+                          "-DCMAKE_AR=/usr/bin/gcc-ar "
+                          "-DLIB_SUFFIX=64 "
+                          "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+        self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
+        self._write_strip("popd")
+
+        if config.config_opts['32bit']:
+            self._write_strip("mkdir clr-build32")
+            self._write_strip("pushd clr-build32")
+            self.write_variables()
+            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
+            self._write_strip('export CFLAGS="$CFLAGS -m32"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
+            self._write_strip('cmake .. -G "Unix Makefiles" '
+                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                              "-DLIB_INSTALL_DIR:PATH=%{_libdir}32 "
+                              "-DCMAKE_AR=/usr/bin/gcc-ar "
+                              "-DLIB_SUFFIX=32 "
+                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+            self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
+            self._write_strip("popd")
+        self._write_strip("\n")
+        self.write_check()
+        self.write_cmake_install()
+
+    def write_cpan_pattern(self):
+        """Write cpan build pattern to spec file"""
+        self.write_prep()
+        self._write_strip("%build")
+        self._write_strip("export LANG=C")
+        self._write_strip("if test -f Makefile.PL; then")
+        self._write_strip("%{__perl} Makefile.PL")
+        self.write_make_line()
+        self._write_strip("else")
+        self._write_strip("%{__perl} Build.PL")
+        self._write_strip("./Build")
+        self._write_strip("fi")
+        self._write_strip("\n")
+        self.write_check()
+        self._write_strip("%install")
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("if test -f Makefile.PL; then")
+        self._write_strip("make pure_install PERL_INSTALL_ROOT=%{buildroot}")
+        self._write_strip("else")
+        self._write_strip("./Build install --installdirs=site --destdir=%{buildroot}")
+        self._write_strip("fi")
+        self._write_strip("find %{buildroot} -type f -name .packlist -exec rm -f {} ';'")
+        self._write_strip("find %{buildroot} -depth -type d -exec rmdir {} 2>/dev/null ';'")
+        self._write_strip("find %{buildroot} -type f -name '*.bs' -empty -exec rm -f {} ';'")
+        self._write_strip("%{_fixperms} %{buildroot}/*")
+        self.write_find_lang()
+
+    def write_scons_pattern(self):
+        """Write scons build pattern to spec file"""
+        self.write_prep()
+        self._write_strip("%build")
+        self._write_strip("export LANG=C")
+        self.write_variables()
+        self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self._write_strip("scons install " + self.extra_make_install)
+
+    def write_golang_pattern(self):
+        """Write build pattern for go packages"""
+        library_path = self.golibpath
+        self.write_prep()
+        self._write_strip("%build")
+        self._write_strip("export LANG=C")
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self._write_strip('gopath="/usr/lib/golang-dist"')
+        self._write_strip('library_path="{}"'.format(library_path))
+        self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("install -d -p %{buildroot}${gopath}/src/${library_path}/")
+        self._write_strip('for file in $(find . -iname "*.go" -o -iname "*.h" -o -iname "*.c") ; do')
+        self._write("     install -d -p %{buildroot}${gopath}/src/${library_path}/$(dirname $file)\n")
+        self._write("     cp -pav $file %{buildroot}${gopath}/src/${library_path}/$file\n")
+        self._write_strip("done")
+        self.write_make_install_append()
+        self._write_strip("\n")
+
+    def write_maven_pattern(self):
+        """Write maven build pattern to spec file"""
+        mvn = self.extra_make_install if self.extra_make_install else self.tarball_prefix
+
+        self.write_prep()
+        self._write_strip("%build")
+        self._write_strip("python3 /usr/share/java-utils/mvn_build.py " + self.extra_make)
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self._write_strip("xmvn-install  -R .xmvn-reactor -n {} -d %{{buildroot}}"
+                          .format(mvn))
+
+    def write_find_lang(self):
+        for lang in self.locales:
+            self._write("%find_lang {}\n".format(lang))
+
+    def apply_patches(self):
+        """Write patch list to spec file"""
+        counter = 1
+        for p in self.patches:
+            name = p.split(None, 1)[0]
+            if name == p:
+                options = "-p1"
+            else:
+                options = p.split(None, 1)[1]
+            if not p.split()[0].endswith(".nopatch"):
+                self._write("%patch{} {}\n".format(counter, options))
+            counter = counter + 1
+
     def _write(self, string):
         self.specfile.write(string)
+
+    def _write_strip(self, string):
+        self.specfile.write_strip(string)

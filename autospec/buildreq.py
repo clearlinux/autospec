@@ -24,7 +24,6 @@ import re
 import ast
 
 import buildpattern
-import patches
 import util
 import tarball
 import config
@@ -542,12 +541,12 @@ def scan_for_configure(package, dir, autospecdir):
     if not can_reconf:
         can_reconf = os.path.exists(os.path.join(dir, "configure.in"))
 
-    if can_reconf and patches.autoreconf:
+    if can_reconf and config.autoreconf:
         print("Patches touch configure.*, adding autoreconf stage")
         for breq in autoreconf_reqs:
             add_buildreq(breq)
     else:
-        patches.autoreconf = False
+        config.autoreconf = False
 
     print("Buildreqs   : ", end="")
     for lic in sorted(buildreqs):
@@ -557,3 +556,7 @@ def scan_for_configure(package, dir, autospecdir):
         count = count + 1
         print(lic + " ", end="")
     print("")
+
+def load_specfile(specfile):
+    specfile.buildreqs = buildreqs
+    specfile.pythonreqs = pythonreqs

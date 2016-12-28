@@ -28,10 +28,8 @@ import buildreq
 import config
 import files
 import git
-import lang
 import license
 import docs
-import patches
 import specdescription
 import tarball
 import test
@@ -96,21 +94,14 @@ def load_specfile(specfile):
     """
     Gather all information from static analysis into Specfile instance
     """
-    specfile.urlban = config.urlban
-    specfile.keepstatic = config.config_opts['keepstatic']
-    specfile.no_autostart = config.config_opts['no_autostart']
-    specfile.default_sum = specdescription.default_summary
-    specfile.default_grp = specdescription.default_group
-    lics = license.licenses if license.licenses else [license.default_license]
-    specfile.licenses = lics
-    specfile.packages = files.packages
-    specfile.main_requires = files.main_requires
-    specfile.buildreqs = buildreq.buildreqs
-    specfile.pythonreqs = buildreq.pythonreqs
-    specfile.sources = buildpattern.sources
-    specfile.patches = patches.patches
-    specfile.default_desc = specdescription.default_description
-    specfile.locales = lang.locales
+    config.load_specfile(specfile)
+    tarball.load_specfile(specfile)
+    specdescription.load_specfile(specfile)
+    license.load_specfile(specfile)
+    files.load_specfile(specfile)
+    buildreq.load_specfile(specfile)
+    buildpattern.load_specfile(specfile)
+    test.load_specfile(specfile)
 
 
 def main():
@@ -202,8 +193,7 @@ def main():
 
     while 1:
         build.package()
-        specfile.packages = files.packages
-        specfile.locales = lang.locales
+        files.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         files.newfiles_printed = 0
         if build.round > 20 or build.must_restart == 0:

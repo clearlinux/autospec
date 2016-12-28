@@ -182,3 +182,6 @@ def scan_for_tests(dir):
         else:
             tests_config = tests_config + " || :"
         print(tests_config)
+
+def load_specfile(specfile):
+    specfile.tests_config = tests_config
