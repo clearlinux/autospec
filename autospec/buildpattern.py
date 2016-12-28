@@ -290,7 +290,7 @@ def write_configure_ac_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    file.write_strip("export SOURCE_DATE_EPOCH=`date +%s -r configure.ac`")
+    file.write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
     if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
@@ -348,7 +348,7 @@ def write_autogen_pattern(file):
     write_prep(file)
     file.write_strip("%build")
     file.write_strip("export LANG=C")
-    file.write_strip("export SOURCE_DATE_EPOCH=`date +%s -r autogen.sh`")
+    file.write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
     if config.config_opts['asneeded']:
         file.write_strip("unset LD_AS_NEEDED\n")
     write_variables(file)
