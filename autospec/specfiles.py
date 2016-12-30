@@ -256,7 +256,7 @@ class Specfile(object):
         if pattern_method:
             pattern_method()
 
-        self.write_sources()
+        self.write_source_installs()
         self.write_make_install_append()
         # self.write_systemd_units()
 
@@ -361,9 +361,9 @@ class Specfile(object):
         """write out any custom supplied commands at the very end of the %prep section"""
         if self.prep_append and self.prep_append[0]:
             for line in self.prep_append:
-                sfile.write_strip("{}\n".format(line))
+                self._write_strip("{}\n".format(line))
 
-            sfile.write_strip("\n")
+            self._write_strip("\n")
 
     def write_variables(self):
         """Write variable exports to spec file"""
@@ -490,10 +490,22 @@ class Specfile(object):
     def write_make_install_append(self):
         """write out any custom supplied commands at the very end of the %install section"""
         if self.make_install_append and self.make_install_append[0]:
-            sfile.write_strip("## make_install_append content")
+            self._write_strip("## make_install_append content")
             for line in self.make_install_append:
-                sfile.write_strip("{}\n".format(line))
-            sfile.write_strip("## make_install_append end")
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## make_install_append end")
+
+    def write_source_installs(self):
+        """write out installs from SourceX lines"""
+        if len(self.sources["unit"]) != 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/lib/systemd/system")
+            for unit in self.sources["unit"]:
+                self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/systemd/system/{1}"
+                                  .format(self.source_index[unit], unit))
+        if len(self.sources["tmpfile"]) != 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/lib/tmpfiles.d")
+            self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/tmpfiles.d/{1}.conf"
+                              .format(self.source_index[self.sources["tmpfile"][0]], self.name))
 
     def write_cmake_install(self):
         """Write install section to spec file for cmake builds"""
