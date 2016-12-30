@@ -882,7 +882,7 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
             self._write_strip('cmake .. -G "Unix Makefiles" '
                               "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=%{_libdir}32 "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DLIB_SUFFIX=32 "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
