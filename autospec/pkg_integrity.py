@@ -36,6 +36,8 @@ pubkey --gnupghome /opt/pki/gpghome
 
 SEPT = "-------------------------------------------------------------------------------"
 RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
+KEYID_TRY = ""
+KEYID = ""
 
 
 # CLI interface to gpg command
@@ -193,6 +195,7 @@ class GPGVerifier(Verifier):
             self.print_result(False, msg.format(self.key_url, code))
 
     def verify(self):
+        global KEYID
         print("Verifying GPG signature\n")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
@@ -208,6 +211,7 @@ class GPGVerifier(Verifier):
         sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
         if sign_status is None:
             self.print_result(self.package_path)
+            KEYID = KEYID_TRY
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)
@@ -294,7 +298,9 @@ def parse_keyid(sig_filename):
 
 
 def get_keyid(sig_filename):
+    global KEYID_TRY
     keyid = parse_keyid(sig_filename)
+    KEYID_TRY = keyid
     return keyid.upper() if keyid else None
 
 
@@ -400,6 +406,10 @@ def parse_args():
     parser.add_argument('--gnupghome', required=False, default=None,
                         help='GNUPGHOME')
     return parser.parse_args()
+
+
+def load_specfile(specfile):
+    specfile.keyid = KEYID
 
 
 def main(args):

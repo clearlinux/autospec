@@ -184,13 +184,14 @@ def main():
     #
     specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release)
     load_specfile(specfile)
-    specfile.write_spec(build.download_path)
 
     print("\n")
 
     if args.integrity == True:
         pkg_integrity.check(args.url, build.download_path)
+        pkg_integrity.load_specfile(specfile)
 
+    specfile.write_spec(build.download_path)
     while 1:
         build.package()
         files.load_specfile(specfile)
