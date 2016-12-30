@@ -283,6 +283,8 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib64/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib"):
         return
+    if file_pat_match(filename, r"^/usr/lib32/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib32"):
+        return
 
 # locale data gets picked up via find_lang
     if file_pat_match(filename, r"^/usr/share/locale/", "ignore"):
