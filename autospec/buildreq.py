@@ -74,7 +74,6 @@ def add_pkgconfig_buildreq(preq):
     if config.config_opts['32bit']:
         req = "pkgconfig(32" + preq + ")"
         add_buildreq(req)
-        
     req = "pkgconfig(" + preq + ")"
     return add_buildreq(req)
 
@@ -263,6 +262,27 @@ maven_jars = {"apache": "jdk-apache-parent",
               "doxia-sink-api": "jdk-doxia",
               "doxia-site-renderer": "jdk-doxia-sitetools",
               "plexus-component-metadata": "jdk-plexus-containers",
+              "org.apache.felix.bundlerepository": "jdk-felix-bundlerepository",
+              "org.apache.felix.utils": "jdk-felix-utils",
+              "kxml2": "jdk-kxml",
+              "org.osgi.core": "jdk-osgi-core",
+              "biz.aQute.bndlib": "jdk-aqute-bndlib",
+              "servlet-api": "jdk-glassfish-servlet-api",
+              "parboiled-java": "jdk-parboiled",
+              "oss-parent": "jdk-sonatype-oss-parent",
+              "org.apache.felix.framework": "jdk-felix-framework",
+              "org.eclipse.osgi.services": "jdk-eclipse-osgi-services",
+              "org.eclipse.osgi": "jdk-eclipse-osgi",
+              "org.osgi.compendium": "jdk-osgi-compendium",
+              "org.eclipse.eclipse": "jdk-eclipse-eclipse",
+              "org.osgi.foundation": "jdk-felix-osgi-foundation",
+              "apache-jar-resource-bundle": "jdk-apache-resource-bundles",
+              "plexus-compiler-api": "jdk-plexus-compiler",
+              "plexus-compiler-manager": "jdk-plexus-compiler",
+              "plexus-compiler-javac": "jdk-plexus-compiler",
+              "maven-plugin-annotations": "jdk-maven-plugin-tools",
+              "jna-platform": "jdk-jna",
+              "maven-artifact-manager": "apache-maven2",
               }
 
 
@@ -556,6 +576,7 @@ def scan_for_configure(package, dir, autospecdir):
         count = count + 1
         print(lic + " ", end="")
     print("")
+
 
 def load_specfile(specfile):
     specfile.buildreqs = buildreqs
