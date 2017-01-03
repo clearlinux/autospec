@@ -77,9 +77,15 @@ def build_untar(tarball_path):
         ["tar", "-tf", tarball_path], universal_newlines=True)
     extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
     if tarball_contents:
-        tarball_prefix = tarball_contents.splitlines()[0].rsplit("/")[0]
-        if tarball_prefix == ".":
-            tarball_prefix = tarball_contents.splitlines()[0].rsplit("/")[1]
+        if tarball_contents.splitlines()[0] == "./":
+            # first line is "./"
+            # second line is "./<tarball prefix>/"
+            # split the slashes off and take the tarball prefix
+            tarball_prefix = tarball_contents.splitlines()[1].split("/")[1]
+        else:
+            tarball_prefix = tarball_contents.splitlines()[0].split("/")[0]
+            if tarball_prefix == ".":
+                tarball_prefix = tarball_contents.splitlines()[0].split("/")[1]
     return extract_cmd, tarball_prefix
 
 
