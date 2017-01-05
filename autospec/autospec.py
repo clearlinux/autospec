@@ -147,8 +147,6 @@ def main():
     # First, download the tarball, extract it and then do a set
     # of static analysis on the content of the tarball.
     #
-    build.setup_patterns()
-
     tarball.name_and_version(args.url, args.name)
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
     _dir = tarball.path
@@ -165,6 +163,7 @@ def main():
         license.scan_for_licenses(name, _dir)
         exit(0)
 
+    config.setup_patterns()
     config.config_file = args.config
     config.parse_config_files(build.download_path, args.bump)
     config.parse_existing_spec(build.download_path, tarball.name)

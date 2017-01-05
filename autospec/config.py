@@ -62,6 +62,10 @@ old_version = None
 old_patches = list()
 profile_payload = None
 
+failed_commands = {}
+maven_jars = {}
+gems = {}
+
 config_opts = {}
 config_options = {
     "broken_c++": "extend flags with '-std=gnu++98",
@@ -153,6 +157,30 @@ def read_conf_file(name):
             return filter_blanks(f.readlines())
     except EnvironmentError:
         return []
+
+
+def read_pattern_conf(filename, dest):
+    """
+    Read a fail-pattern configuration file in the form of
+    <pattern>, <package> and ignore lines starting with "#"
+    """
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(file_dir, filename)
+    with open(file_path, "r") as patfile:
+        for line in patfile:
+            if line.startswith("#"):
+                continue
+            pattern, package = line.split(", ", 2)
+            dest[pattern] = package.rstrip()
+
+
+def setup_patterns():
+    global failed_commands
+    global maven_jars
+    global gems
+    read_pattern_conf("failed_commands", failed_commands)
+    read_pattern_conf("maven_jars", maven_jars)
+    read_pattern_conf("gems", gems)
 
 
 def parse_existing_spec(path, name):

@@ -26,29 +26,17 @@ import re
 import tarball
 import os
 
+import config
 import util
 import filecmp
 
 success = 0
 round = 0
 must_restart = 0
-failed_commands = dict()
 base_path = "/tmp/" + getpass.getuser() + "/"
 output_path = base_path + "output"
 download_path = output_path + "/" + tarball.name
 mock_cmd = '/usr/bin/mock'
-
-
-def setup_patterns():
-    global failed_commands
-    fcfile_dir = os.path.dirname(os.path.abspath(__file__))
-    fcfile_path = os.path.join(fcfile_dir, "failed_commands")
-    with open(fcfile_path, "r") as fcfile:
-        for line in fcfile:
-            if line.startswith("#"):
-                continue
-            pattern, package = line.split(", ", 2)
-            failed_commands[pattern] = package.rstrip()
 
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
@@ -56,8 +44,7 @@ def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart = must_restart + \
-            buildreq.add_pkgconfig_buildreq(pkgconfig)
+        must_restart += buildreq.add_pkgconfig_buildreq(pkgconfig)
 
 
 def simple_pattern(line, pattern, req):
@@ -65,21 +52,20 @@ def simple_pattern(line, pattern, req):
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart = must_restart + buildreq.add_buildreq(req)
+        must_restart += buildreq.add_buildreq(req)
 
 
 def failed_pattern(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
         try:
-            req = failed_commands[s]
+            req = config.failed_commands[s]
             if req:
-                must_restart = must_restart + buildreq.add_buildreq(req)
+                must_restart += buildreq.add_buildreq(req)
         except:
             if verbose > 0:
                 print("Unknown pattern match: ", pattern, s)
@@ -87,18 +73,16 @@ def failed_pattern(line, pattern, verbose=0):
 
 def failed_pattern_pkgconfig(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
-        must_restart = must_restart + buildreq.add_pkgconfig_buildreq(s)
+        must_restart += buildreq.add_pkgconfig_buildreq(s)
 
 
 def failed_pattern_R(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
@@ -106,7 +90,7 @@ def failed_pattern_R(line, pattern, verbose=0):
         s = match.group(1)
         try:
             if buildreq.add_buildreq("R-" + s) > 0:
-                must_restart = must_restart + 1
+                must_restart += 1
                 files.push_main_requires("R-" + s)
         except:
             if verbose > 0:
@@ -115,14 +99,13 @@ def failed_pattern_R(line, pattern, verbose=0):
 
 def failed_pattern_perl(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
         try:
-            must_restart = must_restart + buildreq.add_buildreq('perl(%s)' % s)
+            must_restart += buildreq.add_buildreq('perl(%s)' % s)
         except:
             if verbose > 0:
                 print("Unknown pattern match: ", pattern, s)
@@ -130,7 +113,6 @@ def failed_pattern_perl(line, pattern, verbose=0):
 
 def failed_pattern_pypi(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
@@ -139,7 +121,7 @@ def failed_pattern_pypi(line, pattern, verbose=0):
         if s == "":
             return
         try:
-            must_restart = must_restart + buildreq.add_buildreq(util.translate('%s-python' % s))
+            must_restart += buildreq.add_buildreq(util.translate('%s-python' % s))
         except:
             if verbose > 0:
                 print("Unknown python pattern match: ", pattern, s, line)
@@ -147,7 +129,6 @@ def failed_pattern_pypi(line, pattern, verbose=0):
 
 def failed_pattern_go(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
@@ -160,7 +141,7 @@ def failed_pattern_go(line, pattern, verbose=0):
             # (e.g: github.com/<project>/<repo> so transform into pkg name
             s = util.golang_name(s)
         try:
-            must_restart = must_restart + buildreq.add_buildreq(s)
+            must_restart += buildreq.add_buildreq(s)
         except:
             if verbose > 0:
                 print("Unknown golang pattern match: ", pattern, s, line)
@@ -168,17 +149,16 @@ def failed_pattern_go(line, pattern, verbose=0):
 
 def failed_pattern_ruby(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
         try:
-            if s in buildreq.gems:
-                must_restart = must_restart + buildreq.add_buildreq(buildreq.gems[s])
+            if s in config.gems:
+                must_restart += buildreq.add_buildreq(config.gems[s])
             else:
-                must_restart = must_restart + buildreq.add_buildreq('rubygem-%s' % s)
+                must_restart += buildreq.add_buildreq('rubygem-%s' % s)
         except:
             if verbose > 0:
                 print("Unknown pattern match: ", pattern, s)
@@ -186,15 +166,14 @@ def failed_pattern_ruby(line, pattern, verbose=0):
 
 def failed_pattern_ruby_table(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
         try:
-            if s in buildreq.gems:
-                must_restart = must_restart + buildreq.add_buildreq(buildreq.gems[s])
+            if s in config.gems:
+                must_restart += buildreq.add_buildreq(config.gems[s])
             else:
                 print("Unknown ruby gem match", s)
         except:
@@ -204,17 +183,16 @@ def failed_pattern_ruby_table(line, pattern, verbose=0):
 
 def failed_pattern_maven(line, pattern, verbose=0):
     global must_restart
-    global failed_commands
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
         s = match.group(1)
         try:
-            if s in buildreq.maven_jars:
-                must_restart = must_restart + buildreq.add_buildreq(buildreq.maven_jars[s])
+            if s in config.maven_jars:
+                must_restart += buildreq.add_buildreq(config.maven_jars[s])
             else:
-                must_restart = must_restart + buildreq.add_buildreq('jdk-%s' % s)
+                must_restart += buildreq.add_buildreq('jdk-%s' % s)
         except:
             if verbose > 0:
                 print("Unknown maven jar match: ", s)

@@ -201,89 +201,6 @@ def parse_configure_ac(filename):
     configure_ac_line(buffer)
     file.close()
 
-gems = {"hoe": "rubygem-hoe",
-        "rspec/core/rake_task": "rubygem-rspec-core",
-        "bundler/gem_tasks": "rubygem-rubygems-tasks",
-        "bundler/setup": "rubygem-bundler",
-        "echoe": "rubygem-echoe",
-        "sass": "rubygem-sass",
-        "redcarpet": "rubygem-redcarpet",
-        "action_view/helpers/sanitize_helper": "rubygem-actionview",
-        "appraisal/file": "rubygem-appraisal",
-        "benchmark/ips": "rubygem-benchmark-ips",
-        "builder": "rubygem-builder",
-        "bundler": "rubygem-bundler",
-        "gem_hadar": "rubygem-gem_hadar",
-        "gherkin/rubify": "rubygem-gherkin",
-        "guard/compat/test/helper": "rubygem-guard-compat",
-        "html/pipeline": "rubygem-html-pipeline",
-        "minitest/autorun": "rubygem-minitest",
-        "minitest/unit": "rubygem-minitest",
-        "mocha/setup": "rubygem-mocha",
-        "nokogiri/diff": "rubygem-nokogiri-diff",
-        "pdf/reader": "rubygem-pdf-reader",
-        "pry": "rubygem-pry",
-        "rake/extensiontask": "rubygem-rake-compiler",
-        "rack/test": "rubygem-rack-test",
-        "rack/utils": "rubygem-rack",
-        "rspec/core": "rubygem-rspec-core",
-        "rspec/its": "rubygem-rspec-its",
-        "rspec/mocks": "rubygem-rspec-mocks",
-        "test/unit": "rubygem-test-unit",
-        }
-
-maven_jars = {"apache": "jdk-apache-parent",
-              "aether-api": "jdk-aether",
-              "aether-spi": "jdk-aether",
-              "aether-util": "jdk-aether",
-              "aether-impl": "jdk-aether",
-              "org.eclipse.sisu.plexus": "jdk-sisu",
-              "plexus-component-annotations": "jdk-plexus-containers",
-              "maven-monitor": "apache-maven2",
-              "asm": "jdk-objectweb-asm",
-              "maven-project": "apache-maven2",
-              "javax.inject": "jdk-atinject",
-              "plexus-container-default": "jdk-plexus-containers",
-              "wagon-provider-api": "jdk-wagon",
-              "xbean-reflect": "jdk-xbean",
-              "maven-enforcer-plugin": "jdk-enforcer",
-              "maven-surefire-plugin": "jdk-surefire",
-              "junit": "jdk-junit4",
-              "hamcrest-core": "jdk-hamcrest",
-              "wagon-ssh-external": "jdk-wagon",
-              "plexus-interactivity-api": "jdk-plexus-interactivity",
-              "project": "apache-maven2",
-              "maven-plugin-plugin": "jdk-maven-plugin-tools",
-              "asm-commons": "jdk-objectweb-asm",
-              "mockito-core": "jdk-mockito",
-              "modello-maven-plugin": "jdk-modello",
-              "maven-plugin-testing-harness": "jdk-maven-plugin-testing",
-              "maven-toolchain": "apache-maven2",
-              "doxia-sink-api": "jdk-doxia",
-              "doxia-site-renderer": "jdk-doxia-sitetools",
-              "plexus-component-metadata": "jdk-plexus-containers",
-              "org.apache.felix.bundlerepository": "jdk-felix-bundlerepository",
-              "org.apache.felix.utils": "jdk-felix-utils",
-              "kxml2": "jdk-kxml",
-              "org.osgi.core": "jdk-osgi-core",
-              "biz.aQute.bndlib": "jdk-aqute-bndlib",
-              "servlet-api": "jdk-glassfish-servlet-api",
-              "parboiled-java": "jdk-parboiled",
-              "oss-parent": "jdk-sonatype-oss-parent",
-              "org.apache.felix.framework": "jdk-felix-framework",
-              "org.eclipse.osgi.services": "jdk-eclipse-osgi-services",
-              "org.eclipse.osgi": "jdk-eclipse-osgi",
-              "org.osgi.compendium": "jdk-osgi-compendium",
-              "org.eclipse.eclipse": "jdk-eclipse-eclipse",
-              "org.osgi.foundation": "jdk-felix-osgi-foundation",
-              "apache-jar-resource-bundle": "jdk-apache-resource-bundles",
-              "plexus-compiler-api": "jdk-plexus-compiler",
-              "plexus-compiler-manager": "jdk-plexus-compiler",
-              "plexus-compiler-javac": "jdk-plexus-compiler",
-              "maven-plugin-annotations": "jdk-maven-plugin-tools",
-              "jna-platform": "jdk-jna",
-              "maven-artifact-manager": "apache-maven2",
-              }
 
 
 def set_build_req():
@@ -327,7 +244,6 @@ def set_build_req():
 
 
 def Rakefile(filename):
-    global gems
     file = open(filename, "r", encoding="latin-1")
     lines = file.readlines()
     for line in lines:
@@ -335,9 +251,9 @@ def Rakefile(filename):
         match = pat.search(line)
         if match:
             s = match.group(1)
-            if s != "rubygems" and s in gems:
-                print("Rakefile-dep: " + gems[s])
-                add_buildreq(gems[s])
+            if s != "rubygems" and s in config.gems:
+                print("Rakefile-dep: " + config.gems[s])
+                add_buildreq(config.gems[s])
             else:
                 print("Rakefile-new: rubygem-" + s)
 
