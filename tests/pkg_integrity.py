@@ -3,7 +3,7 @@ import unittest
 import tempfile
 from autospec.pkg_integrity import (check,
                                     get_verifier,
-                                    parse_keyid,
+                                    parse_key,
                                     get_keyid,
                                     from_url,
                                     from_disk,
@@ -131,7 +131,7 @@ class TestUtils(unittest.TestCase):
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                 tmpf.write(algo)
                 tmpf.flush()
-                self.assertEqual(parse_keyid(tmpf.name), k_id)
+                self.assertEqual(parse_key(tmpf.name, r'keyid (.+?)\n'), k_id)
                 tmpf.close()
 
         check_algo(KEY_ALGO17, '8AFAFCD242818A52')
@@ -167,6 +167,18 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(get_signature_url(url_from_pypi)[-4:], '.asc')
         self.assertEqual(get_signature_url(url_from_gnu1)[-4:], '.sig')
         self.assertEqual(get_signature_url(url_from_pypi1)[-4:], '.asc')
+
+    def test_parse_key_for_email(self):
+        def check_pubkey(algo, email):
+            pattern = r':user ID packet: ".* <(.+?)>"\n'
+            with tempfile.NamedTemporaryFile(delete=True) as tmpf:
+                tmpf.write(algo)
+                tmpf.flush()
+                self.assertEqual(parse_key(tmpf.name, pattern), email)
+                tmpf.close()
+
+        check_pubkey(KEY_ALGO17, 'kislyuk@gmail.com')
+        check_pubkey(KEY_ALGO1, None)
 
 
 KEY_ALGO1 = b"""\

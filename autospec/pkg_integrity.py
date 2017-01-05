@@ -38,6 +38,7 @@ SEPT = "------------------------------------------------------------------------
 RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 KEYID_TRY = ""
 KEYID = ""
+EMAIL = ""
 
 
 # CLI interface to gpg command
@@ -196,6 +197,7 @@ class GPGVerifier(Verifier):
 
     def verify(self):
         global KEYID
+        global EMAIL
         print("Verifying GPG signature\n")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
@@ -204,6 +206,7 @@ class GPGVerifier(Verifier):
             self.print_result(False, err_msg='{} not found'.format(self.package_sign_path))
             return None
         pub_key = self.get_pubkey_path()
+        EMAIL = parse_key(pub_key, r':user ID packet: ".* <(.+?)>"\n')
         if not pub_key or os.path.exists(pub_key) is False:
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
@@ -285,21 +288,23 @@ def get_verifier(filename):
     return VERIFIER_TYPES.get(ext, None)
 
 
-def parse_keyid(sig_filename):
-    args = ["gpg", "--list-packet", sig_filename]
+def parse_key(filename, pattern):
+    """
+    Parse gpg --list-packet signature for pattern, return first match
+    """
+    args = ["gpg", "--list-packet", filename]
     out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
     if err.decode('utf-8') != '':
         print(err.decode('utf-8'))
         return None
     out = out.decode('utf-8')
-    ai = out.index('keyid') + len('keyid ')
-    bi = ai + out[ai:].index('\n')
-    return out[ai:bi].strip()
+    match = re.search(pattern, out)
+    return match.group(1).strip() if match else None
 
 
 def get_keyid(sig_filename):
     global KEYID_TRY
-    keyid = parse_keyid(sig_filename)
+    keyid = parse_key(sig_filename, r'keyid (.+?)\n')
     KEYID_TRY = keyid
     return keyid.upper() if keyid else None
 
@@ -410,6 +415,7 @@ def parse_args():
 
 def load_specfile(specfile):
     specfile.keyid = KEYID
+    specfile.email = EMAIL
 
 
 def main(args):
