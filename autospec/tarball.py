@@ -261,10 +261,10 @@ def name_and_version(url_argument, name_argument):
                 version = version[:b]
 
     if url_argument.find("pypi.python.org") > 0:
-        buildpattern.set_build_pattern("distutils", 10)
+        buildpattern.set_build_pattern("distutils23", 10)
         url_argument = "http://pypi.debian.net/" + name + "/" + tarfile
     if url_argument.find("pypi.debian.net") > 0:
-        buildpattern.set_build_pattern("distutils", 10)
+        buildpattern.set_build_pattern("distutils23", 10)
 
     if url_argument.find(".cpan.org/CPAN/") > 0:
         buildpattern.set_build_pattern("cpan", 10)

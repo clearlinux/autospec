@@ -510,30 +510,12 @@ def scan_for_configure(package, dir, autospecdir):
 
         if "setup.py" in files:
             add_buildreq("python-dev")
+            add_buildreq("python3-dev")
             add_buildreq("setuptools")
             add_buildreq("pbr")
             add_buildreq("pip")
             add_setup_py_requires(dirpath + '/setup.py')
-            if setup_py_python3(dirpath + '/setup.py') or setup_py_python3(dirpath + '/PKG-INFO'):
-                add_buildreq("python3-dev")
-                buildpattern.set_build_pattern("distutils23", default_score)
-                # force override the pypi rule
-                if buildpattern.default_pattern == 'distutils' and buildpattern.pattern_strengh <= 10:
-                    buildpattern.default_pattern = 'distutils23'
-            else:
-                # check for adding python3 support in patches
-                try:
-                    with open(autospecdir + '/series', 'r') as series:
-                        for patchname in series:
-                            if setup_py_python3(autospecdir + '/' + patchname.strip()):
-                                add_buildreq("python3-dev")
-                                buildpattern.set_build_pattern("distutils23", default_score)
-                                # force override the pypi rule
-                                if buildpattern.default_pattern == 'distutils' and buildpattern.pattern_strengh <= 10:
-                                    buildpattern.default_pattern = 'distutils23'
-                except:
-                    pass
-                buildpattern.set_build_pattern("distutils", default_score)
+            buildpattern.set_build_pattern("distutils23", default_score)
 
         if "Makefile.PL" in files or "Build.PL" in files:
             buildpattern.set_build_pattern("cpan", default_score)
