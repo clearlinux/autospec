@@ -12,6 +12,8 @@ from io import BytesIO
 from contextlib import contextmanager
 from subprocess import Popen, PIPE
 
+import config
+
 GPG_CLI = False
 DESCRIPTION = "Performs package signature verification for packages signed with\
 gpg."
@@ -201,24 +203,36 @@ class GPGVerifier(Verifier):
         print("Verifying GPG signature\n")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
+            if config.config_opts['verify_required']:
+                self.quit_verify()
             return None
         if os.path.exists(self.package_sign_path) is False and self.get_sign() is not True:
             self.print_result(False, err_msg='{} not found'.format(self.package_sign_path))
+            if config.config_opts['verify_required']:
+                self.quit_verify()
             return None
         pub_key = self.get_pubkey_path()
         EMAIL = parse_key(pub_key, r':user ID packet: ".* <(.+?)>"\n')
         if not pub_key or os.path.exists(pub_key) is False:
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
+            if config.config_opts['verify_required']:
+                self.quit_verify()
             return None
         sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
         if sign_status is None:
             self.print_result(self.package_path)
             KEYID = KEYID_TRY
+            config.config_opts['verify_required'] = True
+            config.rewrite_config_opts()
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)
             self.quit()
+
+    def quit_verify(self):
+        print_error("verification required for build (verify_required option set)")
+        self.quit()
 
 
 # GEM Verifier

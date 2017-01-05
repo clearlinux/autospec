@@ -84,7 +84,8 @@ config_options = {
     "broken_parallel_build":  "disable parallelization during build",
     "pgo": "set profile for pgo",
     "use_clang": "add clang flags",
-    "32bit" : "build 32 bit libraries"}
+    "32bit" : "build 32 bit libraries",
+    "verify_required": "require package verification for build"}
 
 def create_conf():
     config_f = configparser.ConfigParser(allow_no_value=True)

@@ -33,4 +33,6 @@ use_avx2 = false
 use_clang = false
 # configure build for lto
 use_lto = false
+# require package verification for build
+verify_required = false
 
