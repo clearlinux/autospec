@@ -23,6 +23,8 @@ import os
 import re
 import ast
 
+import toml
+
 import buildpattern
 import util
 import tarball
@@ -33,6 +35,7 @@ pythonreqs = set()
 banned_buildreqs = set(
     ["llvm-devel", "gcj", "pkgconfig(dnl)", "pkgconfig(hal)", "tslib-0.0", "pkgconfig(parallels-sdk)", "oslo-python", "libxml2No-python"])
 verbose = False
+cargo_bin = False
 
 autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "libtool-dev", "pkg-config-dev"]
 
@@ -202,6 +205,23 @@ def parse_configure_ac(filename):
     file.close()
 
 
+def parse_cargo_toml(filename):
+    """Update build requirements using Cargo.toml
+
+    Set the build requirements for building rust programs using cargo.
+    """
+    global cargo_bin
+    buildpattern.set_build_pattern("cargo", 1)
+    add_buildreq("rustc")
+    with open(filename, "r", encoding="latin-1") as ctoml:
+        cargo = toml.loads(ctoml.read())
+    if cargo.get("bin") or os.path.exists(os.path.join(os.path.dirname(filename), "src/main.rs")):
+        cargo_bin = True
+    if not cargo.get("dependencies"):
+        return
+    for bdep in cargo["dependencies"]:
+        add_buildreq(bdep)
+
 
 def set_build_req():
     if buildpattern.default_pattern == "maven":
@@ -241,6 +261,8 @@ def set_build_req():
     if buildpattern.default_pattern == "ruby":
         add_buildreq("ruby")
         add_buildreq("rubygem-rdoc")
+    if buildpattern.default_pattern == "cargo":
+        add_buildreq("rustc")
 
 
 def Rakefile(filename):
@@ -444,6 +466,8 @@ def scan_for_configure(package, dir, autospecdir):
                 grab_python_requirements(dirpath + '/requirements.txt')
 
         for name in files:
+            if name.lower() =="cargo.toml":
+                parse_cargo_toml(os.path.join(dirpath, name))
             if name.lower().startswith("configure."):
                 parse_configure_ac(os.path.join(dirpath, name))
             if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
@@ -479,3 +503,4 @@ def scan_for_configure(package, dir, autospecdir):
 def load_specfile(specfile):
     specfile.buildreqs = buildreqs
     specfile.pythonreqs = pythonreqs
+    specfile.cargo_bin = cargo_bin
