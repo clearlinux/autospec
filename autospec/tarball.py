@@ -79,7 +79,7 @@ def build_untar(tarball_path):
     if tarball_contents:
         tarball_prefix = tarball_contents.splitlines()[0].rsplit("/")[0]
         if tarball_prefix == ".":
-            tarball_prefix = tarball_contents.splitlines()[0].rsplit("/")[1]
+            tarball_prefix = tarball_contents.splitlines()[1].rsplit("/")[1]
     return extract_cmd, tarball_prefix
 
 
