@@ -1,16 +1,7 @@
 import os
 import unittest
 import tempfile
-from autospec.pkg_integrity import (check,
-                                    get_verifier,
-                                    parse_key,
-                                    get_keyid,
-                                    from_url,
-                                    from_disk,
-                                    attempt_to_download,
-                                    get_signature_url,
-                                    GPGVerifier,
-                                    GEMShaVerifier,)
+import pkg_integrity
 
 
 ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
@@ -23,39 +14,51 @@ NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0
 
 class TestCheckFn(unittest.TestCase):
 
+    def setUp(self):
+        def mock_rewrite():
+            pass
+        pkg_integrity.config.rewrite_config_opts = mock_rewrite
+        pkg_integrity.config.config_opts['verify_required'] = False
+
     def test_check_no_matching_sign_url(self):
         """ Test a package that does not have simple signature pattern """
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            attempt_to_download(NOSIGN_PKT_URL, out_file)
-            result = check(NOSIGN_PKT_URL, tmpd)
+            pkg_integrity.attempt_to_download(NOSIGN_PKT_URL, out_file)
+            result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
             self.assertEqual(result, None)
 
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
-            attempt_to_download(ALEMBIC_PKT_URL, out_file)
-            result = check(ALEMBIC_PKT_URL, tmpd)
+            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
+            result = pkg_integrity.check(ALEMBIC_PKT_URL, tmpd)
             self.assertTrue(result)
 
     def test_check_with_existing_sign(self):
         """ Download signature for local verification """
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            attempt_to_download(NOSIGN_PKT_URL, out_file)
+            pkg_integrity.attempt_to_download(NOSIGN_PKT_URL, out_file)
             key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
-            result = check(NOSIGN_PKT_URL, tmpd)
+            pkg_integrity.attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
+            result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
             self.assertTrue(result)
 
 
 class TestGEMShaVerifier(unittest.TestCase):
 
+    def setUp(self):
+        def mock_rewrite():
+            pass
+        pkg_integrity.config.rewrite_config_opts = mock_rewrite
+        pkg_integrity.config.config_opts['verify_required'] = False
+
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
-            attempt_to_download(GEM_PKT, out_file)
-            result = from_url(GEM_PKT, tmpd)
+            pkg_integrity.attempt_to_download(GEM_PKT, out_file)
+            result = pkg_integrity.from_url(GEM_PKT, tmpd)
             self.assertTrue(result)
 
     def test_non_matchingsha(self):
@@ -65,30 +68,37 @@ class TestGEMShaVerifier(unittest.TestCase):
             f.write(b'this is made up data that will force a failure')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                from_url(GEM_PKT, tmpd)
+                pkg_integrity.from_url(GEM_PKT, tmpd)
             self.assertEqual(a.exception.code, 1)
 
 
 class TestGPGVerifier(unittest.TestCase):
 
+    def setUp(self):
+        def mock_rewrite():
+            pass
+        pkg_integrity.config.rewrite_config_opts = mock_rewrite
+        pkg_integrity.config.config_opts['verify_required'] = False
+
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
-            attempt_to_download(ALEMBIC_PKT_URL, out_file)
+            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
             out_file1 = os.path.join(tmpd, os.path.basename(XATTR_PKT_URL))
-            attempt_to_download(XATTR_PKT_URL, out_file1)
-            result = from_url(ALEMBIC_PKT_URL, tmpd)
+            pkg_integrity.attempt_to_download(XATTR_PKT_URL, out_file1)
+            result = pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
             self.assertTrue(result)
-            result = from_url(XATTR_PKT_URL, tmpd)
-            self.assertTrue(result is None)
+            with self.assertRaises(SystemExit) as a:
+                pkg_integrity.from_url(XATTR_PKT_URL, tmpd)
+            self.assertEqual(a.exception.code, 1)
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
             out_key = out_file + '.asc'
-            attempt_to_download(ALEMBIC_PKT_URL, out_file)
-            attempt_to_download(ALEMBIC_PKT_URL + '.asc', out_key)
-            result = from_disk(out_file, out_key)
+            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
+            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL + '.asc', out_key)
+            result = pkg_integrity.from_disk(out_file, out_key)
             self.assertTrue(result)
 
     def test_non_matchingsig(self):
@@ -98,32 +108,38 @@ class TestGPGVerifier(unittest.TestCase):
             f.write(b'made up date that will fail check')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                from_url(ALEMBIC_PKT_URL, tmpd)
+                pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
             self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
-        result = from_disk('NonExistentPKG.tar.gz', 'NonExistentKey.asc')
+        result = pkg_integrity.from_disk('NonExistentPKG.tar.gz', 'NonExistentKey.asc')
         self.assertTrue(result is None)
 
     def test_result_on_nosign_package(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NO_SIGN_PKT_URL))
-            attempt_to_download(NO_SIGN_PKT_URL, out_file)
-            result = from_url(NO_SIGN_PKT_URL, tmpd)
+            pkg_integrity.attempt_to_download(NO_SIGN_PKT_URL, out_file)
+            result = pkg_integrity.from_url(NO_SIGN_PKT_URL, tmpd)
             self.assertTrue(result is None)
 
 
 class TestUtils(unittest.TestCase):
 
+    def setUp(self):
+        def mock_rewrite():
+            pass
+        pkg_integrity.config.rewrite_config_opts = mock_rewrite
+        pkg_integrity.config.config_opts['verify_required'] = False
+
     def test_get_verifier(self):
-        x = get_verifier('file.abcd')
+        x = pkg_integrity.get_verifier('file.abcd')
         self.assertEqual(x, None)
 
-        y = get_verifier('xorriso-1.4.6.tar.gz')(package_path='', url='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz')
-        self.assertTrue(isinstance(y, GPGVerifier))
+        y = pkg_integrity.get_verifier('xorriso-1.4.6.tar.gz')(package_path='', url='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz')
+        self.assertTrue(isinstance(y, pkg_integrity.GPGVerifier))
 
-        z = get_verifier('jeweler-2.1.1.gem')(package_path='', url='https://rubygems.org/downloads/jeweler-2.1.1.gem')
-        self.assertTrue(isinstance(z, GEMShaVerifier))
+        z = pkg_integrity.get_verifier('jeweler-2.1.1.gem')(package_path='', url='https://rubygems.org/downloads/jeweler-2.1.1.gem')
+        self.assertTrue(isinstance(z, pkg_integrity.GEMShaVerifier))
 
     def test_get_keyid(self):
 
@@ -131,7 +147,7 @@ class TestUtils(unittest.TestCase):
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                 tmpf.write(algo)
                 tmpf.flush()
-                self.assertEqual(parse_key(tmpf.name, r'keyid (.+?)\n'), k_id)
+                self.assertEqual(pkg_integrity.parse_key(tmpf.name, r'keyid (.+?)\n'), k_id)
                 tmpf.close()
 
         check_algo(KEY_ALGO17, '8AFAFCD242818A52')
@@ -139,7 +155,7 @@ class TestUtils(unittest.TestCase):
 
     def test_get_keyid_none(self):
         false_name = '/false/name'
-        self.assertTrue(get_keyid(false_name) is None)
+        self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
     def test_attempt_to_download(self):
         fakeURL = "https://download.my.url.com/file.tar.gz"
@@ -150,9 +166,9 @@ class TestUtils(unittest.TestCase):
         fname = tmpf.name
         tmpf.close()
 
-        self.assertEqual(attempt_to_download(fakeURL, fname), None)
-        self.assertEqual(attempt_to_download(realURLnoFile, fname), 404)
-        self.assertEqual(attempt_to_download(realURL, fname), 200)
+        self.assertEqual(pkg_integrity.attempt_to_download(fakeURL, fname), None)
+        self.assertEqual(pkg_integrity.attempt_to_download(realURLnoFile, fname), 404)
+        self.assertEqual(pkg_integrity.attempt_to_download(realURL, fname), 200)
 
         os.unlink(fname)
 
@@ -163,10 +179,10 @@ class TestUtils(unittest.TestCase):
         url_from_pypi = "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz"
         url_from_pypi1 = "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
 
-        self.assertEqual(get_signature_url(url_from_gnu)[-4:], '.sig')
-        self.assertEqual(get_signature_url(url_from_pypi)[-4:], '.asc')
-        self.assertEqual(get_signature_url(url_from_gnu1)[-4:], '.sig')
-        self.assertEqual(get_signature_url(url_from_pypi1)[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu)[-4:], '.sig')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi)[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu1)[-4:], '.sig')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi1)[-4:], '.asc')
 
     def test_parse_key_for_email(self):
         def check_pubkey(algo, email):
@@ -174,7 +190,7 @@ class TestUtils(unittest.TestCase):
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                 tmpf.write(algo)
                 tmpf.flush()
-                self.assertEqual(parse_key(tmpf.name, pattern), email)
+                self.assertEqual(pkg_integrity.parse_key(tmpf.name, pattern), email)
                 tmpf.close()
 
         check_pubkey(KEY_ALGO17, 'kislyuk@gmail.com')
