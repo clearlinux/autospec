@@ -307,13 +307,17 @@ def parse_key(filename, pattern):
     Parse gpg --list-packet signature for pattern, return first match
     """
     args = ["gpg", "--list-packet", filename]
-    out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
-    if err.decode('utf-8') != '':
-        print(err.decode('utf-8'))
+    try:
+        out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+        if err.decode('utf-8') != '':
+            print(err.decode('utf-8'))
+            return None
+        out = out.decode('utf-8')
+        match = re.search(pattern, out)
+        return match.group(1).strip() if match else None
+    except:
         return None
-    out = out.decode('utf-8')
-    match = re.search(pattern, out)
-    return match.group(1).strip() if match else None
+    return None
 
 
 def get_keyid(sig_filename):
