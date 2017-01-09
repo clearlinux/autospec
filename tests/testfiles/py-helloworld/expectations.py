@@ -4,7 +4,7 @@ the test source tarball.
 """
 import os
 
-buildreqs = ['pip', 'mock', 'requests', 'six', 'docutils', 'python']
+buildreqs = ['pip', 'mock', 'requests', 'six', 'docutils', 'python', 'python3']
 license = 'GPL-3.0'
 
 with open('tests/testfiles/py-helloworld/spec-expectations', 'r') as spec:

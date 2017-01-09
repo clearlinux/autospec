@@ -16,6 +16,7 @@ BuildRequires : pbr
 BuildRequires : pip
 BuildRequires : python-dev
 BuildRequires : python-mock
+BuildRequires : python3-dev
 BuildRequires : requests
 BuildRequires : setuptools
 BuildRequires : six
@@ -37,10 +38,12 @@ python components for the py-helloworld package.
 %build
 export LANG=C
 python2 setup.py build -b py2
+python3 setup.py build -b py3
 
 %install
 rm -rf %{buildroot}
 python2 -tt setup.py build -b py2 install --root=%{buildroot}
+python3 -tt setup.py build -b py3 install --root=%{buildroot}
 
 %files
 %defattr(-,root,root,-)
