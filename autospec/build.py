@@ -259,7 +259,10 @@ def parse_build_results(filename, returncode):
         simple_pattern(line, r"checking for OpenSSL", "openssl-dev")
         simple_pattern(line, r"Package systemd was not found in the pkg-config search path.", "systemd-dev")
         simple_pattern(line, r"Unable to find the requested Boost libraries.", "boost-dev")
-        # simple_pattern(line, r"Can't locate Test/More.pm", "perl-Test-Simple")
+        simple_pattern(line, r"libproc not found. Please configure without procps", "procps-ng-dev")
+        simple_pattern(line, r"configure: error: glib2", "glib-dev")
+
+# simple_pattern(line, r"Can't locate Test/More.pm", "perl-Test-Simple")
 
         failed_pattern(line, r"checking for library containing (.*)... no")
         failed_pattern(line, r"checking for (.*?)\.\.\. not_found")
