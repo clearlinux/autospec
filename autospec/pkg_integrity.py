@@ -211,6 +211,11 @@ class GPGVerifier(Verifier):
             if config.config_opts['verify_required']:
                 self.quit_verify()
             return None
+        if sign_isvalid(self.package_sign_path) is False:
+            self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
+            if config.config_opts['verify_required']:
+                self.quit_verify()
+            return None
         pub_key = self.get_pubkey_path()
         EMAIL = parse_key(pub_key, r':user ID packet: ".* <(.+?)>"\n')
         if not pub_key or os.path.exists(pub_key) is False:
@@ -302,14 +307,14 @@ def get_verifier(filename):
     return VERIFIER_TYPES.get(ext, None)
 
 
-def parse_key(filename, pattern):
+def parse_key(filename, pattern, verbose=True):
     """
     Parse gpg --list-packet signature for pattern, return first match
     """
     args = ["gpg", "--list-packet", filename]
     try:
         out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
-        if err.decode('utf-8') != '':
+        if err.decode('utf-8') != '' and verbose == True:
             print(err.decode('utf-8'))
             return None
         out = out.decode('utf-8')
@@ -325,6 +330,11 @@ def get_keyid(sig_filename):
     keyid = parse_key(sig_filename, r'keyid (.+?)\n')
     KEYID_TRY = keyid
     return keyid.upper() if keyid else None
+
+
+def sign_isvalid(sig_filename):
+    keyid = parse_key(sig_filename, r'keyid (.+?)\n', verbose=False) 
+    return keyid is not None
 
 
 def attempt_to_download(url, sign_filename=None):
