@@ -143,6 +143,13 @@ def push_file(filename):
         return
     if file_pat_match(filename, r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib32"):
         return
+
+    # Workarounds for some elfutils shared libraries ending with .so
+    if file_pat_match(filename, r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so", "lib"):
+        return
+    if file_pat_match(filename, r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so", "lib32"):
+        return
+
     if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
         return
     if file_pat_match(filename, r"^/usr/lib64/gobject-introspection/", "lib"):
