@@ -61,6 +61,7 @@ config_file = None
 old_version = None
 old_patches = list()
 profile_payload = None
+signature = None
 
 failed_commands = {}
 maven_jars = {}

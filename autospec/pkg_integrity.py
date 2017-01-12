@@ -178,10 +178,19 @@ class GPGVerifier(Verifier):
         Verifier.__init__(self, **kwargs)
         self.key_url = kwargs.get('key_url', None)
         self.package_path = kwargs.get('package_path', None)
-        if self.key_url is None and self.url is not None:
+        self.package_check = kwargs.get('package_check', None)
+        if not self.key_url and self.package_check:
+            # signature exists locally, don't try to download self.url
+            self.key_url = self.url.rstrip('/') + get_file_ext(self.package_check)
+        if not self.key_url and self.url:
+            # signature does not exist locally, find signature url from self.url,
+            # may require a HEAD request.
             self.key_url = get_signature_url(self.url)
-        if self.package_sign_path is None:
-            self.package_sign_path = self.package_path + '.asc'
+        if not self.package_sign_path:
+            # the key exists (or will exist) at
+            # <package directory>/<key url basename>
+            self.package_sign_path = os.path.join(os.path.dirname(self.package_path),
+                                                  os.path.basename(self.key_url))
 
     def get_pubkey_path(self):
         keyid = get_keyid(self.package_sign_path)
@@ -228,6 +237,7 @@ class GPGVerifier(Verifier):
         if sign_status is None:
             self.print_result(self.package_path)
             KEYID = KEYID_TRY
+            config.signature = self.key_url
             config.config_opts['verify_required'] = True
             config.rewrite_config_opts()
             return True
@@ -390,11 +400,12 @@ def from_url(url, download_path):
                               'url': url, })
 
 
-def from_disk(package_path, package_check):
+def from_disk(url, package_path, package_check):
     verifier = get_verifier(package_path)
     return apply_verification(verifier, **{
                               'package_path': package_path,
-                              'package_check': package_check, })
+                              'package_check': package_check,
+                              'url': url,  })
 
 
 def get_integrity_file(package_path):
@@ -415,7 +426,7 @@ def check(url, download_path):
     print(SEPT)
     print('Performing package integrity verification\n')
     if package_check is not None:
-        return from_disk(package_path, package_check)
+        return from_disk(url, package_path, package_check)
     elif package_path[-4:] == '.gem':
         return from_url(url, download_path)
     else:
@@ -447,7 +458,7 @@ def load_specfile(specfile):
 
 
 def main(args):
-    from_disk(args.tar, args.sig)
+    from_disk(args.url, args.tar, args.sig)
 
 
 if __name__ == '__main__':

@@ -98,7 +98,7 @@ class TestGPGVerifier(unittest.TestCase):
             out_key = out_file + '.asc'
             pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
             pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL + '.asc', out_key)
-            result = pkg_integrity.from_disk(out_file, out_key)
+            result = pkg_integrity.from_disk(ALEMBIC_PKT_URL, out_file, out_key)
             self.assertTrue(result)
 
     def test_non_matchingsig(self):
@@ -112,7 +112,9 @@ class TestGPGVerifier(unittest.TestCase):
             self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
-        result = pkg_integrity.from_disk('NonExistentPKG.tar.gz', 'NonExistentKey.asc')
+        result = pkg_integrity.from_disk('http://nokey.com/package.tar.gz',
+                                         'NonExistentPKG.tar.gz',
+                                         'NonExistentKey.asc')
         self.assertTrue(result is None)
 
     def test_result_on_nosign_package(self):

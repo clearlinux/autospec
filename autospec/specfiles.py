@@ -161,6 +161,10 @@ class Specfile(object):
             self.source_index[source] = count + 1
             self._write("Source{0}  : {1}\n".format(count + 1, source))
 
+        # if package is verified, include the signature in the source tarball
+        if self.keyid and config.signature:
+            self._write_strip("Source99 : {}".format(config.signature))
+
     def write_summary(self):
         """
         Write package summary to spec file
