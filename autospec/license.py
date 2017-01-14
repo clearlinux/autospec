@@ -101,7 +101,8 @@ license_translations = {
     "BSD_2_clause": "BSD-2-Clause",
     "Expat": "MIT",
     "w3c": "W3C",
-    "VIM": "Vim"
+    "VIM": "Vim",
+    "CC0": "CC0-1.0"
 }
 
 license_blacklist = {
