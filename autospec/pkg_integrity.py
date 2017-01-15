@@ -128,11 +128,12 @@ class Verifier(object):
             return digest.hexdigest()
 
     def print_result(self, result, err_msg=''):
+        global EMAIL
         package_name = ''
         if self.url is not None:
             package_name = os.path.basename(self.url)
         if result:
-            msg = "{} verification was successful".format(package_name)
+            msg = "{} verification was successful ({})".format(package_name, EMAIL)
             print_success(msg)
         else:
             msg = "{} verification failed {}".format(package_name, err_msg)
