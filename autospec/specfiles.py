@@ -396,7 +396,7 @@ class Specfile(object):
         if config.config_opts['optimize_size']:
             flags.extend(["-Os", "-ffunction-sections"])
         if self.need_avx2_flags:
-            flags.extend(["-O3", "-mavx2"])
+            flags.extend(["-O3", "-march=haswell"])
         if config.config_opts['broken_c++']:
             flags.extend(["-std=gnu++98"])
         if config.config_opts['insecure_build']:
@@ -473,6 +473,8 @@ class Specfile(object):
     def write_make_install(self):
         """Write install section to spec file for make builds"""
         self._write_strip("%install")
+        # time.time() returns a float, but we only need second-precision
+        self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
 
         if config.config_opts['32bit']:
@@ -531,6 +533,7 @@ class Specfile(object):
     def write_cmake_install(self):
         """Write install section to spec file for cmake builds"""
         self._write_strip("%install")
+        self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
 
         if config.config_opts['32bit']:
@@ -719,7 +722,7 @@ class Specfile(object):
     def write_make_pattern(self):
         """Write build pattern for make"""
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self.write_variables()
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -774,7 +777,7 @@ class Specfile(object):
     def write_distutils_pattern(self):
         """Write build pattern for python packages using distutils"""
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self.write_variables()
         self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
         self._write_strip("\n")
@@ -793,7 +796,7 @@ class Specfile(object):
     def write_distutils3_pattern(self):
         """Write build pattern for python packages using distutils3"""
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self.write_variables()
         self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
         self._write_strip("\n")
@@ -812,7 +815,7 @@ class Specfile(object):
     def write_distutils23_pattern(self):
         """Write build pattern for python packages using distutils2 and 32 and 3"""
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self.write_variables()
         self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
         self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
@@ -834,7 +837,7 @@ class Specfile(object):
     def write_R_pattern(self):
         """Write build pattern for R packages"""
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self._write_strip("\n")
 
         self._write_strip("%install")
@@ -893,7 +896,7 @@ class Specfile(object):
         """Write cmake pattern to spec file"""
         self.subdir = "clr-build"
         self.write_prep()
-        self.write_lang_c()
+        self.write_lang_c(export_epoch=True)
         self._write_strip("mkdir clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
