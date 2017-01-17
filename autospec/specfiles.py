@@ -843,6 +843,7 @@ class Specfile(object):
 
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
+        self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("export LANG=C")
         self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip('export FCFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
@@ -855,6 +856,7 @@ class Specfile(object):
         self._write_strip("mkdir -p %{buildroot}/usr/lib64/R/library")
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
+                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library " + self.rawname)
         self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
