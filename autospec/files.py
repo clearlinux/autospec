@@ -114,7 +114,7 @@ def push_file(filename):
 
     # autostart
     part = re.compile("^/usr/lib/systemd/system/.+\.target\.wants/.+")
-    if part.search(filename):
+    if part.search(filename) and 'update-triggers.target.wants' not in filename:
         push_package_file(filename, "autostart")
         excludes.append(filename)
 
