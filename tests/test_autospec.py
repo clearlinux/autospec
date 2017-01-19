@@ -20,6 +20,19 @@ IGNORES = set(['expectations.py',
 NOT_PACKAGE = ['.tar', 'test', 'autospec.conf', 'results']
 BASEDIR = os.getcwd()
 TESTDIR = BASEDIR + '/tests/testfiles'
+PCOLOR = '\033[92m'
+FCOLOR = '\033[91m'
+ENDCOLOR = '\033[0m'
+
+
+def fmt_fail(msg):
+    """returns colored and formatted failure message"""
+    return '{}FAIL:{} {}'.format(FCOLOR, ENDCOLOR, msg)
+
+
+def fmt_pass(msg):
+    """returns colored and formatted pass message"""
+    return '{}PASS:{} {}'.format(PCOLOR, ENDCOLOR, msg)
 
 
 def tar_source(srcfiles):
@@ -74,11 +87,11 @@ def check_output(output, expectations, entry, test_results):
     expectations.py
     """
     if 'build successful' in output:
-        test_results[entry].append('PASS: Build status - successful')
+        test_results[entry].append(fmt_pass('Build status - successful'))
         print('{} build successful'.format(entry))
     else:
-        test_results[entry].append('FAIL: Build status - failed, '
-                                   'skipping remaining tests')
+        test_results[entry].append(fmt_fail('Build status - failed, '
+                                            'skipping remaining tests'))
         print('{} build failed'.format(entry))
         os.makedirs('{}/results'.format(TESTDIR), exist_ok=True)
         try:
@@ -93,11 +106,11 @@ def check_output(output, expectations, entry, test_results):
 
     for item in expectations.output_strings:
         if item not in output:
-            test_results[entry].append('FAIL: "{}" expected in output, but not'
-                                       ' present'.format(item))
+            test_results[entry].append(fmt_fail('"{}" expected in output, but '
+                                                'not present'.format(item)))
         else:
-            test_results[entry].append('PASS: "{}" found in output'
-                                       .format(item))
+            test_results[entry].append(fmt_pass('"{}" found in output'
+                                                .format(item)))
     return True
 
 
@@ -112,32 +125,33 @@ def check_spec(spec_contents, expectations, entry, test_results):
                              fromfile='expected_specfile',
                              tofile='generated_specfile'))
     if len(diff):
-        test_results[entry].append('FAIL: generated specfile different from '
-                                   'expected\n')
+        test_results[entry].append(fmt_fail('generated specfile different from '
+                                            'expected\n'))
         for line in diff:
             test_results[entry][-1] += '\n{}'.format(line)
 
         test_results[entry][-1] += '\n'
     else:
-        test_results[entry].append('PASS: generated specfile matches expected')
+        test_results[entry].append(fmt_pass('generated specfile matches expected'))
 
     # the following checks are superflous, but can give more granular
     # indications of what has gone wrong
     if expectations.license not in spec_contents:
-        test_results[entry].append('FAIL: license not detected as "{}"'
-                                   .format(expectations.license))
+        test_results[entry].append(fmt_fail('license not detected as "{}"'
+                                            .format(expectations.license)))
     else:
-        test_results[entry].append('PASS: license correctly detected as "{}"'
-                                   .format(expectations.license))
+        test_results[entry].append(fmt_pass('license correctly detected as "{}"'
+                                            .format(expectations.license)))
 
     for item in expectations.buildreqs:
         if item not in spec_contents:
-            test_results[entry].append('FAIL: expected "{}" to be a build '
-                                       'requirement, but was not found'
-                                       .format(item))
+            test_results[entry].append(fmt_fail('expected "{}" to be a build '
+                                                'requirement, but was not found'
+                                                .format(item)))
         else:
-            test_results[entry].append('PASS: build requirement "{}" '
-                                       'successfully detected'.format(item))
+            test_results[entry].append(fmt_pass('build requirement "{}" '
+                                                'successfully detected'
+                                                .format(item)))
 
 
 def check_conf(conf_contents, expectations, entry, test_results):
@@ -147,15 +161,15 @@ def check_conf(conf_contents, expectations, entry, test_results):
                              fromfile='expected_conffile',
                              tofile='generated_conffile'))
     if len(diff):
-        test_results[entry].append('FAIL: generated conf file different from '
-                                   'expected\n')
+        test_results[entry].append(fmt_fail('generated conf file different '
+                                            'from expected\n'))
         for line in diff:
             test_results[entry][-1] += '\n{}'.format(line)
 
         test_results[entry][-1] += '\n'
     else:
-        test_results[entry].append('PASS: generated configuration file '
-                                   'matches expected')
+        test_results[entry].append(fmt_pass('generated configuration file '
+                                            'matches expected'))
 
 
 def clean_up(entry):
@@ -185,16 +199,20 @@ def print_results(entry, test_results):
 
     failures = 0
     passes = 0
+    fcolor = ''
+    pcolor = ''
 
     for result in test_results[entry]:
         print(result)
         if 'PASS' in result:
             passes += 1
+            pcolor = PCOLOR
         else:
             failures += 1
+            fcolor = FCOLOR
 
-    print('\nFailed tests: {}'.format(failures))
-    print('Passed tests: {}'.format(passes))
+    print('\nFailed tests: {}{}{}'.format(fcolor, failures, ENDCOLOR))
+    print('Passed tests: {}{}{}'.format(pcolor, passes, ENDCOLOR))
     print(line)
     print('\n')
 
