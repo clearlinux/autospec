@@ -295,8 +295,20 @@ def name_and_version(url_argument, name_argument):
                 if b > 0:
                     version = version[:b]
                 b = version.find("-")
+                # a dash is invalid in the version string
+                # check for the version number before and after the dash
                 if b > 0:
-                    version = version[b + 1:]
+                    # check the string after the dash, this is most common
+                    if version[b + 1:].replace('.', '').isdigit():
+                        version = version[b + 1:]
+                    # the string after the dash was not a version number, try the
+                    # part before the dash.
+                    elif version[:b].replace('.', '').isdigit():
+                        version = version[:b]
+                    # last resort, neither side of the dash looked like a version,
+                    # just remove the dash so it is at least a valid version string
+                    else:
+                        version = version.replace('-', '.')
                 break
 
     if url_argument.find("bitbucket.org") > 0:
