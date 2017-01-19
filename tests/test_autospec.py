@@ -10,6 +10,7 @@ import importlib
 import multiprocessing
 import getpass
 import errno
+import argparse
 from difflib import unified_diff
 
 IGNORES = set(['expectations.py',
@@ -200,7 +201,6 @@ def print_results(entry, test_results):
 
 def process_source(entry, test_results):
     """run autospec against entry and store the test results in test_results"""
-    clean_up(entry)
     # Remove previous run failure logs
     if os.path.exists('{}/results/{}.log'.format(TESTDIR, entry)):
         os.remove('{}/results/{}.log'.format(TESTDIR, entry))
@@ -219,9 +219,18 @@ def main():
     test_results = {}
     results_list = []
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--test-cases", dest="cases", nargs='*',
+                        help="List of test cases to run (by package name) "
+                        "separated by whitespace")
+    args = parser.parse_args()
+
     pool = multiprocessing.Pool()
     for entry in os.listdir(TESTDIR):
         if any(x in entry for x in NOT_PACKAGE):
+            continue
+        clean_up(entry)
+        if args.cases and entry not in args.cases:
             continue
 
         test_results[entry] = []

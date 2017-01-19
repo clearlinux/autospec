@@ -11,6 +11,6 @@ test_specfile:
 	PYTHONPATH=`pwd`/autospec python3 tests/test_specfile.py
 
 test_autospec:
-	python3 tests/test_autospec.py
+	python3 tests/test_autospec.py -c ${CASES}
 
 unittests: test_specfile test_pkg_integrity test_tarball
