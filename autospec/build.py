@@ -25,10 +25,10 @@ import getpass
 import re
 import tarball
 import os
+import grp
 
 import config
 import util
-import filecmp
 
 success = 0
 round = 0
@@ -396,8 +396,11 @@ def parse_build_results(filename, returncode):
 
 def set_mock():
     global mock_cmd
-    if filecmp.cmp('/usr/bin/mock', '/usr/sbin/mock'):
-        mock_cmd = 'sudo /usr/bin/mock'
+    # get group list of current user
+    user_grps = [grp.getgrgid(g).gr_name for g in os.getgroups()]
+    if os.path.exists('/usr/bin/mock'):
+       if 'mock' not in user_grps:
+           mock_cmd = 'sudo /usr/bin/mock'
 
 
 def package():
