@@ -10,6 +10,36 @@ NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
+KEYID = "8F0871F202119294"
+
+
+class TestGPGCli(unittest.TestCase):
+
+    def test_import_export(self):
+        with pkg_integrity.cli_gpg_ctx() as ctx:
+            err, output = ctx.export_key(KEYID)
+            self.assertTrue(err is not None)
+            err, output = ctx.import_key(KEYID)
+            self.assertTrue(err is None)
+            err, output = ctx.export_key(KEYID)
+            self.assertTrue(err is None)
+            self.assertTrue('PGP PUBLIC KEY' in output)
+
+    def test_import_non_existing_key(self):
+        with pkg_integrity.cli_gpg_ctx() as ctx:
+            keyid = '0' + KEYID[1:]
+            err, output = ctx.import_key(keyid)
+            self.assertTrue(err is not None)
+
+    def test_display_key_info(self):
+        with pkg_integrity.cli_gpg_ctx() as ctx:
+            err, output = ctx.import_key(KEYID)
+            self.assertTrue(err is None)
+            err, output = ctx.export_key(KEYID)
+            with open('key_test.pkey', 'w') as out_key:
+                out_key.write(output)
+            err, output = ctx.display_keyinfo('key_test.pkey')
+            self.assertTrue('keyid' in output)
 
 
 class TestCheckFn(unittest.TestCase):
@@ -123,6 +153,18 @@ class TestGPGVerifier(unittest.TestCase):
             pkg_integrity.attempt_to_download(NO_SIGN_PKT_URL, out_file)
             result = pkg_integrity.from_url(NO_SIGN_PKT_URL, tmpd)
             self.assertTrue(result is None)
+
+    def test_pubkey_import(self):
+        def say_yes(_):
+           return True
+        pkg_integrity.InputGetter.get_answer = say_yes
+        keyid = '0' + KEYID[1:]
+        result = pkg_integrity.attempt_key_import(keyid)
+        self.assertTrue(result is False)
+        result = pkg_integrity.attempt_key_import(KEYID)
+        self.assertTrue(result)
+        to_remove = pkg_integrity.PUBKEY_PATH.format(KEYID)
+        os.unlink(to_remove)
 
 
 class TestUtils(unittest.TestCase):

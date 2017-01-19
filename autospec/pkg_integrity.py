@@ -10,7 +10,7 @@ import hashlib
 import json
 from io import BytesIO
 from contextlib import contextmanager
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 
 import config
 
@@ -41,6 +41,9 @@ RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 KEYID_TRY = ""
 KEYID = ""
 EMAIL = ""
+GNUPGCONF = """keyserver keys.gnupg.net"""
+PUBKEY_PATH = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey"])
+CMD_TIMEOUT = 20
 
 
 # CLI interface to gpg command
@@ -56,27 +59,64 @@ class GPGCli(object):
     @staticmethod
     def exec_cmd(args):
         proc = Popen(args, stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
+        try:
+            out, err = proc.communicate(timeout=CMD_TIMEOUT)
+        except TimeoutExpired:
+            proc.kill()
+            out, err = proc.communicate()
         return out, err, proc.returncode
 
     def __init__(self, pubkey=None, home=None):
+        _gpghome = home
+        if _gpghome is None:
+            _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
+        os.environ['GNUPGHOME'] = _gpghome
+        self.args = ['gpg', '--homedir', _gpghome]
+        with open(os.path.join(_gpghome, 'gpg.conf'), 'w') as conf:
+            conf.write(GNUPGCONF)
+            conf.close()
         if pubkey is not None:
-            _gpghome = home
-            if _gpghome is None:
-                _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
-            os.environ['GNUPGHOME'] = _gpghome
-            args = ['gpg', '--import', pubkey]
+            args = self.args + ['--import', pubkey]
             output, err, code = self.exec_cmd(args)
-            if code != 0:
+            if code == -9:
+                raise Exception('Command {} timeout after {} seconds'.format(' '.join(args), CMD_TIMEOUT))
+            elif code != 0:
                 raise Exception(err.decode('utf-8'))
-        self.args = ['gpg', '--verify']
+        self._home = _gpghome
 
     def verify(self, _, tarfile, signature):
-        args = self.args + [signature, tarfile]
+        args = self.args + ['--verify', signature, tarfile]
         output, err, code = self.exec_cmd(args)
         if code == 0:
             return None
+        elif code == -9:
+            return GPGCliStatus('Command {} timeout after {} seconds'.format(' '.join(args), CMD_TIMEOUT))
         return GPGCliStatus(err.decode('utf-8'))
+
+    def import_key(self, keyid):
+        args = self.args + ['--recv-keys', keyid]
+        output, err, code = self.exec_cmd(args)
+        if code == 0:
+            return None, output
+        elif code == -9:
+            return GPGCliStatus('Import key timeout, make sure keystore is reachable'), None
+        return GPGCliStatus(err.decode('utf-8')), None
+
+    def export_key(self, keyid):
+        args = self.args + ['--armor', '--export', keyid]
+        output, err, code = self.exec_cmd(args)
+        if output.decode('utf-8') == '':
+            return GPGCliStatus(err.decode('utf-8')), None
+        if code == 0:
+            return None, output.decode('utf-8')
+        return GPGCliStatus(err.decode('utf-8')), None
+
+    def display_keyinfo(self, keyfile):
+        args = self.args + ['--list-packet', keyfile]
+        output, err, code = self.exec_cmd(args)
+        if code == 0:
+            return None, output.decode('utf-8')
+        return GPGCliStatus(err.decode('utf-8')), None
 
 
 @contextmanager
@@ -196,8 +236,7 @@ class GPGVerifier(Verifier):
     def get_pubkey_path(self):
         keyid = get_keyid(self.package_sign_path)
         if keyid:
-            return '/'.join([os.path.dirname(os.path.abspath(__file__)),
-                            "keyring", "{}.pkey".format(keyid)])
+            return PUBKEY_PATH.format(keyid)
 
     def get_sign(self):
         code = self.download_file(self.key_url, self.package_sign_path)
@@ -207,7 +246,7 @@ class GPGVerifier(Verifier):
             msg = "Unable to download file {} http code {}"
             self.print_result(False, msg.format(self.key_url, code))
 
-    def verify(self):
+    def verify(self, recursion=False):
         global KEYID
         global EMAIL
         print("Verifying GPG signature\n")
@@ -223,6 +262,7 @@ class GPGVerifier(Verifier):
             return None
         if sign_isvalid(self.package_sign_path) is False:
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
+            os.unlink(self.package_sign_path)
             if config.config_opts['verify_required']:
                 self.quit_verify()
             return None
@@ -231,6 +271,9 @@ class GPGVerifier(Verifier):
         if not pub_key or os.path.exists(pub_key) is False:
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
+            if recursion is False and attempt_key_import(key_id):
+                print(SEPT)
+                return self.verify(recursion=True)
             if config.config_opts['verify_required']:
                 self.quit_verify()
             return None
@@ -318,6 +361,52 @@ def get_verifier(filename):
     return VERIFIER_TYPES.get(ext, None)
 
 
+class InputGetter(object):
+
+    def __init__(self, message='?', default='N'):
+        self.message = message
+        self.default = default
+
+    def get_answer(self):
+        import_key = input(self.message)
+        if import_key == '':
+            import_key = self.default
+        return import_key.lower() == 'y'
+
+
+def attempt_key_import(keyid):
+    print(SEPT)
+    ig = InputGetter('\nDo you want to attempt to import keyid {}: (y/N) '.format(keyid))
+    if ig.get_answer() is False:
+        return False
+    with cli_gpg_ctx() as ctx:
+        err, _ = ctx.import_key(keyid)
+        if err is not None:
+            print_error(err.strerror)
+            return False
+        err, key_content = ctx.export_key(keyid)
+        if err is not None:
+            print_error(err.strerror)
+        key_fullpath = PUBKEY_PATH.format(keyid)
+        with open(key_fullpath, 'w') as out_pubkey:
+            out_pubkey.write(key_content)
+            out_pubkey.close()
+        print('\n')
+        print_success('Public key id: {} was imported'.format(keyid))
+        err, content = ctx.display_keyinfo(key_fullpath)
+        if err is not None:
+            print_error('Unable to parse {}, will be removed'.format(key_fullpath))
+            os.unlink(key_fullpath)
+            return False
+        print('\n', '\n'.join(content.split('\n')[:10]))
+        ig = InputGetter(message='\nDo you want to keep this key: (Y/n) ', default='y')
+        if ig.get_answer() is True:
+            return True
+        else:
+            os.unlink(key_fullpath)
+    return False
+
+
 def parse_key(filename, pattern, verbose=True):
     """
     Parse gpg --list-packet signature for pattern, return first match
@@ -325,7 +414,7 @@ def parse_key(filename, pattern, verbose=True):
     args = ["gpg", "--list-packet", filename]
     try:
         out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
-        if err.decode('utf-8') != '' and verbose == True:
+        if err.decode('utf-8') != '' and verbose is True:
             print(err.decode('utf-8'))
             return None
         out = out.decode('utf-8')
@@ -344,7 +433,7 @@ def get_keyid(sig_filename):
 
 
 def sign_isvalid(sig_filename):
-    keyid = parse_key(sig_filename, r'keyid (.+?)\n', verbose=False) 
+    keyid = parse_key(sig_filename, r'keyid (.+?)\n', verbose=False)
     return keyid is not None
 
 
@@ -406,7 +495,7 @@ def from_disk(url, package_path, package_check):
     return apply_verification(verifier, **{
                               'package_path': package_path,
                               'package_check': package_check,
-                              'url': url,  })
+                              'url': url})
 
 
 def get_integrity_file(package_path):
