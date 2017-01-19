@@ -28,9 +28,11 @@ popd
 
 %build
 export LANG=C
+export SOURCE_DATE_EPOCH=1
 make V=1  %{?_smp_mflags}
 
 %install
+export SOURCE_DATE_EPOCH=1
 rm -rf %{buildroot}
 pushd ../build32/
 %make_install32

@@ -84,6 +84,7 @@ export no_proxy=localhost
 make VERBOSE=1 V=1 %{?_smp_mflags} check
 
 %install
+export SOURCE_DATE_EPOCH=1
 rm -rf %{buildroot}
 %make_install
 

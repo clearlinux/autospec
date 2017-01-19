@@ -20,9 +20,11 @@ No detailed description available
 
 %build
 export LANG=C
+export SOURCE_DATE_EPOCH=1
 make V=1  %{?_smp_mflags}
 
 %install
+export SOURCE_DATE_EPOCH=1
 rm -rf %{buildroot}
 %make_install
 
