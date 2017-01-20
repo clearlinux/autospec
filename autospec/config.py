@@ -76,7 +76,7 @@ config_options = {
     "asneeded": "unset %build LD_AS_NEEDED variable",
     "allow_test_failures": "allow package to build with test failures",
     "skip_tests": "Do not run test suite",
-    "no_autostart": "do not require autostart suepackage",
+    "no_autostart": "do not require autostart subpackage",
     "optimize_size": "optimize build for size over speed",
     "funroll-loops": "optimize build for speed over size",
     "fast-math": "pass -ffast-math to compiler",
