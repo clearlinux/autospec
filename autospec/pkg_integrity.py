@@ -212,6 +212,17 @@ def get_signature_url(package_url):
     return None
 
 
+def compare_keys(newkey, oldkey):
+    if newkey != oldkey:
+        print_error('Public key has changed:\n'
+                    '            old key: {}\n'
+                    '            new key: {}\n'
+                    'this is a critical security error, quitting...'
+                    .format(oldkey, newkey))
+        exit(1)
+
+
+
 # GPG Verification
 class GPGVerifier(Verifier):
 
@@ -279,6 +290,8 @@ class GPGVerifier(Verifier):
             return None
         sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
         if sign_status is None:
+            if config.old_keyid:
+                compare_keys(KEYID_TRY, config.old_keyid)
             self.print_result(self.package_path)
             KEYID = KEYID_TRY
             config.signature = self.key_url

@@ -60,6 +60,7 @@ git_uri = None
 config_file = None
 old_version = None
 old_patches = list()
+old_keyid = None
 profile_payload = None
 signature = None
 
@@ -188,6 +189,7 @@ def setup_patterns():
 def parse_existing_spec(path, name):
     global old_version
     global old_patches
+    global old_keyid
 
     spec = os.path.join(path, "{}.spec".format(name))
     if not os.path.exists(spec):
@@ -196,6 +198,9 @@ def parse_existing_spec(path, name):
     with open(spec, "r", encoding="latin-1") as inp:
         for line in inp.readlines():
             line = line.strip().replace("\r", "").replace("\n", "")
+            if "Source0 file verified with key" in line:
+                keyidx = line.find('0x') + 2
+                old_keyid = line[keyidx:].split()[0] if keyidx > 2 else old_keyid
             if ":" not in line:
                 continue
             spl = line.split(":")
