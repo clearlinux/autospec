@@ -10,7 +10,11 @@ test_tarball:
 test_specfile:
 	PYTHONPATH=`pwd`/autospec python3 tests/test_specfile.py
 
+test_abireport:
+	PYTHONPATH=`pwd`/autospec python3 tests/test_abireport.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
-unittests: test_specfile test_pkg_integrity test_tarball
+unittests:
+	PYTHONPATH=`pwd`/autospec python3 -m unittest discover -b -s tests/ -p 'test_*.py'
