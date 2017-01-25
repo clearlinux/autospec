@@ -44,6 +44,18 @@ EMAIL = ""
 GNUPGCONF = """keyserver keys.gnupg.net"""
 PUBKEY_PATH = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey"])
 CMD_TIMEOUT = 20
+ENV = os.environ
+
+
+def update_gpg_conf(proxy_value):
+    global GNUPGCONF
+    GNUPGCONF = "{}\nkeyserver-options http-proxy={}".format(GNUPGCONF, proxy_value)
+
+
+if 'http_proxy' in ENV.keys():
+    update_gpg_conf(ENV.get('http_proxy'))
+elif 'HTTP_PROXY' in ENV.keys():
+    update_gpg_conf(ENV.get('HTTP_PROXY'))
 
 
 # CLI interface to gpg command
@@ -99,7 +111,7 @@ class GPGCli(object):
         if code == 0:
             return None, output
         elif code == -9:
-            return GPGCliStatus('Import key timeout, make sure keystore is reachable'), None
+            return GPGCliStatus('Import key timeout after {} seconds, make sure keystore is reachable'.format(CMD_TIMEOUT)), None
         return GPGCliStatus(err.decode('utf-8')), None
 
     def export_key(self, keyid):
@@ -220,7 +232,6 @@ def compare_keys(newkey, oldkey):
                     'this is a critical security error, quitting...'
                     .format(oldkey, newkey))
         exit(1)
-
 
 
 # GPG Verification

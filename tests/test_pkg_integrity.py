@@ -118,6 +118,10 @@ class TestGPGVerifier(unittest.TestCase):
             pkg_integrity.attempt_to_download(XATTR_PKT_URL, out_file1)
             result = pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
             self.assertTrue(result)
+            # Monkey patching
+            def say_no(_):
+                return False
+            pkg_integrity.InputGetter.get_answer = say_no
             with self.assertRaises(SystemExit) as a:
                 pkg_integrity.from_url(XATTR_PKT_URL, tmpd)
             self.assertEqual(a.exception.code, 1)
@@ -163,8 +167,6 @@ class TestGPGVerifier(unittest.TestCase):
         self.assertTrue(result is False)
         result = pkg_integrity.attempt_key_import(KEYID)
         self.assertTrue(result)
-        to_remove = pkg_integrity.PUBKEY_PATH.format(KEYID)
-        os.unlink(to_remove)
 
 
 class TestUtils(unittest.TestCase):
