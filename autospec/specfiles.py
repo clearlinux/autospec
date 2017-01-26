@@ -101,6 +101,7 @@ class Specfile(object):
 
         self.write_main_subpackage_requires()
         self.write_buildreq()
+        self.write_strip_command()
         self.write_patch_header()
 
         # main package extra content
@@ -199,6 +200,12 @@ class Specfile(object):
         """
         for req in sorted(self.buildreqs):
             self._write("BuildRequires : {}\n".format(req))
+
+    def write_strip_command(self):
+        """ Write commands to prevent stripping binary if requested """
+        if config.config_opts['nostrip']:
+            self._write("# Suppress stripping binaries\n")
+            self._write("%define __strip /bin/true\n%define debug_package %{nil}\n")
 
     def write_patch_header(self):
         """

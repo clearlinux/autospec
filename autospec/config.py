@@ -87,6 +87,7 @@ config_options = {
     "pgo": "set profile for pgo",
     "use_clang": "add clang flags",
     "32bit" : "build 32 bit libraries",
+    "nostrip" : "disable stripping binaries",
     "verify_required": "require package verification for build"}
 
 def create_conf():
