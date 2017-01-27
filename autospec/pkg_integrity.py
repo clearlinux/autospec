@@ -210,8 +210,6 @@ def head_request(url):
 def get_signature_url(package_url):
     if '://pypi.' in package_url[:13]:
         return package_url + '.asc'
-    elif '.gnu.' in package_url:
-        return package_url + '.sig'
     elif 'mirrors.kernel.org' in package_url:
         return package_url + '.sig'
     else:

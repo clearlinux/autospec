@@ -91,6 +91,8 @@ license_translations = {
     "artistic_2": "Artistic-2.0",
     "MPLv1.1": "MPL-1.1",
     "MPL-2": "MPL-2.0",
+    "MPLv2.0": "MPL-2.0",
+    "MPLv2.0,": "MPL-2.0",
     "ZPL 2.1": "ZPL-2.1",
     "ZPL": "ZPL-2.0",
     "http://creativecommons.org/licenses/BSD/": "BSD-2-Clause",
@@ -176,6 +178,7 @@ license_blacklist = {
     "ndg/httpsclient/LICENCE": True,
     "License-2.0": True,
     "BSD-style": True,
+    "Licences": True,
     "License(==-2.0)": True,
 }
 
