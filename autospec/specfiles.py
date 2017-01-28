@@ -908,6 +908,7 @@ class Specfile(object):
                           "-DLIB_INSTALL_DIR:PATH=%{_libdir} "
                           "-DCMAKE_AR=/usr/bin/gcc-ar "
                           "-DLIB_SUFFIX=64 "
+                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo "
                           "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
         self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
         self._write_strip("popd")
