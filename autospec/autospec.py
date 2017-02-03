@@ -38,7 +38,7 @@ import pkg_integrity
 import specfiles
 
 from tarball import name
-from util import _file_write, print_fatal
+from util import _file_write, print_fatal, binary_in_path
 from abireport import examine_abi
 
 sys.path.append(os.path.dirname(__file__))
@@ -67,14 +67,6 @@ def add_sources(download_path, archives):
         buildpattern.archive_details[archive + "destination"] = destination
 
 
-def binary_in_path(binary, paths):
-    """ Determine if the given binary exists in the provided filesystem paths """
-    for path in paths:
-        if os.path.exists(os.path.join(path, binary)):
-            return True
-    return False
-
-
 def check_requirements(useGit):
     """ Ensure all requirements are satisfied before continuing """
     required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio", "readelf"]
@@ -82,8 +74,7 @@ def check_requirements(useGit):
     if useGit:
         required_bins.append("git")
 
-    paths = os.getenv("PATH", default="/usr/bin:/bin").split(os.pathsep)
-    missing = [x for x in required_bins if not binary_in_path(x, paths)]
+    missing = [x for x in required_bins if not binary_in_path(x)]
 
     if len(missing) > 0:
         print_fatal("Required programs are not installed: {}".format(", ".join(missing)))

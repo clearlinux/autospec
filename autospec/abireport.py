@@ -196,6 +196,7 @@ def truncate_file(path):
 
 
 def examine_abi(download_path):
+    """ Proxy the ABI reporting to the right function """
     download_path = os.path.abspath(download_path)
     results_dir = os.path.abspath(os.path.join(download_path, "results"))
 
@@ -203,6 +204,24 @@ def examine_abi(download_path):
         util.print_fatal("Results directory does not exist, aborting")
         sys.exit(1)
 
+    if util.binary_in_path("abireport"):
+        examine_abi_host(download_path, results_dir)
+    else:
+        util.print_warning("abireport is not installed. Using slow scanning")
+        examine_abi_fallback(download_path, results_dir)
+
+
+def examine_abi_host(download_path, results_dir):
+    """ Make use of the hostside abireport tool """
+    try:
+        util.call("abireport scan-packages \"{}\"".format(results_dir),
+                  cwd=download_path)
+    except Exception as e:
+        util.print_fatal("Error invoking abireport: {}".format(e))
+
+
+def examine_abi_fallback(download_path, results_dir):
+    """ Missing abireport so fallback to internal scanning """
     old_dir = os.getcwd()
 
     rpms = set()

@@ -24,6 +24,7 @@ import subprocess
 
 dictionary_filename = os.path.dirname(__file__) + "/translate.dic"
 dictionary = [line.strip() for line in open(dictionary_filename, 'r')]
+os_paths = None
 
 
 def call(command, logfile=None, check=True, **kwargs):
@@ -92,3 +93,15 @@ def print_fatal(message):
 
 def print_warning(message):
     print("[\033[31;1mWARNING\033[0m] {}".format(message))
+
+
+def binary_in_path(binary):
+    """ Determine if the given binary exists in the provided filesystem paths """
+    global os_paths
+    if not os_paths:
+        os_paths = os.getenv("PATH", default="/usr/bin:/bin").split(os.pathsep)
+
+    for path in os_paths:
+        if os.path.exists(os.path.join(path, binary)):
+            return True
+    return False
