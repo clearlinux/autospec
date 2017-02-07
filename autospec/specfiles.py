@@ -404,8 +404,6 @@ class Specfile(object):
             flags.extend(["-Os", "-ffunction-sections"])
         if self.need_avx2_flags:
             flags.extend(["-O3", "-march=haswell"])
-        if config.config_opts['broken_c++']:
-            flags.extend(["-std=gnu++98"])
         if config.config_opts['insecure_build']:
             self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
             self._write_strip("unset LDFLAGS\n")
@@ -448,7 +446,12 @@ class Specfile(object):
             self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
             self._write_strip('export FCFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
             self._write_strip('export FFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
-            self._write_strip('export CXXFLAGS="$CXXFLAGS {0} "\n'.format(" ".join(flags)))
+            # leave the export CXXFLAGS line open in case 
+            self._write('export CXXFLAGS="$CXXFLAGS {0} '.format(" ".join(flags)))
+            if config.config_opts['broken_c++']:
+                self._write('-std=gnu++98')
+            # close the open quote from CXXFLAGS export and add newline
+            self._write('"\n')
 
         if config.profile_payload and config.profile_payload[0]:
             genflags = []
