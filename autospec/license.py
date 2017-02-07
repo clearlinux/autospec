@@ -179,6 +179,7 @@ license_blacklist = {
     "License-2.0": True,
     "BSD-style": True,
     "Licences": True,
+    "New": True,
     "License(==-2.0)": True,
 }
 

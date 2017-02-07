@@ -370,6 +370,7 @@ VERIFIER_TYPES = {
     '.tar': GPGVerifier,
     '.bz2': GPGVerifier,
     '.xz': GPGVerifier,
+    '.zip': GPGVerifier,
     '.gem': GEMShaVerifier,
 }
 

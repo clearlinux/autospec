@@ -288,6 +288,7 @@ def name_and_version(url_argument, name_argument):
             m = p.search(url_argument)
             if m:
                 name = m.group(1).strip()
+                rawname = name
                 # convert from 7_4_2 to 7.4.2
                 version = m.group(2).strip().replace('_', '.')
                 # remove release candidate tag
