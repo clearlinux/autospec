@@ -19,8 +19,10 @@ funroll-loops = false
 insecure_build = false
 # do not remove static libraries
 keepstatic = false
-# do not require autostart suepackage
+# do not require autostart subpackage
 no_autostart = false
+# disable stripping binaries
+nostrip = false
 # optimize build for size over speed
 optimize_size = false
 # set profile for pgo

@@ -6,7 +6,7 @@ allow_test_failures = true
 # unset %build ld_as_needed variable
 asneeded = true
 # extend flags with '-std=gnu++98
-broken_c++ = false
+broken_c++ = true
 # disable parallelization during build
 broken_parallel_build = false
 # set conservative build flags
@@ -19,8 +19,10 @@ funroll-loops = true
 insecure_build = false
 # do not remove static libraries
 keepstatic = true
-# do not require autostart suepackage
+# do not require autostart subpackage
 no_autostart = true
+# disable stripping binaries
+nostrip = false
 # optimize build for size over speed
 optimize_size = true
 # set profile for pgo

@@ -29,7 +29,7 @@ export NM=gcc-nm
 export CFLAGS="$CFLAGS -O3 -Os -falign-functions=32 -ffast-math -ffat-lto-objects -ffunction-sections -flto -fno-semantic-interposition -ftree-loop-vectorize "
 export FCFLAGS="$CFLAGS -O3 -Os -falign-functions=32 -ffast-math -ffat-lto-objects -ffunction-sections -flto -fno-semantic-interposition -ftree-loop-vectorize "
 export FFLAGS="$CFLAGS -O3 -Os -falign-functions=32 -ffast-math -ffat-lto-objects -ffunction-sections -flto -fno-semantic-interposition -ftree-loop-vectorize "
-export CXXFLAGS="$CXXFLAGS -O3 -Os -falign-functions=32 -ffast-math -ffat-lto-objects -ffunction-sections -flto -fno-semantic-interposition -ftree-loop-vectorize "
+export CXXFLAGS="$CXXFLAGS -O3 -Os -falign-functions=32 -ffast-math -ffat-lto-objects -ffunction-sections -flto -fno-semantic-interposition -ftree-loop-vectorize -std=gnu++98"
 make V=1  %{?_smp_mflags}
 
 %install
