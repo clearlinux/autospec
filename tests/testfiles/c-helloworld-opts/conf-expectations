@@ -27,6 +27,8 @@ nostrip = false
 optimize_size = true
 # set profile for pgo
 pgo = false
+# set flags for security-sensitive builds
+security_sensitive = true
 # do not run test suite
 skip_tests = true
 # configure build for avx2
