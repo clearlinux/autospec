@@ -13,6 +13,9 @@ test_specfile:
 test_abireport:
 	PYTHONPATH=`pwd`/autospec python3 tests/test_abireport.py
 
+test_commitmessage:
+	PYTHONPATH=`pwd`/autospec python3 tests/test_commitmessage.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
