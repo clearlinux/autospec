@@ -165,6 +165,18 @@ class TestCommitmessage(unittest.TestCase):
                 'cves\n\n\ncommit\nmessage\nwith\ncves\n\nCVEs fixed in this '
                 'build:\nCVE-1234-5678\ncve1\ncve2\n\n')
 
+    def test_scan_for_changes(self):
+        """
+        Tests scan_for_changes using temporary directories
+        """
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, 'changelog.txt'), 'w') as newsfile:
+                newsfile.write('new changelog file')
+
+            with tempfile.TemporaryDirectory() as tmpd1:
+                commitmessage.scan_for_changes(tmpd1, tmpd)
+                self.assertTrue(os.path.isfile(tmpd1 + '/ChangeLog'))
+
 
 GOOD_NEWS = """
 GOOD NEWS -- History of user-visible changes.
