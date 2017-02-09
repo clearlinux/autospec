@@ -23,10 +23,36 @@
 #
 
 import re
+import os
+import shutil
+import sys
 
 import build
 import config
 import tarball
+
+
+def scan_for_changes(download_path, directory):
+    """
+    scan_for_changes(download_path, directory) scans for changelogs or news
+    files in the source code and copies them to download_path as their
+    `config.transform`ed name. The file with the transformed name will later be
+    parsed to find the commit message.
+    """
+    found = []
+    interests = config.transforms.keys()
+    print(interests)
+    for dirpath, dirnames, files in os.walk(directory, topdown=False):
+        hits = [x for x in files if x.lower() in interests and x.lower() not in found]
+        for item in hits:
+            source = os.path.join(dirpath, item)
+            target = os.path.join(download_path, config.transforms[item.lower()])
+            try:
+                shutil.copy(source, target)
+            except Exception as e:
+                print("Error copying file: %s", e)
+                sys.exit(1)
+            found.append(item)
 
 
 def is_header(lines, curindex):

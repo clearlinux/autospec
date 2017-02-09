@@ -69,6 +69,19 @@ gems = {}
 
 cves = []
 
+# defines which files to rename and copy to autospec directory,
+# used in commitmessage.py
+transforms = {
+    'changes': 'ChangeLog',
+    'changelog.txt': 'ChangeLog',
+    'changelog': 'ChangeLog',
+    'change.log': 'ChangeLog',
+    'ChangeLog.md': 'ChangeLog',
+    'changes.rst': 'ChangeLog',
+    'changes.txt': 'ChangeLog',
+    'news': 'NEWS'
+}
+
 config_opts = {}
 config_options = {
     "broken_c++": "extend flags with '-std=gnu++98",

@@ -29,7 +29,6 @@ import config
 import files
 import git
 import license
-import docs
 import specdescription
 import tarball
 import test
@@ -166,7 +165,7 @@ def main():
     buildreq.scan_for_configure(name, _dir, build.download_path)
     specdescription.scan_for_description(name, _dir)
     license.scan_for_licenses(name, _dir)
-    docs.scan_for_changes(build.download_path, _dir)
+    commitmessage.scan_for_changes(build.download_path, _dir)
     add_sources(build.download_path, args.archives)
     test.scan_for_tests(_dir)
 
