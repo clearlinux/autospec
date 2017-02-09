@@ -32,7 +32,6 @@ import tarball
 import test
 import textwrap
 import configparser
-import commitmessage
 from os.path import exists as file_exists
 
 from util import call
@@ -67,6 +66,8 @@ signature = None
 failed_commands = {}
 maven_jars = {}
 gems = {}
+
+cves = []
 
 config_opts = {}
 config_options = {
@@ -191,6 +192,7 @@ def parse_existing_spec(path, name):
     global old_version
     global old_patches
     global old_keyid
+    global cves
 
     spec = os.path.join(path, "{}.spec".format(name))
     if not os.path.exists(spec):
@@ -213,9 +215,10 @@ def parse_existing_spec(path, name):
                 old_patches.append(value)
 
     # Ignore nopatch
-    cves = [p for p in patches if p.lower() not in old_patches and p.lower().endswith(".patch") and p.lower().startswith("cve-")]
-    for cve in cves:
-        commitmessage.new_cve(cve.upper().split(".PATCH")[0])
+    for patch in patches:
+        patch = patch.lower()
+        if patch not in old_patches and patch.endswith(".patch") and patch.startswith("cve-"):
+            cves.append(patch.upper().split(".PATCH")[0])
 
 
 def parse_config_files(path, bump):

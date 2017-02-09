@@ -28,156 +28,176 @@ import build
 import config
 import tarball
 
-commitmessage = []
 
-cves = set()
-have_cves = False
-cvestring = ""
-
-
-def new_cve(cve):
-    global cvestring
-    global have_cves
-    global cves
-
-    cves.add(cve)
-    have_cves = True
-    cvestring += " " + cve
-
-
-def process_NEWS(file):
-    global commitmessage
-    news = []
-    start = 0
-    stop = 0
-    success = 0
-
-    if config.old_version is None or config.old_version == tarball.version:
-        return
+def is_header(lines, curindex):
+    """
+    is_header(lines, curindex) checks if the current line is a section header
+    by checking for a blank line before it or an underline/section break (---)
+    after it. Returns True for lines at the beginning or end of the file
+    """
+    if curindex == 0:
+        # treat the start of the file as a header
+        # this will not be caught by an IndexError because -1 is a valid index
+        return True
 
     try:
-        with open(build.download_path + "/" + file, encoding="latin-1") as f:
-            news = f.readlines()
+        return (not lines[curindex - 1]) or ('---' in lines[curindex + 1])
+    except IndexError:
+        # end of file doesn't matter for starting a block and is an obvious end
+        # of a block
+        return True
+
+
+def find_in_line(pattern, line):
+    """
+    find_in_line(line, pattern) returns True if the pattern is in the line,
+    False otherwise
+    """
+    return bool(re.search(pattern, line))
+
+
+def process_NEWS(newsfile):
+    """
+    process_NEWS(newsfile) parses the newsfile for changes and CVE fixes
+    relevant to current version update. This information is returned as a
+    tuple: (commitmessage, cves)
+
+    A maximum of 15 lines from the newsfile is returned in the commitmessage.
+    If the newsfile information is truncated to 15 lines an additional line is
+    added "(NEWS truncated at 15 lines)"
+    """
+    commitmessage = []
+    cves = set()
+    start = 0
+    stop = 0
+    success = False
+    start_found = False
+
+    if config.old_version is None or config.old_version == tarball.version:
+        # no version update, so no information to search for in newsfile
+        return commitmessage, cves
+
+    try:
+        with open(build.download_path + "/" + newsfile, encoding="latin-1") as f:
+            newslines = f.readlines()
     except EnvironmentError:
-        return
+        return commitmessage, cves
 
-    stop = len(news)
-    if stop <= start:
-        return
+    newslines = [news.rstrip('\n') for news in newslines]
 
-    i = start
-    while i < stop:
-        news[i] = news[i].strip('\n')
-        i = i + 1
+    # these are patterns that define the beginning of a block of information
+    # regarding the current version.
+    news_start = [r'Version.*{}'.format(tarball.version),
+                  r'(v|- )?{}:?'.format(tarball.version),
+                  r'{}-{}:?'.format(tarball.name, tarball.version),
+                  r'{} 20'.format(tarball.version)]
 
-    i = start + 1
-    while i < stop - 1:
-        if news[i] == config.old_version and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i] == "Overview of changes leading to " + config.old_version and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i] == config.old_version + ":" and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i] == tarball.version + ":" and news[i - 1] == "":
-            start = i
-        if news[i] == tarball.name + "-" + config.old_version + ":" and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i] == tarball.name + "-" + tarball.version + ":" and news[i - 1] == "":
-            start = i
-        if news[i] == "- " + config.old_version + ":" and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i] == "- " + tarball.version + ":" and news[i - 1] == "":
-            start = i
-        if news[i].find(config.old_version) >= 0 and news[i].find("*** Changes in ") >= 0 and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i].find(config.old_version) >= 0 and news[i].find("201") >= 0 and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i].lower().find(tarball.name + " " + config.old_version) >= 0 and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i].find(config.old_version) >= 0 and news[i].find("Version ") >= 0 and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i].find(tarball.version) >= 0 and news[i].find("Version ") >= 0 and news[i - 1] == "":
-            start = i
+    # these are patterns that define the end of a block of information
+    # regarding the current version.
+    news_end = [r'\*\*\* Changes in.*{}'.format(config.old_version),
+                r'{}.*201'.format(config.old_version),
+                r'Version.*{}'.format(config.old_version),
+                r'^Overview of changes leading to {}'.format(config.old_version),
+                r'^{}(-| ){}:?'.format(tarball.name, config.old_version),
+                r'v?{}:?'.format(config.old_version)]
 
-        if news[i].find(config.old_version + ":") == 0:
-            stop = i - 1
-            success = 1
-        if news[i] == config.old_version and news[i + 1].find("---") >= 0:
-            stop = i - 1
-            success = 1
-        if news[i] == tarball.version and news[i + 1].find("---") >= 0:
-            start = i
-        if news[i] == "v" + config.old_version and news[i + 1].find("---") >= 0:
-            stop = i - 1
-            success = 1
-        if news[i] == "v" + tarball.version and news[i + 1].find("---") >= 0:
-            start = i
+    for idx, news in enumerate(newslines):
+        # only check headers for begin and end patterns
+        if is_header(newslines, idx):
+            for pat in news_start:
+                if find_in_line(pat, news):
+                    start = idx
+                    start_found = True
+                    break
+            if start_found:
+                for pat in news_end:
+                    if find_in_line(pat, news):
+                        success = True
+                        stop = idx - 1  # stop before this header
+                        break
+            if start_found and success:
+                break
 
-        if news[i].find(config.old_version + " 20") >= 0 and news[i - 1] == "":
-            stop = i - 1
-            success = 1
-        if news[i].find(tarball.version + " 20") >= 0 and news[i - 1] == "":
-            start = i
-
-        i = i + 1
-
-    if success == 0:
-        return
+    if not success or stop <= start:
+        return commitmessage, cves
 
     # now search for CVEs
-    i = start
     pat = re.compile("(CVE\-[0-9]+\-[0-9]+)")
-    while i < stop and i < start:
-        match = pat.search(news[i])
+    for news in newslines[start:stop]:
+        match = pat.search(news)
         if match:
                 s = match.group(1)
-                new_cve(s)
-        i = i + 1
+                cves.add(s)
+
+    # compile commitmessage to return
+    commitmessage.append("")
+    for news in newslines[start:min(start + 15, stop)]:
+        commitmessage.append(news)
+
+    if stop > start + 15:
+        # append message that news was truncated
+        commitmessage.extend(["", "(NEWS truncated at 15 lines)"])
 
     commitmessage.append("")
-    i = start
-    while i < stop and i < start + 15:
-        commitmessage.append(news[i])
-        i = i + 1
-    commitmessage.append("")
+    return commitmessage, cves
 
 
 def guess_commit_message():
-    global cvestring
+    """
+    guess_commit_message() parses newsfiles and determines a sane commit
+    message. The commit message defaults to the following for an updated
+    version if no CVEs are fixed:
+
+    <tarball name>: Autospec creation for update from version <old> to version <new>
+
+    If CVEs are fixed:
+
+    <tarball name>: Fix for <cve>
+
+    And if the version does not change:
+
+    <tarball name>: Autospec creation for version <version>
+
+    Additional information is appended to the commitmessage depending on NEWS
+    and ChangeLog files and the presence of CVEs. The commitmessage is written
+    to a file at <download path>/commitmsg.
+    """
+    cvestring = ""
+    cves = set()
+    commitmessage = []
+    for cve in config.cves:
+        cves.add(cve)
+        cvestring += " " + cve
 
     # default commit messages before we get too smart
     if config.old_version is not None and config.old_version != tarball.version:
-        commitmessage.append(tarball.name + ": Autospec creation for update from version " +
-                             config.old_version + " to version " +
-                             tarball.version)
+        commitmessage.append("{}: Autospec creation for update from version {} to version {}"
+                             .format(tarball.name, config.old_version, tarball.version))
     else:
-        if have_cves:
-            commitmessage.append(tarball.name + ": Fix for " + cvestring.strip())
+        if cves:
+            commitmessage.append("{}: Fix for {}"
+                                 .format(tarball.name, cvestring.strip()))
         else:
-            commitmessage.append(tarball.name + ": Autospec creation for version " +
-                                 tarball.version)
+            commitmessage.append("{}: Autospec creation for version {}"
+                                 .format(tarball.name, tarball.version))
     commitmessage.append("")
 
-    if have_cves:
+    for newsfile in ["NEWS", "ChangeLog"]:
+        # parse news files for relevant version updates and cve fixes
+        newcommitmessage, newcves = process_NEWS(newsfile)
+        commitmessage.extend(newcommitmessage)
+        cves.update(newcves)
+
+    if cves:
+        # append CVE fixes to end of commit message
         commitmessage.append("CVEs fixed in this build:")
-        commitmessage.extend(list(cves))
+        commitmessage.extend(sorted(list(cves)))
         commitmessage.append("")
 
-    process_NEWS("NEWS")
-    process_NEWS("ChangeLog")
+    with open(build.download_path + "/commitmsg", "w", encoding="latin-1") as cmsg_file:
+        cmsg_file.write("\n".join(commitmessage) + "\n")
 
     print("Guessed commit message:")
-    with open(build.download_path + "/commitmsg", "w", encoding="latin-1") as file:
-        file.write("\n".join(commitmessage) + "\n")
     try:
         print(commitmessage)
     except:
