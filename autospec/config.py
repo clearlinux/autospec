@@ -102,7 +102,8 @@ config_options = {
     "use_clang": "add clang flags",
     "32bit" : "build 32 bit libraries",
     "nostrip" : "disable stripping binaries",
-    "verify_required": "require package verification for build"}
+    "verify_required": "require package verification for build",
+    "security_sensitive": "set flags for security-sensitive builds"}
 
 def create_conf():
     config_f = configparser.ConfigParser(allow_no_value=True)

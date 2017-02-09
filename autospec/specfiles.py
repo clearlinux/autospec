@@ -402,6 +402,8 @@ class Specfile(object):
             self._write_strip("export LD=ld.gold\n")
         if config.config_opts['optimize_size']:
             flags.extend(["-Os", "-ffunction-sections"])
+        if config.config_opts['security_sensitive']:
+            flags.append("-fstack-protector-strong")
         if self.need_avx2_flags:
             flags.extend(["-O3", "-march=haswell"])
         if config.config_opts['insecure_build']:
