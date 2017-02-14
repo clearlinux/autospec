@@ -110,13 +110,16 @@ class TestGPGVerifier(unittest.TestCase):
             pkg_integrity.attempt_to_download(XATTR_PKT_URL, out_file1)
             result = pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
             self.assertTrue(result)
+
             # Monkey patching
             def say_no(_):
                 return False
+            _ = pkg_integrity.InputGetter.get_answer
             pkg_integrity.InputGetter.get_answer = say_no
             with self.assertRaises(SystemExit) as a:
                 pkg_integrity.from_url(XATTR_PKT_URL, tmpd)
             self.assertEqual(a.exception.code, 1)
+            pkg_integrity.InputGetter.get_answer = _
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
@@ -152,13 +155,26 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_pubkey_import(self):
         def say_yes(_):
-           return True
+            return True
+        _ = pkg_integrity.InputGetter.get_answer
         pkg_integrity.InputGetter.get_answer = say_yes
         keyid = '0' + KEYID[1:]
         result = pkg_integrity.attempt_key_import(keyid)
         self.assertTrue(result is False)
         result = pkg_integrity.attempt_key_import(KEYID)
         self.assertTrue(result)
+        pkg_integrity.InputGetter.get_answer = _
+
+
+class TestInputGetter(unittest.TestCase):
+
+    def test_timput(self):
+        ig = pkg_integrity.InputGetter(default='N', timeout=2)
+        answer = ig.get_answer()
+        self.assertTrue(answer is None)
+        ig = pkg_integrity.InputGetter(default='Y', timeout=2)
+        answer = ig.get_answer()
+        self.assertTrue(answer is None)
 
 
 class TestUtils(unittest.TestCase):

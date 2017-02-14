@@ -2,11 +2,13 @@
 
 import os
 import re
+import sys
 import argparse
 import shutil
 import tempfile
 import pycurl
 import hashlib
+import signal
 import json
 from io import BytesIO
 from contextlib import contextmanager
@@ -45,6 +47,7 @@ GNUPGCONF = """keyserver keys.gnupg.net"""
 PUBKEY_PATH = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey"])
 CMD_TIMEOUT = 20
 ENV = os.environ
+INPUT_GETTER_TIMEOUT = 60
 
 
 def update_gpg_conf(proxy_value):
@@ -385,23 +388,41 @@ def get_verifier(filename):
     return VERIFIER_TYPES.get(ext, None)
 
 
+def get_input(message, default):
+    try:
+        import_key = input(message)
+        if import_key == '':
+            import_key = default
+        return import_key.lower() == 'y'
+    except:
+        return None
+
+
+def input_timeout(signum, frame):
+    print('\ninput timed out')
+    raise Exception('keyboard timed out')
+
+
 class InputGetter(object):
 
-    def __init__(self, message='?', default='N'):
+    def __init__(self, message='?', default='N', timeout=INPUT_GETTER_TIMEOUT):
         self.message = message
         self.default = default
+        self.timeout = timeout
+        signal.signal(signal.SIGALRM, input_timeout)
 
     def get_answer(self):
-        import_key = input(self.message)
-        if import_key == '':
-            import_key = self.default
-        return import_key.lower() == 'y'
+        signal.alarm(self.timeout)
+        inpt = get_input(self.message, self.default)
+        signal.alarm(0)
+        return inpt
 
 
 def attempt_key_import(keyid):
     print(SEPT)
     ig = InputGetter('\nDo you want to attempt to import keyid {}: (y/N) '.format(keyid))
-    if ig.get_answer() is False:
+    import_key_answer = ig.get_answer()
+    if import_key_answer in [None, False]:
         return False
     with cli_gpg_ctx() as ctx:
         err, _ = ctx.import_key(keyid)
@@ -511,7 +532,7 @@ def from_url(url, download_path, interactive=True):
     verifier = get_verifier(package_name)
     return apply_verification(verifier, **{
                               'package_path': package_path,
-                              'url': url, 
+                              'url': url,
                               'interactive': interactive})
 
 
@@ -539,6 +560,7 @@ def check(url, download_path, interactive=True):
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
     package_check = get_integrity_file(package_path)
+    interactive = interactive and sys.stdin.isatty()
     print(SEPT)
     print('Performing package integrity verification\n')
     if package_check is not None:
