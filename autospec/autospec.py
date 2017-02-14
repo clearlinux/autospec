@@ -126,7 +126,10 @@ def main():
                         help="Target location to create or reuse")
     parser.add_argument("-i", "--integrity", action="store_true",
                         default=False,
-                        help="Attempt to download and verify package signature")
+                        help="Search for package signature from source URL and attempt to verify package")
+    parser.add_argument("--non_interactive", action="store_true",
+                        default=False,
+                        help="Disable interactive mode for package verification")
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(
@@ -178,7 +181,8 @@ def main():
     print("\n")
 
     if args.integrity == True:
-        pkg_integrity.check(args.url, build.download_path)
+        interactive_mode = not args.non_interactive
+        pkg_integrity.check(args.url, build.download_path, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
 
     specfile.write_spec(build.download_path)

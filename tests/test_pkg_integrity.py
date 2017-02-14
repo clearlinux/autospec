@@ -50,14 +50,6 @@ class TestCheckFn(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
-    def test_check_no_matching_sign_url(self):
-        """ Test a package that does not have simple signature pattern """
-        with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            pkg_integrity.attempt_to_download(NOSIGN_PKT_URL, out_file)
-            result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
-            self.assertEqual(result, None)
-
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))

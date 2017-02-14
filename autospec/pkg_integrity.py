@@ -240,6 +240,7 @@ class GPGVerifier(Verifier):
         self.key_url = kwargs.get('key_url', None)
         self.package_path = kwargs.get('package_path', None)
         self.package_check = kwargs.get('package_check', None)
+        self.interactive = kwargs.get('interactive', False)
         if not self.key_url and self.package_check:
             # signature exists locally, don't try to download self.url
             self.key_url = self.url.rstrip('/') + get_file_ext(self.package_check)
@@ -291,7 +292,7 @@ class GPGVerifier(Verifier):
         if not pub_key or os.path.exists(pub_key) is False:
             key_id = get_keyid(self.package_sign_path)
             self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
-            if recursion is False and attempt_key_import(key_id):
+            if self.interactive is True and recursion is False and attempt_key_import(key_id):
                 print(SEPT)
                 return self.verify(recursion=True)
             if config.config_opts['verify_required']:
@@ -504,21 +505,23 @@ def apply_verification(verifier, **kwargs):
         return v.verify()
 
 
-def from_url(url, download_path):
+def from_url(url, download_path, interactive=True):
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
     verifier = get_verifier(package_name)
     return apply_verification(verifier, **{
                               'package_path': package_path,
-                              'url': url, })
+                              'url': url, 
+                              'interactive': interactive})
 
 
-def from_disk(url, package_path, package_check):
+def from_disk(url, package_path, package_check, interactive=True):
     verifier = get_verifier(package_path)
     return apply_verification(verifier, **{
                               'package_path': package_path,
                               'package_check': package_check,
-                              'url': url})
+                              'url': url,
+                              'interactive': interactive})
 
 
 def get_integrity_file(package_path):
@@ -532,16 +535,16 @@ def get_integrity_file(package_path):
         return package_path + '.sha256'
 
 
-def check(url, download_path):
+def check(url, download_path, interactive=True):
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
     package_check = get_integrity_file(package_path)
     print(SEPT)
     print('Performing package integrity verification\n')
     if package_check is not None:
-        return from_disk(url, package_path, package_check)
+        return from_disk(url, package_path, package_check, interactive=interactive)
     elif package_path[-4:] == '.gem':
-        return from_url(url, download_path)
+        return from_url(url, download_path, interactive=interactive)
     else:
         print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
         signature_url = get_signature_url(url)
