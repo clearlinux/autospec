@@ -6,7 +6,7 @@ import pkg_integrity
 
 ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
-NO_SIGN_PKT_URL = "https://pypi.python.org/packages/source/c/crudini/crudini-0.5.tgz"
+NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz"
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
@@ -111,15 +111,11 @@ class TestGPGVerifier(unittest.TestCase):
             result = pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
             self.assertTrue(result)
 
-            # Monkey patching
-            def say_no(_):
-                return False
-            _ = pkg_integrity.InputGetter.get_answer
-            pkg_integrity.InputGetter.get_answer = say_no
-            with self.assertRaises(SystemExit) as a:
-                pkg_integrity.from_url(XATTR_PKT_URL, tmpd)
-            self.assertEqual(a.exception.code, 1)
-            pkg_integrity.InputGetter.get_answer = _
+    def test_check_quit(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            #with self.assertRaises(SystemExit) as a:
+            pkg_integrity.check(NO_SIGN_PKT_URL, tmpd, interactive=False)
+            #self.assertEqual(a.exception.code, 1)
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
@@ -150,7 +146,7 @@ class TestGPGVerifier(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NO_SIGN_PKT_URL))
             pkg_integrity.attempt_to_download(NO_SIGN_PKT_URL, out_file)
-            result = pkg_integrity.from_url(NO_SIGN_PKT_URL, tmpd)
+            result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
             self.assertTrue(result is None)
 
     def test_pubkey_import(self):

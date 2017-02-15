@@ -10,6 +10,7 @@ import pycurl
 import hashlib
 import signal
 import json
+from urllib.parse import urlparse
 from io import BytesIO
 from contextlib import contextmanager
 from subprocess import Popen, PIPE, TimeoutExpired
@@ -40,6 +41,7 @@ pubkey --gnupghome /opt/pki/gpghome
 
 SEPT = "-------------------------------------------------------------------------------"
 RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
+PYPIORG_API = "https://pypi.python.org/pypi/{}/json"
 KEYID_TRY = ""
 KEYID = ""
 EMAIL = ""
@@ -48,6 +50,7 @@ PUBKEY_PATH = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "
 CMD_TIMEOUT = 20
 ENV = os.environ
 INPUT_GETTER_TIMEOUT = 60
+CHUNK_SIZE = 2056
 
 
 def update_gpg_conf(proxy_value):
@@ -235,6 +238,83 @@ def compare_keys(newkey, oldkey):
         exit(1)
 
 
+# MD5 Verifier
+class MD5Verifier(Verifier):
+
+    def __init__(self, **kwargs):
+        Verifier.__init__(self, **kwargs)
+        self.package_path = kwargs.get('package_path', None)
+        self.md5_digest = kwargs.get('md5_digest', None)
+
+    def verify_md5(self):
+        print("Verifying MD5 digest\n")
+        if self.md5_digest is None:
+            self.print_result(False, err_msg='Verification requires a md5_digest')
+            return None
+        if os.path.exists(self.package_path) is False:
+            self.print_result(False, err_msg='{} not found'.format(self.package_path))
+            return None
+        md5_digest = self.calc_sum(self.package_path, hashlib.md5)
+        self.print_result(md5_digest == self.md5_digest)
+        return md5_digest == self.md5_digest
+
+
+# PyPi Verifier
+class PyPiVerifier(MD5Verifier):
+
+    def __init__(self, **kwargs):
+        MD5Verifier.__init__(self, **kwargs)
+
+    def parse_name(self):
+        pkg_name = os.path.basename(self.package_path)
+        name, _ = re.split('-\d+\.', pkg_name)
+        release_no = pkg_name.replace(name + '-', '')
+        extensions = "({})".format("|".join(['\.tar\.gz$', '\.zip$', '\.tgz$', '\.tar\.bz2$']))
+        ext = re.search(extensions, release_no)
+        if ext is not None:
+            release_no = release_no.replace(ext.group(), '')
+        return name, release_no
+
+    @staticmethod
+    def get_info(package_name):
+        url = PYPIORG_API.format(package_name)
+        data = BytesIO()
+        curl = pycurl.Curl()
+        curl.setopt(curl.URL, url)
+        curl.setopt(curl.WRITEFUNCTION, data.write)
+        curl.perform()
+        json_data = json.loads(data.getvalue().decode('utf-8'))
+        return json_data
+
+    @staticmethod
+    def get_source_release(package_fullname, releases):
+        for release in releases:
+            if release.get('filename', 'not_found') == package_fullname:
+                return release
+        return None
+
+    def verify(self):
+        global EMAIL
+        print("Searching for package information in pypi")
+        name, release = self.parse_name()
+        info = self.get_info(name)
+        releases_info = info.get('releases', None)
+        if releases_info is None:
+            self.print_result(False, err_msg='Error in package info from {}'.format(PYPIORG_API))
+            return None
+        release_info = releases_info.get(release, None)
+        if release_info is None:
+            self.print_result(False,
+                              err_msg='Information for package {} with release {} not found'.format(name, release))
+            return None
+        release_info = self.get_source_release(os.path.basename(self.package_path), release_info)
+        package_info = info.get('info', None)
+        if package_info is not None:
+            EMAIL = package_info.get('author_email', '')
+        self.md5_digest = release_info.get('md5_digest', '')
+        return self.verify_md5()
+
+
 # GPG Verification
 class GPGVerifier(Verifier):
 
@@ -276,19 +356,13 @@ class GPGVerifier(Verifier):
         print("Verifying GPG signature\n")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
-            if config.config_opts['verify_required']:
-                self.quit_verify()
             return None
         if os.path.exists(self.package_sign_path) is False and self.get_sign() is not True:
             self.print_result(False, err_msg='{} not found'.format(self.package_sign_path))
-            if config.config_opts['verify_required']:
-                self.quit_verify()
             return None
         if sign_isvalid(self.package_sign_path) is False:
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
             os.unlink(self.package_sign_path)
-            if config.config_opts['verify_required']:
-                self.quit_verify()
             return None
         pub_key = self.get_pubkey_path()
         EMAIL = parse_key(pub_key, r':user ID packet: ".* <(.+?)>"\n')
@@ -298,8 +372,6 @@ class GPGVerifier(Verifier):
             if self.interactive is True and recursion is False and attempt_key_import(key_id):
                 print(SEPT)
                 return self.verify(recursion=True)
-            if config.config_opts['verify_required']:
-                self.quit_verify()
             return None
         sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
         if sign_status is None:
@@ -315,9 +387,10 @@ class GPGVerifier(Verifier):
             self.print_result(False, err_msg=sign_status.strerror)
             self.quit()
 
-    def quit_verify(self):
-        print_error("verification required for build (verify_required option set)")
-        self.quit()
+
+def quit_verify():
+    print_error("verification required for build (verify_required option set)")
+    Verifier.quit()
 
 
 # GEM Verifier
@@ -545,6 +618,25 @@ def from_disk(url, package_path, package_check, interactive=True):
                               'interactive': interactive})
 
 
+def attempt_verification_per_domain(package_path, url):
+    netloc = urlparse(url).netloc
+    if 'pypi' in netloc:
+        domain = 'pypi'
+    else:
+        domain = 'unknown'
+    verifier = {
+        'pypi': PyPiVerifier
+    }.get(domain, None)
+
+    if verifier is None:
+        return None
+    else:
+        print_info('Verification based on domain {}'.format(domain))
+        return apply_verification(verifier, **{
+                                  'package_path': package_path,
+                                  'url': url})
+
+
 def get_integrity_file(package_path):
     if os.path.exists(package_path + '.asc'):
         return package_path + '.asc'
@@ -560,21 +652,30 @@ def check(url, download_path, interactive=True):
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
     package_check = get_integrity_file(package_path)
-    interactive = interactive and sys.stdin.isatty()
+    try:
+        interactive = interactive and sys.stdin.isatty()
+    except ValueError:
+        interactive = False
     print(SEPT)
     print('Performing package integrity verification\n')
+    verified = None
     if package_check is not None:
-        return from_disk(url, package_path, package_check, interactive=interactive)
+        verified = from_disk(url, package_path, package_check, interactive=interactive)
     elif package_path[-4:] == '.gem':
-        return from_url(url, download_path, interactive=interactive)
+        verified = from_url(url, download_path, interactive=interactive)
     else:
         print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
         signature_url = get_signature_url(url)
         if signature_url is not None:
             print_info('Attempting to download {}'.format(signature_url))
-            return from_url(url, download_path)
-        print_info('Unable to find a url for package signature')
-        return None
+            verified = from_url(url, download_path)
+            if verified is None:
+                print_info('Unable to find a signature, attempting domain verification')
+                verified = attempt_verification_per_domain(package_path, url)
+
+    if verified is None and config.config_opts['verify_required']:
+        quit_verify()
+    return verified
 
 
 def parse_args():
