@@ -96,11 +96,17 @@ def check_output(output, expectations, entry, test_results):
         os.makedirs('{}/results'.format(TESTDIR), exist_ok=True)
         try:
             shutil.copy2('{}/test-{}/results/build.log'.format(TESTDIR, entry),
-                         '{}/results/{}.log'.format(TESTDIR, entry))
-            print('check {}/results/{}.log for more information'
+                         '{}/results/{}-build.log'.format(TESTDIR, entry))
+            shutil.copy2('{}/test-{}/mock_srpm.log'.format(TESTDIR, entry),
+                         '{}/results/{}-mock_srpm.log'.format(TESTDIR, entry))
+            shutil.copy2('{}/test-{}/mock_build.log'.format(TESTDIR, entry),
+                         '{}/results/{}-mock_build.log'.format(TESTDIR, entry))
+            print('check {}/results/ for more logfiles and output'
                   .format(TESTDIR, entry))
         except Exception:
             print('no build log found')
+        with open('{}/results/{}.out'.format(TESTDIR, entry), 'w') as outf:
+            outf.write(output)
 
         return False
 
@@ -220,9 +226,7 @@ def print_results(entry, test_results):
 def process_source(entry, test_results):
     """run autospec against entry and store the test results in test_results"""
     # Remove previous run failure logs
-    if os.path.exists('{}/results/{}.log'.format(TESTDIR, entry)):
-        os.remove('{}/results/{}.log'.format(TESTDIR, entry))
-
+    shutil.rmtree('{}/results'.format(TESTDIR), ignore_errors=True)
     expectations = importlib.import_module('testfiles.{}.expectations'
                                            .format(entry))
     tar_source(entry)
