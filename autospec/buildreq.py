@@ -320,7 +320,10 @@ def grab_python_requirements(descfile):
 
 
 def grab_pip_requirements(pkgname):
-    pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
+    try:
+        pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
+    except:
+        return
     lines = pipeout.decode("utf-8").split('\n')
     for line in lines:
         words = line.split(" ")
