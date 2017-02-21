@@ -91,6 +91,7 @@ license_translations = {
     "artistic_2": "Artistic-2.0",
     "MPLv1.1": "MPL-1.1",
     "MPL-2": "MPL-2.0",
+    "MPL2": "MPL-2.0",
     "MPLv2.0": "MPL-2.0",
     "MPLv2.0,": "MPL-2.0",
     "ZPL 2.1": "ZPL-2.1",
