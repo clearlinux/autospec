@@ -39,6 +39,7 @@ class TestGPGCli(unittest.TestCase):
             with open('key_test.pkey', 'w') as out_key:
                 out_key.write(output)
             err, output = ctx.display_keyinfo('key_test.pkey')
+            os.remove('key_test.pkey')
             self.assertTrue('keyid' in output)
 
 
