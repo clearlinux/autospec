@@ -265,8 +265,10 @@ class Specfile(object):
                     self._write("Provides: {}-python\n".format(self.name.lower()))
 
                 for req in sorted(self.pythonreqs):
-                    if req in self.buildreqs:
+                    if req in self.buildreqs or req+"-python" in self.buildreqs:
                         self._write("Requires: {}\n".format(req))
+                    else:
+                        print("Requirement not used: ", req)
 
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))

@@ -29,6 +29,7 @@ import buildpattern
 import util
 import tarball
 import config
+import subprocess
 
 buildreqs = set()
 pythonreqs = set()
@@ -318,6 +319,19 @@ def grab_python_requirements(descfile):
         add_pythonreq(clean_python_req(line))
 
 
+def grab_pip_requirements(pkgname):
+    pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
+    lines = pipeout.decode("utf-8").split('\n')
+    for line in lines:
+        words = line.split(" ")
+        if words[0] == "Requires:":
+            for w in words[1:]:
+                w2 = w.replace(",","")
+                if len(w2) > 2:
+                    print("Suggesting python requirement ", w2)
+                    add_pythonreq(w2)
+
+
 def setup_py_python3(filename):
     try:
         with open(filename) as FILE:
@@ -454,6 +468,7 @@ def scan_for_configure(package, dir, autospecdir):
             add_buildreq("pip")
             add_setup_py_requires(dirpath + '/setup.py')
             buildpattern.set_build_pattern("distutils23", default_score)
+            grab_pip_requirements(tarball.name)
 
         if "Makefile.PL" in files or "Build.PL" in files:
             buildpattern.set_build_pattern("cpan", default_score)
