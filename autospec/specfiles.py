@@ -51,9 +51,8 @@ class Specfile(object):
         self.default_grp = ""
         self.licenses = []
         self.packages = OrderedDict()
-        self.main_requires = OrderedDict()
+        self.requires = set()
         self.buildreqs = []
-        self.pythonreqs = []
         self.patches = []
         self.default_desc = ""
         self.locales = []
@@ -191,7 +190,7 @@ class Specfile(object):
                 continue
             self._write("Requires: {}-{}\n".format(self.name, pkg))
 
-        for pkg in self.main_requires:
+        for pkg in sorted(self.requires):
             self._write("Requires: {}\n".format(pkg))
 
     def write_buildreq(self):
@@ -263,12 +262,6 @@ class Specfile(object):
             if pkg == "python":
                 if self.name != self.name.lower():
                     self._write("Provides: {}-python\n".format(self.name.lower()))
-
-                for req in sorted(self.pythonreqs):
-                    if req in self.buildreqs or req+"-python" in self.buildreqs:
-                        self._write("Requires: {}\n".format(req))
-                    else:
-                        print("Requirement not used: ", req)
 
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))

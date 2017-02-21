@@ -93,8 +93,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["autostart"] = ["autostart"]
         self.specfile.packages["bin"] = []
         self.specfile.packages["lib"] = ["package.so"]
-        self.specfile.main_requires["pkg1"] = []
-        self.specfile.main_requires["pkg2"] = []
+        self.specfile.requires.add("pkg1")
+        self.specfile.requires.add("pkg2")
         self.specfile.no_autostart = True
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-bin\n",
@@ -115,8 +115,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["ignore"] = []
         self.specfile.packages["dev"] = []
         self.specfile.packages["active-units"] = []
-        self.specfile.main_requires["pkg1"] = []
-        self.specfile.main_requires["pkg2"] = []
+        self.specfile.requires.add("pkg1")
+        self.specfile.requires.add("pkg2")
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-autostart\n",
                   "Requires: pkg-bin\n",
@@ -188,7 +188,7 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["python"] = ["pyfile1", "pyfile2"]
         self.specfile.packages["dev"] = ["dev1", "dev2"]
         self.specfile.packages["pack"] = ["packf1"]
-        self.specfile.pythonreqs = ["pep8", "pylint", "pycurl"]
+        self.specfile.requires = ["pep8", "pylint", "pycurl"]
         self.specfile.buildreqs = ["pep8", "pycurl"]
         self.specfile.write_files_header()
         expect = ["\n%package data\n",
@@ -214,8 +214,6 @@ class TestSpecfileWrite(unittest.TestCase):
                   "\n%package python\n",
                   "Summary: python components for the pkg package.\n",
                   "Group: Default\n",
-                  "Requires: pep8\n",
-                  "Requires: pycurl\n",
                   "\n%description python\n",
                   "python components for the pkg package.\n",
                   "\n"]

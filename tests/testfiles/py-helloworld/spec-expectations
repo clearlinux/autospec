@@ -11,6 +11,9 @@ Summary  : No detailed summary available
 Group    : Development/Tools
 License  : GPL-3.0
 Requires: py-helloworld-python
+Requires: python-mock
+Requires: requests
+Requires: six
 BuildRequires : docutils
 BuildRequires : pbr
 BuildRequires : pip

@@ -29,7 +29,6 @@ import config
 
 # per sub-package file list for spec purposes
 packages = OrderedDict()
-main_requires = OrderedDict()
 
 # global file list to weed out dupes
 files = []
@@ -47,12 +46,6 @@ newfiles_printed = 0
 # Yes in the general case, but for example for R packages,
 # the answer is No.
 want_dev_split = 1
-
-
-def push_main_requires(package):
-    global main_requires
-    if (package not in main_requires):
-        main_requires[package] = set()
 
 
 def push_package_file(filename, package="main"):
@@ -340,7 +333,6 @@ def add_lang(lang):
 
 def load_specfile(specfile):
     specfile.packages = packages
-    specfile.main_requires = main_requires
     specfile.excludes = excludes
     specfile.locales = locales
 

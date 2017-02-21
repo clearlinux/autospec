@@ -74,7 +74,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
         elif buildtool == 'R':
             if buildreq.add_buildreq("R-" + s) > 0:
                 must_restart += 1
-                files.push_main_requires("R-" + s)
+                buildreq.add_requires("R-" + s)
         elif buildtool == 'perl':
             must_restart += buildreq.add_buildreq('perl(%s)' % s)
         elif buildtool == 'pypi':

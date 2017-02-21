@@ -31,8 +31,9 @@ import tarball
 import config
 import subprocess
 
+banned_requires = set()
 buildreqs = set()
-pythonreqs = set()
+requires = set()
 banned_buildreqs = set(
     ["llvm-devel", "gcj", "pkgconfig(dnl)", "pkgconfig(hal)", "tslib-0.0", "pkgconfig(parallels-sdk)", "oslo-python", "libxml2No-python"])
 verbose = False
@@ -42,7 +43,7 @@ autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "
 
 
 def add_buildreq(req):
-    global verbose
+    global buildreqs
     new = True
 
     req.strip()
@@ -58,19 +59,19 @@ def add_buildreq(req):
     return new
 
 
-def add_pythonreq(req):
-    global verbose
+def add_requires(req):
+    global requires
     new = True
 
     req.strip()
 
-    if req in pythonreqs:
+    if req in requires:
         new = False
-    if req in banned_buildreqs:
+    if req in banned_requires:
         return False
     if new:
-        # print("Adding python requirement:", req)
-        pythonreqs.add(req)
+        # print("Adding requirement:", req)
+        requires.add(req)
     return new
 
 
@@ -316,7 +317,7 @@ def clean_python_req(str, add_python=True):
 def grab_python_requirements(descfile):
     file = open(descfile, "r", encoding="latin-1")
     for line in file.readlines():
-        add_pythonreq(clean_python_req(line))
+        add_requires(clean_python_req(line))
 
 
 def grab_pip_requirements(pkgname):
@@ -332,7 +333,7 @@ def grab_pip_requirements(pkgname):
                 w2 = w.replace(",","")
                 if len(w2) > 2:
                     print("Suggesting python requirement ", w2)
-                    add_pythonreq(w2)
+                    add_requires(w2)
 
 
 def setup_py_python3(filename):
@@ -373,6 +374,9 @@ def add_setup_py_requires(filename):
         with open(filename) as FILE:
             for line in FILE.readlines():
                 if "install_requires" in line or "setup_requires" in line:
+                    req = False
+                    if "install_requires" in line:
+                        req = True
                     # find the value for *_requires
                     line = line.split("=", 1)[1].strip()
                     # check for end bracket on this line
@@ -383,7 +387,10 @@ def add_setup_py_requires(filename):
                         # eval the string and add requirements
                         for dep in ast.literal_eval(line):
                             print(dep)
-                            add_buildreq(clean_python_req(dep, False))
+                            dep = clean_python_req(dep, False)
+                            if req:
+                                add_requires(dep)
+                            add_buildreq(dep)
                         continue
                     # more complicated, multi-line list.
                     # this sets the py_dep_string with the current line, which
@@ -412,8 +419,12 @@ def add_setup_py_requires(filename):
                         # matching start quote
                         if end_quote > 0:
                             line = line[:end_quote + 1]
-                            py_deps = ast.literal_eval(line)
-                            add_buildreq(clean_python_req(py_deps, False))
+                            for dep in ast.literal_eval(line):
+                                print(dep)
+                                dep = clean_python_req(dep, False)
+                                if req:
+                                    add_requires(py_deps)
+                                add_buildreq(py_deps)
                             continue
 
                 # if py_dep_string was set above when a multi-line list was
@@ -429,9 +440,11 @@ def add_setup_py_requires(filename):
                     end_bracket = py_dep_string.find("]")
                     if end_bracket > 0:
                         # eval the string and add requirements
-                        py_deps = ast.literal_eval(py_dep_string[:end_bracket + 1])
-                        for dep in py_deps:
-                            add_buildreq(clean_python_req(dep, False))
+                        for dep in ast.literal_eval(py_dep_string[:end_bracket + 1]):
+                            dep = clean_python_req(dep, False)
+                            if req:
+                                add_requires(dep)
+                            add_buildreq(dep)
                         continue
 
     except:
@@ -520,5 +533,5 @@ def scan_for_configure(package, dir, autospecdir):
 
 def load_specfile(specfile):
     specfile.buildreqs = buildreqs
-    specfile.pythonreqs = pythonreqs
+    specfile.requires = requires
     specfile.cargo_bin = cargo_bin

@@ -437,9 +437,11 @@ def parse_config_files(path, bump):
 
     write_default_conf_file("buildreq_ban", "This file contains build requirements that get picked up but are undesirable. One entry per line, no whitespace.")
     write_default_conf_file("pkgconfig_ban", "This file contains pkgconfig build requirements that get picked up but are undesirable. One entry per line, no whitespace.")
+    write_default_conf_file("requires_ban", "This file contains runtime requirements that get picked up but are undesirable. One entry per line, no whitespace.")
 
     write_default_conf_file("buildreq_add", "This file contains additional build requirements that did not get picked up automatically. One name per line, no whitespace.")
     write_default_conf_file("pkgconfig_add", "This file contains additional pkgconfig build requirements that did not get picked up automatically. One name per line, no whitespace.")
+    write_default_conf_file("requires_add", "This file contains additional runtime requirements that did not get picked up automatically. One name per line, no whitespace.")
 
     write_default_conf_file("excludes", "This file contains the output files that need %exclude. Full path names, one per line.")
 
@@ -462,6 +464,11 @@ def parse_config_files(path, bump):
         print("Banning build requirement: %s." % banned)
         buildreq.banned_buildreqs.add(banned)
 
+    content = read_conf_file("requires_ban")
+    for banned in content:
+        print("Banning runtime requirement: %s." % banned)
+        buildreq.banned_requires.add(banned)
+
     content = read_conf_file("buildreq_add")
     for extra in content:
         print("Adding additional build requirement: %s." % extra)
@@ -472,6 +479,11 @@ def parse_config_files(path, bump):
         extra = "pkgconfig(%s)" % extra
         print("Adding additional build requirement: %s." % extra)
         buildreq.add_buildreq(extra)
+
+    content = read_conf_file("requires_add")
+    for extra in content:
+        print("Adding additional runtime requirement: %s." % extra)
+        buildreq.add_requires(extra)
 
     content = read_conf_file("excludes")
     for exclude in content:

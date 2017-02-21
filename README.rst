@@ -122,6 +122,11 @@ Controlling dependencies
     Add the pkg-config names here, as ``autospec`` will automatically transform
     the names into their ``pkgconfig($name)`` style when generating the ``.spec``.
 
+**requires_add**
+
+    Each line in the file provides the name of a package to add
+    as a runtime dependency to the ``.spec``.
+
 **buildreq_ban**
 
     Each line in the file is a build dependency that under no circumstance
@@ -135,6 +140,13 @@ Controlling dependencies
     be added automatically to the build, much the same as ``buildreq_ban``.
     As with ``pkgconfig_add``, these names are automatically transformed by
     ``autospec`` into their correct ``pkgconfig($name))`` style.
+
+**requires_ban**
+
+    Each line in the file is a runtime dependency that under no circumstance
+    should be automatically added to the runtime dependencies. This is useful
+    to block automatic configuration routines adding undesired functionality,
+    or to omit any automatically discovered dependencies during tarball scanning.
 
 
 Controlling the build process
