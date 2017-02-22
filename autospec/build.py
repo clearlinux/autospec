@@ -26,6 +26,7 @@ import re
 import tarball
 import os
 import grp
+import shutil
 
 import config
 import util
@@ -181,7 +182,8 @@ def package():
     print("Building package " + tarball.name + " round", round)
     # call(mock_cmd + " -q -r clear --scrub=cache")
     # call(mock_cmd + " -q -r clear --scrub=all")
-    util.call("mkdir -p %s/results" % download_path)
+    shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
+    os.makedirs('{}/results'.format(download_path))
     util.call(mock_cmd + " -r clear --buildsrpm --sources=./ --spec={0}.spec --uniqueext={0} --result=results/ --no-cleanup-after".format(tarball.name),
               logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
     util.call("rm -f results/build.log", cwd=download_path)
