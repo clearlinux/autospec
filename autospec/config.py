@@ -33,14 +33,13 @@ import test
 import textwrap
 import configparser
 from os.path import exists as file_exists
-
+from pathlib import Path
 from util import call
 
 extra_configure = ""
 extra_configure32 = ""
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
-config_path = ""
 urlban = ""
 extra_make = ""
 extra_make_install = ""
@@ -56,6 +55,7 @@ autoreconf = False
 license_fetch = None
 license_show = None
 git_uri = None
+os_packages = None
 config_file = None
 old_version = None
 old_patches = list()
@@ -307,10 +307,10 @@ def filter_blanks(lines):
     return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
 
 
-def read_conf_file(name):
+def read_conf_file(path):
     try:
-        with open(config_path + "/" + name) as f:
-            config_files.add(name)
+        with open(path, "r") as f:
+            config_files.add(os.path.basename(path))
             return filter_blanks(f.readlines())
     except EnvironmentError:
         return []
@@ -377,11 +377,11 @@ def parse_config_files(path, bump):
     global extra_configure
     global extra_configure32
     global config_files
-    global config_path
     global parallel_build
     global license_fetch
     global license_show
     global git_uri
+    global os_packages
     global urlban
     global config_file
     global profile_payload
@@ -397,8 +397,6 @@ def parse_config_files(path, bump):
     global patches
     global autoreconf
 
-    config_path = path
-
     read_config_opts()
 
     # Require autospec.conf for additional features
@@ -413,6 +411,11 @@ def parse_config_files(path, bump):
         git_uri = config['autospec'].get('git', None)
         license_fetch = config['autospec'].get('license_fetch', None)
         license_show = config['autospec'].get('license_show', None)
+        packages_file = config['autospec'].get('packages_file', None)
+        if not packages_file:
+            print("Warning: Set [autospec][packages_file] path to package list file for requires validation")
+            packages_file = os.path.join(os.path.dirname(config_file), "packages")
+
         urlban = config['autospec'].get('urlban', None)
 
     if not git_uri:
@@ -422,13 +425,15 @@ def parse_config_files(path, bump):
     if not license_show:
         print("Warning: Set [autospec][license_show] uri for license link check support")
 
+    os_packages = set(read_conf_file(packages_file))
+
     wrapper = textwrap.TextWrapper()
     wrapper.initial_indent = "# "
     wrapper.subsequent_indent = "# "
 
     def write_default_conf_file(name, description):
         config_files.add(name)
-        filename = path + "/" + name
+        filename = os.path.join(path, name)
         if os.path.isfile(filename):
             return
 
@@ -445,7 +450,7 @@ def parse_config_files(path, bump):
 
     write_default_conf_file("excludes", "This file contains the output files that need %exclude. Full path names, one per line.")
 
-    content = read_conf_file("release")
+    content = read_conf_file(os.path.join(path, "release"))
     if content and content[0]:
         r = int(content[0])
         if bump:
@@ -453,54 +458,54 @@ def parse_config_files(path, bump):
         tarball.release = str(r)
         print("Release     :", tarball.release)
 
-    content = read_conf_file("buildreq_ban")
+    content = read_conf_file(os.path.join(path, "buildreq_ban"))
     for banned in content:
         print("Banning build requirement: %s." % banned)
         buildreq.banned_buildreqs.add(banned)
 
-    content = read_conf_file("pkgconfig_ban")
+    content = read_conf_file(os.path.join(path, "pkgconfig_ban"))
     for banned in content:
         banned = "pkgconfig(%s)" % banned
         print("Banning build requirement: %s." % banned)
         buildreq.banned_buildreqs.add(banned)
 
-    content = read_conf_file("requires_ban")
+    content = read_conf_file(os.path.join(path, "requires_ban"))
     for banned in content:
         print("Banning runtime requirement: %s." % banned)
         buildreq.banned_requires.add(banned)
 
-    content = read_conf_file("buildreq_add")
+    content = read_conf_file(os.path.join(path, "buildreq_add"))
     for extra in content:
         print("Adding additional build requirement: %s." % extra)
         buildreq.add_buildreq(extra)
 
-    content = read_conf_file("pkgconfig_add")
+    content = read_conf_file(os.path.join(path, "pkgconfig_add"))
     for extra in content:
         extra = "pkgconfig(%s)" % extra
         print("Adding additional build requirement: %s." % extra)
         buildreq.add_buildreq(extra)
 
-    content = read_conf_file("requires_add")
+    content = read_conf_file(os.path.join(path, "requires_add"))
     for extra in content:
         print("Adding additional runtime requirement: %s." % extra)
         buildreq.add_requires(extra)
 
-    content = read_conf_file("excludes")
+    content = read_conf_file(os.path.join(path, "excludes"))
     for exclude in content:
             print("%%exclude for: %s." % exclude)
     files.excludes += content
 
-    content = read_conf_file("extras")
+    content = read_conf_file(os.path.join(path, "extras"))
     for extra in content:
             print("extras for: %s." % extra)
     files.extras += content
 
-    content = read_conf_file("setuid")
+    content = read_conf_file(os.path.join(path, "setuid"))
     for suid in content:
             print("setuid for: %s." % suid)
     files.setuid += content
 
-    content = read_conf_file("attrs")
+    content = read_conf_file(os.path.join(path, "attrs"))
     for line in content:
             attr = re.split('\(|\)|,', line)
             attr = [a.strip() for a in attr]
@@ -508,17 +513,17 @@ def parse_config_files(path, bump):
             print("attr for: %s." % filename)
             files.attrs[filename] = attr
 
-    patches += read_conf_file("series")
+    patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
     cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
         " ".join(pfiles)
     if len(patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
         autoreconf = True
 
-    content = read_conf_file("configure")
+    content = read_conf_file(os.path.join(path, "configure"))
     extra_configure = " \\\n".join(content)
 
-    content = read_conf_file("configure32")
+    content = read_conf_file(os.path.join(path, "configure32"))
     extra_configure32 = " \\\n".join(content)
 
     if config_opts["keepstatic"]:
@@ -526,43 +531,43 @@ def parse_config_files(path, bump):
     if config_opts['broken_parallel_build']:
         parallel_build = ""
 
-    content = read_conf_file("make_args")
+    content = read_conf_file(os.path.join(path, "make_args"))
     if content and content[0]:
         extra_make = content[0]
 
-    content = read_conf_file("make_install_args")
+    content = read_conf_file(os.path.join(path, "make_install_args"))
     if content and content[0]:
         extra_make_install = content[0]
 
-    content = read_conf_file("install_macro")
+    content = read_conf_file(os.path.join(path, "install_macro"))
     if content and content[0]:
         install_macro = content[0]
 
-    content = read_conf_file("cmake_args")
+    content = read_conf_file(os.path.join(path, "cmake_args"))
     if content and content[0]:
         extra_cmake = content[0]
 
-    content = read_conf_file("subdir")
+    content = read_conf_file(os.path.join(path, "subdir"))
     if content and content[0]:
         subdir = content[0]
 
-    content = read_conf_file("build_pattern")
+    content = read_conf_file(os.path.join(path, "build_pattern"))
     if content and content[0]:
         buildpattern.set_build_pattern(content[0], 20)
         autoreconf = False
 
-    content = read_conf_file("make_check_command")
+    content = read_conf_file(os.path.join(path, "make_check_command"))
     if content and content[0]:
         test.tests_config = content[0]
 
-    content = read_conf_file(tarball.name + ".license")
+    content = read_conf_file(os.path.join(path, tarball.name + ".license"))
     if content and content[0]:
         words = content[0].split()
         for word in words:
             if word.find(":") < 0:
                 license.add_license(word)
 
-    content = read_conf_file("golang_libpath")
+    content = read_conf_file(os.path.join(path, "golang_libpath"))
     if content and content[0]:
         tarball.golibpath = content[0]
         print("golibpath   : {}".format(tarball.golibpath))
@@ -578,10 +583,10 @@ def parse_config_files(path, bump):
         buildreq.add_buildreq("gcc-libgcc32")
         buildreq.add_buildreq("gcc-libstdc++32")
 
-    make_install_append = read_conf_file("make_install_append")
-    prep_append = read_conf_file("prep_append")
+    make_install_append = read_conf_file(os.path.join(path, "make_install_append"))
+    prep_append = read_conf_file(os.path.join(path, "prep_append"))
 
-    profile_payload = read_conf_file("profile_payload")
+    profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
 
 def load_specfile(specfile):
     specfile.urlban = urlban

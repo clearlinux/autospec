@@ -69,6 +69,9 @@ def add_requires(req):
         new = False
     if req in banned_requires:
         return False
+    if req not in buildreqs or req not in config.os_packages:
+        print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
+        return False
     if new:
         # print("Adding requirement:", req)
         requires.add(req)
@@ -388,9 +391,9 @@ def add_setup_py_requires(filename):
                         for dep in ast.literal_eval(line):
                             print(dep)
                             dep = clean_python_req(dep, False)
+                            add_buildreq(dep)
                             if req:
                                 add_requires(dep)
-                            add_buildreq(dep)
                         continue
                     # more complicated, multi-line list.
                     # this sets the py_dep_string with the current line, which
@@ -422,9 +425,9 @@ def add_setup_py_requires(filename):
                             for dep in ast.literal_eval(line):
                                 print(dep)
                                 dep = clean_python_req(dep, False)
+                                add_buildreq(py_deps)
                                 if req:
                                     add_requires(py_deps)
-                                add_buildreq(py_deps)
                             continue
 
                 # if py_dep_string was set above when a multi-line list was
@@ -442,9 +445,9 @@ def add_setup_py_requires(filename):
                         # eval the string and add requirements
                         for dep in ast.literal_eval(py_dep_string[:end_bracket + 1]):
                             dep = clean_python_req(dep, False)
+                            add_buildreq(dep)
                             if req:
                                 add_requires(dep)
-                            add_buildreq(dep)
                         continue
 
     except:

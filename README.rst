@@ -17,8 +17,8 @@ Copyright (C) 2015 Intel Corporation
 Configuration of autospec
 =========================
 autospec is configured by means of a simple INI-style configuration file.
-The default location of this file is assumed to be ``common/autospec.conf``,
-relative to the directory in which autospec is executed.
+The default location of this file is assumed to be
+``/usr/share/defaults/autospec/autospec.conf``.
 
 Example ``autospec.conf`` file::
 
@@ -26,6 +26,7 @@ Example ``autospec.conf`` file::
     git = git@someurl.com/%(NAME)s
     license_fetch = http://yourhost/hash.php
     license_show = http://yourhost/showone.php?hash=%(HASH)s
+    packages_file = file:///path/to/package_list_file
     upstream = http://yourhost/tarballs/%(HASH)s/%(NAME)s
 
 
@@ -37,6 +38,9 @@ Example ``autospec.conf`` file::
 
 **license_show**
     Optional URL to interact with online license checker
+
+**packages_file**
+    Optional path to add autodetected runtime requirement checking against
 
 **upstream**
     Base URL for stored upstream tarballs
