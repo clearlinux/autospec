@@ -60,16 +60,24 @@ def build_and_run(srctar, expectations, entry, test_results):
             ['python3', '{}/autospec/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
              'file://{}/{}'.format(TESTDIR, srctar)])
+        output = output.decode('utf-8')
     except Exception:
         pass
 
     print('Testing output for {}'.format(entry))
-    if check_output(output.decode('utf-8'), expectations, entry, test_results):
+    failures = check_output(output, expectations, entry, test_results)
+    if not failures:
         with open('{}.spec'.format(entry), 'r') as spec_file:
             spc = spec_file.read()
-            check_spec(spc, expectations, entry, test_results)
+            failures += check_spec(spc, expectations, entry, test_results)
         with open('options.conf', 'r') as conf_file:
-            check_conf(conf_file.read(), expectations, entry, test_results)
+            conf = conf_file.read()
+            failures += check_conf(conf, expectations, entry, test_results)
+
+    if failures:
+        # only copy logs and output over if a failure or error occurred
+        print('{} test failures detected'.format(entry))
+        copy_logs(entry, output)
 
     os.chdir(BASEDIR)
 
@@ -85,6 +93,8 @@ def check_output(output, expectations, entry, test_results):
     """
     test the output of the autospec run against the expectations defined in
     expectations.py
+
+    Returns number of failures (1 for a failure, 0 for success)
     """
     if 'build successful' in output:
         test_results[entry].append(fmt_pass('Build status - successful'))
@@ -93,22 +103,7 @@ def check_output(output, expectations, entry, test_results):
         test_results[entry].append(fmt_fail('Build status - failed, '
                                             'skipping remaining tests'))
         print('{} build failed'.format(entry))
-        os.makedirs('{}/results'.format(TESTDIR), exist_ok=True)
-        try:
-            shutil.copy2('{}/test-{}/results/build.log'.format(TESTDIR, entry),
-                         '{}/results/{}-build.log'.format(TESTDIR, entry))
-            shutil.copy2('{}/test-{}/mock_srpm.log'.format(TESTDIR, entry),
-                         '{}/results/{}-mock_srpm.log'.format(TESTDIR, entry))
-            shutil.copy2('{}/test-{}/mock_build.log'.format(TESTDIR, entry),
-                         '{}/results/{}-mock_build.log'.format(TESTDIR, entry))
-            print('check {}/results/ for more logfiles and output'
-                  .format(TESTDIR, entry))
-        except Exception:
-            print('no build log found')
-        with open('{}/results/{}.out'.format(TESTDIR, entry), 'w') as outf:
-            outf.write(output)
-
-        return False
+        return 1
 
     for item in expectations.output_strings:
         if item not in output:
@@ -117,11 +112,16 @@ def check_output(output, expectations, entry, test_results):
         else:
             test_results[entry].append(fmt_pass('"{}" found in output'
                                                 .format(item)))
-    return True
+    return 0
 
 
 def check_spec(spec_contents, expectations, entry, test_results):
-    """test the specfile against the expected specfile in spec-expectations"""
+    """
+    test the specfile against the expected specfile in spec-expectations
+
+    Returns the number of failures identified
+    """
+    failures = 0
     # replace the epoch time with a 1 so it can be tested for
     spec_contents = re.sub(r'SOURCE_DATE_EPOCH=[0-9]+\n',
                            'SOURCE_DATE_EPOCH=1\n',
@@ -133,6 +133,7 @@ def check_spec(spec_contents, expectations, entry, test_results):
     if len(diff):
         test_results[entry].append(fmt_fail('generated specfile different from '
                                             'expected\n'))
+        failures += 1
         for line in diff:
             test_results[entry][-1] += '\n{}'.format(line)
 
@@ -145,6 +146,7 @@ def check_spec(spec_contents, expectations, entry, test_results):
     if expectations.license not in spec_contents:
         test_results[entry].append(fmt_fail('license not detected as "{}"'
                                             .format(expectations.license)))
+        failures += 1
     else:
         test_results[entry].append(fmt_pass('license correctly detected as "{}"'
                                             .format(expectations.license)))
@@ -154,14 +156,21 @@ def check_spec(spec_contents, expectations, entry, test_results):
             test_results[entry].append(fmt_fail('expected "{}" to be a build '
                                                 'requirement, but was not found'
                                                 .format(item)))
+            failures += 1
         else:
             test_results[entry].append(fmt_pass('build requirement "{}" '
                                                 'successfully detected'
                                                 .format(item)))
+    return failures
 
 
 def check_conf(conf_contents, expectations, entry, test_results):
-    """test the specfile against the expected specfile in spec-expectations"""
+    """
+    test the specfile against the expected specfile in spec-expectations
+
+    Returns the number of failures identified.
+    """
+    failures = 0
     diff = list(unified_diff(expectations.conffile,
                              conf_contents.split('\n'),
                              fromfile='expected_conffile',
@@ -169,6 +178,7 @@ def check_conf(conf_contents, expectations, entry, test_results):
     if len(diff):
         test_results[entry].append(fmt_fail('generated conf file different '
                                             'from expected\n'))
+        failures += 1
         for line in diff:
             test_results[entry][-1] += '\n{}'.format(line)
 
@@ -176,6 +186,28 @@ def check_conf(conf_contents, expectations, entry, test_results):
     else:
         test_results[entry].append(fmt_pass('generated configuration file '
                                             'matches expected'))
+    return failures
+
+
+def copy_logs(entry, output):
+    """
+    Copies output and build and mock logs from the autospec build into
+    TESTDIR/results/
+    """
+    os.makedirs('{}/results'.format(TESTDIR), exist_ok=True)
+    try:
+        shutil.copy2('{}/test-{}/results/build.log'.format(TESTDIR, entry),
+                     '{}/results/{}-build.log'.format(TESTDIR, entry))
+        shutil.copy2('{}/test-{}/mock_srpm.log'.format(TESTDIR, entry),
+                     '{}/results/{}-mock_srpm.log'.format(TESTDIR, entry))
+        shutil.copy2('{}/test-{}/mock_build.log'.format(TESTDIR, entry),
+                     '{}/results/{}-mock_build.log'.format(TESTDIR, entry))
+        print('check {}/results/ for more logfiles and output'
+              .format(TESTDIR, entry))
+    except Exception:
+        print('no build log found')
+    with open('{}/results/{}.out'.format(TESTDIR, entry), 'w') as outf:
+        outf.write(output)
 
 
 def clean_up(entry):
