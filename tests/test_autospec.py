@@ -50,7 +50,7 @@ def tar_source(srcfiles):
 def build_and_run(srctar, expectations, entry, test_results):
     """run make autospec against the tarball, then run the tests"""
     dest = '{}/test-{}'.format(TESTDIR, entry)
-    add_files(srctar, entry, dest)
+    add_files(entry, dest)
     os.chdir(dest)
     output = "".encode('utf-8')
     # pylint: disable=broad-except
@@ -82,7 +82,7 @@ def build_and_run(srctar, expectations, entry, test_results):
     os.chdir(BASEDIR)
 
 
-def add_files(srctar, entry, dest):
+def add_files(entry, dest):
     """add necessary files to the autospec test directory"""
     os.makedirs(dest, exist_ok=True)
     for file in os.listdir('{}/{}/autospecdir'.format(TESTDIR, entry)):
