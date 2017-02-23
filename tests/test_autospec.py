@@ -60,9 +60,10 @@ def build_and_run(srctar, expectations, entry, test_results):
             ['python3', '{}/autospec/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
              'file://{}/{}'.format(TESTDIR, srctar)])
-        output = output.decode('utf-8')
     except Exception:
         pass
+    finally:
+        output = output.decode('utf-8')
 
     print('Testing output for {}'.format(entry))
     failures = check_output(output, expectations, entry, test_results)
