@@ -397,6 +397,8 @@ def parse_config_files(path, bump):
     global patches
     global autoreconf
 
+    packages_file = None
+
     read_config_opts()
 
     # Require autospec.conf for additional features
@@ -425,7 +427,8 @@ def parse_config_files(path, bump):
     if not license_show:
         print("Warning: Set [autospec][license_show] uri for license link check support")
 
-    os_packages = set(read_conf_file(packages_file))
+    if packages_file:
+        os_packages = set(read_conf_file(packages_file))
 
     wrapper = textwrap.TextWrapper()
     wrapper.initial_indent = "# "
