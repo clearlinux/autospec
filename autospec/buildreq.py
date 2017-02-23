@@ -307,7 +307,7 @@ def clean_python_req(str, add_python=True):
     ret = ret.strip()
     # is ret actually a valid (non-empty) string?
     if ret and add_python:
-        ret = ret.strip() + "-python"
+        ret = ret.strip()
     # use the dictionary to translate funky names to our current pgk names
     ret = util.translate(ret)
     return ret
