@@ -241,7 +241,7 @@ failed_pats = [
     (r".*\.go:.*cannot find package \"(.*)\" in any of:", 0, 'go'),
     ("\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*", 0, 'maven'),
     ("\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
-    ("\[WARNING\] THE POM FOR .*:(.*):[JAR|POM]+:.* IS MISSING, NO DEPENDENCY INFORMATION AVAILABLE", 0, 'MAVEN')]
+    ("\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information available", 0, 'maven')]
 
 def create_conf():
     config_f = configparser.ConfigParser(allow_no_value=True)
