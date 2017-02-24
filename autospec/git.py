@@ -44,7 +44,7 @@ def commit_to_git(path):
         call("git remote add origin %s" % upstream_uri, cwd=path)
 
     for config_file in config.config_files:
-        call("git add %s" % config_file, cwd=path)
+        call("git add %s" % config_file, cwd=path, check=False)
     for unit in buildpattern.sources["unit"]:
         call("git add %s" % unit, cwd=path)
     call("git add Makefile", cwd=path)
