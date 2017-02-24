@@ -53,13 +53,19 @@ def build_and_run(srctar, expectations, entry, test_results):
     add_files(entry, dest)
     os.chdir(dest)
     output = "".encode('utf-8')
+
+    if os.path.exists('test.conf'):
+        config = ['-c', 'test.conf']
+    else:
+        config = []
+
     # pylint: disable=broad-except
     # pass on any exception because the build failure will be reported later
     try:
         output = subprocess.check_output(
             ['python3', '{}/autospec/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
-             'file://{}/{}'.format(TESTDIR, srctar)])
+             'file://{}/{}'.format(TESTDIR, srctar)] + config)
     except Exception:
         pass
     finally:
