@@ -110,31 +110,35 @@ def create_conf():
     config_f['autospec'] = {}
     for fname, comment in sorted(config_options.items()):
         config_f.set('autospec', '# {}'.format(comment))
-        if file_exists(fname):
+        fpath = os.path.join(target_path, fname)
+        if file_exists(fpath):
             config_f['autospec'][fname] = 'true'
-            os.remove(fname)
+            os.remove(fpath)
         else:
             config_f['autospec'][fname] = 'false'
 
     # renamed options need special care
-    if file_exists("skip_test_suite"):
+    skip_test_suite_fpath = os.path.join(target_path, "skip_test_suite")
+    if file_exists(skip_test_suite_fpath):
         config_f['autospec']['skip_tests'] = 'true'
-        os.remove("skip_test_suite")
+        os.remove(skip_test_suite_fpath)
     write_config(config_f)
 
 
 def write_config(config_f):
-    with open('options.conf', 'w') as configfile:
+    options_file = os.path.join(target_path, 'options.conf')
+    with open(options_file, 'w') as configfile:
         config_f.write(configfile)
 
 
 def read_config_opts():
     global config_opts
-    if not file_exists('options.conf'):
+    options_file = os.path.join(target_path, 'options.conf')
+    if not file_exists(options_file):
         create_conf()
 
     config_f = configparser.ConfigParser()
-    config_f.read('options.conf')
+    config_f.read(options_file)
     if "autospec" not in config_f.sections():
         print("Missing autospec section in options.conf")
         sys.exit(1)
@@ -235,11 +239,12 @@ def parse_existing_spec(path, name):
             cves.append(patch.upper().split(".PATCH")[0])
 
 
-def parse_config_files(path, bump):
+def parse_config_files(path, bump, name, target):
     global extra_configure
     global extra_configure32
     global config_files
     global config_path
+    global target_path
     global parallel_build
     global license_fetch
     global license_show
@@ -260,6 +265,11 @@ def parse_config_files(path, bump):
     global autoreconf
 
     config_path = path
+
+    if not target:
+        target_path = os.getcwd() + "/" + name
+    else:
+        target_path = target
 
     read_config_opts()
 

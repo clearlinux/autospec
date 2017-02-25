@@ -158,7 +158,7 @@ def main():
 
     config.setup_patterns()
     config.config_file = args.config
-    config.parse_config_files(build.download_path, args.bump)
+    config.parse_config_files(build.download_path, args.bump, tarball.name, args.target)
     config.parse_existing_spec(build.download_path, tarball.name)
 
     buildreq.set_build_req()
