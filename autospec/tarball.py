@@ -217,6 +217,20 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         with open(build.download_path + "/upstream", "a") as file:
             file.write(sha1 + "/" + os.path.basename(archive) + "\n")
 
+
+def convert_version(version):
+    suffix = ''
+    version = version.replace(name, '')
+    version = version.strip().replace('-', '.').replace('_', '.')
+    version_pat = r'[0-9\.]+(\.beta[0-9]*|\.pre[0-9]*|b[0-9]*)$'
+    match = re.search(version_pat, version)
+    if match:
+        suffix = match.group(1)
+        version = version.rstrip(suffix)
+    version = ''.join(c for c in version if c.isdigit() or c == '.')
+    return version.strip('.') + suffix
+
+
 def name_and_version(url_argument, name_argument):
     global name
     global rawname
@@ -237,10 +251,7 @@ def name_and_version(url_argument, name_argument):
         m = p.search(tarfile)
         if m:
             name = m.group(1).strip()
-            version = m.group(2).strip()
-            b = version.find("-")
-            if b >= 0:
-                version = version[:b]
+            version = convert_version(m.group(2))
             break
 
     rawname = name
@@ -249,15 +260,12 @@ def name_and_version(url_argument, name_argument):
         buildpattern.set_build_pattern("R", 10)
         files.want_dev_split = 0
         buildreq.add_buildreq("clr-R-helpers")
-        p = re.compile(r"([A-Za-z0-9]+)_(v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~\-]*)\.tar\.gz")
+        p = re.compile(r"([A-Za-z0-9.]+)_(v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~\-]*)\.tar\.gz")
         m = p.search(tarfile)
         if m:
             name = "R-" + m.group(1).strip()
             rawname = m.group(1).strip()
-            version = m.group(2).strip()
-            b = version.find("-")
-            if b >= 0:
-                version = version[:b]
+            version = m.group(2).strip().replace('-', '.')
 
     if url_argument.find("pypi.python.org") > 0:
         buildpattern.set_build_pattern("distutils23", 10)
@@ -289,36 +297,16 @@ def name_and_version(url_argument, name_argument):
             if m:
                 name = m.group(1).strip()
                 rawname = name
-                # convert from 7_4_2 to 7.4.2
-                version = m.group(2).strip().replace('_', '.')
-                # remove release candidate tag
-                b = version.find("-rc")
-                if b > 0:
-                    version = version[:b]
-                b = version.find("-")
-                # a dash is invalid in the version string
-                # check for the version number before and after the dash
-                if b > 0:
-                    # check the string after the dash, this is most common
-                    if version[b + 1:].replace('.', '').isdigit():
-                        version = version[b + 1:]
-                    # the string after the dash was not a version number, try the
-                    # part before the dash.
-                    elif version[:b].replace('.', '').isdigit():
-                        version = version[:b]
-                    # last resort, neither side of the dash looked like a version,
-                    # just remove the dash so it is at least a valid version string
-                    else:
-                        version = version.replace('-', '.')
+                version = convert_version(m.group(2))
                 break
 
     if url_argument.find("bitbucket.org") > 0:
-        p = re.compile(r"https://bitbucket.org/.*/(.*?)/get/[a-zA-Z_-]*([0-9][0-9_.]*).tar")
+        #p = re.compile(r"https?://bitbucket.org/.*/(.*?)/.*/([.0-9a-zA-Z_-]*?).tar")
+        p = re.compile(r"https?://bitbucket.org/.*/(.*?)/.*/([.0-9a-zA-Z_-]*?).tar")
         m = p.search(url_argument)
         if m:
             name = m.group(1).strip()
-            # convert from 7_4_2 to 7.4.2
-            version = m.group(2).strip().replace('_', '.')
+            version = convert_version(m.group(2))
         else:
             version = "1"
 
@@ -365,27 +353,11 @@ def name_and_version(url_argument, name_argument):
         if len(split) > 3 and split[-2] in ('archive', 'tarball'):
             name = split[-3]
             version = split[-1]
-            if version.startswith('v'):
-                version = version[1:]
+            version = version.lstrip('v')
             # remove extension
-            version = '.'.join(version.split('.')[:-1])
+            version = version.rsplit('.', 1)[0]
             if version.endswith('.tar'):
-                version = '.'.join(version.split('.')[:-1])
-
-    b = version.find("-")
-    if b >= 0 and version.find("-beta") < 0:
-        b = b + 1
-        version = version[b:]
-
-    if len(version) > 0 and version[0].lower() in ['v', 'r']:
-        version = version[1:]
-
-    # remove package name from beginning of version
-    if version.lower().startswith(name.lower()):
-        pat = re.compile(re.escape(name), re.IGNORECASE)
-        version = pat.sub('', version)
-        if version[0] in ['.', '-', '_']:
-            version = version[1:]
+                version = version.replace('.tar', '')
 
     assert name != ""
 

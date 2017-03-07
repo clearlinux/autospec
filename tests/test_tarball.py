@@ -23,6 +23,8 @@ class TestTarballVersionName(unittest.TestCase):
                 if not urlline or urlline.startswith('#'):
                     continue
 
+                tarball.name = ''
+                tarball.version = ''
                 (url, name, version) = urlline.split(',')
                 tarball.name_and_version(url, '')
                 if tarball.name != name:
