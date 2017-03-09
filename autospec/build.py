@@ -118,7 +118,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             print("Unknown pattern match: ", s)
 
 
-def parse_build_results(filename, returncode):
+def parse_build_results(filename, returncode, filemanager):
     global must_restart
     global success
     buildreq.verbose = 1
@@ -157,7 +157,7 @@ def parse_build_results(filename, returncode):
         if "Installed (but unpackaged) file(s) found:" in line:
             infiles = 1
         elif infiles == 1 and "not matching the package arch" not in line:
-            files.push_file(line.strip())
+            filemanager.push_file(line.strip())
 
         if line.startswith("Sorry: TabError: inconsistent use of tabs and spaces in indentation"):
             print(line)
@@ -166,7 +166,7 @@ def parse_build_results(filename, returncode):
         if "File not found: /builddir/build/BUILDROOT/" in line:
             left = "File not found: /builddir/build/BUILDROOT/%s-%s-%s.x86_64/" % (tarball.name, tarball.version, tarball.release)
             missing_file = "/" + line.split(left)[1].strip()
-            files.remove_file(missing_file)
+            filemanager.remove_file(missing_file)
 
         if line.startswith("Executing(%clean") and returncode == 0:
             print("RPM build successful")
@@ -182,7 +182,7 @@ def set_mock():
            mock_cmd = 'sudo /usr/bin/mock'
 
 
-def package():
+def package(filemanager):
     global round
     round = round + 1
     set_mock()
@@ -197,4 +197,4 @@ def package():
     srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
     returncode = util.call(mock_cmd + " -r clear  --result=results/ %s --enable-plugin=ccache  --uniqueext=%s --no-cleanup-after" % (srcrpm, tarball.name),
                            logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
-    parse_build_results(download_path + "/results/build.log", returncode)
+    parse_build_results(download_path + "/results/build.log", returncode, filemanager)

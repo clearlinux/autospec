@@ -89,7 +89,6 @@ def load_specfile(specfile):
     tarball.load_specfile(specfile)
     specdescription.load_specfile(specfile)
     license.load_specfile(specfile)
-    files.load_specfile(specfile)
     buildreq.load_specfile(specfile)
     buildpattern.load_specfile(specfile)
     test.load_specfile(specfile)
@@ -142,7 +141,8 @@ def main(workingdir):
     # First, download the tarball, extract it and then do a set
     # of static analysis on the content of the tarball.
     #
-    tarball.name_and_version(args.url, args.name)
+    filemanager = files.FileManager()
+    tarball.name_and_version(args.url, args.name, filemanager)
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
     _dir = tarball.path
 
@@ -160,7 +160,7 @@ def main(workingdir):
 
     config.setup_patterns()
     config.config_file = args.config
-    config.parse_config_files(build.download_path, args.bump)
+    config.parse_config_files(build.download_path, args.bump, filemanager)
     config.parse_existing_spec(build.download_path, tarball.name)
 
     buildreq.set_build_req()
@@ -177,6 +177,7 @@ def main(workingdir):
     # package builds
     #
     specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release)
+    filemanager.load_specfile(specfile)
     load_specfile(specfile)
 
     print("\n")
@@ -188,10 +189,10 @@ def main(workingdir):
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package()
-        files.load_specfile(specfile)
+        build.package(filemanager)
+        filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
-        files.newfiles_printed = 0
+        filemanager.newfiles_printed = 0
         if build.round > 20 or build.must_restart == 0:
             break
 

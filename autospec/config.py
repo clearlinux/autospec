@@ -22,7 +22,6 @@
 import buildpattern
 import build
 import buildreq
-import files
 import license
 import os
 import sys
@@ -373,7 +372,7 @@ def parse_existing_spec(path, name):
             cves.append(patch.upper().split(".PATCH")[0])
 
 
-def parse_config_files(path, bump):
+def parse_config_files(path, bump, filemanager):
     global extra_configure
     global extra_configure32
     global config_files
@@ -496,17 +495,17 @@ def parse_config_files(path, bump):
     content = read_conf_file(os.path.join(path, "excludes"))
     for exclude in content:
             print("%%exclude for: %s." % exclude)
-    files.excludes += content
+    filemanager.excludes += content
 
     content = read_conf_file(os.path.join(path, "extras"))
     for extra in content:
             print("extras for: %s." % extra)
-    files.extras += content
+    filemanager.extras += content
 
     content = read_conf_file(os.path.join(path, "setuid"))
     for suid in content:
             print("setuid for: %s." % suid)
-    files.setuid += content
+    filemanager.setuid += content
 
     content = read_conf_file(os.path.join(path, "attrs"))
     for line in content:
@@ -514,7 +513,7 @@ def parse_config_files(path, bump):
             attr = [a.strip() for a in attr]
             filename = attr.pop()
             print("attr for: %s." % filename)
-            files.attrs[filename] = attr
+            filemanager.attrs[filename] = attr
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]

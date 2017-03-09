@@ -20,7 +20,6 @@
 import build
 import buildpattern
 import buildreq
-import files
 import config
 import glob
 import hashlib
@@ -235,7 +234,7 @@ def convert_version(version):
     return version.strip('.') + suffix
 
 
-def name_and_version(url_argument, name_argument):
+def name_and_version(url_argument, name_argument, filemanager):
     global name
     global rawname
     global version
@@ -262,7 +261,7 @@ def name_and_version(url_argument, name_argument):
     # R package
     if url_argument.find("cran.r-project.org") > 0 or url_argument.find("cran.rstudio.com") > 0:
         buildpattern.set_build_pattern("R", 10)
-        files.want_dev_split = 0
+        filemanager.want_dev_split = False
         buildreq.add_buildreq("clr-R-helpers")
         p = re.compile(r"([A-Za-z0-9.]+)_(v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~\-]*)\.tar\.gz")
         m = p.search(tarfile)

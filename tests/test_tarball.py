@@ -17,6 +17,9 @@ class TestTarballVersionName(unittest.TestCase):
         Does not use self.assertEquals but appends to a list so all failures
         are reported instead of just the first one.
         """
+        class FileManager():
+            want_dev_split = False
+
         errors = []
         with open('tests/packageurls', 'r') as pkgurls:
             for urlline in pkgurls.read().split('\n'):
@@ -26,7 +29,7 @@ class TestTarballVersionName(unittest.TestCase):
                 tarball.name = ''
                 tarball.version = ''
                 (url, name, version) = urlline.split(',')
-                tarball.name_and_version(url, '')
+                tarball.name_and_version(url, '', FileManager())
                 if tarball.name != name:
                     errors.append("name: '{}' != '{}' for url: {}"
                                   .format(tarball.name, name, url))

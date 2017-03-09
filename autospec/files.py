@@ -20,321 +20,235 @@
 #
 
 import build
-from collections import OrderedDict
-import re
 import tarball
-import buildreq
-import config
+import re
+from collections import OrderedDict
 # todo package splits
 
-# per sub-package file list for spec purposes
-packages = OrderedDict()
 
-# global file list to weed out dupes
-files = []
-files_blacklist = []
-excludes = []
-extras = []
-setuid = []
-attrs = {}
-locales = []
+class FileManager(object):
+    """
+    Files class handles spec file %files section management
+    """
+    def __init__(self):
+        self.packages = OrderedDict()  # per sub-package file list for spec purposes
+        self.files = []  # global file list to weed out dupes
+        self.files_blacklist = set()
+        self.excludes = []
+        self.extras = []
+        self.setuid = []
+        self.attrs = {}
+        self.locales = []
+        self.newfiles_printed = False
+        # Do we need ALL include files in a dev package, even if they're not in
+        # /usr/include?  Yes in the general case, but for example for R
+        # packages, the answer is No.
+        self.want_dev_split = True
 
-newfiles_printed = 0
+    def push_package_file(self, filename, package="main"):
+        """
+        Add found %file and indicate to build module that we must restart the
+        build.
+        """
+        if package not in self.packages:
+            self.packages[package] = set()
 
-#
-# Do we need ALL include files in a dev package, even if they're not in /usr/include?
-# Yes in the general case, but for example for R packages,
-# the answer is No.
-want_dev_split = 1
+        self.packages[package].add(filename)
+        build.must_restart += 1
+        if not self.newfiles_printed:
+            print("  New %files content found")
+            self.newfiles_printed = True
 
+    def file_pat_match(self, filename, pattern, package, replacement="", prefix=""):
+        """
+        Search for pattern in filename, if pattern matches push package file.
+        If that file is also in the excludes list, prepend "%exclude " before
+        pushing the filename.
+        Returns True if a file was pushed, False otherwise.
+        """
+        if not replacement:
+            replacement = prefix + filename
 
-def push_package_file(filename, package="main"):
-    global packages
-    global newfiles_printed
+        pat = re.compile(pattern)
+        match = pat.search(filename)
+        if match:
+            if filename in self.excludes:
+                self.push_package_file("%exclude " + filename, package)
+                return True
 
-    if (package not in packages):
-        packages[package] = set()
-    packages[package].add(filename)
-    build.must_restart = build.must_restart + 1
-    if newfiles_printed == 0:
-        print("  New %files content found")
-        newfiles_printed = 1
-
-
-def file_pat_match(filename, pattern, package, replacement="", prefix=""):
-    if replacement == "":
-        replacement = prefix + filename
-
-    pat = re.compile(pattern)
-    match = pat.search(filename)
-    if match:
-        if filename in excludes:
-            push_package_file("%exclude " + filename, package)
+            self.push_package_file(replacement, package)
             return True
-        push_package_file(replacement, package)
-        return True
-    else:
-        return False
+        else:
+            return False
 
+    def file_is_locale(self, filename):
+        """
+        If a file is a locale, appends to self.locales and returns True,
+        returns False otherwise
+        """
+        pat = re.compile(r"^/usr/share/locale/.*/(.*)\.mo")
+        match = pat.search(filename)
+        if match:
+            lang = match.group(1)
+            if lang not in self.locales:
+                self.locales.append(lang)
+                print("  New locale:", lang)
 
-def file_is_locale(filename):
-    pat = re.compile("^/usr/share/locale/.*/(.*)\.mo")
-    match = pat.search(filename)
-    if match:
-        l = match.group(1)
-        add_lang(l)
-        return True
-    else:
-        return False
+            return True
+        else:
+            return False
 
+    def push_file(self, filename):
+        """
+        Perform a number of checks against the filename and push the filename
+        if appropriate.
+        """
+        if filename in self.files or filename in self.files_blacklist:
+            return
 
-def push_file(filename):
-    global files
-    global files_blacklist
-    global extras
-    global setuid
-    global attrs
-    for file in files:
-        if file == filename:
-            return 0
+        self.files.append(filename)
+        if self.file_is_locale(filename):
+            return
 
-    if filename in files_blacklist:
-        return 0
-    files.append(filename)
+        # autostart
+        part = re.compile(r"^/usr/lib/systemd/system/.+\.target\.wants/.+")
+        if part.search(filename) and 'update-triggers.target.wants' not in filename:
+            self.push_package_file(filename, "autostart")
+            self.excludes.append(filename)
 
-    if file_is_locale(filename):
-        return
+        # extras
+        if filename in self.extras:
+            self.push_package_file(filename, "extras")
+            self.excludes.append(filename)
 
-    # autostart
-    part = re.compile("^/usr/lib/systemd/system/.+\.target\.wants/.+")
-    if part.search(filename) and 'update-triggers.target.wants' not in filename:
-        push_package_file(filename, "autostart")
-        excludes.append(filename)
+        if filename in self.setuid:
+            newfn = "%attr(4755, root, root) " + filename
+            self.push_package_file(newfn, "setuid")
+            self.excludes.append(filename)
 
-    # extras
-    if filename in extras:
-        push_package_file(filename, "extras")
-        excludes.append(filename)
+        if filename in self.attrs:
+            newfn = "{0}({1}) {2}".format(self.attrs[filename][0],
+                                          ','.join(self.attrs[filename][1:3]),
+                                          filename)
+            self.push_package_file(newfn, "attr")
+            self.excludes.append(filename)
 
-    if filename in setuid:
-        fn = "%attr(4755, root, root) " + filename
-        push_package_file(fn, "setuid")
-        excludes.append(filename)
+        if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
+            return
 
-    if filename in attrs:
-        fn = "%s(%s,%s,%s) %s" % (attrs[filename][0], attrs[filename][1], attrs[filename][2],
-                                  attrs[filename][3], filename)
-        push_package_file(fn, "attr")
-        excludes.append(filename)
+        patterns = [
+            # Patterns for matching files, format is a tuple as follows:
+            # (<raw pattern>, <package>, <optional replacement>, <optional prefix>)
+            # order matters!
+            (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
+            (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"),
+            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"),
+            (r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib32"),
+            (r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so", "lib"),
+            (r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so", "lib32"),
+            (r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"),
+            (r"^/usr/lib64/gobject-introspection/", "lib"),
+            (r"^/usr/libexec/", "bin"),
+            (r"^/usr/bin/", "bin"),
+            (r"^/usr/sbin/", "bin"),
+            (r"^/sbin/", "bin"),
+            (r"^/bin/", "bin"),
+            (r"^/usr/lib/python.*/", "python", "/usr/lib/python*/*"),
+            (r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"),
+            (r"^/usr/share/gir-[0-9\.]+/[a-zA-Z0-9\.\_\-\+]*\.gir", "dev", "/usr/share/gir-1.0/*.gir"),
+            (r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"),
+            (r"^/usr/share/cmake-3.1/", "data", "/usr/share/cmake-3.1/*"),
+            (r"^/usr/share/cmake-3.7/", "data", "/usr/share/cmake-3.7/*"),
+            (r"^/usr/share/cmake-3.6/", "data", "/usr/share/cmake-3.6/*"),
+            (r"^/usr/share/girepository-1\.0/.*\.typelib\$", "dev", "/usr/share/girepository-1.0/*.typelib"),
+            (r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hxx", "dev", "/usr/include/*.hxx"),
+            (r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hpp", "dev", "/usr/include/*.hpp"),
+            (r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.h\+\+", "dev", "/usr/include/*.h\+\+"),
+            (r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.h", "dev", "/usr/include/*.h"),
+            (r"^/usr/include/", "dev"),
+            (r"^/usr/lib64/girepository-1.0/", "dev"),
+            (r"^/usr/share/cmake/", "dev"),
+            (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
+            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
+            (r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev32"),
+            (r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
+            (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib/*.a"),
+            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib64/*.a"),
+            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev32", "/usr/lib32/*.a"),
+            (r"^/usr/lib/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"),
+            (r"^/usr/lib64/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"),
+            (r"^/usr/lib32/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev32"),
+            (r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal/*.ac"),
+            (r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal/*.m4"),
+            (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal-1.*/*.ac"),
+            (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"),
+            (r"^/usr/share/doc/" + re.escape(tarball.name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(tarball.name) + "/*"),
+            (r"^/usr/share/gtk-doc/html", "doc"),
+            (r"^/usr/share/info/", "doc", "%doc /usr/share/info/*"),
+            (r"^/usr/share/man/man0", "doc", "%doc /usr/share/man/man0/*"),
+            (r"^/usr/share/man/man1", "doc", "%doc /usr/share/man/man1/*"),
+            (r"^/usr/share/man/man2", "doc", "%doc /usr/share/man/man2/*"),
+            (r"^/usr/share/man/man3", "doc", "%doc /usr/share/man/man3/*"),
+            (r"^/usr/share/man/man4", "doc", "%doc /usr/share/man/man4/*"),
+            (r"^/usr/share/man/man5", "doc", "%doc /usr/share/man/man5/*"),
+            (r"^/usr/share/man/man6", "doc", "%doc /usr/share/man/man6/*"),
+            (r"^/usr/share/man/man7", "doc", "%doc /usr/share/man/man7/*"),
+            (r"^/usr/share/man/man8", "doc", "%doc /usr/share/man/man8/*"),
+            (r"^/usr/share/man/man9", "doc", "%doc /usr/share/man/man9/*"),
+            (r"^/etc/systemd/system/.*\.wants/", "active-units"),
+            # now a set of catch-all rules
+            (r"^/etc/", "config", "", "%config "),
+            (r"^/usr/etc/", "config", "", "%config "),
+            (r"^/lib/systemd", "config"),
+            (r"^/usr/lib/systemd", "config"),
+            (r"^/usr/lib/udev/rules.d", "config"),
+            (r"^/usr/lib/modules-load.d", "config"),
+            (r"^/usr/lib/tmpfiles.d", "config"),
+            (r"^/usr/lib/sysusers.d", "config"),
+            (r"^/usr/lib/sysctl.d", "config"),
+            (r"^/usr/share/", "data"),
+            # finally move any dynamically loadable plugins (not
+            # perl/python/ruby/etc.. extensions) into lib package
+            (r"^/usr/lib/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib"),
+            (r"^/usr/lib64/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib"),
+            (r"^/usr/lib32/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib32"),
+            # locale data gets picked up via file_is_locale
+            (r"^/usr/share/locale/", "ignore")]
 
-    if file_pat_match(filename, r"^/usr/share/omf", "main", "/usr/share/omf/*"):
-        return
+        for pat_args in patterns:
+            if self.file_pat_match(filename, *pat_args):
+                return
 
-    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib32"):
-        return
+        if filename in self.excludes:
+            self.push_package_file("%exclude " + filename)
+            return
 
-    # Workarounds for some elfutils shared libraries ending with .so
-    if file_pat_match(filename, r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so", "lib32"):
-        return
+        self.push_package_file(filename)
 
-    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/gobject-introspection/", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/libexec/", "bin"):
-        return
-    if file_pat_match(filename, r"^/usr/bin/", "bin"):
-        return
-    if file_pat_match(filename, r"^/usr/sbin/", "bin"):
-        return
-    if file_pat_match(filename, r"^/sbin/", "bin"):
-        return
-    if file_pat_match(filename, r"^/bin/", "bin"):
-        return
-    if file_pat_match(filename, r"^/bin/", "bin"):
-        return
+    def remove_file(self, filename):
+        """
+        Remove filename from local file list
+        """
+        hit = False
 
-    if file_pat_match(filename, r"^/usr/lib/python3.*/", "python", "/usr/lib/python3*/*"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/python2.*/", "python", "/usr/lib/python2*/*"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/gir-[0-9\.]+/[a-zA-Z0-9\.\_\-\+]*\.gir", "dev", "/usr/share/gir-1.0/*.gir"):
-        print("HIT GIR\n")
-        return
-    if file_pat_match(filename, r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/cmake-3.1/", "data", "/usr/share/cmake-3.1/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/cmake-3.7/", "data", "/usr/share/cmake-3.7/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/cmake-3.6/", "data", "/usr/share/cmake-3.6/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/girepository-1\.0/.*\.typelib\$", "dev", "/usr/share/girepository-1.0/*.typelib"):
-        return
-
-    if file_pat_match(filename, r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hxx", "dev", "/usr/include/*.hxx"):
-        return
-    if file_pat_match(filename, r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hpp", "dev", "/usr/include/*.hpp"):
-        return
-    if file_pat_match(filename, r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.h\+\+", "dev", "/usr/include/*.h\+\+"):
-        return
-    if file_pat_match(filename, r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.h", "dev", "/usr/include/*.h"):
-        return
-    if file_pat_match(filename, r"^/usr/include/", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/girepository-1.0/", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/share/cmake/", "dev"):
-        return
-    if want_dev_split > 0 and file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev32"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/avx2/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib/*.a"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib64/*.a"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev32", "/usr/lib32/*.a"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev"):
-        return
-    if file_pat_match(filename, r"^/usr/lib32/pkgconfig/[a-zA-Z0-9\.\_\-\+]*\.pc$", "dev32"):
-        return
-    if file_pat_match(filename, r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal/*.ac"):
-        return
-    if file_pat_match(filename, r"^/usr/share/aclocal/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal/*.m4"):
-        return
-    if file_pat_match(filename, r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.ac$", "dev", "/usr/share/aclocal-1.*/*.ac"):
-        return
-    if file_pat_match(filename, r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"):
-        return
-
-    if file_pat_match(filename, r"^/usr/share/doc/" + re.escape(tarball.name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(tarball.name) + "/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/gtk-doc/html", "doc"):
-        return
-    if file_pat_match(filename, r"^/usr/share/info/", "doc", "%doc /usr/share/info/*"):
-        return
-
-    if file_pat_match(filename, r"^/usr/share/man/man0", "doc", "%doc /usr/share/man/man0/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man1", "doc", "%doc /usr/share/man/man1/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man2", "doc", "%doc /usr/share/man/man2/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man3", "doc", "%doc /usr/share/man/man3/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man4", "doc", "%doc /usr/share/man/man4/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man5", "doc", "%doc /usr/share/man/man5/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man6", "doc", "%doc /usr/share/man/man6/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man7", "doc", "%doc /usr/share/man/man7/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man8", "doc", "%doc /usr/share/man/man8/*"):
-        return
-    if file_pat_match(filename, r"^/usr/share/man/man9", "doc", "%doc /usr/share/man/man9/*"):
-        return
-
-    if file_pat_match(filename, r"^/etc/systemd/system/.*\.wants/", "active-units"):
-        return
-
-    # now a set of catch-all rules
-    if file_pat_match(filename, r"^/etc/", "config", "", "%config "):
-        return
-    if file_pat_match(filename, r"^/usr/etc/", "config", "", "%config "):
-        return
-    if file_pat_match(filename, r"^/lib/systemd", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/systemd", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/udev/rules.d", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/modules-load.d", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/tmpfiles.d", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/sysusers.d", "config"):
-        return
-    if file_pat_match(filename, r"^/usr/lib/sysctl.d", "config"):
-        return
-
-    if file_pat_match(filename, r"^/usr/share/", "data"):
-        return
-
-    # finally move any dynamically loadable plugins (not
-    # perl/python/ruby/etc.. extensions) into lib package
-    if file_pat_match(filename, r"^/usr/lib/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib64/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib"):
-        return
-    if file_pat_match(filename, r"^/usr/lib32/.*/[a-zA-Z0-9\.\_\-\+]*\.so", "lib32"):
-        return
-
-    # locale data gets picked up via find_lang
-    if file_pat_match(filename, r"^/usr/share/locale/", "ignore"):
-        return
-
-    if filename in excludes:
-        push_package_file("%exclude " + filename)
-        return
-
-    push_package_file(filename)
-
-
-def remove_file(file):
-    global files
-    global packages
-    global files_blacklist
-    hit = False
-
-    if file in files:
-        files.remove(file)
-        print("File no longer present: %s" % file)
-        hit = True
-    for pkg in packages:
-        if file in packages[pkg]:
-            packages[pkg].remove(file)
-            print("File no longer present in %s: %s" % (pkg, file))
+        if filename in self.files:
+            self.files.remove(filename)
+            print("File no longer present: {}".format(filename))
             hit = True
-    if hit:
-        if file not in files_blacklist:
-            files_blacklist.append(file)
-        build.must_restart = build.must_restart + 1
+        for pkg in self.packages:
+            if filename in self.packages[pkg]:
+                self.packages[pkg].remove(filename)
+                print("File no longer present in {}: {}".format(pkg, filename))
+                hit = True
+        if hit:
+            self.files_blacklist.add(filename)
+            build.must_restart += 1
 
-
-def add_lang(lang):
-    global locales
-    global packages
-    if lang in locales:
-        return
-    locales.append(lang)
-    print("  New locale:", lang)
-
-    if "locales" in packages:
-        return
-    packages["locales"] = []
-
-
-def load_specfile(specfile):
-    specfile.packages = packages
-    specfile.excludes = excludes
-    specfile.locales = locales
-
+    def load_specfile(self, specfile):
+        """
+        Load a specfile instance with relevant information to be written to the
+        spec file.
+        """
+        specfile.packages = self.packages
+        specfile.excludes = self.excludes
+        specfile.locales = self.locales
