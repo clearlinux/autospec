@@ -34,11 +34,18 @@ import util
 success = 0
 round = 0
 must_restart = 0
-base_path = "/tmp/" + getpass.getuser() + "/"
-output_path = base_path + "output"
-download_path = output_path + "/" + tarball.name
+base_path = None
+output_path = None
+download_path = None
 mock_cmd = '/usr/bin/mock'
 
+def setup_workingdir(workingdir):
+    global base_path
+    global output_path
+    global download_path
+    base_path = workingdir
+    output_path = os.path.join(base_path, "output")
+    download_path = os.path.join(output_path, tarball.name)
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     global must_restart

@@ -183,14 +183,14 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
         file.write("\n")
         file.write("include ../common/Makefile.common\n")
 
-    shutil.rmtree(build.base_path + name, ignore_errors=True)
-    shutil.rmtree(build.base_path + tarball_prefix, ignore_errors=True)
+    shutil.rmtree(os.path.join(build.base_path, name), ignore_errors=True)
+    shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
     os.makedirs("{}".format(build.output_path), exist_ok=True)
 
     call("mkdir -p %s" % build.download_path)
     call(extract_cmd)
 
-    path = build.base_path + tarball_prefix
+    path = os.path.join(build.base_path, tarball_prefix)
 
     for archive, destination in zip(archives[::2], archives[1::2]):
         source_tarball_path = check_or_get_file(archive, os.path.basename(archive))

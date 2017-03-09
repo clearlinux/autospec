@@ -21,6 +21,7 @@ import sys
 import os
 import re
 import types
+import tempfile
 
 import build
 import buildpattern
@@ -94,7 +95,7 @@ def load_specfile(specfile):
     test.load_specfile(specfile)
 
 
-def main():
+def main(workingdir):
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--skip-git",
                         action="store_false", dest="git", default=True,
@@ -135,6 +136,7 @@ def main():
                      "-a/--archives requires an even number of arguments"))
 
     check_requirements(args.git)
+    build.setup_workingdir(workingdir)
 
     #
     # First, download the tarball, extract it and then do a set
@@ -221,4 +223,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    with tempfile.TemporaryDirectory() as workingdir:
+        main(workingdir)

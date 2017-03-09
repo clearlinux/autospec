@@ -11,6 +11,11 @@ class TestCommitmessage(unittest.TestCase):
         commitmessage.tarball.name = 'testball'
         commitmessage.tarball.version = '0.0.1'
         commitmessage.config.old_version = '0.0.0'
+        self.workingdir = tempfile.TemporaryDirectory()
+        commitmessage.build.setup_workingdir(self.workingdir.name)
+
+    def tearDown(self):
+        self.workingdir.cleanup()
 
     def test_is_header(self):
         """

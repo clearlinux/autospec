@@ -104,7 +104,7 @@ def process_NEWS(newsfile):
         return commitmessage, cves
 
     try:
-        with open(build.download_path + "/" + newsfile, encoding="latin-1") as f:
+        with open(os.path.join(build.download_path, newsfile), encoding="latin-1") as f:
             newslines = f.readlines()
     except EnvironmentError:
         return commitmessage, cves
@@ -220,7 +220,7 @@ def guess_commit_message():
         commitmessage.extend(sorted(list(cves)))
         commitmessage.append("")
 
-    with open(build.download_path + "/commitmsg", "w", encoding="latin-1") as cmsg_file:
+    with open(os.path.join(build.download_path, "commitmsg"), "w", encoding="latin-1") as cmsg_file:
         cmsg_file.write("\n".join(commitmessage) + "\n")
 
     print("Guessed commit message:")
