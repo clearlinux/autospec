@@ -174,3 +174,5 @@ http://www.open-iscsi.org/bits/open-iscsi-2.0-873.tar.gz,open-iscsi,2.0.873
 https://github.com/ColinIanKing/stress-ng/archive/V0.05.12.tar.gz,stress-ng,0.05.12
 https://bitbucket.org/jurko/suds/downloads/suds-jurko-0.6.tar.bz2,suds,0.6
 https://github.com/01org/intel-cmt-cat/archive/v0.1.5-1.tar.gz,intel-cmt-cat,0.1.5.1
+http://github.com/ocaml/ocamlbuild/archive/0.11.0.tar.gz,ocamlbuild,0.11.0
+https://github.com/ocaml/ocamlbuild/archive/0.11.0.tar.gz,ocamlbuild,0.11.0

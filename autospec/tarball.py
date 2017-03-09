@@ -285,11 +285,11 @@ def name_and_version(url_argument, name_argument):
     if "github.com" in url_argument:
         # define regex accepted for valid packages, important for specific
         # patterns to come before general ones
-        github_patterns = [r"https://github.com/.*/(.*?)/archive/(.*)-final.tar",
-                           r"https://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
-                           r"https://github.com/.*/(.*?)/archive/v?(.*).orig.tar",
-                           r"https://github.com/.*/(.*?)/archive/(.*).zip",
-                           r"https://github.com/.*/(.*?)/archive/v?(.*).tar"]
+        github_patterns = [r"https?://github.com/.*/(.*?)/archive/(.*)-final.tar",
+                           r"https?://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
+                           r"https?://github.com/.*/(.*?)/archive/v?(.*).orig.tar",
+                           r"https?://github.com/.*/(.*?)/archive/(.*).zip",
+                           r"https?://github.com/.*/(.*?)/archive/v?(.*).tar"]
 
         for pattern in github_patterns:
             p = re.compile(pattern)
