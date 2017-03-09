@@ -21,12 +21,15 @@
 # exact matches on hashes of the COPYING file
 #
 
+import sys
 import os
 import tarball
 import pycurl
 import urllib
 import config
 from io import BytesIO
+
+from util import print_fatal
 
 default_license = "TO BE DETERMINED"
 
@@ -298,8 +301,8 @@ def scan_for_licenses(package, dir):
                     license_from_doc(os.path.join(dirpath, name))
 
     if len(licenses) == 0:
-        print("\n*ERROR: cannot find any license or " + tarball.name + ".license file!\n")
-        quit()
+        print_fatal(" Cannot find any license or " + tarball.name + ".license file!\n")
+        sys.exit(1)
     else:
         print("Licenses    : ", " ".join(sorted(licenses)))
 
