@@ -196,8 +196,8 @@ def main():
     test.check_regression(build.download_path)
 
     if build.success == 0:
-        print("Build failed")
-        return
+        print_fatal("Build failed, aborting")
+        sys.exit(1)
     elif os.path.isfile("README.clear"):
         try:
             print("\nREADME.clear CONTENTS")
