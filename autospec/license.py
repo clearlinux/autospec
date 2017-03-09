@@ -29,7 +29,7 @@ import urllib
 import config
 from io import BytesIO
 
-from util import print_fatal
+from util import print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
 
@@ -262,9 +262,9 @@ def license_from_copying_hash(copying):
     else:
         if not config.license_show:
             return
-        print("Unknown license {0} with hash {1}".format(copying, hash_sum))
+        print_warning("Unknown license {0} with hash {1}".format(copying, hash_sum))
         hashUrl = config.license_show % {'HASH': hash_sum}
-        print("Visit {0} to enter".format(hashUrl))
+        print_warning("Visit {0} to enter".format(hashUrl))
 
 
 def license_from_doc(doc):
