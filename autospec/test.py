@@ -90,7 +90,7 @@ def scan_for_tests(dir):
     testsuites = {
         "makecheck": "make VERBOSE=1 V=1 {}check".format(makeflags),
         "perlcheck": "make TEST_VERBOSE=1 test",
-        "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python2.7/site-packages python2 setup.py test",
+        "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.6/site-packages python3 setup.py test",
         "cmake": "pushd clr-build ; make test ; popd",
         "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
         # "rubygems": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nruby -I\"lib:test*\" test*/*_test.rb \nruby -I\"lib:test*\" test*/test_*.rb\npopd",
