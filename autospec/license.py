@@ -185,6 +185,8 @@ license_blacklist = {
     "Licences": True,
     "New": True,
     "License(==-2.0)": True,
+    "1.0": True,
+    "Version": True,
 }
 
 
