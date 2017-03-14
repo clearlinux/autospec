@@ -32,7 +32,7 @@ import urllib
 import urllib.request
 import pycurl
 from io import BytesIO
-from util import call
+from util import call, print_fatal
 # from util import golang_name
 # from util import golang_libpath
 
@@ -74,18 +74,21 @@ def check_or_get_file(url, tarfile):
 
 def build_untar(tarball_path):
     tarball_contents = subprocess.check_output(
-        ["tar", "-tf", tarball_path], universal_newlines=True)
+        ["tar", "-tf", tarball_path], universal_newlines=True).split("\n")
     extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
-    if tarball_contents:
-        if tarball_contents.startswith("./\n"):
-            # skip first line
-            tarball_contents = tarball_contents.partition("\n")[2]
+    for line in tarball_contents:
+        # sometimes a leading ./ is prepended to the line, this is not the prefix
+        line = line.lstrip("./")
+        # skip this line, it does not contain the prefix or is not a directory
+        if not line or "/" not in line:
+            continue
 
-        if tarball_contents.startswith("./"):
-            # skip the "./"
-            tarball_contents = tarball_contents.partition("/")[2]
+        tarball_prefix = line.split("/")[0]
+        if tarball_prefix:
+            break
 
-        (tarball_prefix, _, _) = tarball_contents.partition("/")
+    if not tarball_prefix:
+        print_fatal("malformed tarball, unable to determine tarball prefix")
 
     return extract_cmd, tarball_prefix
 
