@@ -200,7 +200,8 @@ def download_tarball(url_argument, name_argument, archives, target_dir):
             extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
         buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
         call(extract_cmd)
-        tar_files = glob.glob("{0}{1}/*".format(build.base_path, source_tarball_prefix))
+        tar_path = os.path.join(build.base_path, source_tarball_prefix)
+        tar_files = glob.glob("{}/*".format(tar_path))
         move_cmd = "mv "
         for tar_file in tar_files:
             move_cmd += tar_file + " "
