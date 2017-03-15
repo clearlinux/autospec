@@ -160,7 +160,9 @@ def push_file(filename):
     if file_pat_match(filename, r"^/bin/", "bin"):
         return
 
-    if file_pat_match(filename, r"^/usr/lib/python.*/", "python", "/usr/lib/python*/*"):
+    if file_pat_match(filename, r"^/usr/lib/python3.*/", "python", "/usr/lib/python3*/*"):
+        return
+    if file_pat_match(filename, r"^/usr/lib/python2.*/", "python", "/usr/lib/python2*/*"):
         return
     if file_pat_match(filename, r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"):
         return
