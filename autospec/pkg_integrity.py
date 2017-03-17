@@ -282,6 +282,7 @@ class PyPiVerifier(MD5Verifier):
         curl = pycurl.Curl()
         curl.setopt(curl.URL, url)
         curl.setopt(curl.WRITEFUNCTION, data.write)
+        curl.setopt(curl.FOLLOWLOCATION, True)
         curl.perform()
         json_data = json.loads(data.getvalue().decode('utf-8'))
         return json_data
