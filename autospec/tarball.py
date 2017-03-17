@@ -88,6 +88,7 @@ def build_untar(tarball_path):
 
     if not tarball_prefix:
         print_fatal("malformed tarball, unable to determine tarball prefix")
+        sys.exit(1)
 
     return extract_cmd, tarball_prefix
 
