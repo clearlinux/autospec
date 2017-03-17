@@ -41,7 +41,6 @@ def scan_for_changes(download_path, directory):
     """
     found = []
     interests = config.transforms.keys()
-    print(interests)
     for dirpath, dirnames, files in os.walk(directory, topdown=False):
         hits = [x for x in files if x.lower() in interests and x.lower() not in found]
         for item in hits:

@@ -19,6 +19,9 @@ test_commitmessage:
 test_files:
 	PYTHONPATH=`pwd`/autospec python3 tests/test_files.py
 
+test_license:
+	PYTHONPATH=`pwd`/autospec python3 tests/test_license.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 

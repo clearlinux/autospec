@@ -23,6 +23,7 @@
 
 import sys
 import os
+import re
 import tarball
 import pycurl
 import urllib
@@ -32,8 +33,6 @@ from io import BytesIO
 from util import print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
-
-LICENSE_HASH_FILE = "common/licenses"
 
 licenses = []
 
@@ -54,7 +53,6 @@ license_translations = {
     "LGPLv2.1": "LGPL-2.1",
     "LGPLv2+": "LGPL-2.1+",
     "LGPL-2.0+": "LGPL-2.0+",
-    "LGPL-2.1": "LGPL-2.1",
     "LGPLv2.1": "LGPL-2.1",
     "LGPL-2.1+": "LGPL-2.1+",
     "LGPLv2.1+": "LGPL-2.1+",
@@ -111,117 +109,118 @@ license_translations = {
     "CC0": "CC0-1.0"
 }
 
-license_blacklist = {
-    "and": True,
-    "BSD": True,
-    "3BSD": True,
-    "LGPL": True,
-    "GPL": True,
-    "ASL": True,
-    "2.0": True,
-    "advertising": True,
-    "LGPL+BSD": True,
-    "UN": True,
-    "GNU": True,
-    "new": True,
-    "none": True,
-    "License": True,
-    "License": True,
-    "license": True,
-    "Standard": True,
-    "PIL": True,
-    "Software": True,
-    "|": True,
-    "+": True,
-    "UNKNOWN": True,
-    "unknown": True,
-    "BSD-like": True,
-    "or": True,
-    "Modified": True,
-    "3-clause": True,
-    "Unlimited": True,
-    "BSD_3_clause": True,
-    "BSD(3": True,
-    "clause)": True,
-    "GFDL": True,
-    "MPL": True,
-    "Muddy-MIT": True,
-    "LGPL/MIT": True,
-    "License,": True,
-    "Lucent": True,
-    "Public": True,
-    "LICENCE": True,
-    "-": True,
-    "See": True,
-    "details": True,
-    "for": True,
-    "Version-2.0": True,
-    "exceptions": True,
-    "http://nmap.org/man/man-legal.html": True,
-    "with": True,
-    "style": True,
-    "Foundation": True,
-    "~": True,
-    "open_source": True,
-    "BSDish": True,
-    "EPL": True,
-    "Artistic": True,
-    "(specified": True,
-    "using": True,
-    "classifiers)": True,
-    "APL-2.0": True,
-    "dual": True,
-    ".git": True,
-    ".mit": True,
-    "GPL/BSD": True,
-    "GPLv2.1": True,
-    "version-2": True,
-    "public": True,
-    "domain": True,
-    "Commercial": True,
-    "ndg/httpsclient/LICENCE": True,
-    "License-2.0": True,
-    "BSD-style": True,
-    "Licences": True,
-    "New": True,
-    "License(==-2.0)": True,
-    "1.0": True,
-    "Version": True,
-}
+license_blacklist = [
+    "and",
+    "BSD",
+    "3BSD",
+    "LGPL",
+    "GPL",
+    "ASL",
+    "2.0",
+    "advertising",
+    "LGPL+BSD",
+    "UN",
+    "GNU",
+    "new",
+    "none",
+    "License",
+    "license",
+    "Standard",
+    "PIL",
+    "Software",
+    "|",
+    "+",
+    "UNKNOWN",
+    "unknown",
+    "BSD-like",
+    "or",
+    "Modified",
+    "3-clause",
+    "Unlimited",
+    "BSD_3_clause",
+    "BSD(3",
+    "clause)",
+    "GFDL",
+    "MPL",
+    "Muddy-MIT",
+    "LGPL/MIT",
+    "License,",
+    "Lucent",
+    "Public",
+    "LICENCE",
+    "-",
+    "See",
+    "details",
+    "for",
+    "Version-2.0",
+    "exceptions",
+    "http://nmap.org/man/man-legal.html",
+    "with",
+    "style",
+    "Foundation",
+    "~",
+    "open_source",
+    "BSDish",
+    "EPL",
+    "Artistic",
+    "(specified",
+    "using",
+    "classifiers)",
+    "APL-2.0",
+    "dual",
+    ".git",
+    ".mit",
+    "GPL/BSD",
+    "GPLv2.1",
+    "version-2",
+    "public",
+    "domain",
+    "Commercial",
+    "ndg/httpsclient/LICENCE",
+    "License-2.0",
+    "BSD-style",
+    "Licences",
+    "New",
+    "License(==-2.0)",
+    "1.0",
+    "Version"
+]
 
 
 def add_license(lic):
+    """
+    Add license from license string lic after checking for duplication or
+    presence in the blacklist.
+    """
     global licenses
     lic = lic.strip()
 
-    # Bail if the license isn't one we recognize, is a blacklisted word or has already been added
-    if lic in licenses:
-        return False
-    if lic in license_blacklist:
-        return False
-    if lic not in license_translations:
-        licenses.append(lic)
-        return True
-    if license_translations[lic] in licenses:
+    # Translate the license if a translation exists
+    real_lic = license_translations.get(lic, lic)
+    # Return False if not adding to licenses
+    if real_lic in licenses or real_lic in license_blacklist:
         return False
 
-    licenses.append(license_translations[lic])
+    licenses.append(real_lic)
     return True
 
 
 def license_from_copying_content(copying):
+    """
+    Scan the copying file for strings indicating which license it represents.
+    Add that license to the licenses list using add_license(lic)
+    """
     with open(copying, 'r', encoding="latin-1") as content_file:
         content = content_file.read()
-    if content.find("Version 2, June 1991") >= 0:
-        add_license("GPL-2.0")
-    if content.find("Version 3, 29 June 2007") >= 0:
-        add_license("GPL-3.0")
-    if content.find("Version 2.1, February 1999") >= 0:
-        add_license("LGPL-2.1")
-    if content.find("Source Code is licensed under MIT license") >= 0:
-        add_license("MIT")
-    if content.find("Version 2.0, January 2004") >= 0:
-        add_license("Apache-2.0")
+
+    cp_content_map = {"Version 2, June 1991": "GPL-2.0",
+                      "Version 3, 29 June 2007": "GPL-3.0",
+                      "Version 2.1, February 1999": "LGPL-2.1",
+                      "Source Code is licensed under MIT license": "MIT",
+                      "Version 2.0, January 2004": "Apache-2.0"}
+    for cp_str, lic in cp_content_map.items():
+        if cp_str in content:
+            add_license(lic)
 
 
 def license_from_copying_hash(copying):
@@ -234,65 +233,73 @@ def license_from_copying_hash(copying):
     if config.license_fetch:
         with open(copying, "r", encoding="latin-1") as myfile:
             data = myfile.read()
-            values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
-            data = urllib.parse.urlencode(values)
-            data = data.encode('utf-8')
 
-            buffer = BytesIO()
-            c = pycurl.Curl()
-            c.setopt(c.URL, config.license_fetch)
-            c.setopt(c.WRITEDATA, buffer)
-            c.setopt(c.POSTFIELDS, data)
-            c.perform()
-            c.close()
+        values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
+        data = urllib.parse.urlencode(values)
+        data = data.encode('utf-8')
 
-            response = buffer.getvalue()
-            the_page = response.decode('utf-8')
+        buffer = BytesIO()
+        c = pycurl.Curl()
+        c.setopt(c.URL, config.license_fetch)
+        c.setopt(c.WRITEDATA, buffer)
+        c.setopt(c.POSTFIELDS, data)
+        c.perform()
+        c.close()
 
-            if len(the_page.strip()) > 0:
-                print("License     : ", the_page.strip(), " (server) (", hash_sum, ")")
-                add_license(the_page.strip())
-                return
-    else:
-        if os.path.exists(LICENSE_HASH_FILE):
-            with open(LICENSE_HASH_FILE, "r") as file:
-                licenses_list = file.readlines()
-        licenses_dict = dict(license.split(" | ") for license in licenses_list)
+        response = buffer.getvalue()
+        page = response.decode('utf-8').strip()
+        if page:
+            print("License     : ", page, " (server) (", hash_sum, ")")
+            add_license(page)
+            return
 
-    if hash_sum in licenses_dict:
-        add_license(licenses_dict[hash_sum])
+    if hash_sum in config.license_hashes:
+        add_license(config.license_hashes[hash_sum])
     else:
         if not config.license_show:
             return
         print_warning("Unknown license {0} with hash {1}".format(copying, hash_sum))
-        hashUrl = config.license_show % {'HASH': hash_sum}
-        print_warning("Visit {0} to enter".format(hashUrl))
+        hash_url = config.license_show % {'HASH': hash_sum}
+        print_warning("Visit {0} to enter".format(hash_url))
 
 
 def license_from_doc(doc):
     """ Scan for documentation license in the given file """
     with open(doc, 'r', encoding="latin-1") as content_file:
         content = content_file.read()
-    if content.find("GNU Free Documentation License, Version 1.3") >= 0:
-        add_license("GFDL-1.3")
-    elif content.find("GNU Free Documentation License, Version 1.2") >= 0:
-        add_license("GFDL-1.2")
-    elif content.find("GNU Free Documentation License, Version 1.1") >= 0:
-        add_license("GFDL-1.1")
-    elif content.find("(The MIT License)") >= 0:
-        add_license("MIT")
+
+    doc_content_map = {
+        "GNU Free Documentation License, Version 1.3": "GFDL-1.3",
+        "GNU Free Documentation License, Version 1.2": "GFDL-1.2",
+        "GNU Free Documentation License, Version 1.1": "GFDL-1.1",
+        "(The MIT License)": "MIT"
+    }
+
+    for doc_str, lic in doc_content_map.items():
+        if doc_str in content:
+            add_license(lic)
 
 
-#
-# Scan the project directory for things we can use to guess a description
-# and summary
-#
-
-def scan_for_licenses(package, dir):
-    for dirpath, dirnames, files in os.walk(dir):
+def scan_for_licenses(srcdir):
+    """
+    Scan the project directory for things we can use to guess a description
+    and summary
+    """
+    targets = ["copyright",
+               "copyright.txt",
+               "apache-2.0",
+               "libcurllicense",
+               "gpl.txt",
+               "gplv2.txt",
+               "notice",
+               "copyrights",
+               "about_bsd.txt"]
+    # look for files that start with copying or licen[cs]e (spelling errors)
+    # or end with licen[cs]e
+    target_pat = re.compile(r"^((copying)|(licen[cs]e))|(licen[cs]e)$")
+    for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
-            if (name.lower() in ("copyright", "copyright.txt", "apache-2.0", "libcurllicense", "gpl.txt", "gplv2.txt", "notice", "copyrights", "about_bsd.txt") or
-               name.lower().startswith("copying") or name.lower().startswith("license") or name.lower().endswith("license") or name.lower().startswith("licence") or name.lower().endswith("licence")):
+            if name.lower() in targets or target_pat.search(name.lower()):
                 license_from_copying_hash(os.path.join(dirpath, name))
                 license_from_copying_content(os.path.join(dirpath, name))
             else:
@@ -302,13 +309,12 @@ def scan_for_licenses(package, dir):
                 if ext in ("man", "texi", "rdoc"):
                     license_from_doc(os.path.join(dirpath, name))
 
-    if len(licenses) == 0:
-        print_fatal(" Cannot find any license or " + tarball.name + ".license file!\n")
+    if not licenses:
+        print_fatal(" Cannot find any license or {}.license file!\n".format(tarball.name))
         sys.exit(1)
-    else:
-        print("Licenses    : ", " ".join(sorted(licenses)))
+
+    print("Licenses    : ", " ".join(sorted(licenses)))
 
 
 def load_specfile(specfile):
-    lics = licenses if licenses else [default_license]
-    specfile.licenses = lics
+    specfile.licenses = licenses if licenses else [default_license]

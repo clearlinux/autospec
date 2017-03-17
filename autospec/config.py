@@ -65,6 +65,7 @@ signature = None
 failed_commands = {}
 maven_jars = {}
 gems = {}
+license_hashes = {}
 
 cves = []
 
@@ -334,9 +335,11 @@ def setup_patterns():
     global failed_commands
     global maven_jars
     global gems
+    global license_hashes
     read_pattern_conf("failed_commands", failed_commands)
     read_pattern_conf("maven_jars", maven_jars)
     read_pattern_conf("gems", gems)
+    read_pattern_conf("license_hashes", license_hashes)
 
 
 def parse_existing_spec(path, name):
