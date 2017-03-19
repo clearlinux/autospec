@@ -817,6 +817,9 @@ class Specfile(object):
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
         self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot}")
+        self._write_strip("echo ----[ mark ]----")
+        self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
+        self._write_strip("echo ----[ mark ]----")
         self.write_find_lang()
 
     def write_distutils23_pattern(self):
@@ -840,6 +843,9 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot} --force")
         self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot} --force")
+        self._write_strip("echo ----[ mark ]----")
+        self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
+        self._write_strip("echo ----[ mark ]----")
         self.write_find_lang()
 
     def write_R_pattern(self):
