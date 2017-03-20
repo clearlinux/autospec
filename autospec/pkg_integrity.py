@@ -207,6 +207,7 @@ def head_request(url):
     curl.setopt(curl.CUSTOMREQUEST, "HEAD")
     curl.setopt(curl.NOBODY, True)
     curl.setopt(curl.FOLLOWLOCATION, True)
+    curl.setopt(curl.TIMEOUT, 5)
     curl.perform()
     http_code = curl.getinfo(pycurl.HTTP_CODE)
     curl.close()
@@ -219,12 +220,15 @@ def get_signature_url(package_url):
     elif 'mirrors.kernel.org' in package_url:
         return package_url + '.sig'
     else:
-        if head_request(package_url + '.sig') == 200:
-            return package_url + '.sig'
-        if head_request(package_url + '.asc') == 200:
-            return package_url + '.asc'
-        if head_request(package_url + '.sign') == 200:
-            return package_url + '.sign'
+        try:
+            if head_request(package_url + '.sig') == 200:
+                return package_url + '.sig'
+            if head_request(package_url + '.asc') == 200:
+                return package_url + '.asc'
+            if head_request(package_url + '.sign') == 200:
+                return package_url + '.sign'
+        except:
+            pass
     return None
 
 
