@@ -493,3 +493,5 @@ acl_get_fd, acl-dev
 library ldap, openldap-dev
 X11/Xft/Xft.h, pkgconfig(xft)
 libpng/png.h, pkgconfig(libpng)
+LIBCAP_NG_PATH, libcap-ng-dev
+talloc.h, talloc-dev
