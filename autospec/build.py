@@ -197,4 +197,9 @@ def package(filemanager):
     srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
     returncode = util.call(mock_cmd + " -r clear  --result=results/ %s --enable-plugin=ccache  --uniqueext=%s --no-cleanup-after" % (srcrpm, tarball.name),
                            logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
+    # sanity check the build log
+    if not os.path.exists(download_path + "/results/build.log"):
+        util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
+        exit(1)
+
     parse_build_results(download_path + "/results/build.log", returncode, filemanager)
