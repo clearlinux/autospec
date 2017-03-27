@@ -496,3 +496,4 @@ libpng/png.h, pkgconfig(libpng)
 LIBCAP_NG_PATH, libcap-ng-dev
 talloc.h, talloc-dev
 parted, parted-dev
+et/com_err.h, e2fsprogs-dev
