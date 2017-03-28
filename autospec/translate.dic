@@ -1,6 +1,7 @@
 babel=Babel
 barbicanclient-python=python-barbicanclient
 BeautifulSoup=beautifulsoup4
+backports.ssl-match-hostname=backports.ssl_match_hostname
 cryptography-python=cryptography
 Crypto-python=pycrypt-python
 dateutil-python=python-dateutil
