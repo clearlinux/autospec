@@ -48,29 +48,6 @@ class TestLicense(unittest.TestCase):
         self.assertFalse(license.add_license('License'))
         self.assertNotIn('License', license.licenses)
 
-    def test_license_from_copying_content(self):
-        """
-        Test license_from_copying_content with valid string in copying content.
-        """
-        open_name = 'license.open'
-        content = 'Version 2.1, February 1999'
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_copying_content('copying.txt')
-            self.assertIn('LGPL-2.1', license.licenses)
-
-    def test_license_from_copying_content_not_present(self):
-        """
-        Test license_from_copying_content with no valid strings in copying
-        content.
-        """
-        open_name = 'license.open'
-        content = 'Version 9, February 1999'
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_copying_content('copying.txt')
-            self.assertEquals(license.licenses, [])
-
     def test_license_from_copying_hash(self):
         """
         Test license_from_copying_hash with valid license file
@@ -146,28 +123,6 @@ class TestLicense(unittest.TestCase):
         # unset the manual mock
         license.BytesIO = BytesIO
 
-    def test_license_from_doc(self):
-        """
-        Test license_from_doc with valid string in doc license content.
-        """
-        open_name = 'license.open'
-        content = 'This is the GNU Free Documentation License, Version 1.3'
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_doc('copying.txt')
-            self.assertIn('GFDL-1.3', license.licenses)
-
-    def test_license_from_doc_not_present(self):
-        """
-        Test license_from_doc with no valid strings in doc content.
-        """
-        open_name = 'license.open'
-        content = '(This is the Modified MIT License)'
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_doc('copying.txt')
-            self.assertEquals(license.licenses, [])
-
     def test_scan_for_licenses(self):
         """
         Test scan_for_licenses in temporary directory with valid license file
@@ -186,24 +141,6 @@ class TestLicense(unittest.TestCase):
             license.scan_for_licenses(tmpd)
 
         self.assertIn('GPL-3.0', license.licenses)
-
-    def test_scan_for_licenses_doc(self):
-        """
-        Test scan_for_licenses in temporary directory with valid doc license
-        file.
-        """
-        with tempfile.TemporaryDirectory() as tmpd:
-            # create the copying file
-            with open(os.path.join(tmpd, 'test.man'), 'w') as docf:
-                docf.write(
-                    'This is the GNU Free Documentation License, Version 1.3')
-            # create some cruft for testing
-            for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
-                with open(os.path.join(tmpd, testf), 'w') as newtestf:
-                    newtestf.write('test content')
-            license.scan_for_licenses(tmpd)
-
-        self.assertIn('GFDL-1.3', license.licenses)
 
     def test_scan_for_licenses_none(self):
         """
