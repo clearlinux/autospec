@@ -389,6 +389,7 @@ def parse_existing_spec(path, name):
             cves.append(patch.upper().split(".PATCH")[0])
 
 
+
 def parse_config_files(path, bump, filemanager):
     global extra_configure
     global extra_configure32
@@ -539,6 +540,10 @@ def parse_config_files(path, bump, filemanager):
         " ".join(pfiles)
     if len(patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
         autoreconf = True
+
+    if any(p.lower().startswith('cve-') for p in patches):
+       config_opts['security_sensitive'] = True
+       rewrite_config_opts()
 
     content = read_conf_file(os.path.join(path, "configure"))
     extra_configure = " \\\n".join(content)

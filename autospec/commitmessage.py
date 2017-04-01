@@ -214,6 +214,9 @@ def guess_commit_message():
         cves.update(newcves)
 
     if cves:
+        # make the package security sensitive if a CVE was patched
+        config.config_opts['security_sensitive'] = True
+        config.rewrite_config_opts()
         # append CVE fixes to end of commit message
         commitmessage.append("CVEs fixed in this build:")
         commitmessage.extend(sorted(list(cves)))
