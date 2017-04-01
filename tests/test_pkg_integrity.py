@@ -10,7 +10,7 @@ NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.t
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
-KEYID = "8F0871F202119294"
+KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
 class TestGPGCli(unittest.TestCase):
@@ -161,6 +161,13 @@ class TestGPGVerifier(unittest.TestCase):
         result = pkg_integrity.attempt_key_import(KEYID)
         self.assertTrue(result)
         pkg_integrity.InputGetter.get_answer = _
+        self.removeKey()
+
+    def removeKey(self):
+        key_path = os.path.dirname(os.path.realpath(__file__))
+        key_path = os.path.dirname(key_path) + '/autospec/keyring/{}.pkey'.format(KEYID)
+        if os.path.exists(key_path):
+            os.unlink(key_path)
 
 
 class TestInputGetter(unittest.TestCase):
