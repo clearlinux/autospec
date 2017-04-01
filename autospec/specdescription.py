@@ -27,6 +27,7 @@
 #
 
 import os
+import config
 import license
 
 default_group = "Development/Tools"
@@ -82,7 +83,7 @@ def description_from_spec(specfile):
         if line.startswith("License:") and line.find("Copyright") < 0 and line.find("see ") < 0 and line.find("(") < 0:
             splits = line.split(":")[1:]
             words = ":".join(splits).strip()
-            if words in license.license_translations:
+            if words in config.license_translations:
                 print("Adding license from spec:", words)
                 license.add_license(words)
             else:
@@ -122,7 +123,7 @@ def description_from_pkginfo(specfile):
         if line.lower().startswith("license:") and line.find("Copyright") < 0 and line.find("see ") < 0:
             splits = line.split(":")[1:]
             words = ":".join(splits).strip()
-            if words in license.license_translations:
+            if words in config.license_translations:
                 print("Adding license from PKG-INFO:", words)
                 license.add_license(words)
             else:

@@ -1,0 +1,73 @@
+# This file contains license strings and the actual licenses they are associated
+# with in the form: <license string>: <license>
+# Lines beginning with '#' are ignored.
+GPL-2.0, GPL-2.0
+GPLv2, GPL-2.0
+GPLV2, GPL-2.0
+GPLV3, GPL-3.0
+GPL-2, GPL-2.0
+GPL-2+, GPL-2.0+
+GPL-2.0+, GPL-2.0+
+GPLv2+, GPL-2.0+
+GPL(>=2), GPL-2.0+
+GPL(>=-2), GPL-2.0+
+LGPL(>=2), LGPL-2.0+
+LGPL(>=-2), LGPL-2.0+
+LGPLv2, LGPL-2.0
+LGPLv2.1, LGPL-2.1
+LGPLv2+, LGPL-2.1+
+LGPL-2.0+, LGPL-2.0+
+LGPLv2.1, LGPL-2.1
+LGPL-2.1+, LGPL-2.1+
+LGPLv2.1+, LGPL-2.1+
+LGPLv3+, LGPL-3.0+
+LGPLv3, LGPL-3.0
+GPL(>=-2.0), GPL-2.0+
+GPL-3.0, GPL-3.0
+GPLv3, GPL-3.0
+gplv3, GPL-3.0
+GPL-3, GPL-3.0
+GPL-3+, GPL-3.0
+LGPL-3, LGPL-3.0
+zlib, Zlib
+ZLIB, Zlib
+zlib/libpng, zlib-acknowledgement
+Boost, BSL-1.0
+GPL-3.0+, GPL-3.0+
+GPLv3+, GPL-3.0+
+GPL3, GPL-3.0
+GPL(>=3), GPL-3.0+
+http://opensource.org/licenses/MIT, MIT
+mit, MIT
+http://www.apache.org/licenses/LICENSE-2.0, Apache-2.0
+Apache License, Version 2.0, Apache-2.0
+Apache License 2.0, Apache-2.0
+APL2.0, Apache-2.0
+APL2, Apache-2.0
+ASL 2.0, Apache-2.0
+ASL-2.0, Apache-2.0
+APL-2.0, Apache-2.0
+ASL-2, Apache-2.0
+Apache2.0, Apache-2.0
+Apache 2.0, Apache-2.0
+Apache, Apache-2.0
+apache, Apache-2.0
+Apache-2, Apache-2.0
+artistic_2, Artistic-2.0
+MPLv1.1, MPL-1.1
+MPL-2, MPL-2.0
+MPL2, MPL-2.0
+MPLv2.0, MPL-2.0
+MPLv2.0,, MPL-2.0
+ZPL 2.1, ZPL-2.1
+ZPL, ZPL-2.0
+http://creativecommons.org/licenses/BSD/, BSD-2-Clause
+BSD_3_clause, BSD-3-Clause
+perl, Artistic-1.0-Perl
+PSF, Python-2.0
+Python, Python-2.0
+BSD_2_clause, BSD-2-Clause
+Expat, MIT
+w3c, W3C
+VIM, Vim
+CC0, CC0-1.0

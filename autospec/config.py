@@ -66,6 +66,8 @@ failed_commands = {}
 maven_jars = {}
 gems = {}
 license_hashes = {}
+license_translations = {}
+license_blacklist = {}
 
 cves = []
 
@@ -316,7 +318,7 @@ def read_conf_file(path):
         return []
 
 
-def read_pattern_conf(filename, dest):
+def read_pattern_conf(filename, dest, list_format=False):
     """
     Read a fail-pattern configuration file in the form of
     <pattern>, <package> and ignore lines starting with "#"
@@ -327,7 +329,13 @@ def read_pattern_conf(filename, dest):
         for line in patfile:
             if line.startswith("#"):
                 continue
-            pattern, package = line.split(", ", 2)
+            # Make list format a dict for faster lookup times
+            if list_format:
+                dest[line.strip()] = True
+                continue
+            # split from the right a maximum of one time, since the pattern
+            # string might contain ", "
+            pattern, package = line.rsplit(", ", 1)
             dest[pattern] = package.rstrip()
 
 
@@ -336,10 +344,14 @@ def setup_patterns():
     global maven_jars
     global gems
     global license_hashes
+    global license_translations
+    global license_blacklist
     read_pattern_conf("failed_commands", failed_commands)
     read_pattern_conf("maven_jars", maven_jars)
     read_pattern_conf("gems", gems)
     read_pattern_conf("license_hashes", license_hashes)
+    read_pattern_conf("license_translations", license_translations)
+    read_pattern_conf("license_blacklist", license_blacklist, list_format=True)
 
 
 def parse_existing_spec(path, name):
