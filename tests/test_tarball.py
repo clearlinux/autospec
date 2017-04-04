@@ -29,7 +29,7 @@ class TestTarballVersionName(unittest.TestCase):
                 tarball.name = ''
                 tarball.version = ''
                 (url, name, version) = urlline.split(',')
-                tarball.name_and_version(url, '', FileManager())
+                tarball.name_and_version(url, '', '', FileManager())
                 if tarball.name != name:
                     errors.append("name: '{}' != '{}' for url: {}"
                                   .format(tarball.name, name, url))
@@ -43,6 +43,17 @@ class TestTarballVersionName(unittest.TestCase):
             # instead of an error. This prints a pretty list of all failures
             # that occurred.
             raise AssertionError('\n{}'.format('\n'.join(errors)))
+
+    def test_version_configuration_override(self):
+        """
+        Test the version and name override from the command line
+        """
+        class FileManager():
+            want_dev_split = False
+
+        tarball.name_and_version('something', 'else', 'entirely', FileManager())
+        self.assertEqual(tarball.version, 'entirely')
+        self.assertEqual(tarball.name, 'else')
 
 if __name__ == '__main__':
     unittest.main(buffer=True)

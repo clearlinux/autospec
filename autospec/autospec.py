@@ -102,6 +102,8 @@ def main(workingdir):
     parser.add_argument("-n", "--name", nargs=1,
                         action="store", dest="name", default="",
                         help="Override the package name")
+    parser.add_argument("-v", "--version", action="store", dest="version", default="",
+                        help="Override the package version")
     parser.add_argument("url",
                         help="tarball URL (e.g."
                              " http://example.com/downloads/mytar.tar.gz)")
@@ -142,7 +144,7 @@ def main(workingdir):
     # of static analysis on the content of the tarball.
     #
     filemanager = files.FileManager()
-    tarball.name_and_version(args.url, args.name, filemanager)
+    tarball.name_and_version(args.url, args.name, args.version, filemanager)
     tarball.download_tarball(args.url, args.name, args.archives, args.target)
     _dir = tarball.path
 

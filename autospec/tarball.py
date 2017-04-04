@@ -121,7 +121,7 @@ def build_unzip(zip_path):
     return extract_cmd, prefix
 
 
-def download_tarball(url_argument, name_argument, archives, target_dir):
+def download_tarball(url_argument, name_arg, archives, target_dir):
     global name
     global version
     global url
@@ -237,7 +237,7 @@ def convert_version(version):
     return '{}.{}'.format(version.strip('.'), suffix) if suffix else version.strip('.')
 
 
-def name_and_version(url_argument, name_argument, filemanager):
+def name_and_version(url_argument, name_arg, version_arg, filemanager):
     global name
     global rawname
     global version
@@ -364,6 +364,10 @@ def name_and_version(url_argument, name_argument, filemanager):
             version = version.rsplit('.', 1)[0]
             if version.endswith('.tar'):
                 version = version.replace('.tar', '')
+
+    # override name and version from commandline
+    name = name_arg if name_arg else name
+    version = version_arg if version_arg else version
 
     assert name != ""
 
