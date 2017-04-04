@@ -99,8 +99,7 @@ def main(workingdir):
     parser.add_argument("-g", "--skip-git",
                         action="store_false", dest="git", default=True,
                         help="Don't commit result to git")
-    parser.add_argument("-n", "--name", nargs=1,
-                        action="store", dest="name", default="",
+    parser.add_argument("-n", "--name", action="store", dest="name", default="",
                         help="Override the package name")
     parser.add_argument("-v", "--version", action="store", dest="version", default="",
                         help="Override the package version")

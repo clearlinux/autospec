@@ -38,6 +38,10 @@ class TestTarballVersionName(unittest.TestCase):
                     errors.append("version: '{}' != '{}' for url: {}"
                                   .format(tarball.version, version, url))
 
+                exp_rawname = tarball.name.replace('R-', '')
+                if 'cran' in urlline and tarball.rawname != exp_rawname:
+                    errors.append("rawname: '{}' != '{}' for url: {}"
+                                  .format(tarball.rawname, exp_rawname, url))
         if errors:
             # raising an AssertionError signifies to unittest this is a failure
             # instead of an error. This prints a pretty list of all failures

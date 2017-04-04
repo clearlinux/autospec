@@ -245,6 +245,19 @@ def name_and_version(url_argument, name_arg, version_arg, filemanager):
 
     url = url_argument
     tarfile = os.path.basename(url)
+
+    # If both name and version overrides are set via commandline, set the name
+    # and version variables to the overrides and bail. If only one override is
+    # set, continue to auto detect both name and version since the URL parsing
+    # handles both. In this case, wait until the end to perform the override of
+    # the one that was set.
+    if name_arg and version_arg:
+        # rawname == name in this case
+        name = name_arg
+        rawname = name
+        version = version_arg
+        return
+
     # it is important for the more specific patterns to come first
     pattern_options = [
         r"(.*?)[\-_](v*[0-9]+[a-zalpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.orig\.tar",
@@ -336,23 +349,6 @@ def name_and_version(url_argument, name_arg, version_arg, filemanager):
     # maven
     if url_argument.find("maven.org") > 0:
         buildpattern.set_build_pattern("maven", 10)
-
-    # override from commandline
-    if name_argument and name_argument[0] != name:
-        pattern = name_argument[0] + r"[\-]*(.*)\.(tgz|tar|zip)"
-        p = re.compile(pattern)
-        m = p.search(tarfile)
-        if m:
-            name = name_argument[0]
-            rawname = name
-            version = m.group(1).strip()
-            b = version.find("-")
-            if b >= 0 and version.find("-beta") < 0:
-                version = version[:b]
-            if version.startswith('.'):
-                version = version[1:]
-        else:
-            name = name_argument[0]
 
     if not name:
         split = url_argument.split('/')
