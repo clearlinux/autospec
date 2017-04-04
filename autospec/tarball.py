@@ -72,6 +72,7 @@ def check_or_get_file(url, tarfile):
 
 
 def build_untar(tarball_path):
+    tarball_prefix = ""
     tarball_contents = subprocess.check_output(
         ["tar", "-tf", tarball_path], universal_newlines=True).split("\n")
     extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
