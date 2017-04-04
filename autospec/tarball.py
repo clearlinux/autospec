@@ -226,13 +226,15 @@ def convert_version(version):
     suffix = ''
     version = version.replace(name, '')
     version = version.strip().replace('-', '.').replace('_', '.')
-    version_pat = r'[0-9\.]+(\.beta[0-9]*|\.pre[0-9]*|b[0-9]*)$'
+    version_pat = r'[0-9\.]+(beta|pre|b|alpha)([\.0-9]*)$'
     match = re.search(version_pat, version)
-    if match:
-        suffix = match.group(1)
-        version = version.rstrip(suffix)
+    # it is important the first group matches, not just the second
+    if match and match.group(1):
+        # match.group(2) is an empty string if it was not matched
+        suffix = match.group(1) + match.group(2)
+        version = re.sub(r'{}$'.format(suffix), '', version)
     version = ''.join(c for c in version if c.isdigit() or c == '.')
-    return version.strip('.') + suffix
+    return '{}.{}'.format(version.strip('.'), suffix) if suffix else version.strip('.')
 
 
 def name_and_version(url_argument, name_argument, filemanager):
