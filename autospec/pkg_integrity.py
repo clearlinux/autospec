@@ -232,6 +232,12 @@ def get_signature_url(package_url):
     return None
 
 
+def get_hash_url(package_url):
+    if 'download.gnome.org' in package_url:
+        return package_url.replace('.tar.xz', '.sha256sum')
+    return None
+
+
 def compare_keys(newkey, oldkey):
     if newkey != oldkey:
         print_error('Public key has changed:\n'
@@ -240,6 +246,36 @@ def compare_keys(newkey, oldkey):
                     'this is a critical security error, quitting...'
                     .format(oldkey, newkey))
         exit(1)
+
+# sha256sum Verifier
+class ShaSumVerifier(Verifier):
+
+    def __init__(self, **kwargs):
+        Verifier.__init__(self, **kwargs)
+        self.package_path = kwargs.get('package_path', None)
+        self.shalen = kwargs.get('shalen', 256)
+
+
+    def verify_sum(self, shasum):
+        print("Verifying sha{}sum digest\n".format(self.shalen))
+        if shasum is None:
+            self.print_result(False, err_msg='Verification requires shasum')
+            return None
+        if os.path.exists(self.package_path) is False:
+            self.print_result(False, err_msg='{} not found'.format(self.package_path))
+            return None
+
+        sha_algo = {
+            256: hashlib.sha256
+        }.get(self.shalen, None)
+
+        if sha_algo is None:
+            self.print_result(False, err_msg='sha{} algorithm not found'.format(self.shalen))
+            return None
+
+        digest = self.calc_sum(self.package_path, sha_algo)
+        self.print_result(digest == shasum)
+        return digest == shasum
 
 
 # MD5 Verifier
@@ -261,6 +297,58 @@ class MD5Verifier(Verifier):
         md5_digest = self.calc_sum(self.package_path, hashlib.md5)
         self.print_result(md5_digest == self.md5_digest)
         return md5_digest == self.md5_digest
+
+
+# gnome.org Verifier
+class GnomeOrgVerifier(ShaSumVerifier):
+
+    def __init__(self, **kwargs):
+        kwargs.update({'shalen': 256})
+        self.package_url = kwargs.get('url', None)
+        ShaSumVerifier.__init__(self, **kwargs)
+
+    @staticmethod
+    def get_shasum_url(package_url):
+        url = "{}.sha256sum".format(package_url.replace(".tar.xz", ""))
+        if head_request(url) == 200:
+            return url
+        url = "{}.sha256sum".format(package_url)
+        if head_request(url) == 200:
+            return url
+        return None
+
+    @staticmethod
+    def get_shasum(package_url):
+        data = BytesIO()
+        curl = pycurl.Curl()
+        curl.setopt(curl.URL, package_url)
+        curl.setopt(curl.WRITEFUNCTION, data.write)
+        curl.setopt(curl.FOLLOWLOCATION, True)
+        curl.perform()
+        return data.getvalue().decode('utf-8')
+
+    @staticmethod
+    def parse_shasum(shasum_text):
+        for line in shasum_text.split('\n'):
+            sha, file = [col for col in line.split(' ') if col != '']
+            if ".tar.xz" in file:
+                return sha
+        return None
+
+    def verify(self):
+        if self.package_url is None:
+            self.print_result(False, err_msg='Package URL can not be None for GnomeOrgVerifier')
+            return None
+        shasum_url = self.get_shasum_url(self.package_url)
+        if shasum_url is None:
+            self.print_result(False, err_msg='Unable to find shasum URL for {}'.format(self.package_url))
+            return None
+        shasum = self.get_shasum(shasum_url)
+        shasum = self.parse_shasum(shasum)
+        if shasum is None:
+            self.print_result(False, err_msg='Unable to parse shasum {}'.format(shasum_url))
+            return None
+        return self.verify_sum(shasum)
 
 
 # PyPi Verifier
@@ -627,10 +715,13 @@ def attempt_verification_per_domain(package_path, url):
     netloc = urlparse(url).netloc
     if 'pypi' in netloc:
         domain = 'pypi'
+    elif 'download.gnome.org' in netloc:
+        domain = 'gnome.org'
     else:
         domain = 'unknown'
     verifier = {
-        'pypi': PyPiVerifier
+        'pypi': PyPiVerifier,
+        'gnome.org': GnomeOrgVerifier,
     }.get(domain, None)
 
     if verifier is None:
@@ -677,6 +768,10 @@ def check(url, download_path, interactive=True):
             if verified is None:
                 print_info('Unable to find a signature, attempting domain verification')
                 verified = attempt_verification_per_domain(package_path, url)
+        elif get_hash_url(url) is not None:
+            hash_url = get_hash_url(url)
+            print_info('Attempting to download {} for domain verification'.format(hash_url))
+            verified = attempt_verification_per_domain(package_path, url)
 
     if verified is None and config.config_opts['verify_required']:
         quit_verify()

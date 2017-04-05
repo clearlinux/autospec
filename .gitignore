@@ -1,5 +1,8 @@
+.gitignore
 __pycache__
+.*
 *.pyc
 *~
 *.swp
 tags
+*.pkey

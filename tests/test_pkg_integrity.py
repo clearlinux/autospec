@@ -4,12 +4,14 @@ import tempfile
 import pkg_integrity
 
 
-ALEMBIC_PKT_URL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
+PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz"
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
+PYPI_MD5_ONLY_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
+GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-3.24.0.tar.xz"
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
@@ -53,9 +55,9 @@ class TestCheckFn(unittest.TestCase):
 
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
-            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
-            result = pkg_integrity.check(ALEMBIC_PKT_URL, tmpd)
+            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
+            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
     def test_check_with_existing_sign(self):
@@ -67,6 +69,27 @@ class TestCheckFn(unittest.TestCase):
             pkg_integrity.attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
             result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
             self.assertTrue(result)
+
+
+class TestDomainBasedVerifiers(unittest.TestCase):
+
+    def run_test_for_domain(self, Verifier, url):
+        with tempfile.TemporaryDirectory() as tmpd:
+            package_path = os.path.join(tmpd, os.path.basename(url))
+            pkg_integrity.attempt_to_download(url, package_path)
+            verifier = Verifier(**{'package_path': package_path, 
+                                   'url': url})
+            return verifier.verify()
+        return None
+
+
+    def test_pypi(self):
+        result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
+        self.assertTrue(result)
+
+    def test_gnome_org(self):
+        result = self.run_test_for_domain(pkg_integrity.GnomeOrgVerifier, GNOME_SHA256_PKG)
+        self.assertTrue(result)        
 
 
 class TestGEMShaVerifier(unittest.TestCase):
@@ -105,11 +128,11 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
-            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
+            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
+            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
             out_file1 = os.path.join(tmpd, os.path.basename(XATTR_PKT_URL))
             pkg_integrity.attempt_to_download(XATTR_PKT_URL, out_file1)
-            result = pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
+            result = pkg_integrity.from_url(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
     def test_check_quit(self):
@@ -120,21 +143,21 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
+            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             out_key = out_file + '.asc'
-            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL, out_file)
-            pkg_integrity.attempt_to_download(ALEMBIC_PKT_URL + '.asc', out_key)
-            result = pkg_integrity.from_disk(ALEMBIC_PKT_URL, out_file, out_key)
+            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
+            pkg_integrity.attempt_to_download(PACKAGE_URL + '.asc', out_key)
+            result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
             self.assertTrue(result)
 
     def test_non_matchingsig(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(ALEMBIC_PKT_URL))
+            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             f = open(out_file, 'wb')
             f.write(b'made up date that will fail check')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                pkg_integrity.from_url(ALEMBIC_PKT_URL, tmpd)
+                pkg_integrity.from_url(PACKAGE_URL, tmpd)
             self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
