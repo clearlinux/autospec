@@ -487,7 +487,6 @@ def scan_for_configure(package, dir, autospecdir):
             add_buildreq("pip")
             add_setup_py_requires(dirpath + '/setup.py')
             buildpattern.set_build_pattern("distutils23", default_score)
-            grab_pip_requirements(tarball.name)
 
         if "Makefile.PL" in files or "Build.PL" in files:
             buildpattern.set_build_pattern("cpan", default_score)

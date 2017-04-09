@@ -126,7 +126,7 @@ def scan_for_licenses(srcdir):
                 if "." not in name:
                     continue
                 ext = name.split(".")[-1].lower()
-                if ext in ("man", "texi", "rdoc"):
+                if ext in ("texi", "rdoc"):
                     license_from_copying_hash(os.path.join(dirpath, name))
 
     if not licenses:
