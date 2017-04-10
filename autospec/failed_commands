@@ -498,3 +498,6 @@ talloc.h, talloc-dev
 parted, parted-dev
 et/com_err.h, e2fsprogs-dev
 XTest extension, libXtst-dev
+LIBEXIF, libexif-dev
+LIBGD, libgd-dev
+LIBUSB, libusb-dev
