@@ -122,12 +122,6 @@ def scan_for_licenses(srcdir):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
                 license_from_copying_hash(os.path.join(dirpath, name))
-            else:
-                if "." not in name:
-                    continue
-                ext = name.split(".")[-1].lower()
-                if ext in ("rdoc"):
-                    license_from_copying_hash(os.path.join(dirpath, name))
 
     if not licenses:
         print_fatal(" Cannot find any license or {}.license file!\n".format(tarball.name))
