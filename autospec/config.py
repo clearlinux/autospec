@@ -37,6 +37,7 @@ from util import call
 
 extra_configure = ""
 extra_configure32 = ""
+extra_configure64 = ""
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
 urlban = ""
@@ -178,6 +179,7 @@ failed_pats = [
     (r"configure\: error\: Unable to locate (.*)", 0, None),
     (r"No rule to make target `(.*)',", 0, None),
     (r"ImportError\: No module named (.*)", 0, None),
+    (r"ModuleNotFoundError.*No module named (.*)", 0, None),
     (r"/usr/bin/python.*\: No module named (.*)", 0, None),
     (r"ImportError\: cannot import name (.*)", 0, None),
     (r"ImportError\: ([a-zA-Z]+) module missing", 0, None),
@@ -390,6 +392,7 @@ def parse_existing_spec(path, name):
 def parse_config_files(path, bump, filemanager):
     global extra_configure
     global extra_configure32
+    global extra_configure64
     global config_files
     global parallel_build
     global license_fetch
@@ -542,6 +545,9 @@ def parse_config_files(path, bump, filemanager):
 
     content = read_conf_file(os.path.join(path, "configure32"))
     extra_configure32 = " \\\n".join(content)
+
+    content = read_conf_file(os.path.join(path, "configure64"))
+    extra_configure64 = " \\\n".join(content)
 
     if config_opts["keepstatic"]:
         disable_static = ""

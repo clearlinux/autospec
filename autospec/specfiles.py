@@ -396,7 +396,7 @@ class Specfile(object):
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
         if config.config_opts['optimize_size']:
-            flags.extend(["-Os", "-ffunction-sections"])
+            flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition"])
         if config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
         if self.need_avx2_flags:
@@ -634,10 +634,11 @@ class Specfile(object):
         if config.profile_payload and config.profile_payload[0]:
             if self.subdir:
                 self._write_strip("pushd " + self.subdir)
-            self._write_strip("{0}%configure {1} {2}"
+            self._write_strip("{0}%configure {1} {2} {3}"
                               .format(self.get_profile_generate_flags(),
                                       self.disable_static,
-                                      config.extra_configure))
+                                      config.extra_configure,
+                                      config.extra_configure64))
             self.write_make_line()
             if self.subdir:
                 self._write_strip("popd")
@@ -648,10 +649,11 @@ class Specfile(object):
 
         if self.subdir:
             self._write_strip("pushd {}".format(self.subdir))
-        self._write_strip("{0}%configure {1} {2}"
+        self._write_strip("{0}%configure {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.disable_static,
-                                  config.extra_configure))
+                                  config.extra_configure,
+                                  config.extra_configure64))
         self.write_make_line()
         if self.subdir:
             self._write_strip("popd")
@@ -685,10 +687,11 @@ class Specfile(object):
         if config.profile_payload and config.profile_payload[0]:
             if self.subdir:
                 self._write_strip("pushd " + self.subdir)
-            self._write_strip("{0}%reconfigure {1} {2}"
+            self._write_strip("{0}%reconfigure {1} {2} {3}"
                               .format(self.get_profile_generate_flags(),
                                       self.disable_static,
-                                      config.extra_configure))
+                                      config.extra_configure,
+                                      config.extra_configure64))
             self.write_make_line()
             if self.subdir:
                 self._write_strip("popd")
@@ -699,10 +702,11 @@ class Specfile(object):
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
-        self._write_strip("{0}%reconfigure {1} {2}"
+        self._write_strip("{0}%reconfigure {1} {2} {3}"
                           .format(self.get_profile_generate_flags(),
                                   self.disable_static,
-                                  config.extra_configure))
+                                  config.extra_configure,
+                                  config.extra_configure64))
         self.write_make_line()
         if self.subdir:
             self._write_strip("popd")
@@ -746,20 +750,22 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         if config.profile_payload and config.profile_payload[0]:
-            self._write_strip("{0}%autogen {1} {2}"
+            self._write_strip("{0}%autogen {1} {2} {3}"
                               .format(self.get_profile_generate_flags(),
                                       self.disable_static,
-                                      config.extra_configure))
+                                      config.extra_configure,
+                                      config.extra_configure64))
             self.write_make_line()
             self._write_strip("\n")
 
             self._write_strip("\n".join(config.profile_payload))
             self._write_strip("\nmake clean\n")
 
-        self._write_strip("{0}%autogen {1} {2}"
+        self._write_strip("{0}%autogen {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.disable_static,
-                                  config.extra_configure))
+                                  config.extra_configure,
+                                  config.extra_configure64))
         self.write_make_line()
         self._write_strip("\n")
         if config.config_opts['32bit']:

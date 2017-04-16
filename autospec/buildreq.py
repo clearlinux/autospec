@@ -70,7 +70,8 @@ def add_requires(req):
     if req in banned_requires:
         return False
     if req not in buildreqs and req not in config.os_packages:
-        print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
+        if len(req) > 0:
+            print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
         return False
     if new:
         # print("Adding requirement:", req)
