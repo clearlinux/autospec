@@ -332,12 +332,19 @@ class Specfile(object):
     def write_lang_c(self, export_epoch=False):
         """Write C language pattern"""
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("export LANG=C")
         if export_epoch:
             # time.time() returns a float, but we only need second-precision
             self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         if config.config_opts['asneeded']:
             self._write_strip("unset LD_AS_NEEDED\n")
+
+    def write_proxy_exports(self):
+        """Write proxy exports to localhost to block build/check calls to internet"""
+        self._write_strip("export http_proxy=http://127.0.0.1:9/")
+        self._write_strip("export https_proxy=http://127.0.0.1:9/")
+        self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
 
     def write_make_line(self):
         """
@@ -471,9 +478,7 @@ class Specfile(object):
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
             self._write_strip("export LANG=C")
-            self._write_strip("export http_proxy=http://127.0.0.1:9/")
-            self._write_strip("export https_proxy=http://127.0.0.1:9/")
-            self._write_strip("export no_proxy=localhost")
+            self.write_proxy_exports()
             self._write_strip(self.tests_config)
             self._write_strip("\n")
 
@@ -797,9 +802,7 @@ class Specfile(object):
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
             # Prevent setuptools from hitting the internet
-            self._write_strip("export http_proxy=http://127.0.0.1:9/")
-            self._write_strip("export https_proxy=http://127.0.0.1:9/")
-            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self.write_proxy_exports()
             self._write_strip(self.tests_config)
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
@@ -816,9 +819,7 @@ class Specfile(object):
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
             # Prevent setuptools from hitting the internet
-            self._write_strip("export http_proxy=http://127.0.0.1:9/")
-            self._write_strip("export https_proxy=http://127.0.0.1:9/")
-            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self.write_proxy_exports()
             self._write_strip(self.tests_config)
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
@@ -839,9 +840,7 @@ class Specfile(object):
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
             # Prevent setuptools from hitting the internet
-            self._write_strip("export http_proxy=http://127.0.0.1:9/")
-            self._write_strip("export https_proxy=http://127.0.0.1:9/")
-            self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+            self.write_proxy_exports()
             self._write_strip(self.tests_config)
 
         self._write_strip("%install")
@@ -886,6 +885,7 @@ class Specfile(object):
         """Write build pattern for ruby packages"""
         self.write_prep(ruby_pattern=True)
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("gem build {}.gemspec".format(self.name))
         self._write_strip("\n")
@@ -956,6 +956,7 @@ class Specfile(object):
         self.write_prep()
         src_dir = "/usr/share/rust/src/{0}-{1}".format(self.name, self.version)
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("mkdir .cargo")
         self._write("echo \"[source.crates-io]\nreplace-with = 'vendored-sources'\n[source.vendored-sources]\ndirectory = '{}'\" > .cargo/config\n".format(os.path.dirname(src_dir)))
         self._write_strip('echo \'{"files":{},"package":""}\' > .cargo-checksum.json')
@@ -977,6 +978,7 @@ class Specfile(object):
         """Write cpan build pattern to spec file"""
         self.write_prep()
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("if test -f Makefile.PL; then")
         self._write_strip("%{__perl} Makefile.PL")
@@ -1004,6 +1006,7 @@ class Specfile(object):
         """Write scons build pattern to spec file"""
         self.write_prep()
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self.write_variables()
         self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
@@ -1016,6 +1019,7 @@ class Specfile(object):
         library_path = self.golibpath
         self.write_prep()
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("\n")
         self._write_strip("%install")
@@ -1036,6 +1040,7 @@ class Specfile(object):
 
         self.write_prep()
         self._write_strip("%build")
+        self.write_proxy_exports()
         self._write_strip("python3 /usr/share/java-utils/mvn_build.py " + self.extra_make)
         self._write_strip("\n")
         self._write_strip("%install")
