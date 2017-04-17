@@ -505,12 +505,12 @@ class Specfile(object):
             self.write_variables()
             self.need_avx2_flags = False
             self._write_strip("make clean")
-            self._write_strip("%configure {0}{1} --libdir=/usr/lib64/avx2"
+            self._write_strip("%configure {0}{1} --libdir=/usr/lib64/haswell"
                               .format(self.disable_static, config.extra_configure))
             self.write_make_line()
             self._write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")
-            self._write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.la")
-            self._write_strip("rm -f %{buildroot}/usr/lib64/avx2/*.lo")
+            self._write_strip("rm -f %{buildroot}/usr/lib64/haswell/*.la")
+            self._write_strip("rm -f %{buildroot}/usr/lib64/haswell/*.lo")
 
         if self.subdir:
             self._write_strip("popd")
