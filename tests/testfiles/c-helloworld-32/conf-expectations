@@ -31,6 +31,8 @@ pgo = false
 security_sensitive = false
 # do not run test suite
 skip_tests = false
+# add .so files to the lib package instead of dev
+so_to_lib = false
 # configure build for avx2
 use_avx2 = false
 # add clang flags

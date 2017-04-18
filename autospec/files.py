@@ -21,6 +21,7 @@
 
 import build
 import tarball
+import config
 import re
 from collections import OrderedDict
 # todo package splits
@@ -138,6 +139,11 @@ class FileManager(object):
         if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
             return
 
+        # if configured to do so, add .so files to the lib package instead of
+        # the dev package. THis is useful for packages with a plugin
+        # architecture like elfutils and mesa.
+        so_dest = 'lib' if config.config_opts['so_to_lib'] else 'dev'
+
         patterns = [
             # Patterns for matching files, format is a tuple as follows:
             # (<raw pattern>, <package>, <optional replacement>, <optional prefix>)
@@ -171,10 +177,10 @@ class FileManager(object):
             (r"^/usr/include/", "dev"),
             (r"^/usr/lib64/girepository-1.0/", "data"),
             (r"^/usr/share/cmake/", "dev"),
-            (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
-            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
-            (r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev32"),
-            (r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so$", "dev"),
+            (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so$", so_dest),
+            (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so$", so_dest),
+            (r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so$", so_dest + '32'),
+            (r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so$", so_dest),
             (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib/*.a"),
             (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev", "/usr/lib64/*.a"),
             (r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.a$", "dev32", "/usr/lib32/*.a"),

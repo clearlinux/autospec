@@ -106,7 +106,8 @@ config_options = {
     "32bit" : "build 32 bit libraries",
     "nostrip" : "disable stripping binaries",
     "verify_required": "require package verification for build",
-    "security_sensitive": "set flags for security-sensitive builds"}
+    "security_sensitive": "set flags for security-sensitive builds",
+    "so_to_lib": "add .so files to the lib package instead of dev"}
 
 # simple_pattern_pkgconfig patterns
 # contains patterns for parsing build.log for missing dependencies
