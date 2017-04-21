@@ -193,6 +193,7 @@ class FileManager(object):
             (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9\.\_\-\+]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"),
             (r"^/usr/share/doc/" + re.escape(tarball.name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(tarball.name) + "/*"),
             (r"^/usr/share/gtk-doc/html", "doc"),
+            (r"^/usr/share/help", "doc"),
             (r"^/usr/share/info/", "doc", "%doc /usr/share/info/*"),
             (r"^/usr/share/man/man0", "doc", "%doc /usr/share/man/man0/*"),
             (r"^/usr/share/man/man1", "doc", "%doc /usr/share/man/man1/*"),
