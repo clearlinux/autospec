@@ -25,6 +25,9 @@ test_license:
 test_buildpattern:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_buildpattern.py
 
+test_build:
+	PYTHONPATH=${CURDIR}/autospec python3 tests/test_build.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
