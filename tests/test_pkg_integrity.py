@@ -48,8 +48,8 @@ class TestGPGCli(unittest.TestCase):
 class TestCheckFn(unittest.TestCase):
 
     def setUp(self):
-        def mock_rewrite():
-            pass
+        def mock_rewrite(path):
+            del path
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
@@ -95,8 +95,8 @@ class TestDomainBasedVerifiers(unittest.TestCase):
 class TestGEMShaVerifier(unittest.TestCase):
 
     def setUp(self):
-        def mock_rewrite():
-            pass
+        def mock_rewrite(path):
+            del path
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
@@ -121,8 +121,8 @@ class TestGEMShaVerifier(unittest.TestCase):
 class TestGPGVerifier(unittest.TestCase):
 
     def setUp(self):
-        def mock_rewrite():
-            pass
+        def mock_rewrite(path):
+            del path
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
@@ -207,8 +207,8 @@ class TestInputGetter(unittest.TestCase):
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
-        def mock_rewrite():
-            pass
+        def mock_rewrite(path):
+            del path
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 

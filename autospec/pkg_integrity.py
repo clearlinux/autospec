@@ -474,7 +474,7 @@ class GPGVerifier(Verifier):
             KEYID = KEYID_TRY
             config.signature = self.key_url
             config.config_opts['verify_required'] = True
-            config.rewrite_config_opts()
+            config.rewrite_config_opts(os.path.dirname(self.package_path))
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)

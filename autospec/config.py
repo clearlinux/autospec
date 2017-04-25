@@ -248,7 +248,7 @@ failed_pats = [
     ("\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
     ("\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information available", 0, 'maven')]
 
-def create_conf():
+def create_conf(path):
     config_f = configparser.ConfigParser(allow_no_value=True)
     config_f['autospec'] = {}
     for fname, comment in sorted(config_options.items()):
@@ -263,21 +263,22 @@ def create_conf():
     if file_exists("skip_test_suite"):
         config_f['autospec']['skip_tests'] = 'true'
         os.remove("skip_test_suite")
-    write_config(config_f)
+    write_config(config_f, path)
 
 
-def write_config(config_f):
-    with open('options.conf', 'w') as configfile:
+def write_config(config_f, path):
+    with open(os.path.join(path, 'options.conf'), 'w') as configfile:
         config_f.write(configfile)
 
 
-def read_config_opts():
+def read_config_opts(path):
     global config_opts
-    if not file_exists('options.conf'):
-        create_conf()
+    opts_path = os.path.join(path, 'options.conf')
+    if not file_exists(opts_path):
+        create_conf(path)
 
     config_f = configparser.ConfigParser()
-    config_f.read('options.conf')
+    config_f.read(opts_path)
     if "autospec" not in config_f.sections():
         print("Missing autospec section in options.conf")
         sys.exit(1)
@@ -288,10 +289,10 @@ def read_config_opts():
     # Rewrite the configuration file in case of formatting changes since a
     # configuration file may exist without any comments (either due to an older
     # version of autospec or if it was user-created)
-    rewrite_config_opts()
+    rewrite_config_opts(path)
 
 
-def rewrite_config_opts():
+def rewrite_config_opts(path):
     config_f = configparser.ConfigParser(allow_no_value=True)
     config_f['autospec'] = {}
 
@@ -305,7 +306,7 @@ def rewrite_config_opts():
         config_f.set('autospec', '# {}'.format(comment))
         config_f['autospec'][fname] = 'true' if config_opts[fname] else 'false'
 
-    write_config(config_f)
+    write_config(config_f, path)
 
 
 def filter_blanks(lines):
@@ -418,7 +419,7 @@ def parse_config_files(path, bump, filemanager):
 
     packages_file = None
 
-    read_config_opts()
+    read_config_opts(path)
 
     # Require autospec.conf for additional features
     if os.path.exists(config_file):
@@ -544,7 +545,7 @@ def parse_config_files(path, bump, filemanager):
 
     if any(p.lower().startswith('cve-') for p in patches):
        config_opts['security_sensitive'] = True
-       rewrite_config_opts()
+       rewrite_config_opts(path)
 
     content = read_conf_file(os.path.join(path, "configure"))
     extra_configure = " \\\n".join(content)
