@@ -20,7 +20,7 @@
 #
 
 default_pattern = "make"
-pattern_strengh = 0
+pattern_strength = 0
 sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
 source_index = {}
 archive_details = {}
@@ -29,11 +29,11 @@ archive_details = {}
 def set_build_pattern(pattern, strength):
     """Set the global default pattern and pattern strength"""
     global default_pattern
-    global pattern_strengh
-    if strength <= pattern_strengh:
-        return 0
+    global pattern_strength
+    if strength <= pattern_strength:
+        return
     default_pattern = pattern
-    pattern_strengh = strength
+    pattern_strength = strength
 
 
 def load_specfile(specfile):
