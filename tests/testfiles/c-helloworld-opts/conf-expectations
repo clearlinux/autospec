@@ -42,5 +42,3 @@ use_lto = true
 # require package verification for build
 verify_required = false
 
-[configuration]
-
