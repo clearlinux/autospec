@@ -28,6 +28,9 @@ test_buildpattern:
 test_build:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_build.py
 
+test_buildreq:
+	PYTHONPATH=${CURDIR}/autospec python3 tests/test_buildreq.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
