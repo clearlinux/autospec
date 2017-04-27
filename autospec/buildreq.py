@@ -34,181 +34,136 @@ import subprocess
 banned_requires = set()
 buildreqs = set()
 requires = set()
-banned_buildreqs = set(
-    ["llvm-devel", "gcj", "pkgconfig(dnl)", "pkgconfig(hal)", "tslib-0.0", "pkgconfig(parallels-sdk)", "oslo-python", "libxml2No-python"])
+banned_buildreqs = set(["llvm-devel",
+                        "gcj",
+                        "pkgconfig(dnl)",
+                        "pkgconfig(hal)",
+                        "tslib-0.0",
+                        "pkgconfig(parallels-sdk)",
+                        "oslo-python",
+                        "libxml2No-python"])
 verbose = False
 cargo_bin = False
 
-autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "libtool-dev", "pkg-config-dev"]
+autoreconf_reqs = ["gettext-bin",
+                   "automake-dev",
+                   "automake",
+                   "m4",
+                   "libtool",
+                   "libtool-dev",
+                   "pkg-config-dev"]
 
 
 def add_buildreq(req):
     global buildreqs
-    new = True
 
-    req.strip()
-
-    if req in banned_buildreqs:
+    req = req.strip()
+    if req in banned_buildreqs or req in buildreqs:
         return False
-    if req in buildreqs:
-        new = False
-    if verbose and new:
+
+    if verbose:
         print("  Adding buildreq:", req)
 
     buildreqs.add(req)
-    return new
+    return True
 
 
 def add_requires(req):
     global requires
-    new = True
-
-    req.strip()
-
-    if req in requires:
-        new = False
-    if req in banned_requires:
+    req = req.strip()
+    if not req or req in requires or req in banned_requires:
         return False
+
     if req not in buildreqs and req not in config.os_packages:
-        if len(req) > 0:
-            print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
+        print("requirement '{}' not found in buildreqs or os_packages, skipping"
+              .format(req))
         return False
-    if new:
-        # print("Adding requirement:", req)
-        requires.add(req)
-    return new
+
+    requires.add(req)
+    return True
 
 
 def add_pkgconfig_buildreq(preq):
     if config.config_opts['32bit']:
-        req = "pkgconfig(32" + preq + ")"
-        add_buildreq(req)
-    req = "pkgconfig(" + preq + ")"
-    return add_buildreq(req)
+        add_buildreq("pkgconfig(32{})".format(preq))
+
+    return add_buildreq("pkgconfig({})".format(preq))
 
 
 def configure_ac_line(line):
-    # print("----\n", line, "\n----")
     # ignore comments
     if line.startswith('#'):
         return
 
-    if line.find("AC_CHECK_FUNC\([tgetent]") >= 0:
+    line = line.strip()
+    if "AC_CHECK_FUNC\([tgetent]" in line:
         add_buildreq("ncurses-devel")
-    if line.find("PROG_INTLTOOL") >= 0:
+    if "PROG_INTLTOOL" in line:
         add_buildreq("intltool")
-    if line.find("GETTEXT_PACKAGE") >= 0:
+    if "GETTEXT_PACKAGE" in line or "AM_GLIB_GNU_GETTEXT" in line:
         add_buildreq("gettext")
         add_buildreq("perl(XML::Parser)")
-    if line.find("AM_GLIB_GNU_GETTEXT") >= 0:
-        add_buildreq("gettext")
-        add_buildreq("perl(XML::Parser)")
-    if line.find("GTK_DOC_CHECK") >= 0:
+    if "GTK_DOC_CHECK" in line:
         add_buildreq("gtk-doc")
         add_buildreq("gtk-doc-dev")
         add_buildreq("libxslt-bin")
         add_buildreq("docbook-xml")
-    if line.find("AC_PROG_SED") >= 0:
+    if "AC_PROG_SED" in line:
         add_buildreq("sed")
-    if line.find("AC_PROG_GREP") >= 0:
+    if "AC_PROG_GREP" in line:
         add_buildreq("grep")
 
-    line = line.strip()
-
-    # print("--", line, "--")
     # XFCE uses an equivalent to PKG_CHECK_MODULES, handle them both the same
+    # PKG_CHECK_MODULES(prefix, MODULES, action-if-found, action-if-not-found)
+    # MODULES is a space delimited list
+    #     [module1 < 3 module2 > 4 module3]
     for style in [r"PKG_CHECK_MODULES\((.*?)\)", r"XDT_CHECK_PACKAGE\((.*?)\)"]:
-        pattern = re.compile(style)
-        match = pattern.search(line)
+        match = re.search(style, line)
         L = []
         if match:
             L = match.group(1).split(",")
         if len(L) > 1:
             rqlist = L[1].strip()
-            f = rqlist.find(">")
-            if f >= 0:
-                rqlist = rqlist[:f]
-            f = rqlist.find("<")
-            if f >= 0:
-                rqlist = rqlist[:f]
+            for req in parse_modules_list(rqlist):
+                add_pkgconfig_buildreq(req)
 
-            L2 = rqlist.split(" ")
-            for rq in L2:
-                if len(rq) < 2:
-                    continue
-                # remove [] if any
-                if rq[0] == "[":
-                    rq = rq[1:]
-                f = rq.find("]")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find(">")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find("<")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find("=")
-                if f >= 0:
-                    rq = rq[:f]
-                rq = rq.strip()
-                if len(rq) > 0 and rq[0] != "$":
-                    add_pkgconfig_buildreq(rq)
-
-    pattern = re.compile(r"PKG_CHECK_EXISTS\((.*?)\)")
-    match = pattern.search(line)
+    # PKG_CHECK_EXISTS(MODULES, action-if-found, action-if-not-found)
+    match = re.search(r"PKG_CHECK_EXISTS\((.*?)\)", line)
     if match:
         L = match.group(1).split(",")
-        # print("---", match.group(1).strip(), "---")
         rqlist = L[0].strip()
-        L2 = rqlist.split(" ")
-        for rq in L2:
-            # remove [] if any
-            if rq[0] == "[":
-                rq = rq[1:]
-            f = rq.find("]")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find(">")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("<")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("=")
-            if f >= 0:
-                rq = rq[:f]
-            rq = rq.strip()
-            # print("=== ", rq, "===")
-            if len(rq) > 0 and rq[0] != "$":
-                add_pkgconfig_buildreq(rq)
-                break
+        for req in parse_modules_list(rqlist):
+            add_pkgconfig_buildreq(req)
 
-    pass
+
+def parse_modules_list(modules_string):
+    modules = [m.strip('[]') for m in modules_string.split()]
+    return [r for r in modules
+            if r not in '<>='
+            and not r.isdigit()
+            and len(r) >= 2
+            and not r.startswith('$')]
 
 
 def parse_configure_ac(filename):
-    buffer = ""
-    depth = 0
-    # print("Configure parse: ", filename)
     buildpattern.set_build_pattern("configure_ac", 1)
-    file = open(filename, "r", encoding="latin-1")
-    while 1:
-        c = file.read(1)
-        if len(c) == 0:
-            break
-        if c == "(":
-            depth = depth + 1
-        if c == ")" and depth > 0:
-            depth = depth - 1
-        if c != "\n":
-            buffer = buffer + c
-        if c == "\n" and depth == 0:
-            configure_ac_line(buffer)
-            buffer = ""
+    with open(filename, "r", encoding="latin-1") as configacf:
+        lines = configacf.readlines()
 
-    configure_ac_line(buffer)
-    file.close()
+    # Wait to parse the line until we get back out of the multi-line (...)
+    # block. To do this, track the depth by counting opening and closing parens
+    # per line. Append to a buffer until depth reaches zero again and process.
+    depth = 0
+    buf = ''
+    for line in lines:
+        depth += line.count('(') - line.count(')')
+        if depth > 0:
+            buf += line.rstrip('\n')
+        if depth <= 0:
+            depth = 0
+            buf += line
+            configure_ac_line(buf)
+            buf = ''
 
 
 def parse_cargo_toml(filename):
@@ -271,11 +226,12 @@ def set_build_req():
         add_buildreq("rustc")
 
 
-def Rakefile(filename):
-    file = open(filename, "r", encoding="latin-1")
-    lines = file.readlines()
+def rakefile(filename):
+    with open(filename, "r", encoding="latin-1") as rfile:
+        lines = rfile.readlines()
+
+    pat = re.compile(r"^require '(.*)'$")
     for line in lines:
-        pat = re.compile(r"^require '(.*)'$")
         match = pat.search(line)
         if match:
             s = match.group(1)
@@ -286,42 +242,20 @@ def Rakefile(filename):
                 print("Rakefile-new: rubygem-" + s)
 
 
-def clean_python_req(str, add_python=True):
-    if str.find("#") == 0:
+def clean_python_req(pyreq):
+    if pyreq.startswith("#"):
         return ""
-    ret = str.rstrip("\n\r").strip()
-    i = ret.find("<")
-    if i > 0:
-        ret = ret[:i]
-    i = ret.find("\n")
-    if i > 0:
-        ret = ret[:i]
-    i = ret.find(">")
-    if i > 0:
-        ret = ret[:i]
-    i = ret.find("=")
-    if i > 0:
-        ret = ret[:i]
-    i = ret.find("#")
-    if i > 0:
-        ret = ret[:i]
-    i = ret.find("!")
-    if i > 0:
-        ret = ret[:i]
-
-    ret = ret.strip()
-    # is ret actually a valid (non-empty) string?
-    if ret and add_python:
-        ret = ret.strip()
+    ret = pyreq.rstrip("\n\r").strip()
+    ret = re.split('[<=>#!\n]', ret)[0].strip()
     # use the dictionary to translate funky names to our current pgk names
     ret = util.translate(ret)
     return ret
 
 
 def grab_python_requirements(descfile):
-    file = open(descfile, "r", encoding="latin-1")
-    for line in file.readlines():
-        add_requires(clean_python_req(line))
+    with open(descfile, "r", encoding="latin-1") as df:
+        for line in df.readlines():
+            add_requires(clean_python_req(line))
 
 
 def grab_pip_requirements(pkgname):
@@ -391,7 +325,7 @@ def add_setup_py_requires(filename):
                         # eval the string and add requirements
                         for dep in ast.literal_eval(line):
                             print(dep)
-                            dep = clean_python_req(dep, False)
+                            dep = clean_python_req(dep)
                             add_buildreq(dep)
                             if req:
                                 add_requires(dep)
@@ -425,7 +359,7 @@ def add_setup_py_requires(filename):
                             line = line[:end_quote + 1]
                             for dep in ast.literal_eval(line):
                                 print(dep)
-                                dep = clean_python_req(dep, False)
+                                dep = clean_python_req(dep)
                                 add_buildreq(py_deps)
                                 if req:
                                     add_requires(py_deps)
@@ -445,7 +379,7 @@ def add_setup_py_requires(filename):
                     if end_bracket > 0:
                         # eval the string and add requirements
                         for dep in ast.literal_eval(py_dep_string[:end_bracket + 1]):
-                            dep = clean_python_req(dep, False)
+                            dep = clean_python_req(dep)
                             add_buildreq(dep)
                             if req:
                                 add_requires(dep)
@@ -458,15 +392,14 @@ def add_setup_py_requires(filename):
         pass
 
 
-def scan_for_configure(package, dir, autospecdir):
-    global default_summary
+def scan_for_configure(dirn):
     count = 0
-    for dirpath, dirnames, files in os.walk(dir):
+    for dirpath, dirnames, files in os.walk(dirn):
         default_score = 2
-        if dirpath != dir:
+        if dirpath != dirn:
             default_score = 1
 
-        if any(file.endswith(".go") for file in files) and tarball.go_pkgname:
+        if any(f.endswith(".go") for f in files) and tarball.go_pkgname:
             add_buildreq("go")
             tarball.name = tarball.go_pkgname
             buildpattern.set_build_pattern("golang", default_score)
@@ -505,7 +438,7 @@ def scan_for_configure(package, dir, autospecdir):
             if name.lower().startswith("configure."):
                 parse_configure_ac(os.path.join(dirpath, name))
             if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
-                Rakefile(os.path.join(dirpath, name))
+                rakefile(os.path.join(dirpath, name))
             if name.lower() == "makefile":
                 buildpattern.set_build_pattern("make", default_score)
             if name.lower() == "autogen.sh":
@@ -513,9 +446,9 @@ def scan_for_configure(package, dir, autospecdir):
             if name.lower() == "cmakelists.txt":
                 buildpattern.set_build_pattern("cmake", default_score)
 
-    can_reconf = os.path.exists(os.path.join(dir, "configure.ac"))
+    can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
     if not can_reconf:
-        can_reconf = os.path.exists(os.path.join(dir, "configure.in"))
+        can_reconf = os.path.exists(os.path.join(dirn, "configure.in"))
 
     if can_reconf and config.autoreconf:
         print("Patches touch configure.*, adding autoreconf stage")
