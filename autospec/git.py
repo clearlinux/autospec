@@ -62,7 +62,7 @@ def commit_to_git(path):
     call("git add configure32", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure64", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add make_check_command", check=False, stderr=subprocess.DEVNULL, cwd=path)
-    call("bash -c 'shopt -s failglob; git add *.patch'", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("bash -c 'shopt -s failglob; git add *.patch *.nopatch'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     for item in config.transforms.values():
         call("git add {}".format(item), check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add release", cwd=path)
