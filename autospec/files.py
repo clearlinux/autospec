@@ -168,6 +168,7 @@ class FileManager(object):
             (r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"),
             (r"^/usr/share/cmake-3.1/", "data", "/usr/share/cmake-3.1/*"),
             (r"^/usr/share/cmake-3.7/", "data", "/usr/share/cmake-3.7/*"),
+            (r"^/usr/share/cmake-3.8/", "data", "/usr/share/cmake-3.8/*"),
             (r"^/usr/share/cmake-3.6/", "data", "/usr/share/cmake-3.6/*"),
             (r"^/usr/share/girepository-1\.0/.*\.typelib\$", "data", "/usr/share/girepository-1.0/*.typelib"),
             (r"^/usr/include/[a-zA-Z0-9\.\_\-\+]*\.hxx", "dev", "/usr/include/*.hxx"),
