@@ -42,7 +42,7 @@ def add_license(lic):
     presence in the blacklist.
     """
     global licenses
-    lic = lic.strip()
+    lic = lic.strip().strip(',')
 
     # Translate the license if a translation exists
     real_lic = config.license_translations.get(lic, lic)
