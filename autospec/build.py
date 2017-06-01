@@ -89,15 +89,6 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             if not s:
                 return
             must_restart += buildreq.add_buildreq(util.translate('%s-python' % s))
-        elif buildtool == 'go':
-            s = util.translate(s)
-            if not s:
-                return
-            elif s == match.group(1):
-                # the requirement it's also golang libpath format
-                # (e.g: github.com/<project>/<repo> so transform into pkg name
-                s = util.golang_name(s)
-            must_restart += buildreq.add_buildreq(s)
         elif buildtool == 'ruby':
             if s in config.gems:
                 must_restart += buildreq.add_buildreq(config.gems[s])

@@ -32,8 +32,6 @@ import urllib.request
 import pycurl
 from io import BytesIO
 from util import call, print_fatal
-# from util import golang_name
-# from util import golang_libpath
 
 name = ""
 rawname = ""
@@ -43,9 +41,6 @@ url = ""
 path = ""
 tarball_prefix = ""
 gcov_file = ""
-golibpath = ""
-go_pkgname = ""
-
 
 def get_sha1sum(filename):
     sh = hashlib.sha1()
@@ -129,9 +124,6 @@ def download_tarball(url_argument, name_arg, archives, target_dir):
     global path
     global tarball_prefix
     global gcov_file
-    # go naming
-    global golibpath
-    global go_pkgname
 
     tarfile = os.path.basename(url)
 
@@ -372,4 +364,3 @@ def load_specfile(specfile):
     specfile.tarball_prefix = tarball_prefix
     specfile.gcov_file = gcov_file
     specfile.rawname = rawname
-    specfile.golibpath = golibpath
