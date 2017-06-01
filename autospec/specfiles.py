@@ -290,11 +290,11 @@ class Specfile(object):
         for pkg in sorted(self.packages):
             if pkg in ["ignore", "main", "locales"]:
                 continue
-
             for script in ["post", "pre"]:
                 content = config.read_conf_file("{}.{}".format(script, pkg))
                 if content:
                     self._write("\n%{0} {1}\n".format(script, pkg))
+                    content = ['{}\n'.format(l) for l in content]
                     self.specfile.writelines(content)
 
     def write_files(self):
