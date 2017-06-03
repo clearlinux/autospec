@@ -403,7 +403,7 @@ class Specfile(object):
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
         if config.config_opts['optimize_size']:
-            flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition"])
+            flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition", "-Wl,--gc-sections"])
         if config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
         if self.need_avx2_flags:
