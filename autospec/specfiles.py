@@ -872,11 +872,46 @@ class Specfile(object):
         self._write_strip('export LDFLAGS="$LDFLAGS  -Wl,-z -Wl,relro"\n')
 
         self._write_strip("mkdir -p %{buildroot}/usr/lib64/R/library")
+        self._write_strip("\n")
+        self._write_strip("mkdir -p ~/.R")
+        self._write_strip("mkdir -p ~/.stash")
+        
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=haswell -ftree-vectorize \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
+
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library " + self.rawname)
+        self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
+        
+
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=skylake-avx512 -ftree-vectorize \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=skylake-avx512 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=skylake-avx512 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("R CMD INSTALL "
+                          "--preclean "
+                          "--install-tests "
+                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                          "--build  -l "
+                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+                          
+        self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx512 ; mv $i.avx512 ~/.stash/; done\n")
+
+        self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
+                
+        self._write_strip("R CMD INSTALL "
+                          "--preclean "
+                          "--install-tests "
+                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                          "--build  -l "
+                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+        self._write_strip("cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :")
+
         self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
         self.write_find_lang()
         self.write_check()

@@ -163,7 +163,8 @@ def scan_for_tests(dir):
             if "test_suite" in setup_contents or "pbr=True" in setup_contents:
                 tests_config = testsuites["setup.py"]
     elif buildpattern.default_pattern == "R":
-        tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\nR CMD check --no-manual --no-examples --no-codoc -l %{buildroot}/usr/lib64/R/library " + tarball.rawname
+        tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\nR CMD check --no-manual --no-examples --no-codoc -l %{buildroot}/usr/lib64/R/library " + tarball.rawname + "\n" + "cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :"
+
 
     if "tox.ini" in files:
         buildreq.add_buildreq("tox")
