@@ -40,6 +40,7 @@ import specfiles
 from tarball import name
 from util import _file_write, print_fatal, binary_in_path
 from abireport import examine_abi
+from logcheck import logcheck
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -217,6 +218,9 @@ def main(workingdir):
 
     with open(build.download_path + "/release", "w") as fp:
         fp.write(tarball.release + "\n")
+
+    # record logcheck output
+    logcheck(build.download_path)
 
     commitmessage.guess_commit_message()
 

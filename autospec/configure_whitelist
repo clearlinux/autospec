@@ -1,0 +1,630 @@
+acroread
+acroread4
+af77
+a french Unicode locale
+altivec.h
+altivec.h presence
+altivec.h usability
+ANSI C header files
+atan2pi
+atanpi
+a traditional french locale
+a traditional japanese locale
+a transitional chinese locale
+bison
+broken visibility attribute
+BSDgettimeofday
+/builddir/build/BUILD/gcc-build/./gcc/xgcc -B/builddir/build/BUILD/gcc-build/./gcc/ -B/usr/x86_64-generic-linux/bin/ -B/usr/x86_64-generic-linux/lib/ -isystem /usr/x86_64-generic-linux/include -isystem /usr/x86_64-generic-linux/sys-include    option to accept ISO C89
+c_asm.h
+c_asm.h presence
+c_asm.h usability
+cf77
+CFLocaleCopyCurrent
+CFPreferencesCopyAppValue
+com_err.h
+Configure miss: struct stat.st_atimespec
+cospi
+cospi in -lsunmath
+crt_externs.h
+crt_externs.h presence
+crt_externs.h usability
+dependency style of g++
+dependency style of gcc
+direct.h
+dl.h
+dl.h presence
+dl.h usability
+dlltool
+dlopen
+_doprnt
+doxygen
+dummy main to link with Fortran 77 libraries
+dynamic linker characteristics
+efc
+--enable-generated-files-in-srcdir
+--enable-version-specific-runtime-libs
+--enable-vtable-verify
+epcf90
+etags
+et/com_err.h
+evince
+external symbol _system_configuration
+extra flags to get ANSI library prototypes
+f77
+f90
+f95
+fdwalk
+_FILE_OFFSET_BITS value needed for large files
+firefox
+fl32
+flex
+floatingpoint.h
+floatingpoint.h presence
+floatingpoint.h usability
+fop
+fort
+fort77
+Fortran flag to compile .f90 files
+Fortran flag to compile .f95 files
+fprintf_unlocked
+frt
+g77
+galeon
+gccgo
+gcc option to accept ANSI C
+gcc option to accept ISO C89
+gcc option to accept ISO C99
+gcc option to enable C11 features
+gcj
+gethrtime
+getpass_r
+getsysinfo
+ggv
+gm4
+gnatbind
+gnatmake
+gnome-gv
+gnome-moz-remote
+gnum4
+gnutar
+gobject-introspection
+gpdf
+gtar
+gv
+how to run the C preprocessor
+HP-UX
+hrtime_t
+i686-pc-linux-gnu-ar
+i686-pc-linux-gnu-dlltool
+i686-pc-linux-gnu-gcc option to accept ISO C89
+i686-pc-linux-gnu-mt
+i686-pc-linux-gnu-objdump
+i686-pc-linux-gnu-ranlib
+i686-pc-linux-gnu-strip
+iconv in -liconv
+iconvlist
+ieeefp.h
+ieeefp.h presence
+ieeefp.h usability
+if /builddir/build/BUILD/gcc-build/./gcc/xgcc -B/builddir/build/BUILD/gcc-build/./gcc/ -B/usr/x86_64-generic-linux/bin/ -B/usr/x86_64-generic-linux/lib/ -isystem /usr/x86_64-generic-linux/include -isystem /usr/x86_64-generic-linux/sys-include    static flag -static works
+if /builddir/build/BUILD/gcc-build/./gcc/xgcc -B/builddir/build/BUILD/gcc-build/./gcc/ -B/usr/x86_64-generic-linux/bin/ -B/usr/x86_64-generic-linux/lib/ -isystem /usr/x86_64-generic-linux/include -isystem /usr/x86_64-generic-linux/sys-include    supports -fno-rtti -fno-exceptions
+ifc
+if closesocket can be linked
+if CloseSocket can be linked
+if closesocket might be used
+if CloseSocket might be used
+if compiler is clang
+if compiler is DEC/Compaq/HP C
+if compiler is HP-UX C
+if compiler is IBM C
+if compiler is Intel C
+if compiler is LCC
+if compiler is SGI MIPS C
+if compiler is SGI MIPSpro C
+if compiler is SunPro C
+if compiler is Tiny C
+if compiler is Watcom C
+if compiler supports -Werror=unknown-warning-option
+if compiler supports -Werror=unused-command-line-argument
+if c++ static flag -static works
+if ctime_r wants three arguments
+if f95 static flag -static works
+if gcc static flag -static works
+if gcc -std=gnu99 supports -fno-rtti -fno-exceptions
+if gcc supports -fno-rtti -fno-exceptions
+if gcc supports -Werror=unknown-warning-option
+if gcc supports -Werror=unused-command-line-argument
+if gethostbyaddr_r takes 5 args.
+if gethostbyaddr_r takes 7 args.
+if gethostbyaddr_r wants seven arguments
+if gethostbyname_r takes 3 args.
+if gethostbyname_r takes 5 args.
+if gethostbyname_r wants five arguments
+if getservbyport_r takes 4 args.
+if getservbyport_r takes 5 args.
+if gfortran PIC flag -fPIC works
+if gfortran static flag -static works
+if gfortran supports -c -o file.o
+if g++ static flag -static works
+if inet_ntoa_r can be linked
+if inet_ntoa_r might be used
+if ioctlsocket can be linked
+if IoctlSocket can be linked
+if ioctlsocket might be used
+if IoctlSocket might be used
+if : is a manifest tool
+if libcurl version >= 7.28.0
+if memrchr is prototyped
+if memrchr might be used
+if mkdir takes one argument
+if more special flags are required for pthreads
+if setsockopt SO_NONBLOCK is compilable
+if setsockopt SO_NONBLOCK might be used
+if sig_atomic_t is already defined as volatile
+if sigsetjmp can be linked
+if strcmpi can be linked
+if strcmpi might be used
+if strerror_r is glibc like
+if stricmp can be linked
+if stricmp might be used
+if strncmpi can be linked
+if strncmpi might be used
+if strnicmp can be linked
+if strnicmp might be used
+if /usr/bin/gcc static flag -static works
+if /usr/bin/gcc -std=gnu99 static flag -static works
+if /usr/bin/gcc -std=gnu99 supports -fno-rtti -fno-exceptions
+if /usr/bin/gcc supports -fno-rtti -fno-exceptions
+if /usr/local/bin/gcc supports -fno-rtti -fno-exceptions
+if <X11/extensions/XIproto.h> is needed for xReply
+intrinsics.h
+intrinsics.h presence
+intrinsics.h usability
+io.h
+io.h presence
+io.h usability
+is_selinux_enabled in -lselinux
+issetugid
+Kerberos 5
+kfmclient
+kghostview
+kpdf
+kpsewhich
+kqueue
+krb5-config
+_LARGEFILE_SOURCE value needed for large files
+lchmod
+ldap_ntlm_bind
+lex library
+lf95
+libpapi... checking for papiServiceCreate in -lpapi
+library containing bindtextdomain
+library containing clock_gettime
+library containing connect
+library containing getaddrinfo
+library containing gethostent
+library containing setsockopt
+library containing socket
+library containing strerror
+libutil.h
+libutil.h presence
+libutil.h usability
+lipo
+lp
+lpr
+mach_absolute_time
+machine/hal_sysinfo.h
+mach/mach_time.h
+mach/mach_time.h presence
+mach/mach_time.h usability
+main in -linet
+makeindex
+Minix Amsterdam compiler
+minix/config.h
+minix/config.h presence
+minix/config.h usability
+minix/sha2.h
+minix/sha2.h presence
+minix/sha2.h usability
+missing gethostname prototype
+_mm_free
+_mm_malloc
+mozilla
+mt
+multithread API to use
+nanotime
+native Win32
+net/errno.h
+net/errno.h presence
+net/errno.h usability
+_NSGetEnviron
+ocamlbuild
+okular
+open
+OpenLDAP
+opera
+pcre/pcre.h
+pcre/pcre.h presence
+pcre/pcre.h usability
+pdflatex
+pdftex
+perl5
+pgf77
+pgf90
+pgf95
+pghpf
+pown
+process.h
+pstat_getdynamic
+pthread_create
+read_real_time
+_rtc intrinsic
+__secure_getenv
+sepol_check_context in -lsepol
+__setfpucw
+_set_invalid_parameter_handler
+setmode
+setproctitle
+shl_load
+shl_load in -ldld
+sin
+sinpi
+_snprintf
+socket in -lsocket
+some Win32 platform
+spawnve
+special C compiler options needed for large files
+stricmp
+strlcat
+strlcpy
+strnicmp
+struct sockaddr_in.sin_len
+struct sockaddr.sa_len
+struct sockaddr_un.sun_len
+struct stat.st_birthtimensec
+struct stat.st_birthtimespec.tv_nsec
+struct stat.st_birthtim.tv_nsec
+struct tm.__tm_gmtoff
+SunLDAP
+sunmath.h
+sunmath.h presence
+sunmath.h usability
+sys/endian.h
+sys/endian.h presence
+sys/endian.h usability
+sys/filio.h
+sys/filio.h presence
+sys/filio.h usability
+sys/limits.h
+sys/loadavg.h
+sys/loadavg.h presence
+sys/loadavg.h usability
+sys/mkdev.h
+sys/mkdev.h presence
+sys/mkdev.h usability
+sys/pstat.h
+sysroot
+sys/sockio.h
+sys/sockio.h presence
+sys/sockio.h usability
+sys/systeminfo.h
+sys/systeminfo.h presence
+sys/systeminfo.h usability
+table
+tanpi
+tex
+texi2any
+texi2dvi
+the BeOS
+the pthreads library -llthread
+the pthreads library -lpthreads
+time_base_to_time
+/usr/bin/gcc option to accept ISO C89
+/usr/local/bin/gcc option to accept ISO C89
+util.h
+util.h presence
+util.h usability
+valgrind.h
+valgrind.h presence
+vasnprintf
+vfork.h
+vfork.h presence
+vfork.h usability
+_vsnprintf
+whether alloca needs Cray hooks
+whether byte ordering is bigendian
+whether bzip2 support needs to be compiled
+whether  can compile ObjC++
+whether canonicalize_file_name must be declared
+whether char is unsigned
+whether __clang__ is declared
+whether closedir returns void
+whether compiler driver understands Ada
+whether cosq is declared
+whether C runtime needs -D__NO_MATH_INLINES
+whether dirfd is a macro
+whether f95 appends extra underscores to external names
+whether fprintf_unlocked is declared
+whether fpurge is declared without a macro
+whether g++ can compile ObjC++
+whether gcc accepts -g
+whether GCC assembler is compatible for ARM assembly implementations
+whether gcc needs -traditional
+whether gets is declared without a macro
+whether gettimeofday clobbers localtime buffer
+whether g++  supports C++11 features by default
+whether included gettext is requested
+whether integer division by zero raises SIGFPE
+whether __INTEL_COMPILER is declared
+whether // is distinct from /
+whether KERN_USRSTACK sysctl is supported
+whether -lc should be explicitly linked in
+whether long double and double are the same
+whether mktime sets errno
+whether mktime works correctly outside 1902-2037
+whether PCRE support needs to be compiled
+whether pthreads work with -kthread
+whether pthreads work with -Kthread
+whether pthreads work without any flags
+whether putenv("FOO=") can unset an environment variable
+whether sinq is declared
+whether _snprintf is declared
+whether _snwprintf is declared
+whether stat accepts an empty string
+whether stat file-mode macros are broken
+whether stricmp is declared
+whether strlcpy is declared
+whether strnicmp is declared
+whether __SUNPRO_C is declared
+whether system header files limit the line length
+whether termios.h defines TIOCGWINSZ
+whether the compiler supports -xldscope=hidden
+whether the inttypes.h PRIxNN macros are broken
+whether the thread-local storage support is from emutls
+whether to build gtk-doc documentation
+whether to build shared libraries
+whether to build static libraries
+whether to enable maintainer-specific portions of Makefiles
+whether to install libiberty headers and static library
+whether to use ARM IWMMXT intrinsics
+whether to use ARM NEON assembler
+whether to use ARM SIMD assembler
+whether to use Loongson MMI assembler
+whether to use MIPS DSPr2 assembler
+whether to use VMX/Altivec intrinsics
+Whether to write dependencies into .pc files
+whether we are cross compiling
+whether we are using the GNU Objective C compiler
+whether we can compute ObjC Make dependencies
+whether _XOPEN_SOURCE should be defined
+whether yytext is a pointer
+whether zlib support needs to be compiled
+Win32
+Win32 threads
+windows.h
+windows.h presence
+windows.h usability
+x86_64-generic-linux-ar
+x86_64-generic-linux-as
+x86_64-generic-linux-cc
+x86_64-generic-linux-dlltool
+x86_64-generic-linux-gccgo
+x86_64-generic-linux-gcj
+x86_64-generic-linux-gnu-aCC
+x86_64-generic-linux-gnu-af77
+x86_64-generic-linux-gnu-ar
+x86_64-generic-linux-gnu-c++
+x86_64-generic-linux-gnu-cc
+x86_64-generic-linux-gnu-cc++
+x86_64-generic-linux-gnu-CC
+x86_64-generic-linux-gnu-cf77
+x86_64-generic-linux-gnu-cl
+x86_64-generic-linux-gnu-cl.exe
+x86_64-generic-linux-gnu-cxx
+x86_64-generic-linux-gnu-dlltool
+x86_64-generic-linux-gnu-efc
+x86_64-generic-linux-gnu-epcf90
+x86_64-generic-linux-gnu-f77
+x86_64-generic-linux-gnu-f90
+x86_64-generic-linux-gnu-f95
+x86_64-generic-linux-gnu-FCC
+x86_64-generic-linux-gnu-fl32
+x86_64-generic-linux-gnu-fort
+x86_64-generic-linux-gnu-fort77
+x86_64-generic-linux-gnu-frt
+x86_64-generic-linux-gnu-ftn
+x86_64-generic-linux-gnu-g++
+x86_64-generic-linux-gnu-g77
+x86_64-generic-linux-gnu-g95
+x86_64-generic-linux-gnu-gcc
+x86_64-generic-linux-gnu-gfortran
+x86_64-generic-linux-gnu-gpp
+x86_64-generic-linux-gnu-ifc
+x86_64-generic-linux-gnu-ifort
+x86_64-generic-linux-gnu-KCC
+x86_64-generic-linux-gnu-lf95
+x86_64-generic-linux-gnu-lib
+x86_64-generic-linux-gnu-link
+x86_64-generic-linux-gnu-mt
+x86_64-generic-linux-gnu-nagfor
+x86_64-generic-linux-gnu-nm
+x86_64-generic-linux-gnu-objc
+x86_64-generic-linux-gnu-objcc
+x86_64-generic-linux-gnu-objdump
+x86_64-generic-linux-gnu-pgf77
+x86_64-generic-linux-gnu-pgf90
+x86_64-generic-linux-gnu-pgf95
+x86_64-generic-linux-gnu-pgfortran
+x86_64-generic-linux-gnu-pghpf
+x86_64-generic-linux-gnu-ranlib
+x86_64-generic-linux-gnu-RCC
+x86_64-generic-linux-gnu-strings
+x86_64-generic-linux-gnu-strip
+x86_64-generic-linux-gnu-windres
+x86_64-generic-linux-gnu-xlC
+x86_64-generic-linux-gnu-xlC_r
+x86_64-generic-linux-gnu-xlf
+x86_64-generic-linux-gnu-xlf90
+x86_64-generic-linux-gnu-xlf95
+x86_64-generic-linux-ld
+x86_64-generic-linux-lipo
+x86_64-generic-linux-nm
+x86_64-generic-linux-objcopy
+x86_64-generic-linux-objdump
+x86_64-generic-linux-ranlib
+x86_64-generic-linux-readelf
+x86_64-generic-linux-strip
+x86_64-generic-linux-windmc
+x86_64-generic-linux-windres
+x86_64-koji-linux-gnu-aCC
+x86_64-koji-linux-gnu-af77
+x86_64-koji-linux-gnu-ar
+x86_64-koji-linux-gnu-c++
+x86_64-koji-linux-gnu-cc++
+x86_64-koji-linux-gnu-CC
+x86_64-koji-linux-gnu-cl
+x86_64-koji-linux-gnu-cxx
+x86_64-koji-linux-gnu-dlltool
+x86_64-koji-linux-gnu-efc
+x86_64-koji-linux-gnu-epcf90
+x86_64-koji-linux-gnu-f77
+x86_64-koji-linux-gnu-f90
+x86_64-koji-linux-gnu-f95
+x86_64-koji-linux-gnu-FCC
+x86_64-koji-linux-gnu-fl32
+x86_64-koji-linux-gnu-fort
+x86_64-koji-linux-gnu-fort77
+x86_64-koji-linux-gnu-frt
+x86_64-koji-linux-gnu-g++
+x86_64-koji-linux-gnu-g77
+x86_64-koji-linux-gnu-gfortran
+x86_64-koji-linux-gnu-gpp
+x86_64-koji-linux-gnu-ifc
+x86_64-koji-linux-gnu-KCC
+x86_64-koji-linux-gnu-lf95
+x86_64-koji-linux-gnu-mt
+x86_64-koji-linux-gnu-objdump
+x86_64-koji-linux-gnu-pgf77
+x86_64-koji-linux-gnu-pgf90
+x86_64-koji-linux-gnu-pgf95
+x86_64-koji-linux-gnu-ranlib
+x86_64-koji-linux-gnu-RCC
+x86_64-koji-linux-gnu-strings
+x86_64-koji-linux-gnu-strip
+x86_64-koji-linux-gnu-windres
+x86_64-koji-linux-gnu-xlC
+x86_64-koji-linux-gnu-xlC_r
+x86_64-koji-linux-gnu-xlf
+x86_64-koji-linux-gnu-xlf90
+x86_64-koji-linux-gnu-xlf95
+x86_64-pc-linux-gnu-aCC
+x86_64-pc-linux-gnu-af77
+x86_64-pc-linux-gnu-ar
+x86_64-pc-linux-gnu-c++
+x86_64-pc-linux-gnu-cc++
+x86_64-pc-linux-gnu-CC
+x86_64-pc-linux-gnu-cl
+x86_64-pc-linux-gnu-cl.exe
+x86_64-pc-linux-gnu-cxx
+x86_64-pc-linux-gnu-dlltool
+x86_64-pc-linux-gnu-efc
+x86_64-pc-linux-gnu-epcf90
+x86_64-pc-linux-gnu-f77
+x86_64-pc-linux-gnu-f90
+x86_64-pc-linux-gnu-f95
+x86_64-pc-linux-gnu-FCC
+x86_64-pc-linux-gnu-fl32
+x86_64-pc-linux-gnu-fort
+x86_64-pc-linux-gnu-fort77
+x86_64-pc-linux-gnu-frt
+x86_64-pc-linux-gnu-g++
+x86_64-pc-linux-gnu-g77
+x86_64-pc-linux-gnu-gcc
+x86_64-pc-linux-gnu-gfortran
+x86_64-pc-linux-gnu-gpp
+x86_64-pc-linux-gnu-ifc
+x86_64-pc-linux-gnu-KCC
+x86_64-pc-linux-gnu-lf95
+x86_64-pc-linux-gnu-mt
+x86_64-pc-linux-gnu-objdump
+x86_64-pc-linux-gnu-pgf77
+x86_64-pc-linux-gnu-pgf90
+x86_64-pc-linux-gnu-pgf95
+x86_64-pc-linux-gnu-pkg-config
+x86_64-pc-linux-gnu-ranlib
+x86_64-pc-linux-gnu-RCC
+x86_64-pc-linux-gnu-strip
+x86_64-pc-linux-gnu-xlC
+x86_64-pc-linux-gnu-xlC_r
+x86_64-pc-linux-gnu-xlf
+x86_64-pc-linux-gnu-xlf90
+x86_64-pc-linux-gnu-xlf95
+x86_64-unknown-linux-gnu-ar
+x86_64-unknown-linux-gnu-dlltool
+x86_64-unknown-linux-gnu-lib
+x86_64-unknown-linux-gnu-link
+x86_64-unknown-linux-gnu-mt
+x86_64-unknown-linux-gnu-objdump
+x86_64-unknown-linux-gnu-ranlib
+x86_64-unknown-linux-gnu-strip
+xdg-open
+xlf
+xlf90
+xlf95
+xmkmf
+X.Org SGML entities >= 1.8
+xpdf
+ansidecl.h usability
+ansidecl.h presence
+ansidecl.h
+nan.h usability
+nan.h presence
+nan.h
+fp_class.h usability
+fp_class.h presence
+fp_class.h
+isnand
+fp_class
+class
+fpclass
+_stat
+ansidecl.h usability
+ansidecl.h presence
+ansidecl.h
+nan.h usability
+nan.h presence
+nan.h
+fp_class.h usability
+fp_class.h presence
+fp_class.h
+isnand
+fp_class
+class
+fpclass
+_stat
+whether g++ supports C++11 features by default
+tsol/label.h usability
+tsol/label.h presence
+tsol/label.h
+is_system_labeled
+launchd
+getlocalename_l
+net/if_dl.h usability
+net/if_dl.h presence
+net/if_dl.h
+sys/disklabel.h usability
+sys/disklabel.h presence
+sys/disklabel.h
+sys/disk.h usability
+sys/disk.h presence
+sys/disk.h
+whether llseek is declared
+whether struct stat has a st_flags field
+chflags
+fadvise64
+getmntinfo
+optreset
+sem_init
+whether we can link with -static
+if building for some Win32 platform
+more warnings
