@@ -221,11 +221,14 @@ def get_signature_url(package_url):
         return package_url + '.sig'
     else:
         try:
-            if head_request(package_url + '.sig') == 200:
+            st = head_request(package_url + '.sig')
+            if st == 200 or st == 302:
                 return package_url + '.sig'
-            if head_request(package_url + '.asc') == 200:
+            st = head_request(package_url + '.asc')
+            if st == 200 or st == 302:
                 return package_url + '.asc'
-            if head_request(package_url + '.sign') == 200:
+            st = head_request(package_url + '.asc')
+            if st == 200 or st == 302:
                 return package_url + '.sign'
         except:
             pass
