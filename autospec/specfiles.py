@@ -404,9 +404,9 @@ class Specfile(object):
             self._write_strip("export LD=ld.gold\n")
         if config.config_opts['optimize_size']:
             if config.config_opts['use_clang']:
-                flags.extend(["-Os"])
+                flags.extend(["-Os", "-ffunction-sections", "-fdata-sections"])
             else:
-                flags.extend(["-Os", "-ffunction-sections", "-fno-semantic-interposition"])
+                flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition"])
         if config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
         if self.need_avx2_flags:
