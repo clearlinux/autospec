@@ -403,7 +403,10 @@ class Specfile(object):
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
         if config.config_opts['optimize_size']:
-            flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition", "-Wl,--gc-sections"])
+            if config.config_opts['use_clang']:
+                flags.extend(["-Os"])
+            else:
+                flags.extend(["-Os", "-ffunction-sections", "-fno-semantic-interposition"])
         if config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
         if self.need_avx2_flags:
@@ -421,18 +424,12 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=$CFLAGS\n")
             self._write_strip("unset LDFLAGS\n")
         if config.config_opts['use_clang']:
-            self._write_strip("export CFLAGS=\"-g -O3 "
-                              "-feliminate-unused-debug-types  -pipe -Wall "
-                              "-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector "
-                              "--param=ssp-buffer-size=32 -Wformat "
-                              "-Wformat-security -Wl,--copy-dt-needed-entries -m64 "
-                              "-march=westmere  -mtune=native "
-                              "-fasynchronous-unwind-tables -D_REENTRANT  "
-                              '-Wl,-z -Wl,now -Wl,-z -Wl,relro "\n')
-            self._write_strip("export CXXFLAGS=$CFLAGS\n")
             self._write_strip("unset LDFLAGS\n")
         if config.config_opts['funroll-loops']:
-            flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
+            if config.config_opts['use_clang']:
+                flags.extend(["-O3"])
+            else:
+                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
         if config.config_opts['use_lto']:
             flags.extend(["-O3", "-flto", "-ffat-lto-objects"])
             self._write_strip("export AR=gcc-ar\n")
