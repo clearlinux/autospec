@@ -956,7 +956,7 @@ class Specfile(object):
         self.write_variables()
         self._write_strip("cmake .. -G \"Unix Makefiles\" "
                           "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                          "-DLIB_INSTALL_DIR:PATH=%{_libdir} "
+                          "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
                           "-DCMAKE_AR=/usr/bin/gcc-ar "
                           "-DLIB_SUFFIX=64 "
                           "-DCMAKE_BUILD_TYPE=RelWithDebInfo "
