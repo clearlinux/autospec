@@ -426,9 +426,9 @@ def add_setup_py_requires(filename):
                             for dep in ast.literal_eval(line):
                                 print(dep)
                                 dep = clean_python_req(dep, False)
-                                add_buildreq(py_deps)
+                                add_buildreq(dep)
                                 if req:
-                                    add_requires(py_deps)
+                                    add_requires(dep)
                             continue
 
                 # if py_dep_string was set above when a multi-line list was
