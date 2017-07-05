@@ -457,7 +457,7 @@ class Specfile(object):
         if config.profile_payload and config.profile_payload[0]:
             genflags = []
             useflags = []
-            genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo"])
+            genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo", "-fprofile-update=atomic"])
             useflags.extend(["-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
 
             self._write_strip('export CFLAGS_GENERATE="$CFLAGS {0} "\n'.format(" ".join(genflags)))
