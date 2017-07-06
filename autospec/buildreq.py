@@ -371,91 +371,87 @@ def add_setup_py_requires(filename):
         ...)
     setuptools.setup(setup_requires=['one', 'two'], ...)
 
-    Does not evaluate lists of variables.
+    Does not evaluate variables for security purposes
     """
-    py_dep_string = None
-    try:
-        with open(filename) as FILE:
-            for line in FILE.readlines():
-                if "install_requires" in line or "setup_requires" in line:
-                    req = False
-                    if "install_requires" in line:
-                        req = True
-                    # find the value for *_requires
-                    line = line.split("=", 1)[1].strip()
-                    # check for end bracket on this line
-                    end_bracket = line.find("]")
-                    # easy, one-line case
-                    if line.startswith("[") and end_bracket > 0:
-                        line = line[:end_bracket + 1]
+    multiline = False
+    with open(filename) as FILE:
+        lines = FILE.readlines()
+
+    for line in lines:
+        if "install_requires" in line or "setup_requires" in line:
+            req = "install_requires" in line
+            # find the value for *_requires
+            line = line.split("=", 1)
+            if len(line) == 2:
+                line = line[1].strip()
+            else:
+                # skip because this could be a conditionally extended list
+                # we only want to automatically detect the core packages
+                continue
+
+            # easy, one-line case
+            if line.startswith("[") and "]" in line:
+                # remove the leading [ and split off everthing after the ]
+                line = line[1:].split("]")[0]
+                for item in line.split(','):
+                    item = item.strip()
+                    try:
                         # eval the string and add requirements
-                        for dep in ast.literal_eval(line):
-                            print(dep)
-                            dep = clean_python_req(dep, False)
-                            add_buildreq(dep)
-                            if req:
-                                add_requires(dep)
-                        continue
-                    # more complicated, multi-line list.
-                    # this sets the py_dep_string with the current line, which
-                    # is the beginning of a multi-line list. py_dep_string
-                    # acts as a flag to the below conditional
-                    # `if py_dep_string`.
-                    elif line.startswith("["):
-                        py_dep_string = line
-                    # if the line doesn't start with '[' it is the case where
-                    # there is a single dependency as a string
-                    else:
-                        start_quote = line[0]
-                        # end_quote remains -1 if start_quote is not a quote or
-                        # there is no end quote on this line
-                        end_quote = -1
-                        if start_quote is "'":
-                            end_quote = line[1:].find("'")
-                            # account for first character
-                            end_quote += 1
-                        elif start_quote is '"':
-                            end_quote = line[1:].find('"')
-                            # account for first character
-                            end_quote += 1
+                        dep = clean_python_req(ast.literal_eval(item), False)
+                        add_buildreq(dep)
+                        if req:
+                            add_requires(dep)
 
-                        # at this point, end_quote is only > 0 if there was a
-                        # matching start quote
-                        if end_quote > 0:
-                            line = line[:end_quote + 1]
-                            for dep in ast.literal_eval(line):
-                                print(dep)
-                                dep = clean_python_req(dep, False)
-                                add_buildreq(dep)
-                                if req:
-                                    add_requires(dep)
-                            continue
+                    except:
+                        # do not fail, the line contained a variable and
+                        # had to be skipped
+                        pass
 
-                # if py_dep_string was set above when a multi-line list was
-                # detected, add the stripped line to the string.
-                # when the end of the list is detected (line ends with ']'),
-                # the string-list is literal_evaled into a list of strings.
-                if py_dep_string:
-                    # py_dep_string is a copy of the line when it is set,
-                    # only append line when line has been incremented
-                    if py_dep_string is not line:
-                        py_dep_string += line.strip(" \n")
-                    # look for the end of the list
-                    end_bracket = py_dep_string.find("]")
-                    if end_bracket > 0:
-                        # eval the string and add requirements
-                        for dep in ast.literal_eval(py_dep_string[:end_bracket + 1]):
-                            dep = clean_python_req(dep, False)
-                            add_buildreq(dep)
-                            if req:
-                                add_requires(dep)
-                        continue
+                continue
 
-    except:
-        # this except clause will be invoked in the case the install_requires
-        # list contains variables instead of strings as well as the normal
-        # error case
-        pass
+            # more complicated, multi-line list.
+            # this sets the py_dep_string with the current line, which
+            # is the beginning of a multi-line list.
+            elif line.startswith("["):
+                multiline = True
+                line = line.lstrip("[")
+
+            # if the line doesn't start with '[' it is the case where
+            # there is (should be) a single dependency as a string
+            else:
+                line = line.strip()
+                try:
+                    dep = clean_python_req(ast.literal_eval(line), False)
+                    add_buildreq(dep)
+                    if req:
+                        add_requires(dep)
+
+                except:
+                    # Do not fail, just keep looking
+                    pass
+
+                continue
+
+        # if multiline was set above when a multi-line list was
+        # detected, for each line until the end bracket is found attempt to
+        # add the line as a buildreq
+        if multiline:
+            # if end bracket found, reset the flag
+            if "]" in line:
+                multiline = False
+                line = line.split("]")[0]
+
+            try:
+                dep = ast.literal_eval(line.split('#')[0].strip(' ,\n'))
+                dep = clean_python_req(dep)
+                add_buildreq(dep)
+                if req:
+                    add_requires(dep)
+
+            except:
+                # do not fail, the line contained a variable and had to
+                # be skipped
+                pass
 
 
 def scan_for_configure(package, dir, autospecdir):
