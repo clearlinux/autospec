@@ -48,7 +48,6 @@ class Specfile(object):
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
         self.source_index = {}
         self.default_sum = ""
-        self.default_grp = ""
         self.licenses = []
         self.packages = OrderedDict()
         self.requires = set()
@@ -170,7 +169,7 @@ class Specfile(object):
         Write package summary to spec file
         """
         self._write("Summary  : {}\n".format(self.default_sum.strip()))
-        self._write("Group    : {}\n".format(self.default_grp.strip()))
+        self._write("Group    : Development/Tools\n")
 
     def write_license(self):
         """

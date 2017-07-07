@@ -70,10 +70,9 @@ class TestSpecfileWrite(unittest.TestCase):
         test write_summary with unstripped summary and group strings
         """
         self.specfile.default_sum = "   This is unstripped summary  "
-        self.specfile.default_grp = " This is unstripped group      "
         self.specfile.write_summary()
         expect = ["Summary  : This is unstripped summary\n",
-                  "Group    : This is unstripped group\n"]
+                  "Group    : Development/Tools\n"]
         self.assertEqual(expect, self.WRITES)
 
     def test_write_license(self):
