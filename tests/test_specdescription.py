@@ -10,7 +10,6 @@ class TestSpecdescription(unittest.TestCase):
         self.open_name = 'specdescription.open'
 
     def setUp(self):
-        specdescription.default_group = "Development/Tools"
         specdescription.default_description = "No detailed description available"
         specdescription.default_description_score = 0
         specdescription.default_summary = "No detailed summary available"
@@ -174,7 +173,7 @@ class TestSpecdescription(unittest.TestCase):
                   "Title: this is a test package\n"
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            specdescription.summary_from_R("DESCRIPTION", "testpkg")
+            specdescription.summary_from_R("DESCRIPTION")
 
         self.assertEqual(specdescription.default_summary,
                          "this is a test package\n")
