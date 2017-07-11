@@ -275,13 +275,13 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.write_scriplets()
         specfiles.config.read_conf_file = backup_read_conf_file
         expect = ["\n%post ruby\n",
-                  "post-script line 1\n",
-                  "post-script line 2\n",
-                  "post-script line 3\n",
+                  "post-script line 1\n\n",
+                  "post-script line 2\n\n",
+                  "post-script line 3\n\n",
                   "\n%pre ruby\n",
-                  "pre-script line 1\n",
-                  "pre-script line 2\n",
-                  "pre-script line 3\n"]
+                  "pre-script line 1\n\n",
+                  "pre-script line 2\n\n",
+                  "pre-script line 3\n\n"]
 
         self.assertEqual(expect, self.WRITES)
 
@@ -311,9 +311,9 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.write_scriplets()
         specfiles.config.read_conf_file = backup_read_conf_file
         expect = ["\n%pre ruby\n",
-                  "pre-script line 1\n",
-                  "pre-script line 2\n",
-                  "pre-script line 3\n"]
+                  "pre-script line 1\n\n",
+                  "pre-script line 2\n\n",
+                  "pre-script line 3\n\n"]
 
         self.assertEqual(expect, self.WRITES)
 

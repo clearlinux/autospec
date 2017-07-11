@@ -15,6 +15,7 @@ class TestSpecdescription(unittest.TestCase):
         specdescription.default_summary = "No detailed summary available"
         specdescription.default_summary_score = 0
         specdescription.license.licenses = []
+        specdescription.config.license_translations = {}
 
     def test_clean_license_string(self):
         """

@@ -164,30 +164,6 @@ class TestBuildpattern(unittest.TestCase):
         self.assertIn('testpkg-python', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
-    def test_failed_pattern_go(self):
-        """
-        Test failed_pattern with buildtool set to go
-        """
-        build.failed_pattern('line to test for failure: testpkg.go',
-                             r'(testpkg)',
-                             0,  # verbose=0
-                             buildtool='go')
-        self.assertIn('testpkg', build.buildreq.buildreqs)
-        self.assertEqual(build.must_restart, 1)
-
-    def test_failed_pattern_golang_name(self):
-        """
-        Test failed_pattern with buildtool set to go with golang name in the
-        line to search. Should compile a name with
-        golang-<domain>-<project>-<repo>.
-        """
-        build.failed_pattern('http://github.com/test/project',
-                             r'(http://github.com/test/project)',
-                             0,  # verbose=0
-                             buildtool='go')
-        self.assertIn('golang-github-test-project', build.buildreq.buildreqs)
-        self.assertEqual(build.must_restart, 1)
-
     def test_failed_pattern_ruby(self):
         """
         Test failed_pattern with buildtool set to ruby, but no match in

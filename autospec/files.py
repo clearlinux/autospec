@@ -142,7 +142,7 @@ class FileManager(object):
         # if configured to do so, add .so files to the lib package instead of
         # the dev package. THis is useful for packages with a plugin
         # architecture like elfutils and mesa.
-        so_dest = 'lib' if config.config_opts['so_to_lib'] else 'dev'
+        so_dest = 'lib' if config.config_opts.get('so_to_lib') else 'dev'
 
         patterns = [
             # Patterns for matching files, format is a tuple as follows:
