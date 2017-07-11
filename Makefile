@@ -34,6 +34,9 @@ test_buildreq:
 test_specdescription:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_specdescription.py
 
+test_count:
+	PYTHONPATH=${CURDIR}/autospec python3 tests/test_count.py
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
