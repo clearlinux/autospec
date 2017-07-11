@@ -21,101 +21,82 @@
 
 import buildpattern
 import buildreq
+import count
 import glob
 import os
 import tarball
-import subprocess
 import config
-from collections import OrderedDict
 
 tests_config = ""
-new_pkg = True
-unit_pass_written = False
 
 
-def check_regression(dir):
-
+def check_regression(pkg_dir):
+    """
+    Check the build log for test regressions using the count module
+    """
     if config.config_opts['skip_tests']:
         return
 
-    build_log_path = os.path.join(dir, "results/build.log")
-    perl_cmd = ["perl", os.path.dirname(__file__) + "/count.pl", build_log_path]
-    result = subprocess.check_output(perl_cmd)
-    result = result.decode("utf-8")
-    lines = result.strip('\n').split('\n')
-    titles = ['package name', 'total tests', 'tests passing', 'tests failing',
-              'tests skipped', 'expected fail']
+    result = count.parse_log(os.path.join(pkg_dir, "results/build.log"))
+    titles = [('Package', 'package name'),
+              ('Total', 'total tests'),
+              ('Pass', 'total passing'),
+              ('Fail', 'total failing'),
+              ('Skip', 'tests skipped'),
+              ('XFail', 'expected fail')]
+    res_str = ""
+    for line in result.strip('\n').split('\n'):
+        s_line = line.split(',')
+        for idx, title in enumerate(titles):
+            if s_line[idx]:
+                print("{}: {}".format(title[1], s_line[idx]))
+                res_str += "{} : {}\n".format(title[0], s_line[idx])
 
-    output_format = OrderedDict([
-        ('total tests', 'Total'),
-        ('tests passing', 'Pass'),
-        ('tests failing', 'Fail'),
-        ('tests skipped', 'Skip'),
-        ('expected fail', 'XFail')
-    ])
-
-    mapping = dict()
-
-    if len(lines) > 1:
-        for l in lines:
-            split_lines = l.split(',')
-            for x in range(0, len(split_lines)):
-                print(titles[x] + ": " + split_lines[x])
-                if titles[x] in output_format:
-                    mapping[output_format[titles[x]]] = split_lines[x]
-    else:
-        split_list = lines[0].split(',')
-        for x in range(1, len(split_list)):
-            print(titles[x] + ": " + split_list[x])
-            if titles[x] in output_format:
-                mapping[output_format[titles[x]]] = split_list[x]
-
-    with open(os.path.join(dir, "testresults"), "w", encoding="utf-8") as resfile:
-        for key in output_format.keys():
-            of = output_format[key]
-            val = mapping[of]
-            resfile.write("{} : {}\n".format(of, val))
+    with open(os.path.join(pkg_dir, "testresults"), "w", encoding="utf-8") as resf:
+        resf.write(res_str)
 
 
-def scan_for_tests(dir):
+def scan_for_tests(src_dir):
+    """
+    Scan source directory for test files and set tests_config accordingly
+    """
     global tests_config
 
-    if config.config_opts['skip_tests']:
-        return
-
-    if len(tests_config) > 0:
+    if config.config_opts['skip_tests'] or tests_config:
         return
 
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
     testsuites = {
         "makecheck": "make VERBOSE=1 V=1 {}check".format(makeflags),
         "perlcheck": "make TEST_VERBOSE=1 test",
-        "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.6/site-packages python3 setup.py test",
+        "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.6/site-packages "
+                    "python3 setup.py test",
         "cmake": "pushd clr-build ; make test ; popd",
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        # "rubygems": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nruby -I\"lib:test*\" test*/*_test.rb \nruby -I\"lib:test*\" test*/test_*.rb\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
+        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/"
+                    + tarball.tarball_prefix +
+                    "\nrake --trace test TESTOPTS=\"-v\"\npopd",
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/"
+                 + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
 
-    files = os.listdir(dir)
+    files = os.listdir(src_dir)
 
     if "CMakeLists.txt" in files:
-        makefile_path = os.path.join(dir, "CMakeLists.txt")
+        makefile_path = os.path.join(src_dir, "CMakeLists.txt")
         if not os.path.isfile(makefile_path):
             return
-        with open(makefile_path, encoding="latin-1") as fp:
-            lines = fp.readlines()
-        for line in lines:
-            if line.find("enable_testing") >= 0:
-                tests_config = testsuites["cmake"]
-                break
+
+        if "enable_testing" in open(makefile_path, encoding='latin-1').read():
+            tests_config = testsuites["cmake"]
 
     if "Makefile.in" in files:
-        makefile_path = os.path.join(dir, "Makefile.in")
+        makefile_path = os.path.join(src_dir, "Makefile.in")
         if not os.path.isfile(makefile_path):
             return
-        with open(makefile_path, encoding="latin-1") as fp:
-            lines = fp.readlines()
+
+        with open(makefile_path, 'r', encoding="latin-1") as make_fp:
+            lines = make_fp.readlines()
+
         for line in lines:
             if line.startswith("check:"):
                 tests_config = testsuites["makecheck"]
@@ -123,18 +104,21 @@ def scan_for_tests(dir):
             if line.startswith("test:"):
                 tests_config = testsuites["perlcheck"]
                 break
+
     elif "Makefile.am" in files:
         tests_config = testsuites["makecheck"]
+
     elif tarball.name.startswith("rubygem"):
-        if "test" in files or "tests" in files:
+        if any(t in files for t in ["test", "tests"]):
             r_testdir = [f for f in files if "test" in f if "." not in f].pop()
-            pre_test = glob.glob(os.path.join(dir, "test*/test_*.rb"))
-            post_test = glob.glob(os.path.join(dir, "test*/*_test.rb"))
+            pre_test = glob.glob(os.path.join(src_dir, "test*/test_*.rb"))
+            post_test = glob.glob(os.path.join(src_dir, "test*/*_test.rb"))
             tests_config = "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix
-            if len(pre_test) > 0:
+            if pre_test:
                 tests_config += "\nruby -v -I.:lib:" + r_testdir + " test*/test_*.rb"
-            if len(post_test) > 0:
+            if post_test:
                 tests_config += "\nruby -v -I.:lib:" + r_testdir + " test*/*_test.rb"
+
             tests_config += "\npopd"
 
         elif "spec" in files:
@@ -147,24 +131,28 @@ def scan_for_tests(dir):
             buildreq.add_buildreq("rubygem-diff-lcs")
             tests_config = testsuites["rspec"]
         elif "Rakefile" in files:
-            with open(os.path.join(dir, "Rakefile"), encoding="ascii", errors="surrogateescape") as fp:
-                setup_contents = fp.read()
-                # if setup_contents.find("task :test") >= 0 or setup_contents.find("task 'test'") >= 0:
-                tests_config = testsuites["rakefile"]
-                buildreq.add_buildreq("ruby")
-                buildreq.add_buildreq("rubygem-rake")
-                buildreq.add_buildreq("rubygem-test-unit")
-                buildreq.add_buildreq("rubygem-minitest")
+            tests_config = testsuites["rakefile"]
+            buildreq.add_buildreq("ruby")
+            buildreq.add_buildreq("rubygem-rake")
+            buildreq.add_buildreq("rubygem-test-unit")
+            buildreq.add_buildreq("rubygem-minitest")
     elif "Makefile.PL" in files:
         tests_config = testsuites["perlcheck"]
     elif "setup.py" in files:
-        with open(os.path.join(dir, "setup.py"), encoding="ascii", errors="surrogateescape") as fp:
-            setup_contents = fp.read()
-            if "test_suite" in setup_contents or "pbr=True" in setup_contents:
-                tests_config = testsuites["setup.py"]
-    elif buildpattern.default_pattern == "R":
-        tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\nR CMD check --no-manual --no-examples --no-codoc -l %{buildroot}/usr/lib64/R/library " + tarball.rawname + "\n" + "cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :"
+        with open(os.path.join(src_dir, "setup.py"), 'r',
+                  encoding="ascii",
+                  errors="surrogateescape") as setup_fp:
+            setup_contents = setup_fp.read()
 
+        if "test_suite" in setup_contents or "pbr=True" in setup_contents:
+            tests_config = testsuites["setup.py"]
+
+    elif buildpattern.default_pattern == "R":
+        tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
+                       "R CMD check --no-manual --no-examples --no-codoc -l " \
+                       "%{buildroot}/usr/lib64/R/library "                    \
+                       + tarball.rawname + "\ncp ~/.stash/* "                 \
+                       "%{buildroot}/usr/lib64/R/library/*/libs/ || :"
 
     if "tox.ini" in files:
         buildreq.add_buildreq("tox")
@@ -182,7 +170,10 @@ def scan_for_tests(dir):
             tests_config = "pushd clr-build ; make test ||: ; popd"
         else:
             tests_config = tests_config + " || :"
-        print(tests_config)
+
 
 def load_specfile(specfile):
+    """
+    Load the specfile object
+    """
     specfile.tests_config = tests_config
