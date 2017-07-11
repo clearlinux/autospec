@@ -118,73 +118,31 @@ def configure_ac_line(line):
     # print("--", line, "--")
     # XFCE uses an equivalent to PKG_CHECK_MODULES, handle them both the same
     for style in [r"PKG_CHECK_MODULES\((.*?)\)", r"XDT_CHECK_PACKAGE\((.*?)\)"]:
-        pattern = re.compile(style)
-        match = pattern.search(line)
+        match = re.search(style, line)
         L = []
         if match:
             L = match.group(1).split(",")
         if len(L) > 1:
             rqlist = L[1].strip()
-            f = rqlist.find(">")
-            if f >= 0:
-                rqlist = rqlist[:f]
-            f = rqlist.find("<")
-            if f >= 0:
-                rqlist = rqlist[:f]
+            for req in parse_modules_list(rqlist):
+                add_pkgconfig_buildreq(req)
 
-            L2 = rqlist.split(" ")
-            for rq in L2:
-                if len(rq) < 2:
-                    continue
-                # remove [] if any
-                if rq[0] == "[":
-                    rq = rq[1:]
-                f = rq.find("]")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find(">")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find("<")
-                if f >= 0:
-                    rq = rq[:f]
-                f = rq.find("=")
-                if f >= 0:
-                    rq = rq[:f]
-                rq = rq.strip()
-                if len(rq) > 0 and rq[0] != "$":
-                    add_pkgconfig_buildreq(rq)
-
-    pattern = re.compile(r"PKG_CHECK_EXISTS\((.*?)\)")
-    match = pattern.search(line)
+    # PKG_CHECK_EXISTS(MODULES, action-if-found, action-if-not-found)
+    match = re.search(r"PKG_CHECK_EXISTS\((.*?)\)", line)
     if match:
         L = match.group(1).split(",")
-        # print("---", match.group(1).strip(), "---")
         rqlist = L[0].strip()
-        L2 = rqlist.split(" ")
-        for rq in L2:
-            # remove [] if any
-            if rq[0] == "[":
-                rq = rq[1:]
-            f = rq.find("]")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find(">")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("<")
-            if f >= 0:
-                rq = rq[:f]
-            f = rq.find("=")
-            if f >= 0:
-                rq = rq[:f]
-            rq = rq.strip()
-            # print("=== ", rq, "===")
-            if len(rq) > 0 and rq[0] != "$":
-                add_pkgconfig_buildreq(rq)
-                break
+        for req in parse_modules_list(rqlist):
+            add_pkgconfig_buildreq(req)
 
-    pass
+
+def parse_modules_list(modules_string):
+    modules = [m.strip('[]') for m in modules_string.split()]
+    return [r for r in modules
+            if r not in '<>='
+            and not r.isdigit()
+            and len(r) >= 2
+            and not r.startswith('$')]
 
 
 def parse_configure_ac(filename):
