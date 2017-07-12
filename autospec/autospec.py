@@ -144,8 +144,7 @@ def main(workingdir):
     # of static analysis on the content of the tarball.
     #
     filemanager = files.FileManager()
-    tarball.name_and_version(args.url, args.name, args.version, filemanager)
-    tarball.download_tarball(args.url, args.name, args.archives, args.target)
+    tarball.process(args.url, args.name, args.version, args.target, args.archives, filemanager)
     _dir = tarball.path
 
     if args.license_only:
