@@ -44,4 +44,7 @@ test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
 unittests:
-	PYTHONPATH=${CURDIR}/autospec python3 -m unittest discover -b -s tests/ -p 'test_*.py'
+	for f in `ls tests/test_*.py | grep -v tests/test_autospec.py`; do \
+		echo ; echo $$f ; \
+		PYTHONPATH=${CURDIR}/autospec python3 $$f ; \
+	done
