@@ -165,7 +165,7 @@ def main(workingdir):
     config.parse_existing_spec(build.download_path, tarball.name)
 
     buildreq.set_build_req()
-    buildreq.scan_for_configure(name, _dir, build.download_path)
+    buildreq.scan_for_configure(_dir)
     specdescription.scan_for_description(name, _dir)
     license.scan_for_licenses(_dir)
     commitmessage.scan_for_changes(build.download_path, _dir)

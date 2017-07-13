@@ -27,22 +27,35 @@ import toml
 
 import buildpattern
 import util
-import tarball
 import config
 import subprocess
 
 banned_requires = set()
 buildreqs = set()
 requires = set()
-banned_buildreqs = set(
-    ["llvm-devel", "gcj", "pkgconfig(dnl)", "pkgconfig(hal)", "tslib-0.0", "pkgconfig(parallels-sdk)", "oslo-python", "libxml2No-python"])
 verbose = False
 cargo_bin = False
-
-autoreconf_reqs = ["gettext-bin", "automake-dev", "automake", "m4", "libtool", "libtool-dev", "pkg-config-dev"]
+banned_buildreqs = set(["llvm-devel",
+                        "gcj",
+                        "pkgconfig(dnl)",
+                        "pkgconfig(hal)",
+                        "tslib-0.0",
+                        "pkgconfig(parallels-sdk)",
+                        "oslo-python",
+                        "libxml2No-python"])
+autoreconf_reqs = ["gettext-bin",
+                   "automake-dev",
+                   "automake",
+                   "m4",
+                   "libtool",
+                   "libtool-dev",
+                   "pkg-config-dev"]
 
 
 def add_buildreq(req):
+    """
+    Add req to the global buildreqs set if req is not banned
+    """
     global buildreqs
     new = True
 
@@ -60,17 +73,19 @@ def add_buildreq(req):
 
 
 def add_requires(req):
+    """
+    Add req to the global requires set if it is present in buildreqs and
+    os_packages and is not banned.
+    """
     global requires
     new = True
-
-    req.strip()
-
+    req = req.strip()
     if req in requires:
         new = False
     if req in banned_requires:
         return False
     if req not in buildreqs and req not in config.os_packages:
-        if len(req) > 0:
+        if req:
             print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
         return False
     if new:
@@ -80,6 +95,9 @@ def add_requires(req):
 
 
 def add_pkgconfig_buildreq(preq):
+    """
+    Format preq as pkgconfig req and add to buildreqs
+    """
     if config.config_opts['32bit']:
         req = "pkgconfig(32" + preq + ")"
         add_buildreq(req)
@@ -88,34 +106,29 @@ def add_pkgconfig_buildreq(preq):
 
 
 def configure_ac_line(line):
+    """
+    Parse configure_ac line and add appropriate buildreqs
+    """
     # print("----\n", line, "\n----")
     # ignore comments
     if line.startswith('#'):
         return
 
-    if line.find("AC_CHECK_FUNC\([tgetent]") >= 0:
-        add_buildreq("ncurses-devel")
-    if line.find("PROG_INTLTOOL") >= 0:
-        add_buildreq("intltool")
-    if line.find("GETTEXT_PACKAGE") >= 0:
-        add_buildreq("gettext")
-        add_buildreq("perl(XML::Parser)")
-    if line.find("AM_GLIB_GNU_GETTEXT") >= 0:
-        add_buildreq("gettext")
-        add_buildreq("perl(XML::Parser)")
-    if line.find("GTK_DOC_CHECK") >= 0:
-        add_buildreq("gtk-doc")
-        add_buildreq("gtk-doc-dev")
-        add_buildreq("libxslt-bin")
-        add_buildreq("docbook-xml")
-    if line.find("AC_PROG_SED") >= 0:
-        add_buildreq("sed")
-    if line.find("AC_PROG_GREP") >= 0:
-        add_buildreq("grep")
+    pat_reqs = [(r"AC_CHECK_FUNC\([tgetent]", ["ncurses-devel"]),
+                ("PROG_INTLTOOL", ["intltool"]),
+                ("GETTEXT_PACKAGE", ["gettext", "perl(XML::Parser)"]),
+                ("AM_GLIB_GNU_GETTEXT", ["gettext", "perl(XML::Parser)"]),
+                ("GTK_DOC_CHECK", ["gtk-doc", "gtk-doc-dev", "libxslt-bin", "docbook-xml"]),
+                ("AC_PROG_SED", ["sed"]),
+                ("AC_PROG_GREP", ["grep"])]
+
+    for pat, reqs in pat_reqs:
+        if pat in line:
+            for req in reqs:
+                add_buildreq(req)
 
     line = line.strip()
 
-    # print("--", line, "--")
     # XFCE uses an equivalent to PKG_CHECK_MODULES, handle them both the same
     for style in [r"PKG_CHECK_MODULES\((.*?)\)", r"XDT_CHECK_PACKAGE\((.*?)\)"]:
         match = re.search(style, line)
@@ -137,36 +150,43 @@ def configure_ac_line(line):
 
 
 def parse_modules_list(modules_string):
+    """
+    parse the modules_string for the list of modules, stripping out the version
+    requirements
+    """
     modules = [m.strip('[]') for m in modules_string.split()]
     return [r for r in modules
-            if r not in '<>='
-            and not r.isdigit()
-            and len(r) >= 2
-            and not r.startswith('$')]
+            if r not in '<>=' and
+            not r.isdigit() and
+            len(r) >= 2 and
+            not r.startswith('$')]
 
 
 def parse_configure_ac(filename):
-    buffer = ""
+    """
+    Parse the configure.ac file for build requirements
+    """
+    buf = ""
     depth = 0
     # print("Configure parse: ", filename)
     buildpattern.set_build_pattern("configure_ac", 1)
-    file = open(filename, "r", encoding="latin-1")
+    f = open(filename, "r", encoding="latin-1")
     while 1:
-        c = file.read(1)
-        if len(c) == 0:
+        c = f.read(1)
+        if not c:
             break
         if c == "(":
-            depth = depth + 1
+            depth += 1
         if c == ")" and depth > 0:
-            depth = depth - 1
+            depth -= 1
         if c != "\n":
-            buffer = buffer + c
+            buf += c
         if c == "\n" and depth == 0:
-            configure_ac_line(buffer)
-            buffer = ""
+            configure_ac_line(buf)
+            buf = ""
 
-    configure_ac_line(buffer)
-    file.close()
+    configure_ac_line(buf)
+    f.close()
 
 
 def parse_cargo_toml(filename):
@@ -188,40 +208,46 @@ def parse_cargo_toml(filename):
 
 
 def set_build_req():
+    """
+    Add build requirements based on the buildpattern pattern
+    """
     if buildpattern.default_pattern == "maven":
-        add_buildreq("apache-maven")
-        add_buildreq("xmvn")
-        add_buildreq("openjdk-dev")
-        add_buildreq("javapackages-tools")
-        add_buildreq("python3")
-        add_buildreq("six")
-        add_buildreq("lxml")
-        add_buildreq("jdk-plexus-classworlds")
-        add_buildreq("jdk-aether")
-        add_buildreq("jdk-aopalliance")
-        add_buildreq("jdk-atinject")
-        add_buildreq("jdk-cdi-api")
-        add_buildreq("jdk-commons-cli")
-        add_buildreq("jdk-commons-codec")
-        add_buildreq("jdk-commons-io")
-        add_buildreq("jdk-commons-lang")
-        add_buildreq("jdk-commons-lang3")
-        add_buildreq("jdk-commons-logging")
-        add_buildreq("jdk-guice")
-        add_buildreq("jdk-guava")
-        add_buildreq("jdk-httpcomponents-client")
-        add_buildreq("jdk-httpcomponents-core")
-        add_buildreq("jdk-jsoup")
-        add_buildreq("jdk-jsr-305")
-        add_buildreq("jdk-wagon")
-        add_buildreq("jdk-objectweb-asm")
-        add_buildreq("jdk-sisu")
-        add_buildreq("jdk-plexus-containers")
-        add_buildreq("jdk-plexus-interpolation")
-        add_buildreq("jdk-plexus-cipher")
-        add_buildreq("jdk-plexus-sec-dispatcher")
-        add_buildreq("jdk-plexus-utils")
-        add_buildreq("jdk-slf4j")
+        maven_reqs = ["apache-maven",
+                      "xmvn",
+                      "openjdk-dev",
+                      "javapackages-tools",
+                      "python3",
+                      "six",
+                      "lxml",
+                      "jdk-plexus-classworlds",
+                      "jdk-aether",
+                      "jdk-aopalliance",
+                      "jdk-atinject",
+                      "jdk-cdi-api",
+                      "jdk-commons-cli",
+                      "jdk-commons-codec",
+                      "jdk-commons-io",
+                      "jdk-commons-lang",
+                      "jdk-commons-lang3",
+                      "jdk-commons-logging",
+                      "jdk-guice",
+                      "jdk-guava",
+                      "jdk-httpcomponents-client",
+                      "jdk-httpcomponents-core",
+                      "jdk-jsoup",
+                      "jdk-jsr-305",
+                      "jdk-wagon",
+                      "jdk-objectweb-asm",
+                      "jdk-sisu",
+                      "jdk-plexus-containers",
+                      "jdk-plexus-interpolation",
+                      "jdk-plexus-cipher",
+                      "jdk-plexus-sec-dispatcher",
+                      "jdk-plexus-utils",
+                      "jdk-slf4j"]
+        for req in maven_reqs:
+            add_buildreq(req)
+
     if buildpattern.default_pattern == "ruby":
         add_buildreq("ruby")
         add_buildreq("rubygem-rdoc")
@@ -229,11 +255,15 @@ def set_build_req():
         add_buildreq("rustc")
 
 
-def Rakefile(filename):
-    file = open(filename, "r", encoding="latin-1")
-    lines = file.readlines()
+def rakefile(filename):
+    """
+    Scan Rakefile for build requirements
+    """
+    with open(filename, "r", encoding="latin-1") as f:
+        lines = f.readlines()
+
+    pat = re.compile(r"^require '(.*)'$")
     for line in lines:
-        pat = re.compile(r"^require '(.*)'$")
         match = pat.search(line)
         if match:
             s = match.group(1)
@@ -244,10 +274,13 @@ def Rakefile(filename):
                 print("Rakefile-new: rubygem-" + s)
 
 
-def clean_python_req(str, add_python=True):
-    if str.find("#") == 0:
+def clean_python_req(req, add_python=True):
+    """
+    Strip version information from req
+    """
+    if req.find("#") == 0:
         return ""
-    ret = str.rstrip("\n\r").strip()
+    ret = req.rstrip("\n\r").strip()
     i = ret.find("<")
     if i > 0:
         ret = ret[:i]
@@ -277,12 +310,20 @@ def clean_python_req(str, add_python=True):
 
 
 def grab_python_requirements(descfile):
-    file = open(descfile, "r", encoding="latin-1")
-    for line in file.readlines():
+    """
+    Add python requirements from requirements.txt file
+    """
+    with open(descfile, "r", encoding="latin-1") as f:
+        lines = f.readlines()
+
+    for line in lines:
         add_requires(clean_python_req(line))
 
 
 def grab_pip_requirements(pkgname):
+    """
+    Determine python requirements for pkgname using pip show
+    """
     try:
         pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
     except:
@@ -292,20 +333,10 @@ def grab_pip_requirements(pkgname):
         words = line.split(" ")
         if words[0] == "Requires:":
             for w in words[1:]:
-                w2 = w.replace(",","")
+                w2 = w.replace(",", "")
                 if len(w2) > 2:
                     print("Suggesting python requirement ", w2)
                     add_requires(w2)
-
-
-def setup_py_python3(filename):
-    try:
-        with open(filename) as FILE:
-            if ":: Python :: 3" in "".join(FILE.readlines()):
-                return 1
-    except:
-        return 0
-    return 0
 
 
 def add_setup_py_requires(filename):
@@ -332,8 +363,8 @@ def add_setup_py_requires(filename):
     Does not evaluate variables for security purposes
     """
     multiline = False
-    with open(filename) as FILE:
-        lines = FILE.readlines()
+    with open(filename) as f:
+        lines = f.readlines()
 
     for line in lines:
         if "install_requires" in line or "setup_requires" in line:
@@ -412,15 +443,15 @@ def add_setup_py_requires(filename):
                 pass
 
 
-def scan_for_configure(package, dir, autospecdir):
-    global default_summary
+def scan_for_configure(dirn):
+    """
+    Scan the package directory for build files to determine build pattern
+    """
     count = 0
-    for dirpath, dirnames, files in os.walk(dir):
-        default_score = 2
-        if dirpath != dir:
-            default_score = 1
+    for dirpath, _, files in os.walk(dirn):
+        default_score = 2 if dirpath == dirn else 1
 
-        if any(file.endswith(".go") for file in files):
+        if any(f.endswith(".go") for f in files):
             add_buildreq("go")
             buildpattern.set_build_pattern("golang", default_score)
 
@@ -432,7 +463,7 @@ def scan_for_configure(package, dir, autospecdir):
             buildpattern.set_build_pattern("configure", default_score)
 
         if "requires.txt" in files:
-                grab_python_requirements(dirpath + '/requires.txt')
+            grab_python_requirements(dirpath + '/requires.txt')
 
         if "setup.py" in files:
             add_buildreq("python-dev")
@@ -445,21 +476,22 @@ def scan_for_configure(package, dir, autospecdir):
 
         if "Makefile.PL" in files or "Build.PL" in files:
             buildpattern.set_build_pattern("cpan", default_score)
+
         if "SConstruct" in files:
             add_buildreq("scons")
             add_buildreq("python-dev")
             buildpattern.set_build_pattern("scons", default_score)
 
         if "requirements.txt" in files:
-                grab_python_requirements(dirpath + '/requirements.txt')
+            grab_python_requirements(dirpath + '/requirements.txt')
 
         for name in files:
-            if name.lower() =="cargo.toml":
+            if name.lower() == "cargo.toml":
                 parse_cargo_toml(os.path.join(dirpath, name))
             if name.lower().startswith("configure."):
                 parse_configure_ac(os.path.join(dirpath, name))
             if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
-                Rakefile(os.path.join(dirpath, name))
+                rakefile(os.path.join(dirpath, name))
             if name.lower() == "makefile":
                 buildpattern.set_build_pattern("make", default_score)
             if name.lower() == "autogen.sh":
@@ -467,9 +499,9 @@ def scan_for_configure(package, dir, autospecdir):
             if name.lower() == "cmakelists.txt":
                 buildpattern.set_build_pattern("cmake", default_score)
 
-    can_reconf = os.path.exists(os.path.join(dir, "configure.ac"))
+    can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
     if not can_reconf:
-        can_reconf = os.path.exists(os.path.join(dir, "configure.in"))
+        can_reconf = os.path.exists(os.path.join(dirn, "configure.in"))
 
     if can_reconf and config.autoreconf:
         print("Patches touch configure.*, adding autoreconf stage")
@@ -489,6 +521,9 @@ def scan_for_configure(package, dir, autospecdir):
 
 
 def load_specfile(specfile):
+    """
+    Load specfile object with necessary buildreq data
+    """
     specfile.buildreqs = buildreqs
     specfile.requires = requires
     specfile.cargo_bin = cargo_bin

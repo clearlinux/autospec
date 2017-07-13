@@ -219,7 +219,7 @@ class TestBuildreq(unittest.TestCase):
         content = "line1\nrequire 'bundler/gem_tasks'\nline3\nrequire 'nope'"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.Rakefile('filename')
+            buildreq.rakefile('filename')
 
         self.assertEqual(buildreq.buildreqs, set(['rubygem-rubygems-tasks']))
 
@@ -373,14 +373,13 @@ class TestBuildreq(unittest.TestCase):
         much to test here that uses the same logic, a representative test
         should be sufficient.
         """
-        buildreq.tarball.go_pkgname = 'gopkgname'
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'test.go'), 'w').close()
             open(os.path.join(tmpd, 'CMakeLists.txt'), 'w').close()
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
 
-            buildreq.scan_for_configure('package', tmpd, 'autospecdir')
+            buildreq.scan_for_configure(tmpd)
 
         self.assertEqual(buildreq.buildreqs,
                          set(['go', 'cmake', 'scons', 'python-dev']))
