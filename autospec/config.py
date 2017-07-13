@@ -19,20 +19,18 @@
 # Parse config files
 #
 
-import buildpattern
-import build
-import buildreq
-import license
 import os
 import sys
 import re
 import subprocess
-import tarball
 import test
 import textwrap
 import configparser
-from os.path import exists as file_exists
-from pathlib import Path
+
+import tarball
+import buildpattern
+import buildreq
+import license
 from util import call
 
 extra_configure = ""
@@ -100,11 +98,11 @@ config_options = {
     "fast-math": "pass -ffast-math to compiler",
     "insecure_build": "set flags to smallest -02 flags possible",
     "conservative_flags": "set conservative build flags",
-    "broken_parallel_build":  "disable parallelization during build",
+    "broken_parallel_build": "disable parallelization during build",
     "pgo": "set profile for pgo",
     "use_clang": "add clang flags",
-    "32bit" : "build 32 bit libraries",
-    "nostrip" : "disable stripping binaries",
+    "32bit": "build 32 bit libraries",
+    "nostrip": "disable stripping binaries",
     "verify_required": "require package verification for build",
     "security_sensitive": "set flags for security-sensitive builds",
     "so_to_lib": "add .so files to the lib package instead of dev"}
@@ -192,7 +190,8 @@ failed_pats = [
     (r"Could NOT find ([a-zA-Z0-9]+)", 0, None),
     (r"  Could not find ([a-zA-Z0-9]+)", 0, None),
     (r"  Did not find ([a-zA-Z0-9]+)", 0, None),
-    (r"([a-zA-Z\-]+) [0-9\.]+ is required to configure this module; please install it or upgrade your CPAN\/CPANPLUS shell.", 0, None),
+    (r"([a-zA-Z\-]+) [0-9\.]+ is required to configure this module; "
+     r"please install it or upgrade your CPAN\/CPANPLUS shell.", 0, None),
     (r"\/bin\/ld: cannot find (-l[a-zA-Z0-9\_]+)", 0, None),
     (r"fatal error\: (.*)\: No such file or directory", 0, None),
     (r"([a-zA-Z0-9\-\_\.]*)\: command not found", 1, None),
@@ -208,7 +207,8 @@ failed_pats = [
     (r"Downloading https?://.*\.python\.org/packages/.*/.?/([A-Za-z]*)/.*", 0, None),
     (r"configure\: error\: ([a-zA-Z0-9]+) is required to build", 0, None),
     (r".* /usr/bin/([a-zA-Z0-9-_]*).*not found", 0, None),
-    (r"warning: failed to load external entity \"(/usr/share/sgml/docbook/xsl-stylesheets)/.*\"", 0, None),
+    (r"warning: failed to load external entity "
+     r"\"(/usr/share/sgml/docbook/xsl-stylesheets)/.*\"", 0, None),
     (r"Warning\: no usable ([a-zA-Z0-9]+) found", 0, None),
     (r"/usr/bin/env\: (.*)\: No such file or directory", 0, None),
     (r"make: ([a-zA-Z0-9].+): Command not found", 0, None),
@@ -223,7 +223,8 @@ failed_pats = [
     (r"you may need to install the ([a-zA-Z0-9\-:]*) module", 0, 'perl'),
     (r"    !  ([a-zA-Z:]+) is not installed", 0, 'perl'),
     (r"Warning: prerequisite ([a-zA-Z:]+) [0-9\.]+ not found.", 0, 'perl'),
-    (r"Can't locate [a-zA-Z\/\.]+ in @INC \(you may need to install the ([a-zA-Z:]+) module\)", 0, 'perl'),
+    (r"Can't locate [a-zA-Z\/\.]+ in @INC "
+     r"\(you may need to install the ([a-zA-Z:]+) module\)", 0, 'perl'),
     (r"Download error on https://pypi.python.org/simple/([a-zA-Z0-9\-\._:]+)/", 0, 'pypi'),
     (r"No matching distribution found for ([a-zA-Z0-9\-\._]+)", 0, 'pypi'),
     (r"ImportError:..*: No module named ([a-zA-Z0-9\-\._]+)", 0, 'pypi'),
@@ -232,49 +233,67 @@ failed_pats = [
     (r"Perhaps you should add the directory containing `([a-zA-Z0-9\-:]*)\.pc'", 0, 'pkgconfig'),
     (r"No package '([a-zA-Z0-9\-:]*)' found", 0, 'pkgconfig'),
     (r"Package '([a-zA-Z0-9\-:]*)', required by '.*', not found", 0, 'pkgconfig'),
-    (r"WARNING:  [a-zA-Z\-\_]+ dependency on ([a-zA-Z0-9\-\_:]*) \([<>=~]+ ([0-9.]+).*\) .*", 0, 'ruby'),
-    (r"ERROR:  Could not find a valid gem '([a-zA-Z0-9\-:]*)' \([>=]+ ([0-9.]+).*\), here is why:", 0, 'ruby'),
-    (r"ERROR:  Could not find a valid gem '([a-zA-Z0-9\-\_]*)' \([>=]+ ([0-9.]+).*\) in any repository", 0, 'ruby'),
-    (r"Could not find '([a-zA-Z0-9\-\_]*)' \([~<>=]+ ([0-9.]+).*\) among [0-9]+ total gem", 0, 'ruby'),
+    (r"WARNING:  [a-zA-Z\-\_]+ dependency on ([a-zA-Z0-9\-\_:]*) \([<>=~]+ ([0-9.]+).*\) .*",
+     0, 'ruby'),
+    (r"ERROR:  Could not find a valid gem '([a-zA-Z0-9\-:]*)' \([>=]+ ([0-9.]+).*\), "
+     "here is why:", 0, 'ruby'),
+    (r"ERROR:  Could not find a valid gem '([a-zA-Z0-9\-\_]*)' \([>=]+ ([0-9.]+).*\) "
+     r"in any repository", 0, 'ruby'),
+    (r"Could not find '([a-zA-Z0-9\-\_]*)' \([~<>=]+ ([0-9.]+).*\) among [0-9]+ total gem",
+     0, 'ruby'),
     (r"Could not find gem '([a-zA-Z0-9\-\_]+) \([~<>=0-9\.\, ]+\) ruby'", 0, 'ruby'),
     (r"Gem::LoadError: Could not find '([a-zA-Z0-9\-\_]*)'", 0, 'ruby'),
-    (r"[a-zA-Z0-9\-:]* is not installed: cannot load such file -- rdoc/([a-zA-Z0-9\-:]*)", 0, 'ruby'),
+    (r"[a-zA-Z0-9\-:]* is not installed: cannot load such file -- rdoc/([a-zA-Z0-9\-:]*)",
+     0, 'ruby'),
     (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:]+)/.*", 0, 'ruby'),
     (r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:]+) ", 0, 'ruby'),
     (r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:\/]+)", 0, 'ruby table'),
     (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)", 0, 'ruby table'),
     (r".*\.go:.*cannot find package \"(.*)\" in any of:", 0, 'go'),
-    ("\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*", 0, 'maven'),
-    ("\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact .*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
-    ("\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information available", 0, 'maven')]
+    (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
+     r".*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*", 0, 'maven'),
+    (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
+     r".*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
+    (r"\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information "
+     r"available", 0, 'maven')]
+
 
 def create_conf(path):
+    """
+    Create options.conf file. Use deprecated configuration files or defaults to populate
+    """
     config_f = configparser.ConfigParser(allow_no_value=True)
     config_f['autospec'] = {}
     for fname, comment in sorted(config_options.items()):
         config_f.set('autospec', '# {}'.format(comment))
-        if file_exists(fname):
+        if os.path.exists(fname):
             config_f['autospec'][fname] = 'true'
             os.remove(fname)
         else:
             config_f['autospec'][fname] = 'false'
 
     # renamed options need special care
-    if file_exists("skip_test_suite"):
+    if os.path.exists("skip_test_suite"):
         config_f['autospec']['skip_tests'] = 'true'
         os.remove("skip_test_suite")
     write_config(config_f, path)
 
 
 def write_config(config_f, path):
+    """
+    Write the config_f to configfile
+    """
     with open(os.path.join(path, 'options.conf'), 'w') as configfile:
         config_f.write(configfile)
 
 
 def read_config_opts(path):
+    """
+    Read config options from path/options.conf
+    """
     global config_opts
     opts_path = os.path.join(path, 'options.conf')
-    if not file_exists(opts_path):
+    if not os.path.exists(opts_path):
         create_conf(path)
 
     config_f = configparser.ConfigParser()
@@ -293,6 +312,9 @@ def read_config_opts(path):
 
 
 def rewrite_config_opts(path):
+    """
+    Rewrite options.conf file when an option has changed (verify_required for example)
+    """
     config_f = configparser.ConfigParser(allow_no_value=True)
     config_f['autospec'] = {}
 
@@ -310,10 +332,16 @@ def rewrite_config_opts(path):
 
 
 def filter_blanks(lines):
+    """
+    Filter out blank lines from the line list
+    """
     return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
 
 
 def read_conf_file(path):
+    """
+    read configuration file at path
+    """
     try:
         with open(path, "r") as f:
             config_files.add(os.path.basename(path))
@@ -344,6 +372,9 @@ def read_pattern_conf(filename, dest, list_format=False):
 
 
 def setup_patterns():
+    """
+    Read each pattern configuration file and assign to the appropriate variable
+    """
     global failed_commands
     global maven_jars
     global gems
@@ -359,6 +390,9 @@ def setup_patterns():
 
 
 def parse_existing_spec(path, name):
+    """
+    Determine the old version, old patch list, old keyid, and cves from old spec file
+    """
     global old_version
     global old_patches
     global old_keyid
@@ -391,8 +425,10 @@ def parse_existing_spec(path, name):
             cves.append(patch.upper().split(".PATCH")[0])
 
 
-
 def parse_config_files(path, bump, filemanager):
+    """
+    Parse the various configuration files that may exist in the package directory
+    """
     global extra_configure
     global extra_configure32
     global extra_configure64
@@ -435,7 +471,8 @@ def parse_config_files(path, bump, filemanager):
         license_show = config['autospec'].get('license_show', None)
         packages_file = config['autospec'].get('packages_file', None)
         if not packages_file:
-            print("Warning: Set [autospec][packages_file] path to package list file for requires validation")
+            print("Warning: Set [autospec][packages_file] path to package list file for "
+                  "requires validation")
             packages_file = os.path.join(os.path.dirname(config_file), "packages")
 
         urlban = config['autospec'].get('urlban', None)
@@ -455,6 +492,9 @@ def parse_config_files(path, bump, filemanager):
     wrapper.subsequent_indent = "# "
 
     def write_default_conf_file(name, description):
+        """
+        Write default configuration file with description to file name
+        """
         config_files.add(name)
         filename = os.path.join(path, name)
         if os.path.isfile(filename):
@@ -463,15 +503,27 @@ def parse_config_files(path, bump, filemanager):
         with open(filename, "w") as f:
             f.write(wrapper.fill(description) + "\n")
 
-    write_default_conf_file("buildreq_ban", "This file contains build requirements that get picked up but are undesirable. One entry per line, no whitespace.")
-    write_default_conf_file("pkgconfig_ban", "This file contains pkgconfig build requirements that get picked up but are undesirable. One entry per line, no whitespace.")
-    write_default_conf_file("requires_ban", "This file contains runtime requirements that get picked up but are undesirable. One entry per line, no whitespace.")
-
-    write_default_conf_file("buildreq_add", "This file contains additional build requirements that did not get picked up automatically. One name per line, no whitespace.")
-    write_default_conf_file("pkgconfig_add", "This file contains additional pkgconfig build requirements that did not get picked up automatically. One name per line, no whitespace.")
-    write_default_conf_file("requires_add", "This file contains additional runtime requirements that did not get picked up automatically. One name per line, no whitespace.")
-
-    write_default_conf_file("excludes", "This file contains the output files that need %exclude. Full path names, one per line.")
+    write_default_conf_file("buildreq_ban",
+                            "This file contains build requirements that get picked up but are "
+                            "undesirable. One entry per line, no whitespace.")
+    write_default_conf_file("pkgconfig_ban",
+                            "This file contains pkgconfig build requirements that get picked up but"
+                            " are undesirable. One entry per line, no whitespace.")
+    write_default_conf_file("requires_ban",
+                            "This file contains runtime requirements that get picked up but are "
+                            "undesirable. One entry per line, no whitespace.")
+    write_default_conf_file("buildreq_add",
+                            "This file contains additional build requirements that did not get "
+                            "picked up automatically. One name per line, no whitespace.")
+    write_default_conf_file("pkgconfig_add",
+                            "This file contains additional pkgconfig build requirements that did "
+                            "not get picked up automatically. One name per line, no whitespace.")
+    write_default_conf_file("requires_add",
+                            "This file contains additional runtime requirements that did not get "
+                            "picked up automatically. One name per line, no whitespace.")
+    write_default_conf_file("excludes",
+                            "This file contains the output files that need %exclude. Full path "
+                            "names, one per line.")
 
     content = read_conf_file(os.path.join(path, "release"))
     if content and content[0]:
@@ -515,37 +567,40 @@ def parse_config_files(path, bump, filemanager):
 
     content = read_conf_file(os.path.join(path, "excludes"))
     for exclude in content:
-            print("%%exclude for: %s." % exclude)
+        print("%%exclude for: %s." % exclude)
     filemanager.excludes += content
 
     content = read_conf_file(os.path.join(path, "extras"))
     for extra in content:
-            print("extras for: %s." % extra)
+        print("extras for: %s." % extra)
     filemanager.extras += content
 
     content = read_conf_file(os.path.join(path, "setuid"))
     for suid in content:
-            print("setuid for: %s." % suid)
+        print("setuid for: %s." % suid)
     filemanager.setuid += content
 
     content = read_conf_file(os.path.join(path, "attrs"))
     for line in content:
-            attr = re.split('\(|\)|,', line)
-            attr = [a.strip() for a in attr]
-            filename = attr.pop()
-            print("attr for: %s." % filename)
-            filemanager.attrs[filename] = attr
+        attr = re.split(r'\(|\)|,', line)
+        attr = [a.strip() for a in attr]
+        filename = attr.pop()
+        print("attr for: %s." % filename)
+        filemanager.attrs[filename] = attr
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
-    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
+    cmd = r"egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
         " ".join(pfiles)
-    if len(patches) > 0 and call(cmd, check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0:
+    if patches and call(cmd,
+                        check=False,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL) == 0:
         autoreconf = True
 
     if any(p.lower().startswith('cve-') for p in patches):
-       config_opts['security_sensitive'] = True
-       rewrite_config_opts(path)
+        config_opts['security_sensitive'] = True
+        rewrite_config_opts(path)
 
     content = read_conf_file(os.path.join(path, "configure"))
     extra_configure = " \\\n".join(content)
@@ -618,7 +673,11 @@ def parse_config_files(path, bump, filemanager):
 
     profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
 
+
 def load_specfile(specfile):
+    """
+    Load specfile object with configuration
+    """
     specfile.urlban = urlban
     specfile.keepstatic = config_opts['keepstatic']
     specfile.no_autostart = config_opts['no_autostart']
