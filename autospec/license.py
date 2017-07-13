@@ -26,7 +26,7 @@ import os
 import re
 import tarball
 import pycurl
-import urllib
+import urllib.parse
 import config
 from io import BytesIO
 
