@@ -20,7 +20,6 @@ import argparse
 import sys
 import os
 import re
-import types
 import tempfile
 
 import build
@@ -37,8 +36,7 @@ import commitmessage
 import pkg_integrity
 import specfiles
 
-from tarball import name
-from util import _file_write, print_fatal, binary_in_path
+from util import print_fatal, binary_in_path
 from abireport import examine_abi
 from logcheck import logcheck
 
@@ -46,9 +44,12 @@ sys.path.append(os.path.dirname(__file__))
 
 
 def add_sources(download_path, archives):
-    for file in os.listdir(download_path):
-        if re.search(".*\.(mount|service|socket|target|timer)$", file):
-            buildpattern.sources["unit"].append(file)
+    """
+    Add archives to buildpattern sources and archive_details
+    """
+    for srcf in os.listdir(download_path):
+        if re.search(r".*\.(mount|service|socket|target|timer)$", srcf):
+            buildpattern.sources["unit"].append(srcf)
     buildpattern.sources["unit"].sort()
     #
     # systemd-tmpfiles uses the configuration files from
@@ -68,16 +69,16 @@ def add_sources(download_path, archives):
         buildpattern.archive_details[archive + "destination"] = destination
 
 
-def check_requirements(useGit):
+def check_requirements(use_git):
     """ Ensure all requirements are satisfied before continuing """
     required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio", "readelf"]
 
-    if useGit:
+    if use_git:
         required_bins.append("git")
 
     missing = [x for x in required_bins if not binary_in_path(x)]
 
-    if len(missing) > 0:
+    if missing:
         print_fatal("Required programs are not installed: {}".format(", ".join(missing)))
         sys.exit(1)
 
@@ -95,7 +96,10 @@ def load_specfile(specfile):
     test.load_specfile(specfile)
 
 
-def main(workingdir):
+def main():
+    """
+    Main function for autospec
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--skip-git",
                         action="store_false", dest="git", default=True,
@@ -127,14 +131,15 @@ def main(workingdir):
                         help="Target location to create or reuse")
     parser.add_argument("-i", "--integrity", action="store_true",
                         default=False,
-                        help="Search for package signature from source URL and attempt to verify package")
+                        help="Search for package signature from source URL and "
+                             "attempt to verify package")
     parser.add_argument("--non_interactive", action="store_true",
                         default=False,
                         help="Disable interactive mode for package verification")
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(
-                     "-a/--archives requires an even number of arguments"))
+            "-a/--archives requires an even number of arguments"))
 
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
@@ -150,9 +155,9 @@ def main(workingdir):
     if args.license_only:
         try:
             with open(os.path.join(build.download_path,
-                      tarball.name + ".license"), "r") as dotlic:
+                                   tarball.name + ".license"), "r") as dotlic:
                 for word in dotlic.read().split():
-                    if word.find(":") < 0:
+                    if ":" not in word:
                         license.add_license(word)
         except:
             pass
@@ -166,7 +171,7 @@ def main(workingdir):
 
     buildreq.set_build_req()
     buildreq.scan_for_configure(_dir)
-    specdescription.scan_for_description(name, _dir)
+    specdescription.scan_for_description(tarball.name, _dir)
     license.scan_for_licenses(_dir)
     commitmessage.scan_for_changes(build.download_path, _dir)
     add_sources(build.download_path, args.archives)
@@ -183,7 +188,7 @@ def main(workingdir):
 
     print("\n")
 
-    if args.integrity == True:
+    if args.integrity:
         interactive_mode = not args.non_interactive
         pkg_integrity.check(args.url, build.download_path, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
@@ -229,4 +234,4 @@ def main(workingdir):
 
 if __name__ == '__main__':
     with tempfile.TemporaryDirectory() as workingdir:
-        main(workingdir)
+        main()
