@@ -180,7 +180,7 @@ def convert_version(ver_str):
     suffix = ''
     ver_str = ver_str.replace(name, '')
     ver_str = ver_str.strip().replace('-', '.').replace('_', '.')
-    ver_str_pat = r'[0-9\.]+(beta|pre|b|alpha)([\.0-9]*)$'
+    ver_str_pat = r'[0-9\.]+(beta|pre|b|alpha|sdist)([\.0-9]*)$'
     match = re.search(ver_str_pat, ver_str)
     # it is important the first group matches, not just the second
     if match and match.group(1):
@@ -264,7 +264,8 @@ def name_and_version(name_arg, version_arg, filemanager):
                            r"https?://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
                            r"https?://github.com/.*/(.*?)/archive/v?(.*).orig.tar",
                            r"https?://github.com/.*/(.*?)/archive/(.*).zip",
-                           r"https?://github.com/.*/(.*?)/archive/v?(.*).tar"]
+                           r"https?://github.com/.*/(.*?)/archive/v?(.*).tar",
+                           r"https?://github.com/.*/(.*?)/releases/download/v.*/(.*).tar"]
 
         for pattern in github_patterns:
             p = re.compile(pattern)
