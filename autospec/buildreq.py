@@ -149,17 +149,44 @@ def configure_ac_line(line):
             add_pkgconfig_buildreq(req)
 
 
+def is_number(num_str):
+    """
+    Return True if num_str can be represented as a number
+    """
+    try:
+        float(num_str)
+        return True
+    except ValueError:
+        return False
+
+
 def parse_modules_list(modules_string):
     """
     parse the modules_string for the list of modules, stripping out the version
     requirements
     """
     modules = [m.strip('[]') for m in modules_string.split()]
-    return [r for r in modules
-            if r not in '<>=' and
-            not r.isdigit() and
-            len(r) >= 2 and
-            not r.startswith('$')]
+    res = []
+    next_is_ver = False
+    for mod in modules:
+        if next_is_ver:
+            next_is_ver = False
+            continue
+
+        if any(s in mod for s in ['<', '>', '=']):
+            next_is_ver = True
+            continue
+
+        if is_number(mod):
+            continue
+
+        if mod.startswith('$'):
+            continue
+
+        if len(mod) >= 2:
+            res.append(mod)
+
+    return res
 
 
 def parse_configure_ac(filename):
