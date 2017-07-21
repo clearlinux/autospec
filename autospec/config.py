@@ -590,7 +590,7 @@ def parse_config_files(path, bump, filemanager):
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
-    cmd = r"egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
+    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % \
         " ".join(pfiles)
     if patches and call(cmd,
                         check=False,
