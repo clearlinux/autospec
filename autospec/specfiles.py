@@ -554,6 +554,19 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
+            
+        if config.config_opts['use_avx2']:
+            self._write_strip("mkdir -p %{buildroot}/usr/lib64/haswell/avx512_1")
+            self._write_strip("pushd clr-build-avx2")
+            self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/ || :")
+            self._write_strip("popd")
+            self._write_strip("pushd clr-build-avx512")
+            self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/avx512_1/ || :")
+            self._write_strip("popd")
+            self._write_strip("rm -f %{buildroot}/usr/bin/*")
+        
 
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
@@ -977,6 +990,33 @@ class Specfile(object):
                               "-DLIB_SUFFIX=32 "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
+            self._write_strip("popd")
+
+        if config.config_opts['use_avx2']:
+            self._write_strip("mkdir clr-build-avx2")
+            self._write_strip("pushd clr-build-avx2")
+            self.write_variables()
+            self._write_strip('export CFLAGS="$CFLAGS -march=haswell"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell"')
+            self._write_strip('cmake .. -G "Unix Makefiles" '
+                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell "
+                              "-DCMAKE_AR=/usr/bin/gcc-ar "
+                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
+            self._write_strip("popd")
+
+            self._write_strip("mkdir clr-build-avx512")
+            self._write_strip("pushd clr-build-avx512")
+            self.write_variables()
+            self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512"')
+            self._write_strip('cmake .. -G "Unix Makefiles" '
+                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell/avx512_1 "
+                              "-DCMAKE_AR=/usr/bin/gcc-ar "
+                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
         self._write_strip("\n")
         self.write_check()
