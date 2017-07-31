@@ -178,6 +178,8 @@ def convert_version(ver_str):
     Remove disallowed characters from the version
     """
     suffix = ''
+    # remove architecture string
+    ver_str = ver_str.replace('x86_64', '')
     ver_str = ver_str.replace(name, '')
     ver_str = ver_str.strip().replace('-', '.').replace('_', '.')
     ver_str_pat = r'[0-9\.]+(beta|pre|b|alpha|sdist)([\.0-9]*)$'
