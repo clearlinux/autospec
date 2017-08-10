@@ -247,9 +247,14 @@ def name_and_version(name_arg, version_arg, filemanager):
     if url.find("pypi.python.org") > 0:
         buildpattern.set_build_pattern("distutils23", 10)
         url = "http://pypi.debian.net/" + name + "/" + tarfile
+        buildreq.add_buildreq("python3-dev")
+        buildreq.add_buildreq("python-dev")
+        
     if url.find("pypi.debian.net") > 0:
         buildpattern.set_build_pattern("distutils23", 10)
-
+        buildreq.add_buildreq("python3-dev")
+        buildreq.add_buildreq("python-dev")
+        
     if url.find(".cpan.org/CPAN/") > 0:
         buildpattern.set_build_pattern("cpan", 10)
         if name:

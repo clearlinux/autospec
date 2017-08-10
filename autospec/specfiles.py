@@ -430,7 +430,7 @@ class Specfile(object):
             else:
                 flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
         if config.config_opts['use_lto']:
-            flags.extend(["-O3", "-flto", "-ffat-lto-objects"])
+            flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
             self._write_strip("export AR=gcc-ar\n")
             self._write_strip("export RANLIB=gcc-ranlib\n")
             self._write_strip("export NM=gcc-nm\n")
@@ -439,7 +439,7 @@ class Specfile(object):
         if config.config_opts['pgo']:
             flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
         if self.gcov_file:
-            flags = list(filter(("-flto").__ne__, flags))
+            flags = list(filter(("-flto=4").__ne__, flags))
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
         if flags:
             flags = sorted(list(set(flags)))
@@ -560,10 +560,6 @@ class Specfile(object):
             self._write_strip("pushd clr-build-avx2")
             self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/ || :")
-            self._write_strip("popd")
-            self._write_strip("pushd clr-build-avx512")
-            self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
-            self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/avx512_1/ || :")
             self._write_strip("popd")
             self._write_strip("rm -f %{buildroot}/usr/bin/*")
         
@@ -1006,18 +1002,6 @@ class Specfile(object):
             self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
 
-            self._write_strip("mkdir clr-build-avx512")
-            self._write_strip("pushd clr-build-avx512")
-            self.write_variables()
-            self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512"')
-            self._write_strip('cmake .. -G "Unix Makefiles" '
-                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell/avx512_1 "
-                              "-DCMAKE_AR=/usr/bin/gcc-ar "
-                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
-            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
-            self._write_strip("popd")
         self._write_strip("\n")
         self.write_check()
         self.write_cmake_install()
