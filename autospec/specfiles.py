@@ -453,7 +453,7 @@ class Specfile(object):
             # close the open quote from CXXFLAGS export and add newline
             self._write('"\n')
 
-        if config.profile_payload and config.profile_payload[0]:
+        if config.profile_payload and config.profile_payload[0] and not self.need_avx2_flags:
             genflags = []
             useflags = []
             genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo", "-fprofile-update=atomic"])
@@ -713,7 +713,7 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("{0}%reconfigure {1} {2} {3}"
-                          .format(self.get_profile_generate_flags(),
+                          .format(self.get_profile_use_flags(),
                                   self.disable_static,
                                   config.extra_configure,
                                   config.extra_configure64))
@@ -736,6 +736,7 @@ class Specfile(object):
                                       config.extra_configure32))
             self.write_make_line()
             self._write_strip("popd")
+
         self._write_strip("\n")
         self.write_check()
         self.write_make_install()
@@ -957,6 +958,15 @@ class Specfile(object):
                           "-DLIB_SUFFIX=64 "
                           "-DCMAKE_BUILD_TYPE=RelWithDebInfo "
                           "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+
+        # Prep it for PGO
+        if config.profile_payload and config.profile_payload[0]:
+            self._write_strip("{0}".format(self.get_profile_generate_flags()))
+            self.write_make_line()
+            self._write_strip("\n".join(config.profile_payload))
+            self._write_strip("\nmake clean\n")
+            self._write_strip("{0}".format(self.get_profile_use_flags()))
+
         self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
         self._write_strip("popd")
 
@@ -979,7 +989,10 @@ class Specfile(object):
         if config.config_opts['use_avx2']:
             self._write_strip("mkdir clr-build-avx2")
             self._write_strip("pushd clr-build-avx2")
+            saved_avx2flags = self.need_avx2_flags
+            self.need_avx2_flags = True
             self.write_variables()
+            self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell"')
             self._write_strip('cmake .. -G "Unix Makefiles" '
