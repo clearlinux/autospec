@@ -36,7 +36,7 @@ import commitmessage
 import pkg_integrity
 import specfiles
 
-from util import print_fatal, binary_in_path
+from util import print_fatal, binary_in_path, write_out
 from abireport import examine_abi
 from logcheck import logcheck
 
@@ -220,8 +220,7 @@ def main():
 
     examine_abi(build.download_path)
 
-    with open(build.download_path + "/release", "w") as fp:
-        fp.write(tarball.release + "\n")
+    write_out(build.download_path + "/release", tarball.release + "\n")
 
     # record logcheck output
     logcheck(build.download_path)

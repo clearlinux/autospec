@@ -82,3 +82,8 @@ def binary_in_path(binary):
         if os.path.exists(os.path.join(path, binary)):
             return True
     return False
+
+
+def write_out(filename, content, mode="w", encode=None):
+    with open (filename, mode, encoding=encode) as require_f:
+        require_f.write(content)

@@ -16,6 +16,7 @@ from contextlib import contextmanager
 from subprocess import Popen, PIPE, TimeoutExpired
 
 import config
+import util
 
 GPG_CLI = False
 DESCRIPTION = "Performs package signature verification for packages signed with\
@@ -90,9 +91,7 @@ class GPGCli(object):
             _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
         os.environ['GNUPGHOME'] = _gpghome
         self.args = ['gpg', '--homedir', _gpghome]
-        with open(os.path.join(_gpghome, 'gpg.conf'), 'w') as conf:
-            conf.write(GNUPGCONF)
-            conf.close()
+        util.write_out(os.path.join(_gpghome, 'gpg.conf'), GNUPGCONF)
         if pubkey is not None:
             args = self.args + ['--import', pubkey]
             output, err, code = self.exec_cmd(args)
@@ -602,9 +601,7 @@ def attempt_key_import(keyid):
         if err is not None:
             print_error(err.strerror)
         key_fullpath = PUBKEY_PATH.format(keyid)
-        with open(key_fullpath, 'w') as out_pubkey:
-            out_pubkey.write(key_content)
-            out_pubkey.close()
+        util.write_out(key_fullpath, key_content)
         print('\n')
         print_success('Public key id: {} was imported'.format(keyid))
         err, content = ctx.display_keyinfo(key_fullpath)

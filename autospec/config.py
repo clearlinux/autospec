@@ -31,7 +31,7 @@ import tarball
 import buildpattern
 import buildreq
 import license
-from util import call
+from util import call, write_out
 
 extra_configure = ""
 extra_configure32 = ""
@@ -500,8 +500,7 @@ def parse_config_files(path, bump, filemanager):
         if os.path.isfile(filename):
             return
 
-        with open(filename, "w") as f:
-            f.write(wrapper.fill(description) + "\n")
+        write_out(filename, wrapper.fill(description) + "\n")
 
     write_default_conf_file("buildreq_ban",
                             "This file contains build requirements that get picked up but are "

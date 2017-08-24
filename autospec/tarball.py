@@ -28,7 +28,7 @@ import pycurl
 import build
 import buildpattern
 import buildreq
-from util import call, print_fatal
+from util import call, print_fatal, write_out
 
 name = ""
 rawname = ""
@@ -349,8 +349,8 @@ def write_upstream(sha, tarfile, mode="w"):
     """
     Write the upstream hash to the upstream file
     """
-    with open(os.path.join(build.download_path, "upstream"), mode) as f:
-        f.write(os.path.join(sha, tarfile) + "\n")
+    write_out(os.path.join(build.download_path, "upstream"),
+                           os.path.join(sha, tarfile) + "\n", mode=mode)
 
 
 def find_extract(tar_path, tarfile):

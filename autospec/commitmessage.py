@@ -30,6 +30,7 @@ import sys
 import build
 import config
 import tarball
+import util
 
 
 def scan_for_changes(download_path, directory):
@@ -222,8 +223,8 @@ def guess_commit_message():
         commitmessage.extend(sorted(list(cves)))
         commitmessage.append("")
 
-    with open(os.path.join(build.download_path, "commitmsg"), "w", encoding="latin-1") as cmsg_file:
-        cmsg_file.write("\n".join(commitmessage) + "\n")
+    util.write_out(os.path.join(build.download_path, "commitmsg"), \
+                   "\n".join(commitmessage) + "\n", encode="latin-1")
 
     print("Guessed commit message:")
     try:

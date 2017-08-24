@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import config
-from util import print_fatal
+from util import print_fatal, write_out
 
 import os
 import re
@@ -83,5 +83,4 @@ def logcheck(pkg_loc):
 
 
 def write_misses(pkg_loc, misses):
-    with open(os.path.join(pkg_loc, 'configure_misses'), 'w') as logcheck_f:
-        logcheck_f.write('\n'.join(misses))
+    write_out(os.path.join(pkg_loc, 'configure_misses'), '\n'.join(misses))

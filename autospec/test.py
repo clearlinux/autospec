@@ -26,6 +26,7 @@ import glob
 import os
 import tarball
 import config
+import util
 
 tests_config = ""
 
@@ -52,8 +53,7 @@ def check_regression(pkg_dir):
                 print("{}: {}".format(title[1], s_line[idx]))
                 res_str += "{} : {}\n".format(title[0], s_line[idx])
 
-    with open(os.path.join(pkg_dir, "testresults"), "w", encoding="utf-8") as resf:
-        resf.write(res_str)
+    util.write_out(os.path.join(pkg_dir, "testresults"), res_str, encode="utf-8")
 
 
 def scan_for_tests(src_dir):
