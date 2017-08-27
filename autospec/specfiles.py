@@ -383,6 +383,10 @@ class Specfile(object):
             self._write_strip("pushd ..")
             self._write_strip("cp -a {} build32".format(self.tarball_prefix))
             self._write_strip("popd")
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} buildavx2".format(self.tarball_prefix))
+            self._write_strip("popd")
         self._write_strip("\n")
         self.write_prep_append()
 
@@ -502,16 +506,9 @@ class Specfile(object):
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
 
         if config.config_opts['use_avx2']:
-            self.need_avx2_flags = True
-            self.write_variables()
-            self.need_avx2_flags = False
-            self._write_strip("make clean")
-            self._write_strip("%configure {0}{1} --libdir=/usr/lib64/haswell"
-                              .format(self.disable_static, config.extra_configure))
-            self.write_make_line()
-            self._write_strip("make DESTDIR=%{buildroot} install-libLTLIBRARIES")
-            self._write_strip("rm -f %{buildroot}/usr/lib64/haswell/*.la")
-            self._write_strip("rm -f %{buildroot}/usr/lib64/haswell/*.lo")
+            self._write_strip("pushd ../buildavx2/")
+            self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("popd")
 
         if self.subdir:
             self._write_strip("popd")
@@ -679,6 +676,19 @@ class Specfile(object):
                               "--build=i686-generic-linux-gnu "
                               "--host=i686-generic-linux-gnu "
                               "--target=i686-clr-linux-gnu"
+                              .format(self.disable_static,
+                                      config.extra_configure,
+                                      config.extra_configure32))
+            self.write_make_line()
+            self._write_strip("popd")
+
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("%configure {0} {1} {2} "
+                              " --libdir=/usr/lib64/haswell "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
