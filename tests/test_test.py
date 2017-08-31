@@ -36,7 +36,8 @@ class TestTest(unittest.TestCase):
         parse_log_backup = test.count.parse_log
         test.count.parse_log = mock_parse_log
         m_open = mock_open()
-        with patch(self.open_name, m_open, create=True):
+        open_name = 'util.open'
+        with patch(open_name, m_open, create=True):
             test.check_regression('pkgdir')
 
         exp_call = unittest.mock.call().write('Total : 120\n'
@@ -56,7 +57,8 @@ class TestTest(unittest.TestCase):
         parse_log_backup = test.count.parse_log
         test.count.parse_log = mock_parse_log
         m_open = mock_open()
-        with patch(self.open_name, m_open, create=True):
+        open_name = 'util.open'
+        with patch(open_name, m_open, create=True):
             test.check_regression('pkgdir')
 
         exp_call = unittest.mock.call().write('Package : test-a\n'
