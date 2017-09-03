@@ -162,7 +162,7 @@ class FileManager(object):
             (r"^/sbin/", "bin"),
             (r"^/bin/", "bin"),
             (r"^/usr/lib/python3.*/", "python", "/usr/lib/python3*/*"),
-            (r"^/usr/lib/python2.*/", "python", "/usr/lib/python2*/*"),
+            (r"^/usr/lib/python2.*/", "legacypython", "/usr/lib/python2*/*"),
             (r"^/usr/lib64/python.*/", "python", "/usr/lib64/python*/*"),
             (r"^/usr/share/gir-[0-9\.]+/[a-zA-Z0-9\.\_\-\+]*\.gir", "data", "/usr/share/gir-1.0/*.gir"),
             (r"^/usr/share/cmake/", "data", "/usr/share/cmake/*"),

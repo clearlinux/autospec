@@ -235,6 +235,7 @@ class Specfile(object):
         deps["bin"] = ["data", "config", "setuid", "attr"]
         deps["lib"] = ["data", "config"]
         deps["lib32"] = ["data", "config"]
+        deps["python"] = ["legacypython"]
 
         provides = {}
         provides["dev"] = ["devel"]
