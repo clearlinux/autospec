@@ -421,8 +421,8 @@ class Specfile(object):
             self._write_strip('export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
                               "-fexceptions -fstack-protector "
                               "--param=ssp-buffer-size=32 -Wformat "
-                              "-Wformat-security -Wno-error -Wl,-z -Wl,now "
-                              "-Wl,-z -Wl,relro -Wl,-z,max-page-size=0x1000 -m64 "
+                              "-Wformat-security -Wno-error  "
+                              " -Wl,-z,max-page-size=0x1000 -m64 "
                               '-march=westmere -mtune=haswell"\n')
             self._write_strip("export CXXFLAGS=$CFLAGS\n")
             self._write_strip("unset LDFLAGS\n")
