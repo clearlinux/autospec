@@ -152,6 +152,9 @@ Controlling dependencies
     to block automatic configuration routines adding undesired functionality,
     or to omit any automatically discovered dependencies during tarball scanning.
 
+Run time requirements are not assumed to be build time requirements.
+If a package has the same build and run time requirement it must be added
+to both buildreq_add and requires_add.
 
 Controlling the build process
 ------------------------------
