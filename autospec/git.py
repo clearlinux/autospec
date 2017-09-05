@@ -75,6 +75,7 @@ def commit_to_git(path):
     call("git add profile_payload", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add options.conf", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure_misses", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add whatrequires", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     # remove deprecated config files
     call("git rm use_clang", check=False, stderr=subprocess.DEVNULL, cwd=path)

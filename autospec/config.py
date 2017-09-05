@@ -60,6 +60,7 @@ old_patches = list()
 old_keyid = None
 profile_payload = None
 signature = None
+yum_conf = None
 
 failed_commands = {}
 maven_jars = {}
@@ -452,6 +453,7 @@ def parse_config_files(path, bump, filemanager):
     global make_install_append
     global patches
     global autoreconf
+    global yum_conf
 
     packages_file = None
 
@@ -470,6 +472,7 @@ def parse_config_files(path, bump, filemanager):
         license_fetch = config['autospec'].get('license_fetch', None)
         license_show = config['autospec'].get('license_show', None)
         packages_file = config['autospec'].get('packages_file', None)
+        yum_conf = config['autospec'].get('yum_conf', None)
         if not packages_file:
             print("Warning: Set [autospec][packages_file] path to package list file for "
                   "requires validation")
@@ -483,6 +486,9 @@ def parse_config_files(path, bump, filemanager):
         print("Warning: Set [autospec][license_fetch] uri for license fetch support")
     if not license_show:
         print("Warning: Set [autospec][license_show] uri for license link check support")
+    if not yum_conf:
+        print("Warning: Set [autospec][yum_conf] path to yum.conf file for whatrequires validation")
+        yum_conf = os.path.join(os.path.dirname(config_file), "image-creator/yum.conf")
 
     if packages_file:
         os_packages = set(read_conf_file(packages_file))

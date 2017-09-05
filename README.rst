@@ -42,6 +42,9 @@ Example ``autospec.conf`` file::
 **packages_file**
     Optional path to add autodetected runtime requirement checking against
 
+**yum_conf**
+    Optional path to yum configuration
+
 **upstream**
     Base URL for stored upstream tarballs
 

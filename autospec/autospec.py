@@ -35,6 +35,7 @@ import test
 import commitmessage
 import pkg_integrity
 import specfiles
+import pkg_scan
 
 from util import print_fatal, binary_in_path, write_out
 from abireport import examine_abi
@@ -219,6 +220,7 @@ def main():
             pass
 
     examine_abi(build.download_path)
+    pkg_scan.get_whatrequires(tarball.name)
 
     write_out(build.download_path + "/release", tarball.release + "\n")
 
