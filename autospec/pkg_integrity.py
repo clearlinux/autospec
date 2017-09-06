@@ -361,7 +361,7 @@ class PyPiVerifier(MD5Verifier):
 
     def parse_name(self):
         pkg_name = os.path.basename(self.package_path)
-        name, _ = re.split('-\d+\.', pkg_name)
+        name, _ = re.split('-\d+\.', pkg_name, maxsplit=1)
         release_no = pkg_name.replace(name + '-', '')
         extensions = "({})".format("|".join(['\.tar\.gz$', '\.zip$', '\.tgz$', '\.tar\.bz2$']))
         ext = re.search(extensions, release_no)
