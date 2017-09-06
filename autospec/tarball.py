@@ -78,8 +78,16 @@ def build_untar(tarball_path):
     Determine extract command and tarball prefix from tar -tf output
     """
     tar_prefix = ""
-    tarball_contents = subprocess.check_output(
-        ["tar", "-tf", tarball_path], universal_newlines=True).split("\n")
+    try:
+        tarball_contents = subprocess.check_output(
+            ["tar", "-tf", tarball_path], universal_newlines=True).split("\n")
+    except subprocess.CalledProcessError as cpe:
+        file_type = subprocess.check_output(["file", tarball_path]).decode("utf-8").strip()
+        print_fatal("tarball inspection failed, unable to determine tarball contents:\n"
+                    f"{file_type}\n"
+                    f"{cpe}\n")
+        exit(1)
+
     extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
     for line in tarball_contents:
         # sometimes a leading ./ is prepended to the line, this is not the prefix
