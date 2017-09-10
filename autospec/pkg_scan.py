@@ -39,10 +39,6 @@ def get_whatrequires(pkg):
         util.print_warning("repoquery whatrequires for {} failed with: {}".format(pkg, err))
         return
 
-    if 'filesystem' in out:
-        util.print_warning("Package contains filesystem as a whatrequires.\n" +
-                           "BE CAREFUL building {}; may require full OS rebuild.\n".format(pkg))
-
     util.write_out('whatrequires',
             "# This file contains recursive sources that require this package\n" + \
             out)
