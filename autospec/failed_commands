@@ -502,3 +502,4 @@ LIBEXIF, libexif-dev
 LIBGD, libgd-dev
 LIBUSB, libusb-dev
 meson, meson
+libxml/xmlversion.h, libxml2-dev

@@ -748,6 +748,19 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("popd")
 
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("%reconfigure {0} {1} {2} "
+                              " --libdir=/usr/lib64/haswell "
+                              .format(self.disable_static,
+                                      config.extra_configure,
+                                      config.extra_configure32))
+            self.write_make_line()
+            self._write_strip("popd")
+
         self._write_strip("\n")
         self.write_check()
         self.write_make_install()
