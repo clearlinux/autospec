@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 import subprocess
+
 import util
 import config
 
@@ -27,8 +28,12 @@ def get_whatrequires(pkg):
     """
 
     # clean up yum cache to avoid 'no more mirrors repo' error
-    subprocess.check_output(['yum', '--config', config.yum_conf,
-                             'clean', 'all'])
+    try:
+        subprocess.check_output(['yum', '--config', config.yum_conf,
+                                 'clean', 'all'])
+    except subprocess.CalledProcessError as err:
+        util.print_warning("Unable to clean yum repo: {}".format(pkg, err))
+        return
 
     try:
         out = subprocess.check_output(['repoquery', '--config', config.yum_conf,
@@ -39,6 +44,5 @@ def get_whatrequires(pkg):
         util.print_warning("repoquery whatrequires for {} failed with: {}".format(pkg, err))
         return
 
-    util.write_out('whatrequires',
-            "# This file contains recursive sources that require this package\n" + \
-            out)
+    util.write_out('whatrequires', '# This file contains recursive sources that ' \
+                   'require this package\n' + out)

@@ -220,7 +220,8 @@ def main():
             pass
 
     examine_abi(build.download_path)
-    pkg_scan.get_whatrequires(tarball.name)
+    if os.path.exists("/var/lib/rpm"):
+        pkg_scan.get_whatrequires(tarball.name)
 
     write_out(build.download_path + "/release", tarball.release + "\n")
 
