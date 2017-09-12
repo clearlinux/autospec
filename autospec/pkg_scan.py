@@ -37,7 +37,7 @@ def get_whatrequires(pkg):
 
     try:
         out = subprocess.check_output(['repoquery', '--config', config.yum_conf,
-                                       '--archlist=src', '--recursive', ' --queryformat="%{NAME}\n"',
+                                       '--archlist=src', '--recursive', '--queryformat=%{NAME}',
                                        '--whatrequires', pkg]).decode('utf-8')
 
     except subprocess.CalledProcessError as err:
