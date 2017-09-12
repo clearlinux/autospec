@@ -512,6 +512,12 @@ def scan_for_configure(dirn):
         if "requirements.txt" in files:
             grab_python_requirements(dirpath + '/requirements.txt')
 
+        if "meson.build" in files:
+            add_buildreq("meson")
+            add_buildreq("ninja")
+            add_buildreq("python3")
+            buildpattern.set_build_pattern("meson", default_score)
+
         for name in files:
             if name.lower() == "cargo.toml":
                 parse_cargo_toml(os.path.join(dirpath, name))

@@ -1121,6 +1121,19 @@ class Specfile(object):
         self._write_strip("xmvn-install  -R .xmvn-reactor -n {} -d %{{buildroot}}"
                           .format(mvn))
 
+    def write_meson_pattern(self):
+        """Write meson build pattern to spec file"""
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --prefix /usr --buildtype=plain builddir')
+        self._write_strip("ninja -v -C builddir")
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
+        self.write_find_lang()
+
+
     def write_find_lang(self):
         for lang in self.locales:
             self._write("%find_lang {}\n".format(lang))
