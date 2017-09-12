@@ -433,7 +433,7 @@ class Specfile(object):
             if config.config_opts['use_clang']:
                 flags.extend(["-O3"])
             else:
-                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32"])
+                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-common"])
         if config.config_opts['use_lto']:
             flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
             self._write_strip("export AR=gcc-ar\n")
