@@ -59,8 +59,13 @@ def really_download(upstream_url, destination):
         c.setopt(c.URL, upstream_url)
         c.setopt(c.WRITEDATA, dfile)
         c.setopt(c.FOLLOWLOCATION, True)
-        c.perform()
-        c.close()
+        try:
+            c.perform()
+        except pycurl.error:
+            print_fatal(f"unable to download {upstream_url}")
+            exit(1)
+        finally:
+            c.close()
 
 
 def check_or_get_file(upstream_url, tarfile):
