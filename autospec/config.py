@@ -81,7 +81,8 @@ transforms = {
     'ChangeLog.md': 'ChangeLog',
     'changes.rst': 'ChangeLog',
     'changes.txt': 'ChangeLog',
-    'news': 'NEWS'
+    'news': 'NEWS',
+    'meson_options.txt': 'meson_options.txt'
 }
 
 config_opts = {}
