@@ -690,7 +690,7 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%configure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell "
+                              " --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))

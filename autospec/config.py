@@ -125,6 +125,7 @@ pkgconfig_pats = [
 simple_pats = [
     (r'warning: failed to load external entity "http://docbook.sourceforge.net/release/xsl/.*"', "docbook-xml"),
     (r"gobject-introspection dependency was not found, gir cannot be generated.", "gobject-introspection-dev"),
+    (r"gobject-introspection dependency was not found, gir cannot be generated.", "glibc-bin"),
     (r"Cannot find development files for any supported version of libnl", "libnl-dev"),
     (r"/<http:\/\/www.cmake.org>", "cmake"),
     (r"\-\- Boost libraries:", "boost-dev"),
