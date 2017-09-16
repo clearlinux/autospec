@@ -504,12 +504,13 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
 
-        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
-
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/")
             self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
+
+        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+
 
         if self.subdir:
             self._write_strip("popd")
