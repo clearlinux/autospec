@@ -151,7 +151,7 @@ def scan_for_tests(src_dir):
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
                        "R CMD check --no-manual --no-examples --no-codoc -l " \
                        "%{buildroot}/usr/lib64/R/library "                    \
-                       + tarball.rawname + "\ncp ~/.stash/* "                 \
+                       + tarball.rawname + "|| : \ncp ~/.stash/* "                 \
                        "%{buildroot}/usr/lib64/R/library/*/libs/ || :"
 
     if "tox.ini" in files:
