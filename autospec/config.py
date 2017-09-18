@@ -162,6 +162,7 @@ simple_pats = [
 # failed_pattern patterns
 # contains patterns for parsing build.log for missing dependencies
 failed_pats = [
+    (r"C library '(.*)' not found", 0, None),
     (r"Target '[a-zA-Z0-9\-]' can't be generated as '(.*)' could not be found", 0, None),
     (r"Program (.*) found: NO", 0, None),
     (r"Native dependency '(.*)' not found", 0, "pkgconfig"),
