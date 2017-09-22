@@ -233,8 +233,8 @@ class Specfile(object):
         deps["dev"] = ["lib", "bin", "data"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
         deps["bin"] = ["data", "config", "setuid", "attr"]
-        deps["lib"] = ["data", "config"]
-        deps["lib32"] = ["data", "config"]
+        deps["lib"] = ["data"]
+        deps["lib32"] = ["data"]
         deps["python"] = ["legacypython"]
 
         provides = {}
