@@ -36,6 +36,7 @@ default_license = "TO BE DETERMINED"
 
 licenses = []
 
+
 def add_license(lic):
     """
     Add license from license string lic after checking for duplication or
@@ -56,10 +57,7 @@ def add_license(lic):
 
 def license_from_copying_hash(copying):
     """Add licenses based on the hash of the copying file"""
-    licenses_list = []
     hash_sum = tarball.get_sha1sum(copying)
-
-    licenses_dict = dict()
 
     if config.license_fetch:
         with open(copying, "r", encoding="latin-1") as myfile:

@@ -262,12 +262,12 @@ def name_and_version(name_arg, version_arg, filemanager):
         url = "http://pypi.debian.net/" + name + "/" + tarfile
         buildreq.add_buildreq("python3-dev")
         buildreq.add_buildreq("python-dev")
-        
+
     if url.find("pypi.debian.net") > 0:
         buildpattern.set_build_pattern("distutils23", 10)
         buildreq.add_buildreq("python3-dev")
         buildreq.add_buildreq("python-dev")
-        
+
     if url.find(".cpan.org/CPAN/") > 0:
         buildpattern.set_build_pattern("cpan", 10)
         if name:
@@ -345,8 +345,6 @@ def name_and_version(name_arg, version_arg, filemanager):
     if version == "":
         version = "1"
 
-    #assert name != ""
-
 
 def set_gcov():
     """
@@ -363,7 +361,7 @@ def write_upstream(sha, tarfile, mode="w"):
     Write the upstream hash to the upstream file
     """
     write_out(os.path.join(build.download_path, "upstream"),
-                           os.path.join(sha, tarfile) + "\n", mode=mode)
+              os.path.join(sha, tarfile) + "\n", mode=mode)
 
 
 def find_extract(tar_path, tarfile):

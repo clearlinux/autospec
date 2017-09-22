@@ -20,8 +20,6 @@
 #
 
 import buildreq
-import files
-import getpass
 import re
 import tarball
 import os
@@ -39,6 +37,7 @@ output_path = None
 download_path = None
 mock_cmd = '/usr/bin/mock'
 
+
 def setup_workingdir(workingdir):
     global base_path
     global output_path
@@ -46,6 +45,7 @@ def setup_workingdir(workingdir):
     base_path = workingdir
     output_path = os.path.join(base_path, "output")
     download_path = os.path.join(output_path, tarball.name)
+
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     global must_restart
@@ -169,8 +169,8 @@ def set_mock():
     # get group list of current user
     user_grps = [grp.getgrgid(g).gr_name for g in os.getgroups()]
     if os.path.exists('/usr/bin/mock'):
-       if 'mock' not in user_grps:
-           mock_cmd = 'sudo /usr/bin/mock'
+        if 'mock' not in user_grps:
+            mock_cmd = 'sudo /usr/bin/mock'
 
 
 def package(filemanager):
