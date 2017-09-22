@@ -20,12 +20,10 @@
 #
 
 import subprocess
-import glob
 
 import build
 import buildpattern
 import tarball
-import test
 from util import call
 import config
 

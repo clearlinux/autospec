@@ -249,6 +249,7 @@ def compare_keys(newkey, oldkey):
                     .format(oldkey, newkey))
         exit(1)
 
+
 # sha256sum Verifier
 class ShaSumVerifier(Verifier):
 
@@ -256,7 +257,6 @@ class ShaSumVerifier(Verifier):
         Verifier.__init__(self, **kwargs)
         self.package_path = kwargs.get('package_path', None)
         self.shalen = kwargs.get('shalen', 256)
-
 
     def verify_sum(self, shasum):
         print("Verifying sha{}sum digest\n".format(self.shalen))
