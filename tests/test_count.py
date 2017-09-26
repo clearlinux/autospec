@@ -463,10 +463,16 @@ def test_generator(line, expected):
     return test_parse_log
 
 
-if __name__ == "__main__":
+def test_setup():
     for i, pat in enumerate(pats):
         test_name = 'test_pat{}'.format(pat[0])
         test = test_generator(pat[0], pat[1])
         setattr(TestCount, test_name, test)
 
+
+# Run test_setup() to generate tests
+test_setup()
+
+
+if __name__ == "__main__":
     unittest.main(buffer=True)
