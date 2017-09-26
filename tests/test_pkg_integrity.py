@@ -53,6 +53,8 @@ class TestCheckFn(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -126,6 +128,8 @@ class TestGPGVerifier(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -141,6 +145,8 @@ class TestGPGVerifier(unittest.TestCase):
             pkg_integrity.check(NO_SIGN_PKT_URL, tmpd, interactive=False)
             #self.assertEqual(a.exception.code, 1)
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -150,6 +156,8 @@ class TestGPGVerifier(unittest.TestCase):
             result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
             self.assertTrue(result)
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_non_matchingsig(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
