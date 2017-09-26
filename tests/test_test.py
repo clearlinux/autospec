@@ -25,6 +25,7 @@ class TestTest(unittest.TestCase):
         test.tests_config = ''
         test.tarball.name = ''
         test.buildreq.buildreqs = set()
+        test.buildpattern.default_pattern = "make"
 
     def test_check_regression(self):
         """
