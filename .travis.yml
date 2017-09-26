@@ -4,17 +4,4 @@ python:
 # command to run tests
 script:
   - make check
-  - make test_pkg_integrity
-  - make test_tarball
-  - make test_specfile
-  - make test_abireport
-  - make test_commitmessage
-  - make test_files
-  - make test_license
-  - make test_buildpattern
-  - make test_build
-  - make test_buildreq
-  - make test_specdescription
-  - make test_count
-  - make test_test
-  - make test_util
+  - make unittests
