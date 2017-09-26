@@ -181,6 +181,8 @@ class TestGPGVerifier(unittest.TestCase):
             result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
             self.assertTrue(result is None)
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_pubkey_import(self):
         def say_yes(_):
             return True
@@ -203,6 +205,8 @@ class TestGPGVerifier(unittest.TestCase):
 
 class TestInputGetter(unittest.TestCase):
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_timput(self):
         ig = pkg_integrity.InputGetter(default='N', timeout=2)
         answer = ig.get_answer()
