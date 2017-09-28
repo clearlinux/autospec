@@ -433,7 +433,7 @@ def process_archives(archives):
         call(move_cmd)
 
         sha1 = get_sha1sum(source_tarball_path)
-        write_upstream(sha1, archive, mode="a")
+        write_upstream(sha1, os.path.basename(archive), mode="a")
 
 
 def process(url_arg, name_arg, ver_arg, target, archives, filemanager):
