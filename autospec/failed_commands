@@ -504,3 +504,5 @@ LIBUSB, libusb-dev
 meson, meson
 libxml/xmlversion.h, libxml2-dev
 g-ir-scanner, gobject-introspection
+get_mempolicy, numactl-dev
+pcap_dump, libpcap-dev
