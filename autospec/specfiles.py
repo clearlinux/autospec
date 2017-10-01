@@ -433,7 +433,7 @@ class Specfile(object):
             if config.config_opts['use_clang']:
                 flags.extend(["-O3"])
             else:
-                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-common", "-fno-math-errno", "-fno-trapping-math"])
+                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
         if config.config_opts['use_lto']:
             flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
             self._write_strip("export AR=gcc-ar\n")
@@ -755,7 +755,7 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%reconfigure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell "
+                              " --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
