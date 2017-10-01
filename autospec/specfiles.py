@@ -269,6 +269,12 @@ class Specfile(object):
                 if self.name != self.name.lower():
                     self._write("Provides: {}-python\n".format(self.name.lower()))
 
+            if pkg == "python3":
+                self._write("Requires: python3-core\n")
+
+            if pkg == "legacypython":
+                self._write("Requires: python-core\n")
+
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))
             self._write("\n")
