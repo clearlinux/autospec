@@ -223,7 +223,7 @@ def guess_commit_message():
         commitmessage.extend(sorted(list(cves)))
         commitmessage.append("")
 
-    util.write_out(os.path.join(build.download_path, "commitmsg"), \
+    util.write_out(os.path.join(build.download_path, "commitmsg"),
                    "\n".join(commitmessage) + "\n", encode="latin-1")
 
     print("Guessed commit message:")

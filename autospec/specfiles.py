@@ -23,7 +23,6 @@ import os
 import types
 import re
 import time
-import inspect
 from collections import OrderedDict
 
 import config
@@ -233,8 +232,8 @@ class Specfile(object):
         deps["dev"] = ["lib", "bin", "data"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
         deps["bin"] = ["data", "config", "setuid", "attr"]
-        deps["lib"] = ["data", "config"]
-        deps["lib32"] = ["data", "config"]
+        deps["lib"] = ["data"]
+        deps["lib32"] = ["data"]
         deps["python"] = ["legacypython"]
 
         provides = {}
@@ -274,7 +273,6 @@ class Specfile(object):
         Currently depends on buildpattern.py due to pattern-matched methods
         """
         self._write_strip("\n")
-        methods = inspect.getmembers(self, predicate=inspect.ismethod)
         pattern_method = getattr(self, 'write_{}_pattern'.format(self.default_pattern))
         if pattern_method:
             pattern_method()
@@ -451,7 +449,7 @@ class Specfile(object):
             self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
             self._write_strip('export FCFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
             self._write_strip('export FFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
-            # leave the export CXXFLAGS line open in case 
+            # leave the export CXXFLAGS line open in case
             self._write('export CXXFLAGS="$CXXFLAGS {0} '.format(" ".join(flags)))
             if config.config_opts['broken_c++']:
                 self._write('-std=gnu++98')
@@ -511,7 +509,6 @@ class Specfile(object):
 
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
 
-
         if self.subdir:
             self._write_strip("popd")
 
@@ -553,7 +550,7 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
-            
+
         if config.config_opts['use_avx2']:
             self._write_strip("mkdir -p %{buildroot}/usr/lib64/haswell/avx512_1")
             self._write_strip("pushd clr-build-avx2")
@@ -561,7 +558,6 @@ class Specfile(object):
             self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/ || :")
             self._write_strip("popd")
             self._write_strip("rm -f %{buildroot}/usr/bin/*")
-        
 
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
@@ -906,7 +902,7 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("mkdir -p ~/.R")
         self._write_strip("mkdir -p ~/.stash")
-        
+
         self._write_strip("echo \"CFLAGS = $CFLAGS -march=haswell -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
         self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
@@ -917,12 +913,11 @@ class Specfile(object):
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library " + self.rawname)
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
-        
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
         self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
-                
+
         self._write_strip("R CMD INSTALL "
                           "--preclean "
                           "--install-tests "
@@ -1097,7 +1092,6 @@ class Specfile(object):
 
     def write_golang_pattern(self):
         """Write build pattern for go packages"""
-        library_path = self.golibpath
         self.write_prep()
         self._write_strip("%build")
         self.write_proxy_exports()
@@ -1133,7 +1127,6 @@ class Specfile(object):
         self._write_strip("%install")
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         self.write_find_lang()
-
 
     def write_find_lang(self):
         for lang in self.locales:

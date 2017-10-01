@@ -73,11 +73,11 @@ def scan_for_tests(src_dir):
         "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.6/site-packages "
                     "python3 setup.py test",
         "cmake": "pushd clr-build ; make test ; popd",
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/"
-                    + tarball.tarball_prefix +
+        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" +
+                    tarball.tarball_prefix +
                     "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/"
-                 + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" +
+                 tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
 
     files = os.listdir(src_dir)

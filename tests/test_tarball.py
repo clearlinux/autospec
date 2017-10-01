@@ -35,6 +35,21 @@ def test_generator(url, name, version):
     return test_packageurl
 
 
+def test_setup():
+    global TestTarballVersionName
+    with open('tests/packageurls', 'r') as pkgurls:
+        for urlline in pkgurls.read().split('\n'):
+            if not urlline or urlline.startswith('#'):
+                continue
+
+            tarball.name = ''
+            tarball.version = ''
+            (url, name, version) = urlline.split(',')
+            test_name = 'test_pat_{}'.format(url)
+            test = test_generator(url, name, version)
+            setattr(TestTarballVersionName, test_name, test)
+
+
 class TestTarballVersionName(unittest.TestCase):
 
     def test_version_configuration_override(self):
@@ -201,17 +216,9 @@ GEM_OUT = '/path/to/dir/file1\n'                           \
           'Unpacked gem: \'/path/to/gem/test-prefix\''
 
 
+# Run test_setup to generate tests
+test_setup()
+
+
 if __name__ == '__main__':
-    with open('tests/packageurls', 'r') as pkgurls:
-        for urlline in pkgurls.read().split('\n'):
-            if not urlline or urlline.startswith('#'):
-                continue
-
-            tarball.name = ''
-            tarball.version = ''
-            (url, name, version) = urlline.split(',')
-            test_name = 'test_pat_{}'.format(url)
-            test = test_generator(url, name, version)
-            setattr(TestTarballVersionName, test_name, test)
-
     unittest.main(buffer=True)

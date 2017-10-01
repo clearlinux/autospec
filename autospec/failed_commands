@@ -84,7 +84,6 @@ less, less
 pam_authenticate, Linux-PAM-dev
 vim, vim
 CLUTTER, clutter-dev
-asciidoc, asciidoc
 webp/decode.h, libwebp-dev
 inkscape, inkscape
 desktop-file-validate, desktop-file-utils

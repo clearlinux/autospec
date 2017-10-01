@@ -94,7 +94,7 @@ class FileManager(object):
             if lang not in self.locales:
                 self.locales.append(lang)
                 print("  New locale:", lang)
-                if  "locales" not in self.packages:
+                if "locales" not in self.packages:
                     self.packages["locales"] = set()
 
             return True

@@ -18,7 +18,6 @@
 #
 
 import os
-import re
 import shlex
 import subprocess
 
@@ -85,5 +84,5 @@ def binary_in_path(binary):
 
 
 def write_out(filename, content, mode="w", encode=None):
-    with open (filename, mode, encoding=encode) as require_f:
+    with open(filename, mode, encoding=encode) as require_f:
         require_f.write(content)

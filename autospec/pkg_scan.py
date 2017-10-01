@@ -44,5 +44,5 @@ def get_whatrequires(pkg):
         util.print_warning("repoquery whatrequires for {} failed with: {}".format(pkg, err))
         return
 
-    util.write_out('whatrequires', '# This file contains recursive sources that ' \
+    util.write_out('whatrequires', '# This file contains recursive sources that '
                    'require this package\n' + out)
