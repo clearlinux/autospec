@@ -39,18 +39,19 @@ def check_regression(pkg_dir):
         return
 
     result = count.parse_log(os.path.join(pkg_dir, "results/build.log"))
-    titles = [('Package', 'package name'),
-              ('Total', 'total tests'),
-              ('Pass', 'total passing'),
-              ('Fail', 'total failing'),
-              ('Skip', 'tests skipped'),
-              ('XFail', 'expected fail')]
+    titles = [('Package', 'package name', 1),
+              ('Total', 'total tests', 1),
+              ('Pass', 'total passing', 1),
+              ('Fail', 'total failing', 0),
+              ('Skip', 'tests skipped', 0),
+              ('XFail', 'expected fail', 0)]
     res_str = ""
     for line in result.strip('\n').split('\n'):
         s_line = line.split(',')
         for idx, title in enumerate(titles):
             if s_line[idx]:
-                print("{}: {}".format(title[1], s_line[idx]))
+                if (s_line[idx] != '0') or (title[2] > 0):
+                    print("{}: {}".format(title[1], s_line[idx]))
                 res_str += "{} : {}\n".format(title[0], s_line[idx])
 
     util.write_out(os.path.join(pkg_dir, "testresults"), res_str, encode="utf-8")
