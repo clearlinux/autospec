@@ -234,7 +234,14 @@ class Specfile(object):
         deps["bin"] = ["data", "config", "setuid", "attr"]
         deps["lib"] = ["data"]
         deps["lib32"] = ["data"]
-        deps["python"] = ["legacypython"]
+        deps["python"] = ["legacypython", "python3"]
+
+        # migration workaround; if we have a python3 or legacypython package
+        # we add an artificial python package
+
+        if ("python3" in self.packages or "legacypython" in self.packages) and ("python" not in self.packages):
+            self.packages["python"] = set()
+
 
         provides = {}
         provides["dev"] = ["devel"]
