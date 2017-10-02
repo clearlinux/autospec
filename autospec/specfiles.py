@@ -242,7 +242,6 @@ class Specfile(object):
         if ("python3" in self.packages or "legacypython" in self.packages) and ("python" not in self.packages):
             self.packages["python"] = set()
 
-
         provides = {}
         provides["dev"] = ["devel"]
 
