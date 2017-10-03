@@ -151,6 +151,7 @@ simple_pats = [
     (r"testing autoconf... not found", "autoconf"),
     (r"configure\: error\: could not find Python headers", "python-dev"),
     (r"checking for libxml libraries", "libxml2-dev"),
+    (r"checking for slang.h... no", "slang-dev"),
     (r"configure: error: no suitable Python interpreter found", "python3"),
     (r"configure: error: pcre-config for libpcre not found", "pcre"),
     (r"checking for OpenSSL", "openssl-dev"),
