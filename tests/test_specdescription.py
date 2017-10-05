@@ -1,13 +1,13 @@
 import unittest
 from unittest.mock import mock_open, patch
-import specdescription
+from libautospec import specdescription
 
 
 class TestSpecdescription(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.open_name = 'specdescription.open'
+        self.open_name = 'libautospec.specdescription.open'
 
     def setUp(self):
         specdescription.default_description = "No detailed description available"

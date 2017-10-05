@@ -1,6 +1,6 @@
 import unittest
 import unittest.mock
-import specfiles
+from libautospec import specfiles
 
 
 class TestSpecfileWrite(unittest.TestCase):

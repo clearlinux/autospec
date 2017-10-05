@@ -2,7 +2,7 @@ import unittest
 import unittest.mock as mock
 import os
 import tempfile
-import commitmessage
+from libautospec import commitmessage
 
 
 class TestCommitmessage(unittest.TestCase):
@@ -126,7 +126,7 @@ class TestCommitmessage(unittest.TestCase):
                     set(['cve1', 'cve2']))
 
         commitmessage.process_NEWS = mock_process_NEWS
-        open_name = 'util.open'
+        open_name = 'libautospec.util.open'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
             commitmessage.guess_commit_message()
@@ -156,7 +156,7 @@ class TestCommitmessage(unittest.TestCase):
         commitmessage.process_NEWS = mock_process_NEWS
         commitmessage.config.cves = set(['CVE-1234-5678'])
         commitmessage.config.old_version = None  # Allow cve title to be set
-        open_name = 'util.open'
+        open_name = 'libautospec.util.open'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
             commitmessage.guess_commit_message()

@@ -15,8 +15,8 @@ from io import BytesIO
 from contextlib import contextmanager
 from subprocess import Popen, PIPE, TimeoutExpired
 
-import config
-import util
+from libautospec import config
+from libautospec import util
 
 GPG_CLI = False
 DESCRIPTION = "Performs package signature verification for packages signed with\

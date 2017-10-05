@@ -1,5 +1,5 @@
 import unittest
-import buildpattern
+from libautospec import buildpattern
 
 
 class TestBuildpattern(unittest.TestCase):

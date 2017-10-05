@@ -21,11 +21,11 @@
 
 import subprocess
 
-import build
-import buildpattern
-import tarball
-from util import call
-import config
+from libautospec import build
+from libautospec import buildpattern
+from libautospec import tarball
+from libautospec.util import call
+from libautospec import config
 
 
 def commit_to_git(path):

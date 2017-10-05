@@ -25,9 +25,10 @@ import ast
 
 import toml
 
-import buildpattern
-import util
-import config
+from libautospec import buildpattern
+from libautospec import util
+from libautospec import config
+
 import subprocess
 
 banned_requires = set()

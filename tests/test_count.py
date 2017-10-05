@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import mock_open, patch
-import count
+from libautospec import count
 
 pats = [
     # acl
@@ -442,7 +442,7 @@ def test_generator(line, expected):
         """
         content = '+ make check\n' + line
         m_open = mock_open(read_data=content)
-        with patch('count.open', m_open, create=True):
+        with patch('libautospec.count.open', m_open, create=True):
             count.zero_test_data = mock_zero_test_data
             count.parse_log('log')
             count.zero_test_data = backup_zero_test_data

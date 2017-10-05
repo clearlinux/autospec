@@ -2,8 +2,8 @@ import unittest
 import tempfile
 import os
 from unittest.mock import patch, mock_open
-import build
-import files
+from libautospec import build
+from libautospec import files
 
 
 class TestBuildpattern(unittest.TestCase):
@@ -250,7 +250,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'libautospec.build.open'
         content = 'line 1\nwhich: no qmake\nexiting'
         m_open = mock_open(read_data=content)
 
@@ -276,7 +276,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'libautospec.build.open'
         content = 'line 1\nchecking for Apache test module support\nexiting'
         m_open = mock_open(read_data=content)
 
@@ -302,7 +302,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'libautospec.build.open'
         content = 'line 1\nImportError: No module named testpkg\nexiting'
         m_open = mock_open(read_data=content)
 

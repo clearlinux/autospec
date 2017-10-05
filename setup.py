@@ -12,10 +12,11 @@ setup(name="autospec",
       long_description=readme(),
       version = version,
       license = "GPLv3",
-      packages = ["autospec"],
+      packages = ["libautospec"],
       package_data = {
             '': ['*.pl', '*.dic'],
       },
+      scripts = [ "scripts/autospec.py" ],
       classifiers=[
             'Intended Audience :: Developers',
             'Topic :: Software Development :: Build Tools',

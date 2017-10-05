@@ -2,7 +2,7 @@ import os
 import tempfile
 import unittest
 from unittest.mock import mock_open, patch
-import test
+from libautospec import test
 
 
 def mock_generator(rv=None):
@@ -16,7 +16,7 @@ class TestTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.open_name = 'test.open'
+        self.open_name = 'libautospec.test.open'
         test.config.config_opts['skip_tests'] = False
         test.config.config_opts['allow_test_failures'] = False
         test.os.path.isfile = mock_generator(True)
@@ -37,7 +37,7 @@ class TestTest(unittest.TestCase):
         parse_log_backup = test.count.parse_log
         test.count.parse_log = mock_parse_log
         m_open = mock_open()
-        open_name = 'util.open'
+        open_name = 'libautospec.util.open'
         with patch(open_name, m_open, create=True):
             test.check_regression('pkgdir')
 
@@ -58,7 +58,7 @@ class TestTest(unittest.TestCase):
         parse_log_backup = test.count.parse_log
         test.count.parse_log = mock_parse_log
         m_open = mock_open()
-        open_name = 'util.open'
+        open_name = 'libautospec.util.open'
         with patch(open_name, m_open, create=True):
             test.check_regression('pkgdir')
 

@@ -19,15 +19,15 @@
 # Actually build the package
 #
 
-import buildreq
+from libautospec import buildreq
 import re
-import tarball
+from libautospec import tarball
 import os
 import shutil
 import subprocess
 
-import config
-import util
+from libautospec import config
+from libautospec import util
 
 success = 0
 round = 0

@@ -27,10 +27,10 @@ import os
 import shutil
 import sys
 
-import build
-import config
-import tarball
-import util
+from libautospec import build
+from libautospec import config
+from libautospec import tarball
+from libautospec import util
 
 from subprocess import PIPE, run
 
