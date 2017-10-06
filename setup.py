@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 import sys, os
-version = "1.0.0"
+version = "1.0.1"
 
 def readme():
     with open("README.rst") as f:
@@ -25,6 +25,8 @@ setup(name="autospec",
             'Programming Language :: Python :: 3.2',
             'Programming Language :: Python :: 3.3',
             'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6',
         ],
       include_package_data = True,
 )
