@@ -72,7 +72,7 @@ def add_buildreq(req):
     return new
 
 
-def add_requires(req):
+def add_requires(req, override=False):
     """
     Add req to the global requires set if it is present in buildreqs and
     os_packages and is not banned.
@@ -84,7 +84,7 @@ def add_requires(req):
         new = False
     if req in banned_requires:
         return False
-    if req not in buildreqs and req not in config.os_packages:
+    if req not in buildreqs and req not in config.os_packages and not override:
         if req:
             print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
         return False
