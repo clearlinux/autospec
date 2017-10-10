@@ -577,7 +577,7 @@ def parse_config_files(path, bump, filemanager):
     content = read_conf_file(os.path.join(path, "requires_add"))
     for extra in content:
         print("Adding additional runtime requirement: %s." % extra)
-        buildreq.add_requires(extra)
+        buildreq.add_requires(extra, override=True)
 
     content = read_conf_file(os.path.join(path, "excludes"))
     for exclude in content:
