@@ -137,6 +137,9 @@ def main():
     parser.add_argument("--non_interactive", action="store_true",
                         default=False,
                         help="Disable interactive mode for package verification")
+    parser.add_argument("-C", "--cleanup", dest="cleanup", action="store_true",
+                        default=False,
+                        help="Clean up mock chroot after building the package")
     args = parser.parse_args()
     if len(args.archives) % 2 != 0:
         parser.error(argparse.ArgumentTypeError(
@@ -196,7 +199,7 @@ def main():
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package(filemanager)
+        build.package(filemanager, args.cleanup)
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0
