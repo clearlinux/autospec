@@ -25,6 +25,7 @@ import tarball
 import os
 import grp
 import shutil
+import subprocess
 
 import config
 import util
@@ -36,6 +37,7 @@ base_path = None
 output_path = None
 download_path = None
 mock_cmd = '/usr/bin/mock'
+uniqueext = ''
 
 
 def setup_workingdir(workingdir):
@@ -164,6 +166,36 @@ def parse_build_results(filename, returncode, filemanager):
             success = 1
 
 
+def reserve_path(path):
+    try:
+        subprocess.check_output(['sudo', 'mkdir', path], stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as err:
+        out = err.output.decode('utf-8')
+        return not "File exists" in out
+
+    return True
+
+
+def get_uniqueext(dirn, dist, name):
+    """
+    Find a unique name to create mock chroot without reusing an old one
+    """
+    # Default to tarball name
+    resultsdir = os.path.join(dirn, "{}-{}".format(dist, name))
+    if reserve_path(resultsdir):
+        return name
+
+    # Find a unique extension by checking if it exists in /var/lib/mock
+    # Increment the pathname until an unused path is found
+    resultsdir += "-1"
+    seq = 1
+    while not reserve_path(resultsdir):
+        seq += 1
+        resultsdir = resultsdir.replace("-{}".format(seq - 1), "-{}".format(seq))
+
+    return "{}-{}".format(name, seq)
+
+
 def set_mock():
     global mock_cmd
     # get group list of current user
@@ -175,18 +207,28 @@ def set_mock():
 
 def package(filemanager):
     global round
+    global uniqueext
     round = round + 1
     set_mock()
     print("Building package " + tarball.name + " round", round)
-    # call(mock_cmd + " -q -r clear --scrub=cache")
-    # call(mock_cmd + " -q -r clear --scrub=all")
+
+    # determine uniqueext only once
+    uniqueext = uniqueext or get_uniqueext("/var/lib/mock", "clear", tarball.name)
+    print("{} mock chroot at /var/lib/mock/clear-{}".format(tarball.name, uniqueext))
+
     shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
     os.makedirs('{}/results'.format(download_path))
-    util.call(mock_cmd + " -r clear --buildsrpm --sources=./ --spec={0}.spec --uniqueext={0} --result=results/ --no-cleanup-after".format(tarball.name),
+    util.call("{} -r clear --buildsrpm --sources=./ --spec={}.spec "
+              "--uniqueext={} --result=results/ --no-cleanup-after"
+              .format(mock_cmd, tarball.name, uniqueext),
               logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
+
     util.call("rm -f results/build.log", cwd=download_path)
     srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
-    returncode = util.call(mock_cmd + " -r clear  --result=results/ %s --enable-plugin=ccache  --uniqueext=%s --no-cleanup-after" % (srcrpm, tarball.name),
+    returncode = util.call("{} -r clear  --result=results/ {} "
+                           "--enable-plugin=ccache  --uniqueext={} "
+                           "--no-cleanup-after"
+                           .format(mock_cmd, srcrpm, uniqueext),
                            logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
     # sanity check the build log
     if not os.path.exists(download_path + "/results/build.log"):
