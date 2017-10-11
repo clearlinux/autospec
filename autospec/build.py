@@ -205,7 +205,7 @@ def set_mock():
             mock_cmd = 'sudo /usr/bin/mock'
 
 
-def package(filemanager):
+def package(filemanager, cleanup=False):
     global round
     global uniqueext
     round = round + 1
@@ -213,22 +213,27 @@ def package(filemanager):
     print("Building package " + tarball.name + " round", round)
 
     # determine uniqueext only once
-    uniqueext = uniqueext or get_uniqueext("/var/lib/mock", "clear", tarball.name)
+    if cleanup:
+        uniqueext = uniqueext or get_uniqueext("/var/lib/mock", "clear", tarball.name)
+        cleanup_flag = "--cleanup-after"
+    else:
+        uniqueext = tarball.name
+        cleanup_flag = "--no-cleanup-after"
+
     print("{} mock chroot at /var/lib/mock/clear-{}".format(tarball.name, uniqueext))
 
     shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
     os.makedirs('{}/results'.format(download_path))
     util.call("{} -r clear --buildsrpm --sources=./ --spec={}.spec "
-              "--uniqueext={} --result=results/ --no-cleanup-after"
-              .format(mock_cmd, tarball.name, uniqueext),
+              "--uniqueext={} --result=results/ {}"
+              .format(mock_cmd, tarball.name, uniqueext, cleanup_flag),
               logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
 
     util.call("rm -f results/build.log", cwd=download_path)
     srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
     returncode = util.call("{} -r clear  --result=results/ {} "
-                           "--enable-plugin=ccache  --uniqueext={} "
-                           "--no-cleanup-after"
-                           .format(mock_cmd, srcrpm, uniqueext),
+                           "--enable-plugin=ccache  --uniqueext={} {}"
+                           .format(mock_cmd, srcrpm, uniqueext, cleanup_flag),
                            logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
     # sanity check the build log
     if not os.path.exists(download_path + "/results/build.log"):
