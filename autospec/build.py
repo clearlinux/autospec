@@ -171,7 +171,7 @@ def reserve_path(path):
         subprocess.check_output(['sudo', 'mkdir', path], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
         out = err.output.decode('utf-8')
-        return not "File exists" in out
+        return "File exists" not in out
 
     return True
 
