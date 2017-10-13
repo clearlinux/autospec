@@ -6,3 +6,7 @@ python:
 script:
   - make check
   - make unittests
+
+branches:
+  only:
+    - master
