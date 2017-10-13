@@ -85,6 +85,8 @@ class TestDomainBasedVerifiers(unittest.TestCase):
         return None
 
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_pypi(self):
         result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
         self.assertTrue(result)
@@ -250,6 +252,8 @@ class TestUtils(unittest.TestCase):
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
+    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
+                     "Skipping this test on Travis CI.")
     def test_attempt_to_download(self):
         fakeURL = "https://download.my.url.com/file.tar.gz"
         realURLnoFile = "http://pypi.debian.net/alembic/alembic-0.8.8.non-existent.tar.gz"
