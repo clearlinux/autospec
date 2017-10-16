@@ -24,6 +24,7 @@ import re
 import shutil
 import subprocess
 import pycurl
+import configparser
 
 import build
 import buildpattern
@@ -175,11 +176,28 @@ def print_header():
 def download_tarball(target_dir):
     """
     Download tarball at url (global) to target_dir
-    """
-    global gcov_file
 
+    priority for target directory:
+    - target_dir set from args
+    - current directory if options.conf['package'] exists and
+      any of the options match what has been detected.
+    - curdir/name
+    """
     tarfile = os.path.basename(url)
-    build.download_path = target_dir if target_dir else os.path.join(os.getcwd(), name)
+    target = os.path.join(os.getcwd(), name)
+    if os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
+        config_f = configparser.ConfigParser()
+        config_f.read('options.conf')
+        if "package" in config_f.sections():
+            if (config_f["package"].get("name") == name or
+                    config_f["package"].get("url") == url or
+                    config_f["package"].get("archives") == " ".join(archives)):
+                target = os.getcwd()
+
+    if target_dir:
+        target = target_dir
+
+    build.download_path = target
     call("mkdir -p {}".format(build.download_path))
 
     # locate the tarball locally or download
@@ -453,10 +471,12 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     version = ver_arg
     archives = archives_arg
     tarfile = os.path.basename(url_arg)
-    # set gcov file information
-    set_gcov()
     # determine name and version of package
     name_and_version(name_arg, ver_arg, filemanager)
+    # set gcov file information, must be done after name is set since the gcov
+    # name is created by adding ".gcov" to the package name (if a gcov file
+    # exists)
+    set_gcov()
     # download the tarball to tar_path
     tar_path = download_tarball(target)
     # write the sha of the upstream tarfile to the "upstream" file

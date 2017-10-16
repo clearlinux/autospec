@@ -21,6 +21,7 @@ import sys
 import os
 import re
 import tempfile
+import configparser
 
 import build
 import buildpattern
@@ -97,6 +98,24 @@ def load_specfile(specfile):
     test.load_specfile(specfile)
 
 
+def read_old_metadata():
+    if not os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
+        return None, None, []
+
+    config_f = configparser.ConfigParser()
+    config_f.read('options.conf')
+    if "package" not in config_f.sections():
+        return None, None, []
+
+    archives = config_f["package"].get("archives")
+    archives = archives.split() if archives else []
+    print("ARCHIVES {}".format(archives))
+
+    return (config_f["package"].get("name"),
+            config_f["package"].get("url"),
+            archives)
+
+
 def main():
     """
     Main function for autospec
@@ -109,7 +128,7 @@ def main():
                         help="Override the package name")
     parser.add_argument("-v", "--version", action="store", dest="version", default="",
                         help="Override the package version")
-    parser.add_argument("url",
+    parser.add_argument("url", default="", nargs="?",
                         help="tarball URL (e.g."
                              " http://example.com/downloads/mytar.tar.gz)")
     parser.add_argument('-a', "--archives", action="store",
@@ -141,9 +160,20 @@ def main():
                         default=False,
                         help="Clean up mock chroot after building the package")
     args = parser.parse_args()
-    if len(args.archives) % 2 != 0:
+
+    name, url, archives = read_old_metadata()
+    name = args.name or name
+    url = args.url or url
+    archives = args.archives or archives
+
+    if not url:
         parser.error(argparse.ArgumentTypeError(
-            "-a/--archives requires an even number of arguments"))
+            "the url argument or options.conf['package']['url'] is required"))
+
+    if len(archives) % 2 != 0:
+        parser.error(argparse.ArgumentTypeError(
+            "-a/--archives or options.conf['package']['archives'] requires an "
+            "even number of arguments"))
 
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
@@ -153,7 +183,7 @@ def main():
     # of static analysis on the content of the tarball.
     #
     filemanager = files.FileManager()
-    tarball.process(args.url, args.name, args.version, args.target, args.archives, filemanager)
+    tarball.process(url, name, args.version, args.target, archives, filemanager)
     _dir = tarball.path
 
     if args.license_only:
@@ -178,7 +208,7 @@ def main():
     specdescription.scan_for_description(tarball.name, _dir)
     license.scan_for_licenses(_dir)
     commitmessage.scan_for_changes(build.download_path, _dir)
-    add_sources(build.download_path, args.archives)
+    add_sources(build.download_path, archives)
     test.scan_for_tests(_dir)
 
     #
@@ -194,7 +224,7 @@ def main():
 
     if args.integrity:
         interactive_mode = not args.non_interactive
-        pkg_integrity.check(args.url, build.download_path, interactive=interactive_mode)
+        pkg_integrity.check(url, build.download_path, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
 
     specfile.write_spec(build.download_path)
