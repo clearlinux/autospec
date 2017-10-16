@@ -268,11 +268,27 @@ failed_pats = [
      r"available", 0, 'maven')]
 
 
+def get_metadata_conf():
+    """
+    gather package metadata from the tarball module
+    """
+    metadata = {}
+    metadata['name'] = tarball.name
+    metadata['url'] = tarball.url
+    metadata['archives'] = ' '.join(tarball.archives)
+    return metadata
+
+
 def create_conf(path):
     """
     Create options.conf file. Use deprecated configuration files or defaults to populate
     """
     config_f = configparser.ConfigParser(allow_no_value=True)
+
+    # first the metadata
+    config_f['package'] = get_metadata_conf()
+
+    # next the options
     config_f['autospec'] = {}
     for fname, comment in sorted(config_options.items()):
         config_f.set('autospec', '# {}'.format(comment))
@@ -326,6 +342,7 @@ def rewrite_config_opts(path):
     Rewrite options.conf file when an option has changed (verify_required for example)
     """
     config_f = configparser.ConfigParser(allow_no_value=True)
+    config_f['package'] = get_metadata_conf()
     config_f['autospec'] = {}
 
     # Populate missing configuration options

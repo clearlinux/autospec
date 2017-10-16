@@ -38,6 +38,7 @@ url = ""
 path = ""
 tarball_prefix = ""
 gcov_file = ""
+archives = []
 
 
 def get_sha1sum(filename):
@@ -437,7 +438,7 @@ def process_archives(archives):
         write_upstream(sha1, os.path.basename(archive), mode="a")
 
 
-def process(url_arg, name_arg, ver_arg, target, archives, filemanager):
+def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     """
     Download and process the tarball at url_arg
     """
@@ -446,9 +447,11 @@ def process(url_arg, name_arg, ver_arg, target, archives, filemanager):
     global version
     global path
     global tarball_prefix
+    global archives
     url = url_arg
     name = name_arg
     version = ver_arg
+    archives = archives_arg
     tarfile = os.path.basename(url_arg)
     # set gcov file information
     set_gcov()
@@ -465,11 +468,12 @@ def process(url_arg, name_arg, ver_arg, target, archives, filemanager):
     # Now that the metadata has been collected print the header
     print_header()
     # write out the Makefile with the name, url, and archives we found
-    write_makefile(archives)
+    # DEPRECATED, this will be removed in a future version
+    write_makefile(archives_arg)
     # prepare directory and extract tarball
     prepare_and_extract(extract_cmd)
     # locate or download archives and move them into the right spot
-    process_archives(archives)
+    process_archives(archives_arg)
 
 
 def load_specfile(specfile):
