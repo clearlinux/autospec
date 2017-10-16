@@ -179,3 +179,5 @@ https://github.com/ocaml/ocamlbuild/archive/0.11.0.tar.gz,ocamlbuild,0.11.0
 https://github.com/kubernetes/kubernetes/archive/v1.7.0-alpha.0.tar.gz,kubernetes,1.7.0.alpha.0
 https://github.com/commercialhaskell/stack/releases/download/v1.4.0/stack-1.4.0-sdist-4.tar.gz,stack,1.4.0.sdist.4
 https://github.com/commercialhaskell/stack/releases/download/v1.5.0/stack-1.5.0-linux-x86_64.tar.gz,stack,1.5.0
+https://www.x.org/releases/individual/font/font-adobe-75dpi-1.0.3.tar.bz2,font-adobe-75dpi,1.0.3
+https://www.x.org/releases/individual/font/font-adobe-100dpi-1.0.3.tar.bz2,font-adobe-100dpi,1.0.3
