@@ -318,63 +318,37 @@ class TestBuildpattern(unittest.TestCase):
         self.assertIn('testpkg-python', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
-    def test_set_mock(self):
+    def test_set_mock_without_consolehelper(self):
         """
-        Test set_mock when user is not in the mock group
+        Test set_mock when /usr/bin/mock doesn't point to consolehelper
         """
-        class mock_getgrgid(object):
-            def __init__(self, g):
-                self.gr_name = 'not_mock'
+        def mock_realpath(path):
+            return path
 
-        def mock_getgroups():
-            return ['gr1', 'gr2', 'gr3']
+        realpath_backup = build.os.path.realpath
 
-        def mock_exists(path):
-            return True
-
-        getgrgid_backup = build.grp.getgrgid
-        getgroups_backup = build.os.getgroups
-        exists_backup = build.os.path.exists
-
-        build.grp.getgrgid = mock_getgrgid
-        build.os.getgroups = mock_getgroups
-        build.os.path.exists = mock_exists
+        build.os.path.realpath = mock_realpath
 
         build.set_mock()
 
-        build.grp.getgrgid = getgrgid_backup
-        build.os.getgroups = getgroups_backup
-        build.os.path.exists = exists_backup
+        build.os.path.realpath = realpath_backup
 
         self.assertEqual(build.mock_cmd, 'sudo /usr/bin/mock')
 
-    def test_set_mock_user_in_mock_group(self):
+    def test_set_mock_with_consolehelper(self):
         """
-        Test set_mock when user is in the mock group
+        Test set_mock when /usr/bin/mock points to consolehelper
         """
-        class mock_getgrgid(object):
-            def __init__(self, g):
-                self.gr_name = 'mock'
+        def mock_realpath(path):
+            return '/usr/bin/consolehelper'
 
-        def mock_getgroups():
-            return ['gr1', 'gr2', 'gr3']
+        realpath_backup = build.os.path.realpath
 
-        def mock_exists(path):
-            return True
-
-        getgrgid_backup = build.grp.getgrgid
-        getgroups_backup = build.os.getgroups
-        exists_backup = build.os.path.exists
-
-        build.grp.getgrgid = mock_getgrgid
-        build.os.getgroups = mock_getgroups
-        build.os.path.exists = mock_exists
+        build.os.path.realpath = mock_realpath
 
         build.set_mock()
 
-        build.grp.getgrgid = getgrgid_backup
-        build.os.getgroups = getgroups_backup
-        build.os.path.exists = exists_backup
+        build.os.path.realpath = realpath_backup
 
         self.assertEqual(build.mock_cmd, '/usr/bin/mock')
 
