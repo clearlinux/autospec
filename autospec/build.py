@@ -35,7 +35,6 @@ must_restart = 0
 base_path = None
 output_path = None
 download_path = None
-mock_cmd = '/usr/bin/mock'
 uniqueext = ''
 
 
@@ -195,19 +194,19 @@ def get_uniqueext(dirn, dist, name):
     return "{}-{}".format(name, seq)
 
 
-def set_mock():
-    global mock_cmd
+def get_mock_cmd():
     # Some distributions (e.g. Fedora) use consolehelper to run mock,
     # while others (e.g. Clear Linux) expect the user run it via sudo.
-    if not (os.path.basename(os.path.realpath('/usr/bin/mock')) == 'consolehelper'):
-        mock_cmd = 'sudo /usr/bin/mock'
+    if os.path.basename(os.path.realpath('/usr/bin/mock')) == 'consolehelper':
+        return '/usr/bin/mock'
+    return 'sudo /usr/bin/mock'
 
 
 def package(filemanager, cleanup=False):
     global round
     global uniqueext
     round = round + 1
-    set_mock()
+    mock_cmd = get_mock_cmd()
     print("Building package " + tarball.name + " round", round)
 
     # determine uniqueext only once

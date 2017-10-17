@@ -25,7 +25,6 @@ class TestBuildpattern(unittest.TestCase):
         build.base_path = None
         build.output_path = None
         build.download_path = None
-        build.mock_cmd = '/usr/bin/mock'
         build.buildreq.buildreqs = set()
         build.config.config_opts['32bit'] = False
 
@@ -318,9 +317,9 @@ class TestBuildpattern(unittest.TestCase):
         self.assertIn('testpkg-python', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
-    def test_set_mock_without_consolehelper(self):
+    def test_get_mock_cmd_without_consolehelper(self):
         """
-        Test set_mock when /usr/bin/mock doesn't point to consolehelper
+        Test get_mock_cmd when /usr/bin/mock doesn't point to consolehelper
         """
         def mock_realpath(path):
             return path
@@ -329,15 +328,15 @@ class TestBuildpattern(unittest.TestCase):
 
         build.os.path.realpath = mock_realpath
 
-        build.set_mock()
+        mock_cmd = build.get_mock_cmd()
 
         build.os.path.realpath = realpath_backup
 
-        self.assertEqual(build.mock_cmd, 'sudo /usr/bin/mock')
+        self.assertEqual(mock_cmd, 'sudo /usr/bin/mock')
 
-    def test_set_mock_with_consolehelper(self):
+    def test_get_mock_cmd_with_consolehelper(self):
         """
-        Test set_mock when /usr/bin/mock points to consolehelper
+        Test get_mock_cmd when /usr/bin/mock points to consolehelper
         """
         def mock_realpath(path):
             return '/usr/bin/consolehelper'
@@ -346,11 +345,11 @@ class TestBuildpattern(unittest.TestCase):
 
         build.os.path.realpath = mock_realpath
 
-        build.set_mock()
+        mock_cmd = build.get_mock_cmd()
 
         build.os.path.realpath = realpath_backup
 
-        self.assertEqual(build.mock_cmd, '/usr/bin/mock')
+        self.assertEqual(mock_cmd, '/usr/bin/mock')
 
     def test_get_uniqueext_first(self):
         """
