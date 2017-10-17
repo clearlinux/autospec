@@ -235,7 +235,7 @@ def get_signature_url(package_url):
 
 
 def get_hash_url(package_url):
-    if 'download.gnome.org' in package_url:
+    if 'download.gnome.org' in package_url or 'ftp.gnome.org' in package_url:
         return package_url.replace('.tar.xz', '.sha256sum')
     return None
 
@@ -715,7 +715,7 @@ def attempt_verification_per_domain(package_path, url):
     netloc = urlparse(url).netloc
     if 'pypi' in netloc:
         domain = 'pypi'
-    elif 'download.gnome.org' in netloc:
+    elif 'download.gnome.org' in netloc or 'ftp.gnome.org' in netloc:
         domain = 'gnome.org'
     else:
         domain = 'unknown'
