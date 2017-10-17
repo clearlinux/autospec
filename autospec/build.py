@@ -23,7 +23,6 @@ import buildreq
 import re
 import tarball
 import os
-import grp
 import shutil
 import subprocess
 
@@ -198,11 +197,10 @@ def get_uniqueext(dirn, dist, name):
 
 def set_mock():
     global mock_cmd
-    # get group list of current user
-    user_grps = [grp.getgrgid(g).gr_name for g in os.getgroups()]
-    if os.path.exists('/usr/bin/mock'):
-        if 'mock' not in user_grps:
-            mock_cmd = 'sudo /usr/bin/mock'
+    # Some distributions (e.g. Fedora) use consolehelper to run mock,
+    # while others (e.g. Clear Linux) expect the user run it via sudo.
+    if not (os.path.basename(os.path.realpath('/usr/bin/mock')) == 'consolehelper'):
+        mock_cmd = 'sudo /usr/bin/mock'
 
 
 def package(filemanager, cleanup=False):
