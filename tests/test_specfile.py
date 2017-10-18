@@ -343,15 +343,21 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_files base test.
         """
-        self.specfile.packages["main"] = ["mainfile1", "mainfile2", "mainfile3"]
+        self.specfile.packages["main"] = ["mainfile1", "/mainfile2", "/mainfile3",
+                "/mainfile 4", "mainfile\t5", "%foo /mainfile6", "%bar /mainfile 7"]
         self.specfile.packages["ignore"] = ["ignorepkg"]
         self.specfile.packages["other"] = ["other2", "other1"]
         self.specfile.write_files()
+        # Note the special sorting
         expect = ["\n%files\n",
                   "%defattr(-,root,root,-)\n",
+                  '%bar "/mainfile 7"\n',
+                  "%foo /mainfile6\n",
+                  '"/mainfile 4"\n',
+                  "/mainfile2\n",
+                  "/mainfile3\n",
+                  '"mainfile\t5"\n',
                   "mainfile1\n",
-                  "mainfile2\n",
-                  "mainfile3\n",
                   "\n%files other\n",
                   "%defattr(-,root,root,-)\n",
                   "other1\n",
