@@ -315,7 +315,7 @@ class Specfile(object):
         self._write("%defattr(-,root,root,-)\n")
         if "main" in self.packages:
             for filename in sorted(self.packages["main"]):
-                self._write("{}\n".format(filename))
+                self._write("{}\n".format(self.quote_filename(filename)))
 
         for pkg in sorted(self.packages):
             if pkg in ["ignore", "main", "locales"]:
@@ -324,7 +324,7 @@ class Specfile(object):
             self._write("\n%files {}\n".format(pkg))
             self._write("%defattr(-,root,root,-)\n")
             for filename in sorted(self.packages[pkg]):
-                self._write("{}\n".format(filename))
+                self._write("{}\n".format(self.quote_filename(filename)))
 
     def write_lang_files(self):
         """
@@ -1162,3 +1162,31 @@ class Specfile(object):
 
     def _write_strip(self, string):
         self.specfile.write_strip(string)
+
+    def quote_filename(self, filename):
+        """
+        Quotes the filename, if necessary. Identifies and skips any RPM directive prefix.
+        """
+        # Characters that require quoting -- only those with special
+        # meaning in specfiles
+        special_chars = set(" \t")
+        # Build up the output as a string
+        quoted = ''
+        # Capture any directive prefix separately from actual filename
+        #                          (1                   )(3 )
+        directive_re = re.compile("(%\w+(\([^\)]*\))?\s+)(.*)")
+        parts = directive_re.match(filename)
+        if parts:
+            # Add prefix to the output
+            quoted += parts.group(1)
+            # Set the filename to the remaining portion
+            filename = parts.group(3)
+
+        # Now check for special characters
+        if any(c in filename for c in special_chars):
+            # Quote the filename
+            quoted += '"{}"'.format(filename)
+        else:
+            # Add the filename as-is
+            quoted += filename
+        return quoted
