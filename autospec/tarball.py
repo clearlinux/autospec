@@ -208,20 +208,66 @@ def convert_version(ver_str):
     """
     Remove disallowed characters from the version
     """
-    suffix = ''
-    # remove architecture string
-    ver_str = ver_str.replace('x86_64', '')
-    ver_str = ver_str.replace(name, '')
+    # banned substrings. It is better to remove these here instead of filtering
+    # them out with expensive regular expressions
+    banned_subs = ["x86.64", "source", "src", "all", "bin", "release", "rh",
+                   "ga", ".ce", "lcms", "onig", "linux", "gc", "sdk", "orig",
+                   "jurko"]
+
+    # package names may be modified in the version string by adding "lib" for
+    # example. Remove these from the name before trying to remove the name from
+    # the version
+    name_mods = ["lib", "core", "pom", "opa-"]
+
+    # enforce lower-case strings to make them easier to standardize
+    ver_str = ver_str.lower()
+    # remove the package name from the version string
+    ver_str = ver_str.replace(name.lower(), '')
+    # handle modified name substrings in the version string
+    for mod in name_mods:
+        ver_str = ver_str.replace(name.replace(mod, ""), "")
+
+    # replace illegal characters
     ver_str = ver_str.strip().replace('-', '.').replace('_', '.')
-    ver_str_pat = r'[0-9\.]+(beta|pre|b|alpha|sdist)([\.0-9]*)$'
-    match = re.search(ver_str_pat, ver_str)
-    # it is important the first group matches, not just the second
-    if match and match.group(1):
-        # match.group(2) is an empty string if it was not matched
-        suffix = match.group(1) + match.group(2)
-        ver_str = re.sub(r'{}$'.format(suffix), '', ver_str)
-    ver_str = ''.join(c for c in ver_str if c.isdigit() or c == '.')
-    return '{}.{}'.format(ver_str.strip('.'), suffix) if suffix else ver_str.strip('.')
+
+    # remove banned substrings
+    for sub in banned_subs:
+        ver_str = ver_str.replace(sub, "")
+
+    # remove consecutive '.' characters
+    while ".." in ver_str:
+        ver_str = ver_str.replace("..", ".")
+
+    return ver_str.strip(".")
+
+
+def detect_build_from_url(url):
+    """
+    Detect build patterns and build requirements from the patterns detected
+    in the url.
+    """
+    # R package
+    if "cran.r-project.org" in url or "cran.rstudio.com" in url:
+        buildpattern.set_build_pattern("R", 10)
+        buildreq.add_buildreq("clr-R-helpers")
+
+    # python
+    if "pypi.python.org" in url or "pypi.debian.net" in url:
+        buildpattern.set_build_pattern("distutils23", 10)
+        buildreq.add_buildreq("python3-dev")
+        buildreq.add_buildreq("python-dev")
+
+    # cpan
+    if ".cpan.org/" in url or ".metacpan.org/" in url:
+        buildpattern.set_build_pattern("cpan", 10)
+
+    # ruby
+    if "rubygems.org/" in url:
+        buildpattern.set_build_pattern("ruby", 10)
+
+    # maven
+    if ".maven." in url:
+        buildpattern.set_build_pattern("maven", 10)
 
 
 def name_and_version(name_arg, version_arg, filemanager):
@@ -249,16 +295,12 @@ def name_and_version(name_arg, version_arg, filemanager):
 
     # it is important for the more specific patterns to come first
     pattern_options = [
-        r"(.*?)[\-_](v*[0-9]+[a-zalpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.orig\.tar",
-        r"(.*?)[\-_](v*[0-9]+[alpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.src\.(tgz|tar|zip)",
         # handle font packages with names ending in -nnndpi
-        r"(.*-[0-9]+dpi)[\-_](v*[0-9]+[alpha\+_sbpfourcesigedsvstableP0-9\.\-\~]*)\.(tgz|tar|zip)",
-        r"(.*?)[\-_](v*[0-9]+[alpha\+_sbpfourcesigedsvstableP0-9\.\-\~]*)\.(tgz|tar|zip)",
-        r"(.*?)[\-_](v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~]*)(-.*?)?\.tar",
+        r"(.*-[0-9]+dpi)[-_]([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.(tgz|tar|zip)",
+        r"(.*?)[-_][vs]?([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.(tgz|tar|zip)",
     ]
     for pattern in pattern_options:
-        p = re.compile(pattern)
-        m = p.search(tarfile)
+        m = re.search(pattern, tarfile)
         if m:
             name = m.group(1).strip()
             version = convert_version(m.group(2))
@@ -266,96 +308,80 @@ def name_and_version(name_arg, version_arg, filemanager):
 
     rawname = name
     # R package
-    if url.find("cran.r-project.org") > 0 or url.find("cran.rstudio.com") > 0:
-        buildpattern.set_build_pattern("R", 10)
+    if "cran.r-project.org" in url or "cran.rstudio.com" in url:
         filemanager.want_dev_split = False
-        buildreq.add_buildreq("clr-R-helpers")
-        p = re.compile(r"([A-Za-z0-9.]+)_(v*[0-9]+[\+_spbfourcesigedsvstableP0-9\.\~\-]*)\.tar\.gz")
-        m = p.search(tarfile)
+        m = re.search(r"([A-Za-z0-9.]+)_(v*[0-9]+[a-zA-Z0-9\+_\.\~\-]*)\.tar\.gz",
+                      tarfile)
         if m:
             name = "R-" + m.group(1).strip()
             rawname = m.group(1).strip()
-            version = m.group(2).strip().replace('-', '.')
+            version = convert_version(m.group(2))
 
-    if url.find("pypi.python.org") > 0:
-        buildpattern.set_build_pattern("distutils23", 10)
-        url = "http://pypi.debian.net/" + name + "/" + tarfile
-        buildreq.add_buildreq("python3-dev")
-        buildreq.add_buildreq("python-dev")
-
-    if url.find("pypi.debian.net") > 0:
-        buildpattern.set_build_pattern("distutils23", 10)
-        buildreq.add_buildreq("python3-dev")
-        buildreq.add_buildreq("python-dev")
-
-    if url.find(".cpan.org/CPAN/") > 0:
-        buildpattern.set_build_pattern("cpan", 10)
-        if name:
-            name = "perl-" + name
-    if url.find(".metacpan.org/") > 0:
-        buildpattern.set_build_pattern("cpan", 10)
-        if name:
-            name = "perl-" + name
+    if ".cpan.org/" in url or ".metacpan.org/" in url and name:
+        name = "perl-" + name
 
     if "github.com" in url:
         # define regex accepted for valid packages, important for specific
         # patterns to come before general ones
-        github_patterns = [r"https?://github.com/.*/(.*?)/archive/(.*)-final.tar",
-                           r"https?://github.com/.*/.*/archive/[0-9a-fA-F]{1,40}\/(.*)\-(.*).tar",
-                           r"https?://github.com/.*/(.*?)/archive/v?(.*).orig.tar",
-                           r"https?://github.com/.*/(.*?)/archive/(.*).zip",
-                           r"https?://github.com/.*/(.*?)/archive/v?(.*).tar",
+        github_patterns = [r"https?://github.com/.*/(.*?)/archive/[v|r]?.*/(.*).tar",
+                           r"https?://github.com/.*/(.*?)/archive/[-a-zA-Z]*-(.*).tar",
+                           r"https?://github.com/.*/(.*?)/archive/[vVrR]?(.*).tar",
                            r"https?://github.com/.*/(.*?)/releases/download/v.*/(.*).tar"]
 
         for pattern in github_patterns:
-            p = re.compile(pattern)
-            m = p.search(url)
+            m = re.search(pattern, url)
             if m:
                 name = m.group(1).strip()
                 rawname = name
                 version = convert_version(m.group(2))
                 break
 
-    if url.find("bitbucket.org") > 0:
-        p = re.compile(r"https?://bitbucket.org/.*/(.*?)/.*/([.0-9a-zA-Z_-]*?).tar")
-        m = p.search(url)
+    if "mirrors.kernel.org" in url:
+        m = re.search(r".*/sourceware/(.*?)/releases/(.*?).tgz", url)
         if m:
             name = m.group(1).strip()
             version = convert_version(m.group(2))
-        else:
-            version = "1"
+
+    if "sourceforge.net" in url:
+        scf_pats = [r"projects/.*/files/(.*?)/(.*?)/[^-]*(-src)?.tar.gz",
+                    r"downloads.sourceforge.net/.*/([a-zA-Z]+)([-0-9\.]*)(-src)?.tar.gz"]
+        for pat in scf_pats:
+            m = re.search(pat, url)
+            if m:
+                name = m.group(1).strip()
+                version = convert_version(m.group(2))
+                break
+
+    if "bitbucket.org" in url:
+        bitbucket_pats = [r"/.*/(.*?)/.*/.*v([-\.0-9a-zA-Z_]*?).(tar|zip)",
+                          r"/.*/(.*?)/.*/([-\.0-9a-zA-Z_]*?).(tar|zip)"]
+        for pat in bitbucket_pats:
+            m = re.search(pat, url)
+            version = 1
+            if m:
+                name = m.group(1).strip()
+                version = convert_version(m.group(2))
+                break
 
     # ruby
-    if url.find("rubygems.org/") > 0:
-        buildpattern.set_build_pattern("ruby", 10)
-        p = re.compile(r"(.*?)[\-_](v*[0-9]+[alpha\+_spbfourcesigedsvstableP0-9\.\-\~]*)\.gem")
-        m = p.search(tarfile)
+    if "rubygems.org/" in url:
+        m = re.search(r"(.*?)[\-_](v*[0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.gem", tarfile)
         if m:
             name = "rubygem-" + m.group(1).strip()
-            # remove release candidate tag
+            # remove release candidate tag from the package name
+            # https://rubygems.org/downloads/ruby-rc4-0.1.5.gem
             b = name.find("-rc")
             if b > 0:
                 name = name[:b]
             rawname = m.group(1).strip()
-            version = m.group(2).strip()
-            b = version.find("-")
-            if b >= 0:
-                version = version[:b]
+            version = convert_version(m.group(2))
 
     # maven
-    if url.find("maven.org") > 0:
-        buildpattern.set_build_pattern("maven", 10)
-
-    if not name:
-        split = url.split('/')
-        if len(split) > 3 and split[-2] in ('archive', 'tarball'):
-            name = split[-3]
-            version = split[-1]
-            version = version.lstrip('v')
-            # remove extension
-            version = version.rsplit('.', 1)[0]
-            if version.endswith('.tar'):
-                version = version.replace('.tar', '')
+    if ".maven." in url:
+        m = re.search(r"/maven.*/org/.*/(.*?)/.*/.*[\-_]([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.jar", url)
+        if m:
+            name = m.group(1).strip()
+            version = convert_version(m.group(2))
 
     # override name and version from commandline
     name = name_arg if name_arg else name
@@ -473,6 +499,8 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     tarfile = os.path.basename(url_arg)
     # determine name and version of package
     name_and_version(name_arg, ver_arg, filemanager)
+    # determine build pattern and build requirements from url
+    detect_build_from_url(url)
     # set gcov file information, must be done after name is set since the gcov
     # name is created by adding ".gcov" to the package name (if a gcov file
     # exists)
