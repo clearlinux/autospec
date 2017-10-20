@@ -153,6 +153,9 @@ def main():
                         default=False,
                         help="Search for package signature from source URL and "
                              "attempt to verify package")
+    parser.add_argument("-p", "--prep-only", action="store_true",
+                        default=False,
+                        help="Only perform preparatory work on package")
     parser.add_argument("--non_interactive", action="store_true",
                         default=False,
                         help="Disable interactive mode for package verification")
@@ -175,6 +178,14 @@ def main():
             "-a/--archives or options.conf['package']['archives'] requires an "
             "even number of arguments"))
 
+    if args.prep_only:
+        package(args, url, name, archives, "./workingdir")
+    else:
+        with tempfile.TemporaryDirectory() as workingdir:
+            package(args, url, name, archives, workingdir)
+
+
+def package(args, url, name, archives, workingdir):
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
 
@@ -185,6 +196,11 @@ def main():
     filemanager = files.FileManager()
     tarball.process(url, name, args.version, args.target, archives, filemanager)
     _dir = tarball.path
+
+    if args.prep_only:
+        print("Exiting after prep due to --prep-only flag")
+        print("Results under './workingdir'")
+        exit(0)
 
     if args.license_only:
         try:
@@ -268,5 +284,4 @@ def main():
 
 
 if __name__ == '__main__':
-    with tempfile.TemporaryDirectory() as workingdir:
-        main()
+    main()
