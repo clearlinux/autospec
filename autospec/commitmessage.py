@@ -32,7 +32,7 @@ import config
 import tarball
 import util
 
-from subprocess import Popen, PIPE, TimeoutExpired, run
+from subprocess import PIPE, run
 
 
 def scan_for_changes(download_path, directory):
