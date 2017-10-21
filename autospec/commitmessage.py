@@ -176,8 +176,10 @@ def process_git(giturl, oldversion, newversion):
     git history into a commit message
     """
 
-    oldtag = oldversion
-    newtag = newversion
+    oldtag = ""
+    guessed_oldtag = oldversion
+    newtag = ""
+    guessed_newtag = newversion
 
     if len(giturl) < 1:
         return ""
@@ -191,10 +193,19 @@ def process_git(giturl, oldversion, newversion):
     for t in tags:
         i = t.find(oldversion)
         if i != -1:
+            guessed_oldtag = t
+        if t == oldversion or t == "v" + oldversion:
             oldtag = t
         i = t.find(newversion)
         if i != -1:
+            guessed_newtag = t
+        if t == newversion or t == "v" + newversion:
             newtag = t
+
+    if oldtag == "":
+        oldtag = guessed_oldtag
+    if newtag == "":
+        newtag = guessed_newtag
 
     p = run(["git", "-C", "results/" + tarball.name, "log", oldtag + ".." + newtag], stdout=PIPE)
     fulllog = p.stdout.decode('utf-8').split('\n')
