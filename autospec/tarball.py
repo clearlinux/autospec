@@ -175,6 +175,8 @@ def print_header():
 
 
 def download_tarball(target_dir):
+    global giturl
+
     """
     Download tarball at url (global) to target_dir
 
