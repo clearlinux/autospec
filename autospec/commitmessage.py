@@ -32,6 +32,8 @@ import config
 import tarball
 import util
 
+from subprocess import Popen, PIPE, TimeoutExpired, run
+
 
 def scan_for_changes(download_path, directory):
     """
@@ -168,6 +170,43 @@ def process_NEWS(newsfile):
     return commitmessage, cves
 
 
+def process_git(giturl, oldversion, newversion):
+    """
+    process_git() checks out a git tree and tries to turn the
+    git history into a commit message
+    """
+
+    oldtag = oldversion
+    newtag = newversion
+
+    if len(giturl) < 1:
+        return ""
+    if oldversion == newversion:
+        return ""
+
+    run(["git", "-C", "results", "clone", giturl])
+    p = run(["git", "-C", "results/" + tarball.name, "tag"], stdout=PIPE)
+    tags = p.stdout.decode('utf-8').split('\n')
+
+    for t in tags:
+        i = t.find(oldversion)
+        if i != -1:
+            oldtag = t
+        i = t.find(newversion)
+        if i != -1:
+            newtag = t
+
+    p = run(["git", "-C", "results/" + tarball.name, "log", oldtag + ".." + newtag], stdout=PIPE)
+    fulllog = p.stdout.decode('utf-8').split('\n')
+    p = run(["git", "-C", "results/" + tarball.name, "shortlog", oldtag + ".." + newtag], stdout=PIPE)
+    shortlog = p.stdout.decode('utf-8').split('\n')
+
+    if len(fulllog) < 15:
+        return fulllog
+    else:
+        return shortlog
+
+
 def guess_commit_message():
     """
     guess_commit_message() parses newsfiles and determines a sane commit
@@ -199,6 +238,9 @@ def guess_commit_message():
     if config.old_version is not None and config.old_version != tarball.version:
         commitmessage.append("{}: Autospec creation for update from version {} to version {}"
                              .format(tarball.name, config.old_version, tarball.version))
+        if tarball.giturl != "":
+            gitmsg = process_git(tarball.giturl, config.old_version, tarball.version)
+            commitmessage.extend(gitmsg)
     else:
         if cves:
             commitmessage.append("{}: Fix for {}"
