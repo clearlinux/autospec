@@ -40,6 +40,7 @@ path = ""
 tarball_prefix = ""
 gcov_file = ""
 archives = []
+giturl = ""
 
 
 def get_sha1sum(filename):
@@ -193,6 +194,8 @@ def download_tarball(target_dir):
                     config_f["package"].get("url") == url or
                     config_f["package"].get("archives") == " ".join(archives)):
                 target = os.getcwd()
+            if "giturl" in config_f["package"]:
+                giturl = config_f["package"].get("giturl")
 
     if target_dir:
         target = target_dir
@@ -278,6 +281,7 @@ def name_and_version(name_arg, version_arg, filemanager):
     global rawname
     global version
     global url
+    global giturl
 
     tarfile = os.path.basename(url)
 
@@ -323,17 +327,18 @@ def name_and_version(name_arg, version_arg, filemanager):
     if "github.com" in url:
         # define regex accepted for valid packages, important for specific
         # patterns to come before general ones
-        github_patterns = [r"https?://github.com/.*/(.*?)/archive/[v|r]?.*/(.*).tar",
-                           r"https?://github.com/.*/(.*?)/archive/[-a-zA-Z]*-(.*).tar",
-                           r"https?://github.com/.*/(.*?)/archive/[vVrR]?(.*).tar",
-                           r"https?://github.com/.*/(.*?)/releases/download/v.*/(.*).tar"]
+        github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/[v|r]?.*/(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z]*-(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/archive/[vVrR]?(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/releases/download/v.*/(.*).tar"]
 
         for pattern in github_patterns:
             m = re.search(pattern, url)
             if m:
-                name = m.group(1).strip()
+                name = m.group(2).strip()
                 rawname = name
-                version = convert_version(m.group(2))
+                version = convert_version(m.group(3))
+                giturl = "https://github.com/" + m.group(1).strip() + "/" + name + ".git"
                 break
 
     if "mirrors.kernel.org" in url:

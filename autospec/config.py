@@ -276,6 +276,7 @@ def get_metadata_conf():
     metadata['name'] = tarball.name
     metadata['url'] = tarball.url
     metadata['archives'] = ' '.join(tarball.archives)
+    metadata['giturl'] = tarball.giturl
     return metadata
 
 
