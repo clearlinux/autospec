@@ -184,7 +184,7 @@ def process_git(giturl, oldversion, newversion):
     if oldversion == newversion:
         return ""
 
-    run(["git", "-C", "results", "clone", giturl])
+    run(["git", "-C", "results", "clone", giturl, tarball.name])
     p = run(["git", "-C", "results/" + tarball.name, "tag"], stdout=PIPE)
     tags = p.stdout.decode('utf-8').split('\n')
 
@@ -266,7 +266,7 @@ def guess_commit_message():
         commitmessage.append("")
 
     util.write_out(os.path.join(build.download_path, "commitmsg"),
-                   "\n".join(commitmessage) + "\n", encode="latin-1")
+                   "\n".join(commitmessage) + "\n")
 
     print("Guessed commit message:")
     try:
