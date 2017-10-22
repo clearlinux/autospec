@@ -251,6 +251,7 @@ def guess_commit_message():
                              .format(tarball.name, config.old_version, tarball.version))
         if tarball.giturl != "":
             gitmsg = process_git(tarball.giturl, config.old_version, tarball.version)
+            commitmessage.append("")
             commitmessage.extend(gitmsg)
     else:
         if cves:
