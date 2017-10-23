@@ -68,7 +68,7 @@ Usage: ``python3 autospec.py [options] URL``
 -l, --license-only                              Only scan for license files
 -b, --skip-bump                                 Don't bump release number
 -c CONFIG, --config CONFIG                      Set configuration file to use
--t DIRECTORY --target DIRECTORY                 Set location to create or use
+-t DIRECTORY, --target DIRECTORY                Set location to create or use
 
 
 
