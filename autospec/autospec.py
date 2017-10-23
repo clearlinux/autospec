@@ -38,6 +38,7 @@ import commitmessage
 import pkg_integrity
 import specfiles
 import pkg_scan
+import infile_parser
 
 from util import print_fatal, binary_in_path, write_out
 from abireport import examine_abi
@@ -196,6 +197,9 @@ def main():
     parser.add_argument("-C", "--cleanup", dest="cleanup", action="store_true",
                         default=False,
                         help="Clean up mock chroot after building the package")
+    parser.add_argument("--infile", action="store", dest="infile", default="",
+                        help="type of input file for .specfile creation")
+
     args = parser.parse_args()
 
     name, url, archives = read_old_metadata()
@@ -269,6 +273,13 @@ def package(args, url, name, archives, workingdir):
     filemanager.load_specfile(specfile)
     load_specfile(specfile)
 
+    #
+    # If infile is passed, parse it and overwrite the specfile configurations
+    # with the newly found values.
+    #
+    if args.infile:
+        ext = args.infile.split('.')[-1]
+        specfile = getattr(infile_parser, 'parse_' + ext)(args.infile, specfile)
     print("\n")
 
     if args.integrity:
