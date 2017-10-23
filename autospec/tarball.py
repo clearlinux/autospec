@@ -454,7 +454,7 @@ def prepare_and_extract(extract_cmd):
     """
     shutil.rmtree(os.path.join(build.base_path, name), ignore_errors=True)
     shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
-    os.makedirs("{}".format(build.output_path), exist_ok=True)
+    os.makedirs("{}".format(build.base_path), exist_ok=True)
     call("mkdir -p %s" % build.download_path)
     call(extract_cmd)
 

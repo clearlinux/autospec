@@ -23,7 +23,6 @@ class TestBuildpattern(unittest.TestCase):
         build.round = 0
         build.must_restart = 0
         build.base_path = None
-        build.output_path = None
         build.download_path = None
         build.buildreq.buildreqs = set()
         build.config.config_opts['32bit'] = False
@@ -35,9 +34,7 @@ class TestBuildpattern(unittest.TestCase):
         build.tarball.name = "testtarball"
         build.setup_workingdir("test_directory")
         self.assertEqual(build.base_path, "test_directory")
-        self.assertEqual(build.output_path, "test_directory/output")
-        self.assertEqual(build.download_path,
-                         "test_directory/output/testtarball")
+        self.assertEqual(build.download_path, "test_directory/testtarball")
 
     def test_simple_pattern_pkgconfig(self):
         """
