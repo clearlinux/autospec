@@ -33,18 +33,15 @@ success = 0
 round = 0
 must_restart = 0
 base_path = None
-output_path = None
 download_path = None
 uniqueext = ''
 
 
 def setup_workingdir(workingdir):
     global base_path
-    global output_path
     global download_path
     base_path = workingdir
-    output_path = os.path.join(base_path, "output")
-    download_path = os.path.join(output_path, tarball.name)
+    download_path = os.path.join(base_path, tarball.name)
 
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
