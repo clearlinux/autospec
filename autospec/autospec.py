@@ -116,6 +116,28 @@ def read_old_metadata():
             archives)
 
 
+def write_prep(workingdir):
+    """
+    Write metadata to the local workingdir when --prep-only is used
+    """
+    if config.urlban:
+        used_url = re.sub(config.urlban, "localhost", tarball.url)
+    else:
+        used_url = tarball.url
+
+    print()
+    print("Exiting after prep due to --prep-only flag")
+    print()
+    print("Results under ./workingdir")
+    print("Source  (./workingdir/{})".format(tarball.tarball_prefix))
+    print("Name    (./workingdir/name)    :", tarball.name)
+    print("Version (./workingdir/version) :", tarball.version)
+    print("URL     (./workingdir/source0) :", used_url)
+    write_out(os.path.join(workingdir, "name"), tarball.name)
+    write_out(os.path.join(workingdir, "version"), tarball.version)
+    write_out(os.path.join(workingdir, "source0"), used_url)
+
+
 def main():
     """
     Main function for autospec
@@ -197,20 +219,6 @@ def package(args, url, name, archives, workingdir):
     tarball.process(url, name, args.version, args.target, archives, filemanager)
     _dir = tarball.path
 
-    if args.prep_only:
-        print()
-        print("Exiting after prep due to --prep-only flag")
-        print()
-        print("Results under ./workingdir")
-        print("Source  (./workingdir/{})".format(tarball.tarball_prefix))
-        print("Name    (./workingdir/name)    :", tarball.name)
-        print("Version (./workingdir/version) :", tarball.version)
-        print("URL     (./workingdir/source0) :", tarball.url)
-        write_out(os.path.join(workingdir, "name"), tarball.name)
-        write_out(os.path.join(workingdir, "version"), tarball.version)
-        write_out(os.path.join(workingdir, "source0"), tarball.url)
-        exit(0)
-
     if args.license_only:
         try:
             with open(os.path.join(build.download_path,
@@ -227,6 +235,10 @@ def package(args, url, name, archives, workingdir):
     config.config_file = args.config
     config.parse_config_files(build.download_path, args.bump, filemanager)
     config.parse_existing_spec(build.download_path, tarball.name)
+
+    if args.prep_only:
+        write_prep(workingdir)
+        exit(0)
 
     buildreq.set_build_req()
     buildreq.scan_for_configure(_dir)
