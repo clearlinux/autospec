@@ -198,8 +198,17 @@ def package(args, url, name, archives, workingdir):
     _dir = tarball.path
 
     if args.prep_only:
+        print()
         print("Exiting after prep due to --prep-only flag")
-        print("Results under './workingdir'")
+        print()
+        print("Results under ./workingdir")
+        print("Source  (./workingdir/{})".format(tarball.tarball_prefix))
+        print("Name    (./workingdir/name)    :", tarball.name)
+        print("Version (./workingdir/version) :", tarball.version)
+        print("URL     (./workingdir/source0) :", tarball.url)
+        write_out(os.path.join(workingdir, "name"), tarball.name)
+        write_out(os.path.join(workingdir, "version"), tarball.version)
+        write_out(os.path.join(workingdir, "source0"), tarball.url)
         exit(0)
 
     if args.license_only:
