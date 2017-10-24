@@ -31,11 +31,11 @@ def test_generator(url, name, version):
         tarball.giturl = ''
         tarball.url = url
         tarball.name_and_version('', '', FileManager())
-        self.assertEqual(tarball.name, name)
-        self.assertEqual(tarball.version, version)
+        self.assertEqual(name, tarball.name)
+        self.assertEqual(version, tarball.version)
         if re.match("https?://github.com", url) != None:
             self.assertIsNotNone(
-                    re.match("https://github.com/[^/]+/"+tarball.name+".git",
+                    re.match("https://github.com/[^/]+/"+tarball.repo+".git",
                     tarball.giturl))
 
     return test_packageurl
