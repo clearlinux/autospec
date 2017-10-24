@@ -284,6 +284,7 @@ def name_and_version(name_arg, version_arg, filemanager):
     global version
     global url
     global giturl
+    global repo
 
     tarfile = os.path.basename(url)
 
@@ -338,10 +339,11 @@ def name_and_version(name_arg, version_arg, filemanager):
         for pattern in github_patterns:
             m = re.search(pattern, url)
             if m:
-                name = m.group(2).strip()
+                repo = m.group(2).strip()
+                name = repo
                 rawname = name
                 version = convert_version(m.group(3))
-                giturl = "https://github.com/" + m.group(1).strip() + "/" + name + ".git"
+                giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
 
     if "mirrors.kernel.org" in url:
