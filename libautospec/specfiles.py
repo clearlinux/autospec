@@ -25,9 +25,9 @@ import re
 import time
 from collections import OrderedDict
 
-import config
+from libautospec import config
 
-from util import _file_write
+from libautospec.util import _file_write
 
 
 class Specfile(object):

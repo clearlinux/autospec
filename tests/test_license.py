@@ -1,4 +1,4 @@
-import license
+from libautospec import license
 import unittest
 import pycurl
 import tempfile
@@ -55,7 +55,7 @@ class TestLicense(unittest.TestCase):
         # Calls out to tarball.get_sha1sum to get the hash of the license
         # we might as well test that is returning what it should because it
         # doesn't call any external resources, it just calculates the hash.
-        open_name = 'tarball.open'
+        open_name = 'libautospec.tarball.open'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
             content = copyingf.read()
 
@@ -72,7 +72,7 @@ class TestLicense(unittest.TestCase):
         # Calls out to tarball.get_sha1sum to get the hash of the license
         # we might as well test that is returning what it should because it
         # doesn't call any external resources, it just calculates the hash.
-        open_name = 'tarball.open'
+        open_name = 'libautospec.tarball.open'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
             # note the replace corrupting the file contents
             content = copyingf.read().replace(b"GNU", b"SNU")
@@ -110,8 +110,8 @@ class TestLicense(unittest.TestCase):
         # doesn't call any external resources, it just calculates the hash.
         # Also patch the open in license.py
         m_open = mock_open(read_data=content)
-        with patch('tarball.open', m_open, create=True):
-            with patch('license.open', m_open, create=True):
+        with patch('libautospec.tarball.open', m_open, create=True):
+            with patch('libautospec.license.open', m_open, create=True):
                 # let's check that the proper thing is being printed as well
                 out = StringIO()
                 with redirect_stdout(out):

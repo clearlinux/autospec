@@ -26,10 +26,10 @@ import subprocess
 import pycurl
 import configparser
 
-import build
-import buildpattern
-import buildreq
-from util import call, print_fatal, write_out
+from libautospec import build
+from libautospec import buildpattern
+from libautospec import buildreq
+from libautospec.util import call, print_fatal, write_out
 
 name = ""
 rawname = ""

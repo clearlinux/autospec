@@ -25,7 +25,7 @@ import subprocess
 import re
 import os
 import sys
-import util
+from libautospec import util
 import shutil
 
 valid_dirs = ["/usr/lib", "/usr/lib64"]

@@ -23,26 +23,24 @@ import re
 import tempfile
 import configparser
 
-import build
-import buildpattern
-import buildreq
-import config
-import files
-import git
-import license
-import specdescription
-import tarball
-import test
-import commitmessage
-import pkg_integrity
-import specfiles
-import pkg_scan
+from libautospec import build
+from libautospec import buildpattern
+from libautospec import buildreq
+from libautospec import config
+from libautospec import files
+from libautospec import git
+from libautospec import license
+from libautospec import specdescription
+from libautospec import tarball
+from libautospec import test
+from libautospec import commitmessage
+from libautospec import pkg_integrity
+from libautospec import specfiles
+from libautospec import pkg_scan
 
-from util import print_fatal, binary_in_path, write_out
-from abireport import examine_abi
-from logcheck import logcheck
-
-sys.path.append(os.path.dirname(__file__))
+from libautospec.util import print_fatal, binary_in_path, write_out
+from libautospec.abireport import examine_abi
+from libautospec.logcheck import logcheck
 
 
 def add_sources(download_path, archives):

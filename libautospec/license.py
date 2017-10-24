@@ -24,13 +24,13 @@
 import sys
 import os
 import re
-import tarball
+from libautospec import tarball
 import pycurl
 import urllib.parse
-import config
+from libautospec import config
 from io import BytesIO
 
-from util import print_fatal, print_warning
+from libautospec.util import print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
 

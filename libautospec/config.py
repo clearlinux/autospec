@@ -27,11 +27,11 @@ import test
 import textwrap
 import configparser
 
-import tarball
-import buildpattern
-import buildreq
-import license
-from util import call, write_out
+from libautospec import tarball
+from libautospec import buildpattern
+from libautospec import buildreq
+from libautospec import license
+from libautospec.util import call, write_out
 
 extra_configure = ""
 extra_configure32 = ""

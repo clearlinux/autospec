@@ -1,7 +1,7 @@
 import unittest
-import files
+from libautospec import files
 from unittest.mock import call, MagicMock
-from files import FileManager
+from libautospec.files import FileManager
 
 
 def mock_return(retval):

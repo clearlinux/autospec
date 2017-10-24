@@ -1,7 +1,7 @@
 import os
 import unittest
 import tempfile
-import pkg_integrity
+from libautospec import pkg_integrity
 
 
 PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"

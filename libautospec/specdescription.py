@@ -27,8 +27,8 @@
 #
 
 import os
-import config
-import license
+from libautospec import config
+from libautospec import license
 
 default_description = "No detailed description available"
 default_description_score = 0

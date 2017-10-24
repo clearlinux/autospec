@@ -1,5 +1,5 @@
 import unittest
-import abireport
+from libautospec import abireport
 
 
 def mock_return(retval):

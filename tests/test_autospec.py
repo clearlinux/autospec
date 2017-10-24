@@ -63,7 +63,7 @@ def build_and_run(srctar, expectations, entry, test_results):
     # pass on any exception because the build failure will be reported later
     try:
         output = subprocess.check_output(
-            ['python3', '{}/autospec/autospec.py'.format(BASEDIR),
+            ['python3', '{}/scripts/autospec.py'.format(BASEDIR),
              '-n', entry, '-t', '.',
              'file://{}/{}'.format(TESTDIR, srctar)] + config)
     except Exception:

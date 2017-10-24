@@ -1,8 +1,8 @@
 import subprocess
 import unittest
 from unittest.mock import patch, Mock, mock_open, call
-import build  # needs to be imported before tarball due to dependencies
-import tarball
+from libautospec import build  # needs to be imported before tarball due to dependencies
+from libautospec import tarball
 
 
 class FileManager():
@@ -20,7 +20,7 @@ def test_generator(url, name, version):
     """
     Generate a test for each line passed in
     """
-    @patch('tarball.build')
+    @patch('libautospec.tarball.build')
     def test_packageurl(self, mock_build):
         """
         Test the name and version detection from tarball url
@@ -169,7 +169,7 @@ class TestTarballVersionName(unittest.TestCase):
         tarball.name = 'test'
         tarball.url = 'url'
         m_open = mock_open()
-        with patch('tarball.open', m_open, create=True):
+        with patch('libautospec.tarball.open', m_open, create=True):
             tarball.write_makefile(archives)
 
         exp_calls = [call().write('PKG_NAME := test\n'),

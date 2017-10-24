@@ -17,8 +17,8 @@
 #
 import subprocess
 
-import util
-import config
+from libautospec import util
+from libautospec import config
 
 
 def get_whatrequires(pkg):

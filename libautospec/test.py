@@ -19,14 +19,15 @@
 # Deduce and emmit the patterns for %check
 #
 
-import buildpattern
-import buildreq
-import count
+
+from libautospec import buildpattern
+from libautospec import buildreq
+from libautospec import count
 import glob
 import os
-import tarball
-import config
-import util
+from libautospec import tarball
+from libautospec import config
+from libautospec import util
 
 tests_config = ""
 

@@ -19,9 +19,9 @@
 # %files section management
 #
 
-import build
-import tarball
-import config
+from libautospec import build
+from libautospec import tarball
+from libautospec import config
 import re
 from collections import OrderedDict
 # todo package splits

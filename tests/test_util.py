@@ -3,7 +3,7 @@ import os
 import tempfile
 import unittest
 import unittest.mock
-import util
+from libautospec import util
 
 
 def mock_gen(rv=None):
