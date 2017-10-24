@@ -332,7 +332,8 @@ def name_and_version(name_arg, version_arg, filemanager):
         github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/[v|r]?.*/(.*).tar",
                            r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z]*-(.*).tar",
                            r"https?://github.com/(.*)/(.*?)/archive/[vVrR]?(.*).tar",
-                           r"https?://github.com/(.*)/(.*?)/releases/download/v.*/(.*).tar"]
+                           r"https?://github.com/(.*)/(.*?)/releases/download/.*?/(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/files/.*?/(.*).tar"]
 
         for pattern in github_patterns:
             m = re.search(pattern, url)
