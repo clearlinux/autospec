@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch, Mock, mock_open, call
 import build  # needs to be imported before tarball due to dependencies
 import tarball
+import re
 
 
 class FileManager():
@@ -27,10 +28,15 @@ def test_generator(url, name, version):
         """
         tarball.name = ''
         tarball.version = ''
+        tarball.giturl = ''
         tarball.url = url
         tarball.name_and_version('', '', FileManager())
         self.assertEqual(tarball.name, name)
         self.assertEqual(tarball.version, version)
+        if re.match("https?://github.com", url) != None:
+            self.assertIsNotNone(
+                    re.match("https://github.com/[^/]+/"+tarball.name+".git",
+                    tarball.giturl))
 
     return test_packageurl
 
