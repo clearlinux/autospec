@@ -220,6 +220,10 @@ Controlling the build process
     work for the given package. This one line file allows you to override the
     build pattern that ``autospec`` will use. The supported build_pattern types are:
 
+        - R: R language package
+        - cpan: perl language package
+        - ruby: ruby language package
+        - maven: Java language package
         - configure: Traditional ``%configure`` autotools route
         - configure_ac: Like ``configure, but performs ``%reconfigure`` to regenerate ``./configure``
         - autogen: Similar to ``configure_ac`` but uses the existing ``./autogen.sh`` instead of ``%reconfigure``
