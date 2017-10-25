@@ -340,7 +340,12 @@ def name_and_version(name_arg, version_arg, filemanager):
             m = re.search(pattern, url)
             if m:
                 repo = m.group(2).strip()
-                name = repo
+                if repo not in name:
+                    # Only take the repo name as the package name if it's more descriptive
+                    name = repo
+                elif name != repo:
+                    name = re.sub("release-", '', name)
+                    name = re.sub("\d*$", '', name)
                 rawname = name
                 version = convert_version(m.group(3))
                 giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
