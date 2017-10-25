@@ -34,9 +34,11 @@ def test_generator(url, name, version):
         self.assertEqual(name, tarball.name)
         self.assertEqual(version, tarball.version)
         if re.match("https?://github.com", url) != None:
+            self.assertIsNotNone(tarball.giturl)
+            self.assertNotEqual('', tarball.giturl, "giturl should not be empty")
             self.assertIsNotNone(
                     re.match("https://github.com/[^/]+/"+tarball.repo+".git",
-                    tarball.giturl))
+                    tarball.giturl), "%s looks incorrect" % tarball.giturl)
 
     return test_packageurl
 
