@@ -66,6 +66,7 @@ def really_download(upstream_url, destination):
             c.perform()
         except pycurl.error:
             print_fatal("unable to download {}".format(upstream_url))
+            os.remove(destination)
             exit(1)
         finally:
             c.close()
