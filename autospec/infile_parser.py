@@ -192,6 +192,10 @@ def bb_scraper(bb):
 
 
 def update_summary(bb_dict, specfile):
+    """
+    Updates the default summary to the summary or description scraped from
+    the bitbake file IF the default summary is "No detailed summary available"
+    """
     k = "default_sum"
     v = "No detailed summary available"
 
@@ -202,7 +206,24 @@ def update_summary(bb_dict, specfile):
                 break
 
 
+def update_licenses(bb_dict, specfile):
+    """
+    The specfile contains a list of licenses for a package, if the bitbake
+    license is not included in that list, add it.
+    """
+    if hasattr(specfile, "licenses") and "LICENSE" in bb_dict:
+        licenses = getattr(specfile, "licenses")
+        if bb_dict.get("LICENSE").lower() not in [l.lower() for l in licenses]:
+            licenses.append(bb_dict.get("LICENSE"))
+            setattr(specfile, "licenses", licenses)
+
+
 def update_build_deps(bb_dict, specfile):
+    """
+    The build time dependencies for a package is a set of package names.
+    If there dependencies from the bitbake file, create a set, and union that
+    with the specfile set.
+    """
     deps = set()
     for dep in bb_dict.get('DEPENDS').split():
         dep = re.match(r"(\$\{PYTHON_PN\}\-)?([a-zA-Z0-9\-]+)", dep).group(2)
@@ -216,10 +237,8 @@ def update_build_deps(bb_dict, specfile):
 
 def update_specfile(specfile, bb_dict):
 
-    # update the package summary if one does not exist
     update_summary(bb_dict, specfile)
-
-    # union the current set of buildreqs in the specfile to the bb ones
+    update_licenses(bb_dict, specfile)
     update_build_deps(bb_dict, specfile)
 
 
