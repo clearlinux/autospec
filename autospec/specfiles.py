@@ -918,6 +918,7 @@ class Specfile(object):
         self._write_strip("echo \"CFLAGS = $CFLAGS -march=haswell -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
         self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"PKG_LIBS = -g \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
@@ -929,6 +930,7 @@ class Specfile(object):
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
         self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"PKG_LIBS = -g \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--preclean "
