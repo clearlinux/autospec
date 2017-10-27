@@ -191,9 +191,28 @@ def bb_scraper(bb):
     return bb_dict
 
 
+def update_summary(bb_dict, specfile):
+    k = "default_sum"
+    v = "No detailed summary available"
+
+    if hasattr(specfile, k) and getattr(specfile, k) == v:
+        for i in ['SUMMARY', 'DESCRIPTION']:
+            if i in bb_dict:
+                setattr(specfile, k, bb_dict.get(i))
+                break
+
+
+def update_specfile(specfile, bb_dict):
+
+    # update the package summary if one does not exist
+    update_summary(bb_dict, specfile)
+
+
 def parse_bb(bb, specfile):
 
     bb_dict = bb_scraper(bb)
+    update_specfile(specfile, bb_dict)
+
     return specfile
 
 
