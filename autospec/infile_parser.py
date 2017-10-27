@@ -202,10 +202,25 @@ def update_summary(bb_dict, specfile):
                 break
 
 
+def update_build_deps(bb_dict, specfile):
+    deps = set()
+    for dep in bb_dict.get('DEPENDS').split():
+        dep = re.match(r"(\$\{PYTHON_PN\}\-)?([a-zA-Z0-9\-]+)", dep).group(2)
+        if dep.endswith('-native'):
+            dep = dep[:-7]
+        deps.add(dep)
+
+    spec_deps = getattr(specfile, 'buildreqs')
+    setattr(specfile, 'buildreqs', spec_deps.union(deps))
+
+
 def update_specfile(specfile, bb_dict):
 
     # update the package summary if one does not exist
     update_summary(bb_dict, specfile)
+
+    # union the current set of buildreqs in the specfile to the bb ones
+    update_build_deps(bb_dict, specfile)
 
 
 def parse_bb(bb, specfile):
