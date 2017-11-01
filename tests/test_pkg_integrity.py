@@ -1,13 +1,18 @@
 import os
+import shutil
+import mock
 import unittest
 import tempfile
 import pkg_integrity
 
 
+TESTDIR = os.path.join(os.getcwd(), "tests/testfiles/pkg_integrity")
+
 PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz"
 GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
+NOSIGN_PKT_URL_BAD = "http://gnu.mirrors.pair.com/savannah/savannah/quagga/bad_quagga-1.1.0.tar.gz"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
 PYPI_MD5_ONLY_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
@@ -15,36 +20,23 @@ GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
-class TestGPGCli(unittest.TestCase):
+def mock_attempt_to_download(path, dest=None):
+    if dest:
+        shutil.copyfile(os.path.join(TESTDIR, os.path.basename(path)), dest)
+        return 200
 
-    def test_import_export(self):
-        with pkg_integrity.cli_gpg_ctx() as ctx:
-            err, output = ctx.export_key(KEYID)
-            self.assertTrue(err is not None)
-            err, output = ctx.import_key(KEYID)
-            self.assertTrue(err is None)
-            err, output = ctx.export_key(KEYID)
-            self.assertTrue(err is None)
-            self.assertTrue('PGP PUBLIC KEY' in output)
+def mock_head_request(url):
+    bad_sigs = ["http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz.sig",
+                "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sig",
+                "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc"]
 
-    def test_import_non_existing_key(self):
-        with pkg_integrity.cli_gpg_ctx() as ctx:
-            keyid = '0' + KEYID[1:]
-            err, output = ctx.import_key(keyid)
-            self.assertTrue(err is not None)
-
-    def test_display_key_info(self):
-        with pkg_integrity.cli_gpg_ctx() as ctx:
-            err, output = ctx.import_key(KEYID)
-            self.assertTrue(err is None)
-            err, output = ctx.export_key(KEYID)
-            with open('key_test.pkey', 'w') as out_key:
-                out_key.write(output)
-            err, output = ctx.display_keyinfo('key_test.pkey')
-            os.remove('key_test.pkey')
-            self.assertTrue('keyid' in output)
+    if url in bad_sigs:
+        return 404
+    return 200
 
 
+@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
+@mock.patch('pkg_integrity.head_request', mock_head_request)
 class TestCheckFn(unittest.TestCase):
 
     def setUp(self):
@@ -53,8 +45,6 @@ class TestCheckFn(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -73,6 +63,7 @@ class TestCheckFn(unittest.TestCase):
             self.assertTrue(result)
 
 
+@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
 class TestDomainBasedVerifiers(unittest.TestCase):
 
     def run_test_for_domain(self, Verifier, url):
@@ -85,8 +76,6 @@ class TestDomainBasedVerifiers(unittest.TestCase):
         return None
 
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_pypi(self):
         result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
         self.assertTrue(result)
@@ -96,6 +85,7 @@ class TestDomainBasedVerifiers(unittest.TestCase):
         self.assertTrue(result)        
 
 
+@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
 class TestGEMShaVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -122,6 +112,8 @@ class TestGEMShaVerifier(unittest.TestCase):
             self.assertEqual(a.exception.code, 1)
 
 
+@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
+@mock.patch('pkg_integrity.head_request', mock_head_request)
 class TestGPGVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -130,8 +122,6 @@ class TestGPGVerifier(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -143,12 +133,14 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_check_quit(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            #with self.assertRaises(SystemExit) as a:
-            pkg_integrity.check(NO_SIGN_PKT_URL, tmpd, interactive=False)
-            #self.assertEqual(a.exception.code, 1)
+            with self.assertRaises(SystemExit) as a:
+                out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
+                pkg_integrity.attempt_to_download(NOSIGN_PKT_URL_BAD, out_file)
+                key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
+                pkg_integrity.attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
+                result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
+                self.assertEqual(a.exception.code, 1)
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -158,8 +150,6 @@ class TestGPGVerifier(unittest.TestCase):
             result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
             self.assertTrue(result)
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_non_matchingsig(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -174,35 +164,14 @@ class TestGPGVerifier(unittest.TestCase):
         result = pkg_integrity.from_disk('http://nokey.com/package.tar.gz',
                                          'NonExistentPKG.tar.gz',
                                          'NonExistentKey.asc')
-        self.assertTrue(result is None)
+        self.assertIsNone(result)
 
     def test_result_on_nosign_package(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(NO_SIGN_PKT_URL))
             pkg_integrity.attempt_to_download(NO_SIGN_PKT_URL, out_file)
             result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
-            self.assertTrue(result is None)
-
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
-    def test_pubkey_import(self):
-        def say_yes(_):
-            return True
-        _ = pkg_integrity.InputGetter.get_answer
-        pkg_integrity.InputGetter.get_answer = say_yes
-        keyid = '0' + KEYID[1:]
-        result = pkg_integrity.attempt_key_import(keyid)
-        self.assertTrue(result is False)
-        result = pkg_integrity.attempt_key_import(KEYID)
-        self.assertTrue(result)
-        pkg_integrity.InputGetter.get_answer = _
-        self.removeKey()
-
-    def removeKey(self):
-        key_path = os.path.dirname(os.path.realpath(__file__))
-        key_path = os.path.dirname(key_path) + '/autospec/keyring/{}.pkey'.format(KEYID)
-        if os.path.exists(key_path):
-            os.unlink(key_path)
+            self.assertIsNone(result)
 
 
 class TestInputGetter(unittest.TestCase):
@@ -212,12 +181,14 @@ class TestInputGetter(unittest.TestCase):
     def test_timput(self):
         ig = pkg_integrity.InputGetter(default='N', timeout=2)
         answer = ig.get_answer()
-        self.assertTrue(answer is None)
+        self.assertIsNone(answer)
         ig = pkg_integrity.InputGetter(default='Y', timeout=2)
         answer = ig.get_answer()
-        self.assertTrue(answer is None)
+        self.assertIsNone(answer)
 
 
+@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
+@mock.patch('pkg_integrity.head_request', mock_head_request)
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
@@ -251,23 +222,6 @@ class TestUtils(unittest.TestCase):
     def test_get_keyid_none(self):
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
-
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
-    def test_attempt_to_download(self):
-        fakeURL = "https://download.my.url.com/file.tar.gz"
-        realURLnoFile = "http://pypi.debian.net/alembic/alembic-0.8.8.non-existent.tar.gz"
-        realURL = "http://pypi.debian.net/alembic/alembic-0.8.8.tar.gz"
-
-        tmpf = tempfile.NamedTemporaryFile()
-        fname = tmpf.name
-        tmpf.close()
-
-        self.assertEqual(pkg_integrity.attempt_to_download(fakeURL, fname), None)
-        self.assertEqual(pkg_integrity.attempt_to_download(realURLnoFile, fname), 404)
-        self.assertEqual(pkg_integrity.attempt_to_download(realURL, fname), 200)
-
-        os.unlink(fname)
 
     def test_get_signature_url(self):
 
