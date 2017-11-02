@@ -1104,6 +1104,13 @@ def parse_log(log, pkgname=''):
             total_fail += convert_int(match.group(3))
             continue
 
+        # vim
+        # Executed 9 tests
+        match = re.search(r"Executed ([0-9]+) tests$", line)
+        if match and incheck:
+            total_tests += convert_int(match.group(1))
+            continue
+
         # rubygem-formatador
         #   9 succeeded in 0.00375661 seconds
         match = re.search(r"([0-9]+) succeeded in [0-9]+\.[0-9]+ seconds", line)
