@@ -270,7 +270,8 @@ failed_pats = [
     (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
      r".*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
     (r"\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information "
-     r"available", 0, 'maven')]
+     r"available", 0, 'maven'),
+    (r"^.*Could not find a package configuration file provided by \"(.*)\" with.*$", 0, 'catkin')]
 
 
 def get_metadata_conf():

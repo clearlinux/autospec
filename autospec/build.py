@@ -101,6 +101,9 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
                 must_restart += buildreq.add_buildreq(config.maven_jars[s])
             else:
                 must_restart += buildreq.add_buildreq('jdk-%s' % s)
+        elif buildtool == 'catkin':
+            must_restart += buildreq.add_pkgconfig_buildreq(s)
+
     except:
         if verbose > 0:
             print("Unknown pattern match: ", s)

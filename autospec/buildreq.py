@@ -33,6 +33,7 @@ import subprocess
 banned_requires = set()
 buildreqs = set()
 requires = set()
+extra_cmake = set()
 verbose = False
 cargo_bin = False
 banned_buildreqs = set(["llvm-devel",
@@ -486,6 +487,30 @@ def scan_for_configure(dirn):
             add_buildreq("cmake")
             buildpattern.set_build_pattern("cmake", default_score)
 
+            with open(os.path.join(dirpath, "CMakeLists.txt"), "r", encoding="latin-1") as f:
+                lines = f.readlines()
+
+                pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
+                for line in lines:
+                    match = pat.search(line)
+                    if match:
+                        # include catkin's required components
+                        comp = match.group("comp")
+                        if comp:
+                            for curr in comp.split(" "):
+                                add_pkgconfig_buildreq(curr)
+
+                        for curr in ["catkin", "catkin_pkg", "empy", "googletest"]:
+                            add_buildreq(curr)
+
+                        # catkin find_package() function will always rely on CMAKE_PREFIX_PATH
+                        # make sure we keep it consistent with CMAKE_INSTALL_PREFIX otherwise
+                        # it'll never be able to find its modules
+                        extra_cmake.add("-DCMAKE_PREFIX_PATH=/usr")
+                        extra_cmake.add("-DCATKIN_BUILD_BINARY_PACKAGE=ON")
+                        extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
+                        break
+
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
             buildpattern.set_build_pattern("configure", default_score)
 
@@ -560,3 +585,4 @@ def load_specfile(specfile):
     specfile.buildreqs = buildreqs
     specfile.requires = requires
     specfile.cargo_bin = cargo_bin
+    specfile.extra_cmake += " " + " ".join(extra_cmake)
