@@ -110,12 +110,15 @@ class FileManager(object):
         res = set()
         removed = False
 
+        directive_re = re.compile("(%\w+(\([^\)]*\))?\s+)(.*)")
         for f in files:
+            # skip the files with directives at the beginning, including %doc
+            # and %dir directives.
             # autospec does not currently support adding empty directories to
             # the file list by prefixing "%dir". Regardless, skip these entries
             # because if they exist at this point it is intentional (i.e.
             # support was added).
-            if f.startswith("%dir"):
+            if directive_re.match(f):
                 res.add(f)
                 continue
 
