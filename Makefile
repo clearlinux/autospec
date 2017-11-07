@@ -47,4 +47,7 @@ test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
 
 unittests:
-	PYTHONPATH=${CURDIR}/autospec python3 -m unittest discover -b -s tests -p 'test_*.py'
+	PYTHONPATH=${CURDIR}/autospec coverage run -m unittest discover -b -s tests -p 'test_*.py' && coverage report
+
+coverage:
+	coverage report -m
