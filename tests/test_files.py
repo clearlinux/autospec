@@ -206,5 +206,26 @@ class TestFiles(unittest.TestCase):
             self.assertEqual(self.fm.packages["main"], set(["/file1", "/file2"]))
 
 
+    def test_clean_directories_with_dir(self):
+        """
+        Test clean_directories with a %dir directory in the list. This should
+        remain.
+        """
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, "file1"), "w") as f:
+                f.write(" ")
+
+            with open(os.path.join(tmpd, "file2"), "w") as f:
+                f.write(" ")
+
+            self.fm.packages["main"] = set()
+            self.fm.packages["main"].add("%dir /directory")
+            self.fm.packages["main"].add("/file1")
+            self.fm.packages["main"].add("/file2")
+            self.fm.clean_directories(tmpd)
+            self.assertEqual(self.fm.packages["main"],
+                             set(["%dir /directory", "/file1", "/file2"]))
+
+
 if __name__ == '__main__':
     unittest.main(buffer=True)
