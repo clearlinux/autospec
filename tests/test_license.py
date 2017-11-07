@@ -65,6 +65,30 @@ class TestLicense(unittest.TestCase):
 
         self.assertIn('GPL-3.0', license.licenses)
 
+    def test_license_from_copying_hash_no_license_show(self):
+        """
+        Test license_from_copying_hash with invalid hash and no license_show
+        set
+        """
+        # Calls out to tarball.get_sha1sum to get the hash of the license
+        # we might as well test that is returning what it should because it
+        # doesn't call any external resources, it just calculates the hash.
+        open_name = 'tarball.open'
+        with open('tests/COPYING_TEST', 'rb') as copyingf:
+            content = copyingf.read()
+
+        bkup_hash = license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')]
+        # remove the hash from license_hashes
+        del(license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')])
+        license.config.license_show = "license.show.url"
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open, create=True):
+            license.license_from_copying_hash('copying.txt')
+
+        # restore the hash
+        license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')] = bkup_hash
+        self.assertEquals(license.licenses, [])
+
     def test_license_from_copying_hash_bad_license(self):
         """
         Test license_from_copying_hash with invalid license file
@@ -84,6 +108,50 @@ class TestLicense(unittest.TestCase):
         self.assertEquals(license.licenses, [])
 
     @patch('pycurl.Curl')
+    def test_license_from_copying_hash_license_server_excep(self, mock_pycurl_curl):
+        """
+        Test license_from_copying_hash with license server when pycurl raises
+        an exception.
+        """
+        class MockCurl():
+            URL = None
+            WRITEDATA = None
+            POSTFIELDS = None
+            def setopt(_, __, ___):
+                pass
+
+            def perform(_):
+                raise Exception('Test Exception')
+
+            def close(_):
+                pass
+
+        # set the mock curl
+        license.pycurl.Curl = MockCurl
+
+        license.config.license_fetch = 'license.server.url'
+        with open('tests/COPYING_TEST', 'rb') as copyingf:
+            content = copyingf.read()
+
+        # Calls out to tarball.get_sha1sum to get the hash of the license
+        # we might as well test that is returning what it should because it
+        # doesn't call any external resources, it just calculates the hash.
+        # Also patch the open in license.py
+        m_open = mock_open(read_data=content)
+        with patch('tarball.open', m_open, create=True):
+            with patch('license.open', m_open, create=True):
+                # let's check that the proper thing is being printed as well
+                out = StringIO()
+                with redirect_stdout(out):
+                    with self.assertRaises(SystemExit):
+                        license.license_from_copying_hash('copying.txt')
+
+        self.assertIn('Failed to fetch license from ', out.getvalue())
+
+        # unset the manual mock
+        license.pycurl.Curl = pycurl.Curl
+
+    @patch('pycurl.Curl')
     def test_license_from_copying_hash_license_server(self, mock_pycurl_curl):
         """
         Test license_from_copying_hash with license server. This is heavily
@@ -97,12 +165,10 @@ class TestLicense(unittest.TestCase):
                 return 'GPL-3.0'.encode('utf-8')
 
         # set the mocks
-        mock_pycurl_curl.return_value = MagicMock()
         license.BytesIO = MockBytesIO
 
         license.config.license_fetch = 'license.server.url'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
-            # note the replace corrupting the file contents
             content = copyingf.read()
 
         # Calls out to tarball.get_sha1sum to get the hash of the license

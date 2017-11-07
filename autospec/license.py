@@ -75,8 +75,8 @@ def license_from_copying_hash(copying):
         try:
             c.perform()
         except Exception as excep:
-            print_fatal("Failed to fetch license from " + config.license_fetch,
-                        excep)
+            print_fatal("Failed to fetch license from {}: {}"
+                        .format(config.license_fetch, excep))
             c.close()
             sys.exit(1)
 
