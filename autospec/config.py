@@ -274,7 +274,11 @@ def get_metadata_conf():
     """
     metadata = {}
     metadata['name'] = tarball.name
-    metadata['url'] = tarball.url
+    if urlban:
+        metadata['url'] = re.sub(urlban, "localhost", tarball.url)
+    else:
+        metadata['url'] = tarball.url
+
     metadata['archives'] = ' '.join(tarball.archives)
     metadata['giturl'] = tarball.giturl
     return metadata
@@ -484,8 +488,6 @@ def parse_config_files(path, bump, filemanager):
 
     packages_file = None
 
-    read_config_opts(path)
-
     # Require autospec.conf for additional features
     if os.path.exists(config_file):
         config = configparser.ConfigParser(interpolation=None)
@@ -506,6 +508,9 @@ def parse_config_files(path, bump, filemanager):
             packages_file = os.path.join(os.path.dirname(config_file), "packages")
 
         urlban = config['autospec'].get('urlban', None)
+
+    # Read values from options.conf (and deprecated files) and rewrite as necessary
+    read_config_opts(path)
 
     if not git_uri:
         print("Warning: Set [autospec][git] upstream template for git support")
