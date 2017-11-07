@@ -111,6 +111,14 @@ class FileManager(object):
         removed = False
 
         for f in files:
+            # autospec does not currently support adding empty directories to
+            # the file list by prefixing "%dir". Regardless, skip these entries
+            # because if they exist at this point it is intentional (i.e.
+            # support was added).
+            if f.startswith("%dir"):
+                res.add(f)
+                continue
+
             if os.path.isdir(os.path.join(root, f.lstrip("/"))):
                 util.print_warning("Removing directory {} from file list".format(f))
                 self.files_blacklist.add(f)
