@@ -1,5 +1,7 @@
 import unittest
 import files
+import tempfile
+import os
 from unittest.mock import call, MagicMock
 from files import FileManager
 
@@ -183,6 +185,26 @@ class TestFiles(unittest.TestCase):
         self.fm.remove_file('test')
         self.assertNotIn('test', self.fm.files)
         self.assertNotIn('test', self.fm.files_blacklist)
+
+    def test_clean_directories(self):
+        """
+        Test clean_directories with a directory in the list
+        """
+        with tempfile.TemporaryDirectory() as tmpd:
+            os.mkdir(os.path.join(tmpd, "directory"))
+            with open(os.path.join(tmpd, "file1"), "w") as f:
+                f.write(" ")
+
+            with open(os.path.join(tmpd, "file2"), "w") as f:
+                f.write(" ")
+
+            self.fm.packages["main"] = set()
+            self.fm.packages["main"].add("/directory")
+            self.fm.packages["main"].add("/file1")
+            self.fm.packages["main"].add("/file2")
+            self.fm.clean_directories(tmpd)
+            self.assertEqual(self.fm.packages["main"], set(["/file1", "/file2"]))
+
 
 if __name__ == '__main__':
     unittest.main(buffer=True)

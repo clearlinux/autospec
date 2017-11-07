@@ -23,6 +23,8 @@ import build
 import tarball
 import config
 import re
+import os
+import util
 from collections import OrderedDict
 # todo package splits
 
@@ -100,6 +102,35 @@ class FileManager(object):
             return True
         else:
             return False
+
+    def _clean_dirs(self, root, files):
+        """
+        Do the work to remove the directories from the files list
+        """
+        res = set()
+        removed = False
+
+        for f in files:
+            if os.path.isdir(os.path.join(root, f.lstrip("/"))):
+                util.print_warning("Removing directory {} from file list".format(f))
+                self.files_blacklist.add(f)
+                removed = True
+            else:
+                res.add(f)
+
+        return (res, removed)
+
+    def clean_directories(self, root):
+        """
+        Remove directories from file list
+        """
+        removed = False
+        for pkg in self.packages:
+            self.packages[pkg], _rem = self._clean_dirs(root, self.packages[pkg])
+            if _rem:
+                removed = True
+
+        return removed
 
     def push_file(self, filename):
         """
