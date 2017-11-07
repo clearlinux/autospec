@@ -19,6 +19,7 @@
 import argparse
 import sys
 import os
+import shutil
 import re
 import tempfile
 import configparser
@@ -114,6 +115,17 @@ def read_old_metadata():
     return (config_f["package"].get("name"),
             config_f["package"].get("url"),
             archives)
+
+
+def save_build_log(path, iteration):
+    """
+    Save build log to <path>/build.log.round<iteration>
+
+    Must be saved outside of the results/ directory since it gets wiped away on
+    each round.
+    """
+    buildlog = os.path.join(path, "results", "build.log")
+    shutil.copyfile(buildlog, "{}/build.log.round{}".format(path, iteration))
 
 
 def write_prep(workingdir):
@@ -272,6 +284,8 @@ def package(args, url, name, archives, workingdir):
         filemanager.newfiles_printed = 0
         if build.round > 20 or build.must_restart == 0:
             break
+
+        save_build_log(build.download_path, build.round)
 
     test.check_regression(build.download_path)
 
