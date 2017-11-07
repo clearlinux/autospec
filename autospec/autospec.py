@@ -282,6 +282,15 @@ def package(args, url, name, archives, workingdir):
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0
+        mock_chroot = "/var/lib/mock/clear-{}/root/builddir/build/BUILDROOT/" \
+                      "{}-{}-{}.x86_64".format(build.uniqueext,
+                                               tarball.name,
+                                               tarball.version,
+                                               tarball.release)
+        if filemanager.clean_directories(mock_chroot):
+            # directories added to the blacklist, need to re-run
+            build.must_restart += 1
+
         if build.round > 20 or build.must_restart == 0:
             break
 
