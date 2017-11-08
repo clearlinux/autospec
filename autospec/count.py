@@ -211,7 +211,7 @@ def parse_log(log, pkgname=''):
 
         # apr
         # testatomic          :  SUCCESS
-        if re.search(r"\:  SUCCESS$", line) and incheck:
+        if re.search(r":  SUCCESS$", line) and incheck:
             counted_pass += 1
             continue
 
@@ -283,7 +283,7 @@ def parse_log(log, pkgname=''):
             total_fail += convert_int(match.group(1))
             continue
 
-        match = re.search(r"/== ([0-9]+) failed, ([0-9]+) passed, ([0-9]+) xfailed in ", line)
+        match = re.search(r"== ([0-9]+) failed, ([0-9]+) passed, ([0-9]+) xfailed in ", line)
         if match and incheck:
             total_pass += convert_int(match.group(2))
             total_fail += convert_int(match.group(1))
@@ -967,13 +967,6 @@ def parse_log(log, pkgname=''):
             counted_pass += 1
             continue
 
-        # apr-util
-        # :  SUCCESS
-        match = re.search(r":  SUCCESS$", line)
-        if match and incheck:
-            counted_pass += 1
-            continue
-
         # bash
         # < Failed 126 of 1378 Unicode tests
         match = re.search(r"^[<,>] Failed ([0-9]+) of ([0-9]+)", line)
@@ -1013,18 +1006,6 @@ def parse_log(log, pkgname=''):
         match = re.search(r"[A-Za-z0-9\ \>\<\/]+ \.\.\. Passed\.", line)
         if match and incheck:
             counted_pass += 1
-            continue
-
-        # *** zlib test OK ***
-        # *** zlib 64-bit test OK ***
-        match = re.search(r"\*\*\* zlib .*test OK \*\*\*", line)
-        if match and incheck:
-            counted_pass += 1
-            continue
-
-        match = re.search(r"\*\*\* zlib .*test [A-Z!O][A-Z!K] \*\*\*", line)
-        if match and incheck:
-            counted_fail += 1
             continue
 
         # LVM2
@@ -1293,16 +1274,6 @@ def parse_log(log, pkgname=''):
         match = re.search(r"^Verifying .+\ +\-SKIP\-$", line)
         if match and incheck:
             total_skip += 1
-            continue
-
-        match = re.search(r"^Testing .+\ +\*FAILED\*$", line)
-        if match and incheck:
-            total_fail += 1
-            continue
-
-        match = re.search(r"^Verifying .+\ +\*FAILED\*$", line)
-        if match and incheck:
-            total_fail += 1
             continue
 
         # libconfig
