@@ -36,6 +36,8 @@ pats = [
      [332, 281, 38, 0, 13, 0, 0, 0, 0, 0]),
     ('===================== 5 failed, 318 passed in 1.06 seconds =====================',
      [323, 318, 5, 0, 0, 0, 0, 0, 0, 0]),
+    ('===================== 5 failed, 9 passed, 7 xfailed in 1.06 seconds ============',
+     [21, 9, 5, 7, 0, 0, 0, 0, 0, 0]),
     ('============= 1628 passed, 72 skipped, 4 xfailed in 146.26 seconds =============',
      [1704, 1628, 0, 4, 72, 0, 0, 0, 0, 0]),
     ('=============== 119 passed, 2 skipped, 54 error in 2.19 seconds ================',
@@ -87,8 +89,9 @@ pats = [
     ('# of expected passes\t1144\n'
      '# of expected failures\t57\n'
      '# of untested testcases\t1\n'
-     '# of unsupported tests\t12',
-     [1213, 1144, 0, 57, 12, 0, 0, 0, 0, 0]),
+     '# of unsupported tests\t12\n'
+     '# of unexpected failures\t1\n',
+     [1214, 1144, 1, 57, 12, 0, 0, 0, 0, 0]),
     # ccache
     ('PASSED: 448 assertions, 88 tests, 10 suites',
      [88, 88, 0, 0, 0, 0, 0, 0, 0, 0]),
@@ -179,6 +182,13 @@ pats = [
      'Failed with core:   0\n'
      'Unknown status:     0',
      [13042, 13036, 6, 0, 0, 1, 1, 0, 0, 0]),
+    # nss
+    ('cert.sh: #101: Import chain-2-serverCA-ec CA -t u,u,u for localhost.localdomain (ext.)  - FAILED\n'
+     'Passed:             13036\n'
+     'Failed:             6\n'
+     'Failed with core:   0\n'
+     'Unknown status:     0',
+     [13042, 13036, 6, 0, 0, 0, 0, 1, 0, 0]),
     # rsync
     ('     34 passed\n'
      '     5 skipped',
@@ -191,6 +201,12 @@ pats = [
      [30, 0, 6, 6, 18, 0, 0, 0, 0, 0]),
     ('FAILED (failures=1, errors=499, skipped=48)',
      [548, 0, 1, 499, 48, 0, 0, 0, 0, 0]),
+    ('FAILED (failures=1, errors=499)',
+     [500, 0, 1, 499, 0, 0, 0, 0, 0, 0]),
+    ('FAILED (failures=1)',
+     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0]),
+    ('FAILED (errors=1)',
+     [1, 0, 0, 1, 0, 0, 0, 0, 0, 0]),
     ('OK (KNOWNFAIL=5, SKIP=15)',
      [20, 0, 0, 5, 15, 0, 0, 0, 0, 0]),
     # qpid-python
@@ -304,6 +320,9 @@ pats = [
     # rubygem-ansi
     ('Executed 12 tests with 7 passing, 5 errors.',
      [12, 7, 5, 0, 0, 0, 0, 0, 0, 0]),
+    # vim
+    ('Executed 12 tests',
+     [12, 12, 0, 0, 0, 0, 0, 0, 0, 0]),
     # rubygem-formatador
     ('  9 succeeded in 0.00375661 seconds',
      [9, 9, 0, 0, 0, 0, 0, 0, 0, 0]),
@@ -372,7 +391,11 @@ pats = [
     # hdf5
     ('Testing h5repack h5repack_szip.h5 -f dset_szip:GZIP=1                  -SKIP-',
      [1, 0, 0, 0, 1, 0, 0, 0, 0, 0]),
+    ('Verifying h5repack h5repack_szip.h5 -f dset_szip:GZIP=1                -SKIP-',
+     [1, 0, 0, 0, 1, 0, 0, 0, 0, 0]),
     ('Verifying h5dump output -f GZIP=1 -m 1024                             *FAILED*',
+     [1, 0, 1, 0, 0, 0, 0, 0, 0, 0]),
+    ('Testing h5dump output -f GZIP=1 -m 1024                               *FAILED*',
      [1, 0, 1, 0, 0, 0, 0, 0, 0, 0]),
     ('Testing h5repack --metadata_block_size=8192                            PASSED',
      [1, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
