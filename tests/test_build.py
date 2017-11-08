@@ -236,7 +236,7 @@ class TestBuildpattern(unittest.TestCase):
         self.assertIn('jdk-apache-parent', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
-    def test_parse_build_resultsi_pkgconfig(self):
+    def test_parse_build_results_pkgconfig(self):
         """
         Test parse_build_results with a test log indicating failure due to a
         missing qmake package (pkgconfig error)
@@ -313,6 +313,40 @@ class TestBuildpattern(unittest.TestCase):
 
         self.assertIn('testpkg-python', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
+
+    def test_parse_build_results_files(self):
+        """
+        Test parse_build_results with a test log indicating files are missing
+        """
+        def mock_util_call(cmd):
+            del cmd
+
+        build.config.setup_patterns()
+        call_backup = build.util.call
+        build.util.call = mock_util_call
+        fm = files.FileManager()
+
+        open_name = 'build.open'
+        content = 'line 1\n' \
+                  'Installed (but unpackaged) file(s) found:\n' \
+                  '/usr/testdir/file\n' \
+                  '/usr/testdir/file1\n' \
+                  '/usr/testdir/file2\n' \
+                  'RPM build errors\n' \
+                  'errors here\n'
+        m_open = mock_open(read_data=content)
+
+        with patch(open_name, m_open, create=True):
+            build.parse_build_results('testname', 0, fm)
+
+        build.util.call = call_backup
+
+        self.assertEqual(fm.files,
+                         ['/usr/testdir/file',
+                          '/usr/testdir/file1',
+                          '/usr/testdir/file2'])
+        # one for each file added
+        self.assertEqual(build.must_restart, 3)
 
     def test_get_mock_cmd_without_consolehelper(self):
         """
