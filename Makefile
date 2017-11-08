@@ -43,11 +43,11 @@ test_test:
 test_util:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_util.py
 
+test_infile_parser:
+	PYTHONPATH=${CURDIR}/autospec python3 -m unittest discover -b -s tests -p 'test_infile_*'
+
 test_autospec:
 	python3 tests/test_autospec.py -c ${CASES}
-
-test_bb_parser:
-	PYTHONPATH=${CURDIR}/autospec python3 tests/test_bb_parser.py
 
 unittests:
 	PYTHONPATH=${CURDIR}/autospec coverage run -m unittest discover -b -s tests -p 'test_*.py' && coverage report

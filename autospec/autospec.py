@@ -38,7 +38,7 @@ import commitmessage
 import pkg_integrity
 import specfiles
 import pkg_scan
-import infile_parser
+import infile_handler
 
 from util import print_fatal, binary_in_path, write_out
 from abireport import examine_abi
@@ -278,8 +278,7 @@ def package(args, url, name, archives, workingdir):
     # with the newly found values.
     #
     if args.infile:
-        ext = args.infile.split('.')[-1]
-        specfile = getattr(infile_parser, 'parse_' + ext)(args.infile, specfile)
+        specfile = infile_handler.infile_reader(args.input, specfile)
     print("\n")
 
     if args.integrity:
