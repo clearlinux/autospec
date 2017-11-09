@@ -158,7 +158,9 @@ simple_pats = [
     (r"Package systemd was not found in the pkg-config search path.", "systemd-dev"),
     (r"Unable to find the requested Boost libraries.", "boost-dev"),
     (r"libproc not found. Please configure without procps", "procps-ng-dev"),
-    (r"configure: error: glib2", "glib-dev")]
+    (r"configure: error: glib2", "glib-dev"),
+    (r"C library 'efivar' not found", "efivar-dev"),
+    (r"Has header \"efi.h\": NO", "gnu-efi-dev")]
 
 # failed_pattern patterns
 # contains patterns for parsing build.log for missing dependencies
