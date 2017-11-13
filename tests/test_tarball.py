@@ -168,30 +168,6 @@ class TestTarballVersionName(unittest.TestCase):
         tarball.build_gem_unpack = build_gem_unpack_backup
         tarball.build_untar = build_untar_backup
 
-    def test_write_makefile(self):
-        """
-        Test write_makefile for correct archive format
-        """
-        archives = ['archive1', 'dest1', 'archive2', 'dest2']
-        build.download_path = '.'
-        tarball.name = 'test'
-        tarball.url = 'url'
-        m_open = mock_open()
-        with patch('tarball.open', m_open, create=True):
-            tarball.write_makefile(archives)
-
-        exp_calls = [call().write('PKG_NAME := test\n'),
-                     call().write('URL := url\n'),
-                     call().write('ARCHIVES := archive1'),
-                     call().write(' dest1'),
-                     call().write(' \\\n\tarchive2'),
-                     call().write(' dest2'),
-                     call().write('\n'),
-                     call().write('\n'),
-                     call().write('include ../common/Makefile.common\n')]
-        for m_call in exp_calls:
-            self.assertIn(m_call, m_open.mock_calls)
-
 
 TAR_OUT = 'libjpeg-turbo-1.5.1/\n'                         \
           'libjpeg-turbo-1.5.1/md5/\n'                     \

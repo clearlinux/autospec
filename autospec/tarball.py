@@ -441,22 +441,6 @@ def find_extract(tar_path, tarfile):
     return extract_cmd, tar_prefix
 
 
-def write_makefile(archives):
-    """
-    Write the new makefile with url, name, and archives
-    """
-    with open(build.download_path + "/Makefile", "w") as f:
-        f.write("PKG_NAME := " + name + "\n")
-        f.write("URL := " + url + "\n")
-        sep = "ARCHIVES := "
-        for archive in archives:
-            f.write("{}{}".format(sep, archive))
-            sep = " " if sep != " " else " \\\n\t"
-        f.write("\n")
-        f.write("\n")
-        f.write("include ../common/Makefile.common\n")
-
-
 def prepare_and_extract(extract_cmd):
     """
     Prepare the directory and extract the tarball
@@ -532,8 +516,6 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # Now that the metadata has been collected print the header
     print_header()
     # write out the Makefile with the name, url, and archives we found
-    # DEPRECATED, this will be removed in a future version
-    write_makefile(archives_arg)
     # prepare directory and extract tarball
     prepare_and_extract(extract_cmd)
     # locate or download archives and move them into the right spot
