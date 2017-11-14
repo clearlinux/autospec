@@ -22,16 +22,12 @@ import re
 def update_summary(bb_dict, specfile):
     """
     Updates the default summary to the summary or description scraped from
-    the bitbake file if the specfile contains the default summary: "No
-    detailed summary available".
-
-    The bitbake "SUMMARY" variable is first priority, then the "DESCRIPTION"
-    variable. If neither exist, set set it back to the default summary value.
+    the bitbake file. The bitbake "SUMMARY" variable is first priority,
+    then the "DESCRIPTION" variable. If neither exist, set set it back to the
+    specfile value.
     """
-    default_desc = "No detailed summary available"
-    if getattr(specfile, "default_sum") == default_desc:
-        specfile.default_sum = bb_dict.get("SUMMARY") or \
-            bb_dict.get("DESCRIPTION") or default_desc
+    specfile.default_sum = bb_dict.get("SUMMARY") or \
+        bb_dict.get("DESCRIPTION") or specfile.default_sum
 
 
 def update_licenses(bb_dict, specfile):
@@ -40,28 +36,22 @@ def update_licenses(bb_dict, specfile):
     license is not included in that list, add it.
     """
     if "LICENSE" in bb_dict:
-        licenses = getattr(specfile, "licenses")
-        if bb_dict.get("LICENSE").lower() not in [l.lower() for l in licenses]:
-            licenses.append(bb_dict.get("LICENSE"))
-            setattr(specfile, "licenses", licenses)
+        if bb_dict.get("LICENSE").lower() not in [l.lower() for l in specfile.licenses]:
+            specfile.licenses.append(bb_dict.get("LICENSE"))
 
 
 def update_build_deps(bb_dict, specfile):
     """
-    The build time dependencies for a package is a set of package names.
-    If there dependencies from the bitbake file, create a set, and union that
-    with the specfile set.
+    Add build dependencies to the buildreq set, if the bb_dict scraped build
+    time dependencies.
     """
-    deps = set()
     if bb_dict.get('DEPENDS'):
         for dep in bb_dict.get('DEPENDS').split():
             dep = re.match(r"(\$\{PYTHON_PN\}\-)?([a-zA-Z0-9\-]+)", dep).group(2)
             if dep.endswith('-native'):
                 dep = dep[:-7]
-            deps.add(dep)
 
-    spec_deps = getattr(specfile, 'buildreqs')
-    setattr(specfile, 'buildreqs', spec_deps.union(deps))
+            specfile.buildreqs.add(dep)
 
 
 def update_specfile(specfile, bb_dict):
