@@ -198,16 +198,6 @@ class TestParseBitBakeFile(unittest.TestCase):
         expect = "--with-x,--without-x,xt,"
         self.assertEqual(expect, bb_dict.get('PACKAGECONFIG[x11]'))
 
-    def test_scrape_src_uri_replace_version_htop(self):
-        """
-        Test that the occurance of ${PV} is replaced by the scraped version.
-        """
-
-        bb_file = os.path.join('tests', 'testfiles', 'bb', 'htop_1.0.3.bb')
-        bb_dict = infile_handler.file_handler(bb_file, {})
-        expect = "http://hisham.hm/htop/releases/1.0.3/htop-1.0.3.tar.gz"
-        self.assertEqual(expect, bb_dict.get('SRC_URI'))
-
     def test_concatenation_op_packageconfig_vim(self):
         """
         Test that the resulting value for the PACKAGECONFIG variable, is
@@ -288,14 +278,9 @@ class TestParseBitBakeFile(unittest.TestCase):
         """
         bb_file = os.path.join('tests', 'testfiles', 'bb', 'vim_8.0.0983.bb')
         bb_dict = infile_handler.file_handler(bb_file, {})
-        expect = "do_configure () {\
-    rm -f auto/*\
-    touch auto/config.mk\
-    aclocal\
-    autoconf\
-    oe_runconf\
-    touch auto/configure\
-    touch auto/config.mk auto/config.h}"
+        expect = ["# rm -f auto/*", "# touch auto/config.mk", "# aclocal",
+                  "# autoconf", "# oe_runconf", "# touch auto/configure",
+                  "# touch auto/config.mk auto/config.h" ]
         self.assertEqual(expect, bb_dict.get('do_configure'))
 
 

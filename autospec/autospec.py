@@ -39,6 +39,7 @@ import pkg_integrity
 import specfiles
 import pkg_scan
 import infile_handler
+import infile_update_spec
 
 from util import print_fatal, binary_in_path, write_out
 from abireport import examine_abi
@@ -206,6 +207,12 @@ def main():
     name = args.name or name
     url = args.url or url
     archives = args.archives or archives
+    infile_dict = {}
+
+    if args.infile:
+        infile_dict = infile_handler.infile_reader(args.infile, name)
+        if not url:
+            url = infile_dict.get('URL')
 
     if not url:
         parser.error(argparse.ArgumentTypeError(
@@ -278,7 +285,7 @@ def package(args, url, name, archives, workingdir):
     # with the newly found values.
     #
     if args.infile:
-        specfile = infile_handler.infile_reader(args.input, specfile)
+        specfile = infile_update_spec.update_specfile(specfile, infile_dict)
     print("\n")
 
     if args.integrity:

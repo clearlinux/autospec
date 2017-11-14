@@ -22,11 +22,10 @@ import re
 import requests
 import tempfile
 from pprint import pprint
-from urllib.request import urlretrieve, urlopen
+from urllib.request import urlretrieve
 
 import util
-import infile_update_spec
-import infile_parsers
+import infile_bb_parser
 
 
 # filetypes and their parse order (lower parsed first)
@@ -36,13 +35,16 @@ parsable_filetypes = {'.inc': 1, '.bb': 2}
 def parse_ext(path):
     """
     Gets the extension of a file and determines if the filetype can be handled
-    by the infile_parser. If so, it returns the extension.
+    by the infile_parser. If so, it returns the extension. If not, it returns
+    nothing, which will cause the file_handler to return and infile parsing
+    will NOT be used on that file.
     """
     ext = os.path.splitext(path)[1]
     if ext not in parsable_filetypes:
-        util.print_warning("Cannot parse infile \"{}\" type. "
-                           "from input: {}".format(ext, path))
-        return
+        util.print_warning("Cannot parse infile \"{}\" type. From input: {}."
+                           " \nContinuing with the execution of "
+                           "autospec".format(ext, path))
+        return None
 
     return ext.lstrip('.')
 
@@ -76,7 +78,11 @@ def sort_files(x):
     return parsable_filetypes.get(os.path.splitext(x)[1])
 
 
-def parser_type(bb_fp, output_dict, parse_type):
+def parse_infile(bb_fp, output_dict, parse_type):
+    """
+    Depending on the type of file, scrape and parse the infile file returning
+    the dictionary of collected data.
+    """
     if parse_type == "bb":
         return infile_bb_parser.bb_scraper(bb_fp, output_dict)
     elif parse_type == "inc":
@@ -94,7 +100,10 @@ def file_handler(indata, output_dict):
     The type of parsing bitbake, inc, deb, etc is based on the file extension.
     """
 
+    # If ext is not parsable, return from using infile parser on that file.
     parse_type = parse_ext(indata)
+    if not parse_type:
+        return
 
     if output_dict.get('filename'):
         output_dict['filename'].append(indata)
@@ -109,18 +118,18 @@ def file_handler(indata, output_dict):
             try:
                 tmp, _ = urlretrieve(indata, tmpfile.name)
                 with open(tmp, 'r') as bb_fp:
-                    output_dict = getattr(infile_parsers, 'parse_' +
-                                          parse_type)(bb_fp, output_dict)
+                    output_dict = parse_infile(bb_fp, output_dict, parse_type)
             except Exception as e:
-                util.print_warning("Error downloading url: {}".format(e))
+                util.print_warning("Infile was unable to be parsed with the "
+                                   "error: \"{}\". \nContinuing with the "
+                                   "execution of autospec.".format(e))
     else:
         with open(indata, 'r') as bb_fp:
-            output_dict = getattr(infile_parsers, 'parse_' +
-                                  parse_type)(bb_fp, output_dict)
+            output_dict = parse_infile(bb_fp, output_dict, parse_type)
     return output_dict
 
 
-def infile_reader(indata, specfile):
+def infile_reader(indata, name):
     """
     The infile parser can take 3 different inputs:
       A url to a file
@@ -129,7 +138,7 @@ def infile_reader(indata, specfile):
 
     Each file in the directory should scraped to the same dictionary instance.
     """
-    output_dict = {}
+    output_dict = {"NAME": name}
 
     if os.path.isdir(indata):
         files = [f for f in os.listdir(indata) if os.path.isfile(
@@ -139,6 +148,4 @@ def infile_reader(indata, specfile):
     else:
         output_dict = file_handler(indata, output_dict)
 
-    pprint(output_dict)
-    specfile = infile_update_spec.update_specfile(specfile, output_dict)
-    return specfile
+    return output_dict
