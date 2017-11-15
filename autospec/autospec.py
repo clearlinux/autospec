@@ -213,7 +213,6 @@ def main():
         infile_dict = infile_handler.infile_reader(args.infile, name)
         if not url:
             url = infile_dict.get('URL')
-            print("Tar url from infile: {}".format(url))
         if infile_dict.get("LICENSE"):
             license.add_license(infile_dict.get("LICENSE"))
 
@@ -227,13 +226,13 @@ def main():
             "even number of arguments"))
 
     if args.prep_only:
-        package(args, url, name, archives, "./workingdir")
+        package(args, url, name, archives, "./workingdir", infile_dict)
     else:
         with tempfile.TemporaryDirectory() as workingdir:
-            package(args, url, name, archives, workingdir)
+            package(args, url, name, archives, workingdir, infile_dict)
 
 
-def package(args, url, name, archives, workingdir):
+def package(args, url, name, archives, workingdir, infile_dict):
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
 
