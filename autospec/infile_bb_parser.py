@@ -254,7 +254,4 @@ def bb_scraper(bb_fp, bb_dict):
     get_src_url(bb_dict)
     replace_bb_variable_names(bb_dict)
 
-    # print(cmd)
-    # for i, j in bb_dict.items():
-    #     print(i, j)
     return bb_dict

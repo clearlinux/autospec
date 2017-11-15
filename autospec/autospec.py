@@ -213,6 +213,9 @@ def main():
         infile_dict = infile_handler.infile_reader(args.infile, name)
         if not url:
             url = infile_dict.get('URL')
+            print("Tar url from infile: {}".format(url))
+        if infile_dict.get("LICENSE"):
+            license.add_license(infile_dict.get("LICENSE"))
 
     if not url:
         parser.error(argparse.ArgumentTypeError(
