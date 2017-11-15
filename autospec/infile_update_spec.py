@@ -19,6 +19,7 @@
 
 import re
 
+
 def update_summary(bb_dict, specfile):
     """
     Updates the default summary to the summary or description scraped from
