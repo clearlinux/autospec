@@ -18,7 +18,6 @@
 #
 
 import re
-import util
 
 # TODO: VAR_append = "" _append same functionality as +=
 operators_dict = {

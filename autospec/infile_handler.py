@@ -21,7 +21,6 @@ import os
 import re
 import requests
 import tempfile
-from pprint import pprint
 from urllib.request import urlretrieve
 
 import util
@@ -111,7 +110,6 @@ def file_handler(indata, output_dict):
         output_dict['filename'] = [indata]
 
     if not os.path.isfile(indata):
-    # if re.match(r'^(http|ftp)s?://(.*)(\.[A-za-z]+)+$', indata):
         # check that input is plain or raw text and not html
         indata = check_url_content(indata)
         with tempfile.NamedTemporaryFile() as tmpfile:
