@@ -18,6 +18,18 @@
 #
 
 import re
+import os
+
+
+cmd_mappings = {
+    "do_configure": "configure",
+    "do_configure_prepend": "configure",
+    "do_configure_append": "configure",
+    "EXTRA_OECONF": "configure",
+    "do_install": "make_install_append",
+    "do_install_append": "make_install_append",
+    "do_install_prepend": "make_install_append"
+}
 
 
 def update_summary(bb_dict, specfile):
@@ -55,10 +67,26 @@ def update_build_deps(bb_dict, specfile):
             specfile.buildreqs.add(dep)
 
 
-def update_specfile(specfile, bb_dict):
+def write_cmd_files(bb_dict, dirname):
+    """
+    Append "do_" task commands that are scraped from the bitbake file(s). Some
+    of these commands have append/prepend. These operations are performed
+    prior to being added to the dict. This function appends all commands to
+    as comments to their mapped file within the target directory.
+    """
+    for cmd_name, cmd in bb_dict.items():
+        if cmd_name.startswith("do_"):
+            filename = os.path.join(dirname, cmd_mappings.get(cmd_name))
+            with open(filename, 'a') as cmdfp:
+                cmdfp.write("# Infile parser added the following lines:\n")
+                cmdfp.write("\n".join(cmd) + "\n")
+
+
+def update_specfile(specfile, bb_dict, dirname):
 
     update_summary(bb_dict, specfile)
     update_licenses(bb_dict, specfile)
     update_build_deps(bb_dict, specfile)
+    write_cmd_files(bb_dict, dirname)
 
     return specfile
