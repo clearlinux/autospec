@@ -42,6 +42,7 @@ urlban = ""
 extra_make = ""
 extra_make_install = ""
 extra_cmake = ""
+cmake_srcdir = ""
 prep_append = []
 subdir = ""
 install_macro = "%make_install"
@@ -481,6 +482,7 @@ def parse_config_files(path, bump, filemanager):
     global extra_make
     global extra_make_install
     global extra_cmake
+    global cmake_srcdir
     global prep_append
     global subdir
     global install_macro
@@ -673,6 +675,10 @@ def parse_config_files(path, bump, filemanager):
     if content and content[0]:
         extra_cmake = content[0]
 
+    content = read_conf_file(os.path.join(path, "cmake_srcdir"))
+    if content and content[0]:
+        cmake_srcdir = content[0]
+
     content = read_conf_file(os.path.join(path, "subdir"))
     if content and content[0]:
         subdir = content[0]
@@ -725,6 +731,7 @@ def load_specfile(specfile):
     specfile.extra_make = extra_make
     specfile.extra_make_install = extra_make_install
     specfile.extra_cmake = extra_cmake
+    specfile.cmake_srcdir = cmake_srcdir or specfile.cmake_srcdir
     specfile.prep_append = prep_append
     specfile.subdir = subdir
     specfile.install_macro = install_macro
