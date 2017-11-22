@@ -222,11 +222,21 @@ def bb_scraper(bb_fp, bb_dict):
                     line = next(bb_fp).strip()
 
             # Remove the 'do_command {' and '}' from the list, so that
-            # it is a list of the commands.
+            # the dict value is a list of the commands.
             if cmd[0].startswith("# " + cmd_name) and cmd[-1] == '# }':
                 cmd = cmd[1:-1]
 
-            bb_dict[cmd_name] = cmd
+            # Some bitbake files have tasks with prepend or append operations.
+            # Perform the logic to store all tasks with the same 'core' command
+            # name in the dictionary.
+            if not bb_dict.get(cmd_name):
+                bb_dict[cmd_name] = cmd
+            elif cmd_name.rsplit('_') == 'prepend':
+                cmd.extend(bb_dict.get(cmd_name))
+                bb_dict[cmd_name] = cmd
+            else:
+                bb_dict.get(cmd_name).extend(cmd)
+
             continue
 
         # If a line continuation, create a string that can easily be split

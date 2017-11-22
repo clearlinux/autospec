@@ -287,7 +287,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # with the newly found values.
     #
     if args.infile:
-        specfile = infile_update_spec.update_specfile(specfile, infile_dict)
+        specfile = infile_update_spec.update_specfile(specfile, infile_dict, args.target)
     print("\n")
 
     if args.integrity:
