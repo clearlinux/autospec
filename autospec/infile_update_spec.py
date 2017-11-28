@@ -19,6 +19,7 @@
 
 import re
 import os
+from util import print_infile
 
 
 cmd_mappings = {
@@ -42,6 +43,10 @@ def update_summary(bb_dict, specfile):
     specfile.default_sum = bb_dict.get("SUMMARY") or \
         bb_dict.get("DESCRIPTION") or specfile.default_sum
 
+    if specfile.default_sum == bb_dict.get("SUMMARY") or \
+            specfile.default_sum == bb_dict.get("DESCRIPTION"):
+        print_infile("Summary updated: {}".format(specfile.default_sum))
+
 
 def update_licenses(bb_dict, specfile):
     """
@@ -51,6 +56,7 @@ def update_licenses(bb_dict, specfile):
     if "LICENSE" in bb_dict:
         if bb_dict.get("LICENSE").lower() not in [l.lower() for l in specfile.licenses]:
             specfile.licenses.append(bb_dict.get("LICENSE"))
+            print_infile("License added: {}".format(bb_dict.get("LICENSE")))
 
 
 def update_build_deps(bb_dict, specfile):
@@ -65,6 +71,7 @@ def update_build_deps(bb_dict, specfile):
                 dep = dep[:-7]
 
             specfile.buildreqs.add(dep)
+            print_infile("Build dependency added: {}".format(dep))
 
 
 def write_cmd_files(bb_dict, dirname):
@@ -80,6 +87,8 @@ def write_cmd_files(bb_dict, dirname):
             with open(filename, 'a') as cmdfp:
                 cmdfp.write("# Infile parser added the following lines:\n")
                 cmdfp.write("\n".join(cmd) + "\n")
+            print_infile("Suggestions added to the {} file".format(
+                cmd_mappings.get(cmd_name)))
 
 
 def update_specfile(specfile, bb_dict, dirname):

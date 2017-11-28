@@ -71,6 +71,10 @@ def print_warning(message):
     print("[\033[31;1mWARNING\033[0m] {}".format(message))
 
 
+def print_infile(message):
+    print("[\033[1;34mINFILE\033[0m] {}".format(message))
+
+
 def binary_in_path(binary):
     """ Determine if the given binary exists in the provided filesystem paths """
     global os_paths
