@@ -282,6 +282,6 @@ def guess_commit_message():
 
     print("Guessed commit message:")
     try:
-        print(commitmessage)
+        print("\n".join(commitmessage))
     except:
         print("Can't print")
