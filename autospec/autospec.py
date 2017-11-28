@@ -41,7 +41,7 @@ import pkg_scan
 import infile_handler
 import infile_update_spec
 
-from util import print_fatal, binary_in_path, write_out
+from util import print_fatal, binary_in_path, write_out, print_infile
 from abireport import examine_abi
 from logcheck import logcheck
 
@@ -212,9 +212,16 @@ def main():
     if args.infile:
         infile_dict = infile_handler.infile_reader(args.infile, name)
         if not url:
-            url = infile_dict.get('URL')
+            try:
+                url = infile_dict.get('URL')
+            except:
+                pass
+            else:
+                print_infile("Source url found: {}".format(url))
+
         if infile_dict.get("LICENSE"):
             license.add_license(infile_dict.get("LICENSE"))
+            print_infile("License added: {}".format(infile_dict.get("LICENSE")))
 
     if not url:
         parser.error(argparse.ArgumentTypeError(
