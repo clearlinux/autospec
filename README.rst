@@ -5,16 +5,16 @@
 Autospec
 ========
 
-autospec is a tool to assist in the automated creation and maintainence
-of RPM packaging. It will continuously run updated builds based on new
-information discovered from build failures, until it has a complete and
-valid .spec file. The tool makes use of mock to achieve this.
+autospec is a tool to assist in the automated creation and maintenance of RPM
+packaging. It will continuously run updated builds based on new information
+discovered from build failures until it has a complete and valid .spec file. The
+tool makes use of mock to achieve this.
 
 License
 =======
 autospec is available under the terms of the GPL, version 3.0
 
-Copyright (C) 2015 Intel Corporation
+Copyright (C) 2017 Intel Corporation
 
 
 Configuration of autospec
@@ -30,6 +30,7 @@ Example ``autospec.conf`` file::
     license_fetch = http://yourhost/hash.php
     license_show = http://yourhost/showone.php?hash=%(HASH)s
     packages_file = file:///path/to/package_list_file
+    yum_conf = file:///path/to/yum.conf
     upstream = http://yourhost/tarballs/%(HASH)s/%(NAME)s
 
 
@@ -54,21 +55,39 @@ Example ``autospec.conf`` file::
 Synopsis
 ========
 
-Usage: ``python3 autospec.py [options] URL``
+.. code-block:: bash
 
+  usage: autospec.py [-h] [-g] [-n NAME] [-v VERSION]
+                     [-a [ARCHIVES [ARCHIVES ...]]] [-l] [-b] [-c CONFIG]
+                     [-t TARGET] [-i] [-p] [--non_interactive] [-C]
+                     [url]
 
--h, --help                                      show help message and exit
--g, --skip-git                                  Don't commit result to git
--n NAME, --name NAME                            Override the package name
--a ARCHIVES, --archives ARCHIVES
-                                                tarball URLs for additional source archives and a
-                                                location for the sources to be extacted to (e.g.
-                                                http://example.com/downloads/dependency.tar.gz
-                                                /directory/relative/to/extract/root )
--l, --license-only                              Only scan for license files
--b, --skip-bump                                 Don't bump release number
--c CONFIG, --config CONFIG                      Set configuration file to use
--t DIRECTORY, --target DIRECTORY                Set location to create or use
+positional arguments:
+  url                   tarball URL (e.g.
+                        http://example.com/downloads/mytar.tar.gz)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -g, --skip-git        Don't commit result to git
+  -n NAME, --name NAME  Override the package name
+  -v VERSION, --version VERSION
+                        Override the package version
+  -a ARCHIVES, --archives ARCHIVES
+                        tarball URLs for additional source archives and a
+                        location for the sources to be extacted to (e.g.
+                        http://example.com/downloads/dependency.tar.gz
+                        /directory/relative/to/extract/root )
+  -l, --license-only    Only scan for license files
+  -b, --skip-bump       Don't bump release number
+  -c CONFIG, --config CONFIG
+                        Set configuration file to use
+  -t TARGET, --target TARGET
+                        Target location to create or reuse
+  -i, --integrity       Search for package signature from source URL and
+                        attempt to verify package
+  -p, --prep-only       Only perform preparatory work on package
+  --non_interactive     Disable interactive mode for package verification
+  -C, --cleanup         Clean up mock chroot after building the package
 
 
 
@@ -77,18 +96,18 @@ Requirements
 
 In order to run correctly, ``autospec`` requires the following components:
 
- * python3
- * correctly configured mock
+* python3
+* correctly configured mock
 
-If ``autospec`` is not configured to use a license server, then you will
-need a ``common/licenses`` file -  which should be an up to date list of
-licenses to facilitate automatic license detection during the scan of a
-tarball. For correctness, license names should be in the SPDX identifier
-format. Each line in the file constitutes a license definition, for example::
+If ``autospec`` is not configured to use a license server, then it will use the
+``autospec/license_hashes`` file -  which is a list of licenses to facilitate
+automatic license detection during the scan of a tarball. For correctness,
+license names should be in the SPDX identifier format. Each line in the file
+constitutes a license definition, for example::
 
-    750b9d9cc986bfc80b47c9672c48ca615cac0c87 | BSD-3-Clause
-    175e59be229a5bedc6be93e958a970385bb04a62 | Apache-2.0
-    794a893e510ca5c15c9c97a609ce47b0df74fc1a | BSD-2-Clause
+    750b9d9cc986bfc80b47c9672c48ca615cac0c87, BSD-3-Clause
+    175e59be229a5bedc6be93e958a970385bb04a62, Apache-2.0
+    794a893e510ca5c15c9c97a609ce47b0df74fc1a, BSD-2-Clause
 
 
 Control files
@@ -179,12 +198,6 @@ Controlling the build process
     ``./cmake_args`` would result in ``%cmake -DUSE_LIB64=ON`` being emitted
     in the ``.spec``.
 
-**broken_parallel_build**
-
-    This option is set in the ``options.conf`` file described below. If this
-    option is set, then parallelisation will be disabled in the build.
-    This usually means that ``%{?_smp_mflags}`` will not be passed to ``make``
-
 **make_args**
 
     The contents of this file are appended to the ``make`` invocation. This
@@ -213,6 +226,11 @@ Controlling the build process
     the ``unix`` subdirectory. Set the name in this file and the ``.spec`` will
     emit the correct ``pushd`` and ``popd`` lines to utilise these directories
     for each step in the build.
+
+**cmake_srcdir**
+
+    The contents of this file are a path the source directory in which to run
+    cmake for non-standard packages.
 
 **build_pattern**
 
@@ -254,24 +272,12 @@ Controlling files and subpackages
     is useful for omitting files from being included in the resulting package.
     Each line in the file should be a full path name.
 
-**keepstatic**
-
-    This option is set in the ``options.conf`` file described below. If this
-    option is set, then ``%define keepstatic 1`` is emitted in the ``.spec``.
-    As a result, any static archive (``.a``) files will not be removed by rpmbuild.
-
 **extras**
 
     Each line in the file should be a full path within the resulting package,
     that you wish to be placed into an automatic ``-extras`` subpackage. This
     allows one to keep the main package slim and split out optional functionality
     or files.
-
-**no_autostart**
-
-    This option is set in the ``options.conf`` file described below. If this
-    option is set the autostart subpackage (which contains all files matching
-    /usr/lib/systemd/system/*.target.wants/) will not be required by the base package.
 
 **setuid**
 
@@ -291,12 +297,6 @@ Controlling test suites
 By default, ``autospec`` will attempt to detect potential test suites that
 can be run in the ``%check`` portion of the ``.spec``.
 
-**skip_test_suite**
-
-    If this file exists, ``autospec`` will not emit any ``%check`` functionality.
-    This file has been deprecated and will be removed during an autospec run and
-    replaced with a ``skip_tests`` option in ``options.conf``.
-
 **unit_tests_must_pass**
 
     This file is automatically created upon successful completion of a package build.
@@ -311,20 +311,14 @@ can be run in the ``%check`` portion of the ``.spec``.
     This may be useful when a package uses a custom test suite, or requires
     additional work/parameters, to work correctly.
 
-**allow_test_failures**
 
-    This option is set in the ``options.conf`` file described below. If this
-    option is set it will allow test failures, and will still emit the
-    ``%check`` code in a way that allows the build to continue.
-
-
-Controlling flags and optimisation
+Controlling flags and optimization
 ----------------------------------
 
 Further control of the build can be achieved through the use of the
-``options.conf`` file. If this file does not exist it is created by autospec.
-Autospec generates this file based on the presence of deprecated 'file-exists'
-files, then removes the deprecated files.
+``options.conf`` file. If this file does not exist it is created by autospec
+with default values. If certain deprecated configuration files exists autospec
+will use the value indicated by those files and remove them.
 
 The options that can be set in ``options.conf`` are as follows:
 
@@ -338,20 +332,20 @@ The options that can be set in ``options.conf`` are as follows:
 **optimize_size**
 
     If this option is set, the ``CFLAGS/LDFLAGS`` will be extended to build
-    the package optimised for *size*, and not for *speed*. Use this when
+    the package optimized for *size*, and not for *speed*. Use this when
     size is more critical than performance.
 
 **funroll-loops**
 
     If this option is set, the ``CFLAGS/LDFLAGS`` will be extended to build
-    the package optimised for *speed*. In short this where speed is of
+    the package optimized for *speed*. In short this where speed is of
     paramount importance, and will use ``-03`` by default.
 
 **insecure_build**
 
     If this option is set, the ``CFLAGS/LDFLAGS`` will be **replaced**, using
     the smallest ``-02`` based generic flags possible. This is useful for
-    operating systems employing heavy optimisations or full RELRO by default.
+    operating systems employing heavy optimizations or full RELRO by default.
 
 **pgo**
 
@@ -380,10 +374,14 @@ The options that can be set in ``options.conf`` are as follows:
     If this option is set it will allow test failures, and will still emit the
     ``%check`` code in a way that allows the build to continue.
 
+**skip_tests**
+
+    If this option is set the test suite will not be run.
+
 **no_autostart**
 
     If this option is set the autostart subpackage (which contains all files matching
-    /usr/lib/systemd/system/*.target.wants/) will not be required by the base package.
+    /usr/lib/systemd/system/\*.target.wants/) will not be required by the base package.
 
 **conservative_flags**
 
@@ -404,6 +402,30 @@ The options that can be set in ``options.conf`` are as follows:
     This option will trigger the creation of 32-bit libraries for a 32-bit
     build.
 
+**nostrip**
+
+    This option will suppress the stripping of the created binaries.
+
+**verify_required**
+
+    This option will make package verification required for the build. This
+    option is automatically set if package verification is ever successful, but
+    can be turned off manually.
+
+**security_sensitive**
+
+    This options sets flags for security-sensitive builds.
+
+**so_to_lib**
+
+    This option causes package ``.so`` files to be added to the ``lib``
+    subpackage instead of the ``dev`` subpackage.
+
+**autoupdate**
+
+    This option indicates that the package is trusted enough to be automatically
+    update to its newest available version when set to ``true``. This flag is
+    intended to be used by tools running autospec automatically.
 
 Name and version resolution
 ===========================
@@ -447,4 +469,4 @@ license is unknown, in which case ``autospec`` will emit the ``license_show``
 URL. The implementation should show the now-stored license file via a
 web page, and enable a human to make a decision on the license. This is
 then stored internally, allowing future requests to automatically know
-the license type when this hash is encounted again. 
+the license type when this hash is encountered again.
