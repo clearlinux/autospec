@@ -320,6 +320,7 @@ https://download.gnome.org/sources/geocode-glib/3.24/geocode-glib-3.24.0.tar.xz,
 http://mirrors.kernel.org/gnu/gettext/gettext-0.19.8.1.tar.xz,gettext,0.19.8.1
 https://pypi.debian.net/gevent/gevent-1.2.2.tar.gz,gevent,1.2.2
 https://github.com/gflags/gflags/archive/v2.2.1.tar.gz,gflags,2.2.1
+https://github.com/ArtifexSoftware/ghostpdl-downloads/releases/download/gs922/ghostscript-9.22.tar.gz,ghostscript,9.22
 https://download.gimp.org/mirror/pub/gimp/v2.8/gimp-2.8.22.tar.bz2,gimp,2.8.22
 https://www.kernel.org/pub/software/scm/git/git-2.14.2.tar.gz,git,2.14.2
 https://github.com/sitaramc/gitolite/archive/v3.6.7.tar.gz,gitolite,3.6.7
