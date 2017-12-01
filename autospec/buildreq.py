@@ -471,6 +471,38 @@ def add_setup_py_requires(filename):
                 pass
 
 
+def parse_catkin_deps(cmakelists_file):
+    f = open(cmakelists_file, "r", encoding="latin-1")
+    lines = f.readlines()
+    pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
+    catkin = False
+
+    for line in lines:
+        match = pat.search(line)
+
+        if not match:
+            continue
+
+        # include catkin's required components
+        comp = match.group("comp")
+        if comp:
+            for curr in comp.split(" "):
+                add_pkgconfig_buildreq(curr)
+
+        catkin = True
+
+    # catkin find_package() function will always rely on CMAKE_PREFIX_PATH
+    # make sure we keep it consistent with CMAKE_INSTALL_PREFIX otherwise
+    # it'll never be able to find its modules
+    if catkin:
+        for curr in ["catkin", "catkin_pkg", "empy", "googletest"]:
+            add_buildreq(curr)
+
+        extra_cmake.add("-DCMAKE_PREFIX_PATH=/usr")
+        extra_cmake.add("-DCATKIN_BUILD_BINARY_PACKAGE=ON")
+        extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
+
+
 def scan_for_configure(dirn):
     """
     Scan the package directory for build files to determine build pattern
@@ -487,29 +519,9 @@ def scan_for_configure(dirn):
             add_buildreq("cmake")
             buildpattern.set_build_pattern("cmake", default_score)
 
-            with open(os.path.join(dirpath, "CMakeLists.txt"), "r", encoding="latin-1") as f:
-                lines = f.readlines()
-
-                pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
-                for line in lines:
-                    match = pat.search(line)
-                    if match:
-                        # include catkin's required components
-                        comp = match.group("comp")
-                        if comp:
-                            for curr in comp.split(" "):
-                                add_pkgconfig_buildreq(curr)
-
-                        for curr in ["catkin", "catkin_pkg", "empy", "googletest"]:
-                            add_buildreq(curr)
-
-                        # catkin find_package() function will always rely on CMAKE_PREFIX_PATH
-                        # make sure we keep it consistent with CMAKE_INSTALL_PREFIX otherwise
-                        # it'll never be able to find its modules
-                        extra_cmake.add("-DCMAKE_PREFIX_PATH=/usr")
-                        extra_cmake.add("-DCATKIN_BUILD_BINARY_PACKAGE=ON")
-                        extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
-                        break
+            srcdir = os.path.abspath(os.path.join(dirn, "clr-build", config.cmake_srcdir or ".."))
+            if os.path.samefile(dirpath, srcdir):
+                parse_catkin_deps(os.path.join(srcdir, "CMakeLists.txt"))
 
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
             buildpattern.set_build_pattern("configure", default_score)
