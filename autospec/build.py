@@ -103,6 +103,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
                 must_restart += buildreq.add_buildreq('jdk-%s' % s)
         elif buildtool == 'catkin':
             must_restart += buildreq.add_pkgconfig_buildreq(s)
+            must_restart += buildreq.add_buildreq(s)
 
     except:
         if verbose > 0:
