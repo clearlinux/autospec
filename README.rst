@@ -282,6 +282,14 @@ make_check_command
   This may be useful when a package uses a custom test suite, or requires
   additional work/parameters, to work correctly.
 
+Controlling miscellaneous spec metadata
+---------------------------------------
+
+description
+  Provides content for the %description section, overriding the content
+  autospec autodetects. This is useful if autospec cannot find proper content
+  for the description, if one wants to customize the content for better
+  presentation, etc.
 
 Controlling flags and optimization
 ----------------------------------
