@@ -50,6 +50,7 @@ disable_static = "--disable-static"
 make_install_append = []
 patches = []
 autoreconf = False
+custom_desc = ""
 
 license_fetch = None
 license_show = None
@@ -492,6 +493,7 @@ def parse_config_files(path, bump, filemanager):
     global patches
     global autoreconf
     global yum_conf
+    global custom_desc
 
     packages_file = None
 
@@ -720,6 +722,8 @@ def parse_config_files(path, bump, filemanager):
     prep_append = read_conf_file(os.path.join(path, "prep_append"))
 
     profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
+
+    custom_desc = read_conf_file(os.path.join(path, "description"))
 
 
 def load_specfile(specfile):

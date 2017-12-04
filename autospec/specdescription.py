@@ -295,4 +295,7 @@ def load_specfile(specfile):
     Load specfile with parse results
     """
     specfile.default_sum = default_summary
-    specfile.default_desc = default_description
+    if config.custom_desc:
+        specfile.default_desc = "\n".join(config.custom_desc)
+    else:
+        specfile.default_desc = default_description
