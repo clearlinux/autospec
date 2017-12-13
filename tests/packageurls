@@ -1766,6 +1766,7 @@ http://ftp.gnome.org/pub/gnome/sources/vinagre/3.22/vinagre-3.22.0.tar.xz,vinagr
 http://pypi.debian.net/vine/vine-1.1.4.tar.gz,vine,1.1.4
 http://pypi.debian.net/virtualenv/virtualenv-15.1.0.tar.gz,virtualenv,15.1.0
 https://virt-manager.org/download/sources/virt-viewer/virt-viewer-6.0.tar.gz,virt-viewer,6.0
+https://github.com/felixonmars/volume_key/archive/volume_key-0.3.9.tar.gz,volume_key,0.3.9
 https://pypi.debian.net/voluptuous/voluptuous-0.10.5.tar.gz,voluptuous,0.10.5
 https://github.com/GNOME/vte/archive/0.50.1.tar.gz,vte,0.50.1
 https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers/archive/sdk-1.0.39.0.tar.gz,Vulkan-LoaderAndValidationLayers,1.0.39.0

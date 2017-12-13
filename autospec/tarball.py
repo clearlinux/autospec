@@ -332,7 +332,7 @@ def name_and_version(name_arg, version_arg, filemanager):
         # define regex accepted for valid packages, important for specific
         # patterns to come before general ones
         github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/[v|r]?.*/(.*).tar",
-                           r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z]*-(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z-_]*-(.*).tar",
                            r"https?://github.com/(.*)/(.*?)/archive/[vVrR]?(.*).tar",
                            r"https?://github.com/(.*)/.*-downloads/releases/download/.*?/(.*)-(.*).tar",
                            r"https?://github.com/(.*)/(.*?)/releases/download/.*?/(.*).tar",
