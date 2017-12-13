@@ -117,6 +117,7 @@ class TestLicense(unittest.TestCase):
             URL = None
             WRITEDATA = None
             POSTFIELDS = None
+            FOLLOWLOCATION = 0
             def setopt(_, __, ___):
                 pass
 

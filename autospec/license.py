@@ -72,6 +72,7 @@ def license_from_copying_hash(copying):
         c.setopt(c.URL, config.license_fetch)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(c.POSTFIELDS, data)
+        c.setopt(c.FOLLOWLOCATION, 1)
         try:
             c.perform()
         except Exception as excep:
