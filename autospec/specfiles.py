@@ -361,9 +361,9 @@ class Specfile(object):
         """
         Write make line to spec file
 
-        make V=1 <config.parallel_build> <extra_make>
+        make <config.parallel_build> <extra_make>
         """
-        self._write_strip("make V=1 {}{}".format(config.parallel_build, self.extra_make))
+        self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
 
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file"""
