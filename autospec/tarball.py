@@ -259,9 +259,8 @@ def detect_build_from_url(url):
 
     # python
     if "pypi.python.org" in url or "pypi.debian.net" in url:
-        buildpattern.set_build_pattern("distutils23", 10)
+        buildpattern.set_build_pattern("distutils3", 10)
         buildreq.add_buildreq("python3-dev")
-        buildreq.add_buildreq("python-dev")
 
     # cpan
     if ".cpan.org/" in url or ".metacpan.org/" in url:
