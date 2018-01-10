@@ -1000,7 +1000,7 @@ class Specfile(object):
             self._write_strip("\nmake clean\n")
             self._write_strip("{0}".format(self.get_profile_use_flags()))
 
-        self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
+        self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
         self._write_strip("popd")
 
         if config.config_opts['32bit']:
@@ -1016,7 +1016,7 @@ class Specfile(object):
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DLIB_SUFFIX=32 "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
-            self._write_strip("make VERBOSE=1 {}{}".format(config.parallel_build, self.extra_make))
+            self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
@@ -1033,7 +1033,7 @@ class Specfile(object):
                               "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
-            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
+            self._write_strip("make {}{} || :".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
 
         self._write_strip("\n")
