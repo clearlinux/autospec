@@ -105,7 +105,7 @@ def read_old_metadata():
     if not os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
         return None, None, []
 
-    config_f = configparser.ConfigParser()
+    config_f = configparser.ConfigParser(interpolation=None)
     config_f.read('options.conf')
     if "package" not in config_f.sections():
         return None, None, []
