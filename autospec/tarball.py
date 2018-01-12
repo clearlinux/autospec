@@ -190,7 +190,7 @@ def download_tarball(target_dir):
     tarfile = os.path.basename(url)
     target = os.path.join(os.getcwd(), name)
     if os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
-        config_f = configparser.ConfigParser()
+        config_f = configparser.ConfigParser(interpolation=None)
         config_f.read('options.conf')
         if "package" in config_f.sections():
             if (config_f["package"].get("name") == name or

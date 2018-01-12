@@ -297,7 +297,7 @@ def create_conf(path):
     """
     Create options.conf file. Use deprecated configuration files or defaults to populate
     """
-    config_f = configparser.ConfigParser(allow_no_value=True)
+    config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
 
     # first the metadata
     config_f['package'] = get_metadata_conf()
@@ -336,7 +336,7 @@ def read_config_opts(path):
     if not os.path.exists(opts_path):
         create_conf(path)
 
-    config_f = configparser.ConfigParser()
+    config_f = configparser.ConfigParser(interpolation=None)
     config_f.read(opts_path)
     if "autospec" not in config_f.sections():
         print("Missing autospec section in options.conf")
@@ -355,7 +355,7 @@ def rewrite_config_opts(path):
     """
     Rewrite options.conf file when an option has changed (verify_required for example)
     """
-    config_f = configparser.ConfigParser(allow_no_value=True)
+    config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
     config_f['package'] = get_metadata_conf()
     config_f['autospec'] = {}
 
