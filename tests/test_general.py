@@ -9,9 +9,9 @@ class TestGeneral(unittest.TestCase):
         Make sure ConfigParser is always called with the required
         interpolation=None argument
         """
-        grep_cmd = ["grep", "-e", 
+        grep_cmd = ["grep", "-re",
                     "ConfigParser(.*\(^interpolation=None\).*)",
-                    "autospec/autospec.py"]
+                    "autospec"]
         try:
             output = subprocess.check_output(grep_cmd).decode('utf-8')
         except subprocess.CalledProcessError as e:
