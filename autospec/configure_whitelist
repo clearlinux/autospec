@@ -628,3 +628,53 @@ sem_init
 whether we can link with -static
 if building for some Win32 platform
 more warnings
+x86_64-generic-linux-gnu-makeindex
+x86_64-generic-linux-gnu-pdflatex
+x86_64-generic-linux-gnu-egrep
+x86_64-generic-linux-gnu-dvips
+x86_64-generic-linux-gnu-latex
+x86_64-generic-linux-gnu-dot
+x86_64-generic-linux-gnu-perl
+x86_64-generic-linux-gnu-doxygen
+latex
+dvips
+whether more special flags are required for pthreads
+Configure miss: whether to build with gcov testing
+if compiler needs -Werror to reject unknown flags
+pow
+struct stat.st_mtimensec
+struct statvfs.f_basetype
+struct statvfs.f_fstypename
+sys/audioio.h presence
+valgrind/valgrind.h presence
+valgrind/valgrind.h usability
+whether C compiler handles -Werror -Wunknown-warning-option
+whether self tests are run under valgrind
+arc4random_buf
+sys/ucred.h
+sys/utime.h
+valgrind/valgrind.h
+struct statfs.f_fstypename
+whether __argv is declared
+whether <limits.h> defines MIN and MAX
+whether C compiler accepts -Werror=unknown-warning-option
+whether gcc is Clang
+whether more special flags are required for pthreads
+whether the C locale is free of encoding errors
+winsock2.h
+getpeereid
+getpeerucred
+whether wint_t is too small
+xlocale.h usability
+whether the linker accepts -Wl,-fatal_warnings
+whether to build with code coverage support
+xlocale.h presence
+getexecname
+getprogname
+whether stdint.h predates C++11
+xlocale.h
+i686-generic-linux-gnu-pkg-config
+i686-generic-linux-gnu-objdump
+i686-generic-linux-gnu-dlltool
+i686-generic-linux-gnu-mt
+i686-generic-linux-gnu-strip
