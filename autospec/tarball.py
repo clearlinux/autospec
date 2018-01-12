@@ -352,6 +352,10 @@ def name_and_version(name_arg, version_arg, filemanager):
                 giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
 
+    # construct github giturl from gnome projects
+    if not giturl and "download.gnome.org" in url:
+        giturl = "https://github.com/GNOME/{}.git".format(name)
+
     if "mirrors.kernel.org" in url:
         m = re.search(r".*/sourceware/(.*?)/releases/(.*?).tgz", url)
         if m:
