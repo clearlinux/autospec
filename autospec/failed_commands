@@ -507,3 +507,8 @@ get_mempolicy, numactl-dev
 pcap_dump, libpcap-dev
 ldap.h, openldap-dev
 cargo, cargo
+libaio.h, libaio-dev
+boost/bind.hpp, boost-dev
+sox.h, sox-dev
+asciidoc, asciidoc
+gpgconf, gnupg
