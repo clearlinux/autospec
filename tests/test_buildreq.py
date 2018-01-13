@@ -177,7 +177,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.toml.loads = loads_backup
 
         self.assertEqual(buildreq.buildreqs,
-                         set(['rustc', 'dep1', 'dep2', 'dep3']))
+                         set(['cargo', 'rustc', 'dep1', 'dep2', 'dep3']))
         self.assertTrue(buildreq.cargo_bin)
         self.assertEqual(buildreq.buildpattern.default_pattern, 'cargo')
 

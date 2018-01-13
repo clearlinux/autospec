@@ -1043,7 +1043,7 @@ class Specfile(object):
     def write_cargo_pattern(self):
         """Write cargo build pattern to spec file"""
         self.write_prep()
-        src_dir = "/usr/share/rust/src/{0}-{1}".format(self.name, self.version)
+        src_dir = "/usr/share/rust/src/{0}".format(self.name)
         self._write_strip("%build")
         self.write_proxy_exports()
         self._write_strip("mkdir .cargo")
