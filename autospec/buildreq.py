@@ -224,6 +224,7 @@ def parse_cargo_toml(filename):
     """
     global cargo_bin
     buildpattern.set_build_pattern("cargo", 1)
+    add_buildreq("cargo")
     add_buildreq("rustc")
     with open(filename, "r", encoding="latin-1") as ctoml:
         cargo = toml.loads(ctoml.read())
@@ -231,8 +232,9 @@ def parse_cargo_toml(filename):
         cargo_bin = True
     if not cargo.get("dependencies"):
         return
-    for bdep in cargo["dependencies"]:
-        add_buildreq(bdep)
+    for cdep in cargo["dependencies"]:
+        if add_buildreq(cdep):
+            add_requires(cdep)
 
 
 def set_build_req():
@@ -556,7 +558,7 @@ def scan_for_configure(dirn):
             buildpattern.set_build_pattern("meson", default_score)
 
         for name in files:
-            if name.lower() == "cargo.toml":
+            if name.lower() == "cargo.toml" and dirpath == dirn:
                 parse_cargo_toml(os.path.join(dirpath, name))
             if name.lower().startswith("configure."):
                 parse_configure_ac(os.path.join(dirpath, name))

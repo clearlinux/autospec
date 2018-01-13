@@ -506,3 +506,4 @@ g-ir-scanner, gobject-introspection
 get_mempolicy, numactl-dev
 pcap_dump, libpcap-dev
 ldap.h, openldap-dev
+cargo, cargo

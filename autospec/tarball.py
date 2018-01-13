@@ -274,6 +274,10 @@ def detect_build_from_url(url):
     if ".maven." in url:
         buildpattern.set_build_pattern("maven", 10)
 
+    # rust crate
+    if "crates.io" in url:
+        buildpattern.set_build_pattern("cargo", 10)
+
 
 def name_and_version(name_arg, version_arg, filemanager):
     """
@@ -395,6 +399,13 @@ def name_and_version(name_arg, version_arg, filemanager):
     # maven
     if ".maven." in url:
         m = re.search(r"/maven.*/org/.*/(.*?)/.*/.*[\-_]([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.jar", url)
+        if m:
+            name = m.group(1).strip()
+            version = convert_version(m.group(2))
+
+    # rust crate
+    if "crates.io" in url:
+        m = re.search(r"/crates.io/api/v[0-9]+/crates/(.*)/(.*)/download.*\.crate", url)
         if m:
             name = m.group(1).strip()
             version = convert_version(m.group(2))
