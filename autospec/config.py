@@ -40,7 +40,9 @@ config_files = set()
 parallel_build = " %{?_smp_mflags} "
 urlban = ""
 extra_make = ""
+extra32_make = ""
 extra_make_install = ""
+extra_make32_install = ""
 extra_cmake = ""
 cmake_srcdir = ""
 prep_append = []
@@ -484,7 +486,9 @@ def parse_config_files(path, bump, filemanager):
     global profile_payload
     global config_opts
     global extra_make
+    global extra32_make
     global extra_make_install
+    global extra_make32_install
     global extra_cmake
     global cmake_srcdir
     global prep_append
@@ -668,9 +672,17 @@ def parse_config_files(path, bump, filemanager):
     if content and content[0]:
         extra_make = content[0]
 
+    content = read_conf_file(os.path.join(path, "make32_args"))
+    if content and content[0]:
+        extra32_make = content[0]
+
     content = read_conf_file(os.path.join(path, "make_install_args"))
     if content and content[0]:
         extra_make_install = content[0]
+
+    content = read_conf_file(os.path.join(path, "make32_install_args"))
+    if content and content[0]:
+        extra_make32_install = content[0]
 
     content = read_conf_file(os.path.join(path, "install_macro"))
     if content and content[0]:
@@ -736,7 +748,9 @@ def load_specfile(specfile):
     specfile.keepstatic = config_opts['keepstatic']
     specfile.no_autostart = config_opts['no_autostart']
     specfile.extra_make = extra_make
+    specfile.extra32_make = extra32_make
     specfile.extra_make_install = extra_make_install
+    specfile.extra_make32_install = extra_make32_install
     specfile.extra_cmake = extra_cmake
     specfile.cmake_srcdir = cmake_srcdir or specfile.cmake_srcdir
     specfile.prep_append = prep_append

@@ -228,9 +228,19 @@ make_args
   The contents of this file are appended to the ``make`` invocation. This may be
   useful for passing arguments to ``make``, i.e. ``make TOOLDIR=/usr``
 
+make32_args
+  The contents of this file are appended to the ``make`` invocation of the 32bit
+  build. It is appended after the make_args content so 32bit specific overrides
+  can be added.
+
 make_install_args
   Much like ``make_args``, this will pass arguments to the ``make install``
   macro in the ``.spec``
+
+make32_install_args
+  Much like ``make32_args``, this will pass arguments to the ``make install``
+  macro in the ``.spec`` for the 32bit build. Again it is appended after
+  make_install_args so 32bit specific overrides can be added.
 
 make_install_append
   Additional actions that should take place after the ``make install`` step has
