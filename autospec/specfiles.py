@@ -57,7 +57,9 @@ class Specfile(object):
         self.default_pattern = ""
         self.autoreconf = False
         self.extra_make = ""
+        self.extra32_make = ""
         self.extra_make_install = ""
+        self.extra_make32_install = ""
         self.tarball_prefix = ""
         self.gcov_file = ""
         self.rawname = ""
@@ -357,13 +359,16 @@ class Specfile(object):
         self._write_strip("export https_proxy=http://127.0.0.1:9/")
         self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
 
-    def write_make_line(self):
+    def write_make_line(self, build32=False):
         """
         Write make line to spec file
 
         make <config.parallel_build> <extra_make>
         """
-        self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
+        if build32:
+            self._write_strip("make {}{}{}".format(config.parallel_build, self.extra_make, self.extra32_make))
+        else:
+            self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
 
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file"""
@@ -503,7 +508,8 @@ class Specfile(object):
 
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
-            self._write_strip("%make_install32 " + self.extra_make_install)
+            self._write_strip("%make_install32 {} {}".format(self.extra_make_install,
+                                                             self.extra_make32_install))
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
             self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
@@ -555,7 +561,8 @@ class Specfile(object):
 
         if config.config_opts['32bit']:
             self._write_strip("pushd clr-build32")
-            self._write_strip("%make_install32 " + self.extra_make_install)
+            self._write_strip("%make_install32 {} {}".format(self.extra_make_install,
+                                                             self.extra_make32_install))
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
             self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
@@ -690,7 +697,7 @@ class Specfile(object):
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
-            self.write_make_line()
+            self.write_make_line(True)
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
@@ -755,7 +762,7 @@ class Specfile(object):
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
-            self.write_make_line()
+            self.write_make_line(True)
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
@@ -827,7 +834,7 @@ class Specfile(object):
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
-            self.write_make_line()
+            self.write_make_line(True)
             self._write_strip("popd")
         self.write_check()
         self.write_make_install()
