@@ -290,7 +290,7 @@ def get_metadata_conf():
     else:
         metadata['url'] = tarball.url
 
-    metadata['archives'] = ' '.join(tarball.archives)
+    metadata['archives'] = re.sub(urlban, "localhost", " ".join(tarball.archives))
     metadata['giturl'] = tarball.giturl
     return metadata
 
