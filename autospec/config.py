@@ -287,10 +287,11 @@ def get_metadata_conf():
     metadata['name'] = tarball.name
     if urlban:
         metadata['url'] = re.sub(urlban, "localhost", tarball.url)
+        metadata['archives'] = re.sub(urlban, "localhost", " ".join(tarball.archives))
     else:
         metadata['url'] = tarball.url
+        metadata['archives'] = " ".join(tarball.archives)
 
-    metadata['archives'] = ' '.join(tarball.archives)
     metadata['giturl'] = tarball.giturl
     return metadata
 

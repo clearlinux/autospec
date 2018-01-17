@@ -160,6 +160,8 @@ class Specfile(object):
                                               self.sources["tmpfile"] +
                                               self.sources["gcov"])):
             self.source_index[source] = count + 1
+            if self.urlban:
+                source = re.sub(self.urlban, "localhost", source)
             self._write("Source{0}  : {1}\n".format(count + 1, source))
 
         # if package is verified, include the signature in the source tarball
