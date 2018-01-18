@@ -130,10 +130,20 @@ class GPGCli(object):
 
     def display_keyinfo(self, keyfile):
         args = self.args + ['--list-packet', keyfile]
-        output, err, code = self.exec_cmd(args)
-        if code == 0:
-            return None, output.decode('utf-8')
-        return GPGCliStatus(err.decode('utf-8')), None
+        lp, err, code = self.exec_cmd(args)
+        if code != 0:
+            return GPGCliStatus(err.decode('utf-8')), None
+
+        # trim list-packet output to 10 lines
+        lp = "--list-packet:\n" + "\n".join(lp.decode("utf-8").split("\n")[:10])
+
+        args = self.args + ['--fingerprint', os.path.basename(keyfile.replace(".pkey", ""))]
+        fp, err, code = self.exec_cmd(args)
+        if code != 0:
+            return GPGCliStatus(err.decode('utf-8')), None
+
+        fp = "--fingerprint:\n" + fp.decode("utf-8")
+        return None, "{}\n\n{}".format(lp, fp)
 
 
 @contextmanager
@@ -608,7 +618,7 @@ def attempt_key_import(keyid):
             print_error('Unable to parse {}, will be removed'.format(key_fullpath))
             os.unlink(key_fullpath)
             return False
-        print('\n', '\n'.join(content.split('\n')[:10]))
+        print("\n", content)
         ig = InputGetter(message='\nDo you want to keep this key: (Y/n) ', default='y')
         if ig.get_answer() is True:
             return True
