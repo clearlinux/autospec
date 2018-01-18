@@ -129,7 +129,7 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message()
+            commitmessage.guess_commit_message("")
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -159,7 +159,7 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message()
+            commitmessage.guess_commit_message("")
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -169,6 +169,38 @@ class TestCommitmessage(unittest.TestCase):
                 'testball: Fix for CVE-1234-5678\n\n\ncommit\nmessage\nwith\n'
                 'cves\n\n\ncommit\nmessage\nwith\ncves\n\nCVEs fixed in this '
                 'build:\nCVE-1234-5678\ncve1\ncve2\n\n')
+
+    def test_guess_commit_message_imported_key(self):
+        """
+        Test guess_commit_message() with mocked internal functions and both
+        commitmessage information and cves available from newsfile. A cve is
+        also available from config, which changes the first line of the commmit
+        message. Additionally there is imported key info that will be displayed
+        at the end of the message.
+        """
+        process_NEWS_backup = commitmessage.process_NEWS
+
+        def mock_process_NEWS(newsfile):
+            return (['', 'commit', 'message', 'with', 'cves', ''],
+                    set(['cve1', 'cve2']))
+
+        commitmessage.process_NEWS = mock_process_NEWS
+        commitmessage.config.cves = set(['CVE-1234-5678'])
+        commitmessage.config.old_version = None  # Allow cve title to be set
+        open_name = 'util.open'
+        with mock.patch(open_name, create=True) as mock_open:
+            mock_open.return_value = mock.MagicMock()
+            commitmessage.guess_commit_message("keyinfo content")
+            # reset mocks before asserting so a failure doesn't cascade to
+            # other tests
+            commitmessage.process_NEWS = process_NEWS_backup
+            commitmessage.config.cves = set()
+            fh = mock_open.return_value.__enter__.return_value
+            fh.write.assert_called_with(
+                'testball: Fix for CVE-1234-5678\n\n\ncommit\nmessage\nwith\n'
+                'cves\n\n\ncommit\nmessage\nwith\ncves\n\nCVEs fixed in this '
+                'build:\nCVE-1234-5678\ncve1\ncve2\n\nKey imported:\nkeyinfo '
+                'content\n')
 
     def test_scan_for_changes(self):
         """
