@@ -56,6 +56,7 @@ def commit_to_git(path):
     call("bash -c 'shopt -s failglob; git add -f *.sig'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.sha256'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.sign'", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("bash -c 'shopt -s failglob; git add -f *.pkey'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure32", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure64", check=False, stderr=subprocess.DEVNULL, cwd=path)

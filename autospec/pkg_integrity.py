@@ -47,7 +47,6 @@ KEYID_TRY = ""
 KEYID = ""
 EMAIL = ""
 GNUPGCONF = """keyserver keys.gnupg.net"""
-PUBKEY_PATH = '/'.join([os.path.dirname(os.path.abspath(__file__)), "keyring", "{}.pkey"])
 CMD_TIMEOUT = 20
 ENV = os.environ
 INPUT_GETTER_TIMEOUT = 60
@@ -440,11 +439,12 @@ class GPGVerifier(Verifier):
             # <package directory>/<key url basename>
             self.package_sign_path = os.path.join(os.path.dirname(self.package_path),
                                                   os.path.basename(self.key_url))
-
-    def get_pubkey_path(self):
-        keyid = get_keyid(self.package_sign_path)
-        if keyid:
-            return PUBKEY_PATH.format(keyid)
+        # default pubkey path is the package directory - this is where imports
+        # will go
+        self.pubkey_path = os.path.join(os.path.dirname(self.package_path), "{}.pkey")
+        # fallback to autospec repo for global keyring
+        self.fallback_pubkey_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                                 "keyring", "{}.pkey")
 
     def get_sign(self):
         code = self.download_file(self.key_url, self.package_sign_path)
@@ -468,17 +468,27 @@ class GPGVerifier(Verifier):
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
             os.unlink(self.package_sign_path)
             return None
-        pub_key = self.get_pubkey_path()
-        EMAIL = parse_key(pub_key, r':user ID packet: ".* <(.+?)>"\n')
-        if not pub_key or os.path.exists(pub_key) is False:
-            key_id = get_keyid(self.package_sign_path)
-            self.print_result(False, 'Public key {} not found in keyring'.format(key_id))
-            if self.interactive is True and recursion is False and attempt_key_import(key_id):
-                print(SEPT)
-                return self.verify(recursion=True)
-            return None
-        sign_status = verify_cli(pub_key, self.package_path, self.package_sign_path)
-        if sign_status is None:
+        # valid signature exists at package_sign_path, operate on it now
+        keyid = get_keyid(self.package_sign_path)
+        # default location first
+        pubkey_loc = self.pubkey_path.format(keyid)
+        if not os.path.exists(pubkey_loc):
+            print_info("public key not in default keyring, checking fallback keyring")
+            # no pubkey at default location, fallback to global
+            pubkey_loc = self.fallback_pubkey_path.format(keyid)
+            if not os.path.exists(pubkey_loc):
+                # still nothing, attempt interactive if set to do so
+                self.print_result(False, 'Public key {} not found in keyring'.format(keyid))
+                if not self.interactive or recursion:
+                    return None
+                if attempt_key_import(keyid, self.pubkey_path.format(keyid)):
+                    print(SEPT)
+                    return self.verify(recursion=True)
+                return None
+        # public key exists or is imported, verify
+        EMAIL = parse_key(pubkey_loc, r':user ID packet: ".* <(.+?)>"\n')
+        sign_status = verify_cli(pubkey_loc, self.package_path, self.package_sign_path)
+        if not sign_status:
             if config.old_keyid:
                 compare_keys(KEYID_TRY, config.old_keyid)
             self.print_result(self.package_path)
@@ -595,7 +605,7 @@ class InputGetter(object):
         return inpt
 
 
-def attempt_key_import(keyid):
+def attempt_key_import(keyid, key_fullpath):
     print(SEPT)
     ig = InputGetter('\nDo you want to attempt to import keyid {}: (y/N) '.format(keyid))
     import_key_answer = ig.get_answer()
@@ -609,7 +619,6 @@ def attempt_key_import(keyid):
         err, key_content = ctx.export_key(keyid)
         if err is not None:
             print_error(err.strerror)
-        key_fullpath = PUBKEY_PATH.format(keyid)
         util.write_out(key_fullpath, key_content)
         print('\n')
         print_success('Public key id: {} was imported'.format(keyid))
