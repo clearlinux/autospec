@@ -218,7 +218,7 @@ def process_git(giturl, oldversion, newversion):
         return shortlog
 
 
-def guess_commit_message():
+def guess_commit_message(keyinfo):
     """
     guess_commit_message() parses newsfiles and determines a sane commit
     message. The commit message defaults to the following for an updated
@@ -276,6 +276,9 @@ def guess_commit_message():
         commitmessage.append("CVEs fixed in this build:")
         commitmessage.extend(sorted(list(cves)))
         commitmessage.append("")
+
+    if keyinfo:
+        commitmessage.append("Key imported:\n{}".format(keyinfo))
 
     util.write_out(os.path.join(build.download_path, "commitmsg"),
                    "\n".join(commitmessage) + "\n")

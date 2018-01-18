@@ -45,6 +45,7 @@ RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 PYPIORG_API = "https://pypi.python.org/pypi/{}/json"
 KEYID_TRY = ""
 KEYID = ""
+IMPORTED = ""
 EMAIL = ""
 GNUPGCONF = """keyserver keys.gnupg.net"""
 CMD_TIMEOUT = 20
@@ -606,6 +607,7 @@ class InputGetter(object):
 
 
 def attempt_key_import(keyid, key_fullpath):
+    global IMPORTED
     print(SEPT)
     ig = InputGetter('\nDo you want to attempt to import keyid {}: (y/N) '.format(keyid))
     import_key_answer = ig.get_answer()
@@ -630,6 +632,7 @@ def attempt_key_import(keyid, key_fullpath):
         print("\n", content)
         ig = InputGetter(message='\nDo you want to keep this key: (Y/n) ', default='y')
         if ig.get_answer() is True:
+            IMPORTED = content
             return True
         else:
             os.unlink(key_fullpath)

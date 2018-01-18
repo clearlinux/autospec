@@ -347,7 +347,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # record logcheck output
     logcheck(build.download_path)
 
-    commitmessage.guess_commit_message()
+    commitmessage.guess_commit_message(pkg_integrity.IMPORTED)
 
     if args.git:
         git.commit_to_git(build.download_path)
