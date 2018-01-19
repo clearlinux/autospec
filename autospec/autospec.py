@@ -352,7 +352,8 @@ def package(args, url, name, archives, workingdir, infile_dict):
     if args.git:
         git.commit_to_git(build.download_path)
     else:
-        print("To commit your changes, run 'git commit -F commitmsg'")
+        print("To commit your changes, git add the relevant files and "
+              "run 'git commit -F commitmsg'")
 
 
 if __name__ == '__main__':
