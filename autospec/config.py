@@ -518,6 +518,13 @@ def parse_config_files(path, bump, filemanager):
         license_show = config['autospec'].get('license_show', None)
         packages_file = config['autospec'].get('packages_file', None)
         yum_conf = config['autospec'].get('yum_conf', None)
+
+        # support reading the local files relative to config_file
+        if packages_file and not os.path.isabs(packages_file):
+            packages_file = os.path.join(os.path.dirname(config_file), packages_file)
+        if yum_conf and not os.path.isabs(yum_conf):
+            yum_conf = os.path.join(os.path.dirname(config_file), yum_conf)
+
         if not packages_file:
             print("Warning: Set [autospec][packages_file] path to package list file for "
                   "requires validation")
