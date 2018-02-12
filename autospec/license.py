@@ -40,19 +40,24 @@ licenses = []
 def add_license(lic):
     """
     Add license from license string lic after checking for duplication or
-    presence in the blacklist.
+    presence in the blacklist. Returns False if no license were added, True
+    otherwise.
     """
     global licenses
     lic = lic.strip().strip(',')
+    result = False
 
     # Translate the license if a translation exists
-    real_lic = config.license_translations.get(lic, lic)
-    # Return False if not adding to licenses
-    if real_lic in licenses or real_lic in config.license_blacklist:
-        return False
+    real_lic_str = config.license_translations.get(lic, lic)
+    real_lics = real_lic_str.split()
+    for real_lic in real_lics:
+        if real_lic in licenses or real_lic in config.license_blacklist:
+            continue
+        else:
+            result = True
+            licenses.append(real_lic)
 
-    licenses.append(real_lic)
-    return True
+    return result
 
 
 def license_from_copying_hash(copying):
