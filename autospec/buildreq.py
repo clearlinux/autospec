@@ -304,6 +304,28 @@ def rakefile(filename):
                 print("Rakefile-new: rubygem-" + s)
 
 
+def qmake_profile(filename):
+    """
+    Scan .pro file for build requirements
+    """
+    with open(filename, "r", encoding="latin-1") as f:
+        lines = f.readlines()
+
+    pat = re.compile(r"(QT|QT_PRIVATE|QT_FOR_CONFIG).*=\s*(.*)\s*")
+    for line in lines:
+        match = pat.search(line)
+        if not match:
+            continue
+        s = match.group(2)
+        for module in s.split():
+            module = re.sub('-private$', '', module)
+            try:
+                pc = config.qt_modules[module]
+                add_buildreq('pkgconfig({})'.format(pc))
+            except:
+                pass
+
+
 def clean_python_req(req, add_python=True):
     """
     Strip version information from req
@@ -527,6 +549,9 @@ def scan_for_configure(dirn):
 
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
             buildpattern.set_build_pattern("configure", default_score)
+        elif any(f.endswith(".pro") for f in files):
+            add_buildreq("qtbase-dev")
+            buildpattern.set_build_pattern("qmake", default_score)
 
         if "requires.txt" in files:
             grab_python_requirements(dirpath + '/requires.txt')
@@ -564,6 +589,8 @@ def scan_for_configure(dirn):
                 parse_configure_ac(os.path.join(dirpath, name))
             if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
                 rakefile(os.path.join(dirpath, name))
+            if name.endswith(".pro") and buildpattern.default_pattern == "qmake":
+                qmake_profile(os.path.join(dirpath, name))
             if name.lower() == "makefile":
                 buildpattern.set_build_pattern("make", default_score)
             if name.lower() == "autogen.sh":

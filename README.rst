@@ -277,6 +277,7 @@ build_pattern
   * autogen: Similar to ``configure_ac`` but uses the existing ``./autogen.sh``
     instead of ``%reconfigure``
   * cmake: Traditional builds using CMake
+  * qmake: qmake (Qt5) projects
   * distutils: Only build the Pythonic package with Python 2
   * distutils3: Only build the Pythonic package with Python 3
   * distutils23: Build the Pythonic package using both Python 2 and Python 3
