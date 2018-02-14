@@ -72,6 +72,7 @@ gems = {}
 license_hashes = {}
 license_translations = {}
 license_blacklist = {}
+qt_modules = {}
 
 cves = []
 
@@ -425,12 +426,14 @@ def setup_patterns():
     global license_hashes
     global license_translations
     global license_blacklist
+    global qt_modules
     read_pattern_conf("failed_commands", failed_commands)
     read_pattern_conf("maven_jars", maven_jars)
     read_pattern_conf("gems", gems)
     read_pattern_conf("license_hashes", license_hashes)
     read_pattern_conf("license_translations", license_translations)
     read_pattern_conf("license_blacklist", license_blacklist, list_format=True)
+    read_pattern_conf("qt_modules", qt_modules)
 
 
 def parse_existing_spec(path, name):
