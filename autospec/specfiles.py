@@ -452,7 +452,7 @@ class Specfile(object):
                 flags.extend(["-O3"])
             else:
                 flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
-        if config.config_opts['use_lto']:
+        if config.config_opts['use_lto'] and self.default_pattern != 'qmake':
             flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
             self._write_strip("export AR=gcc-ar\n")
             self._write_strip("export RANLIB=gcc-ranlib\n")
@@ -1054,6 +1054,8 @@ class Specfile(object):
         extra_qmake_args = ""
         if config.config_opts['use_clang']:
             extra_qmake_args = "-spec linux-clang "
+        if config.config_opts['use_lto']:
+            extra_qmake_args += "-config ltcg "
 
         self.write_prep()
         self._write_strip("%build")
