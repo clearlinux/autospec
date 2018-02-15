@@ -7,6 +7,7 @@ import pkg_integrity
 
 
 TESTDIR = os.path.join(os.getcwd(), "tests/testfiles/pkg_integrity")
+TESTKEYDIR = os.path.join(TESTDIR, "testkeys")
 
 PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
@@ -47,6 +48,7 @@ class TestCheckFn(unittest.TestCase):
 
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
             result = pkg_integrity.check(PACKAGE_URL, tmpd)
@@ -55,6 +57,7 @@ class TestCheckFn(unittest.TestCase):
     def test_check_with_existing_sign(self):
         """ Download signature for local verification """
         with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
             pkg_integrity.attempt_to_download(NOSIGN_PKT_URL, out_file)
             key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
@@ -124,6 +127,7 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
             out_file1 = os.path.join(tmpd, os.path.basename(XATTR_PKT_URL))
@@ -134,6 +138,7 @@ class TestGPGVerifier(unittest.TestCase):
     def test_check_quit(self):
         with tempfile.TemporaryDirectory() as tmpd:
             with self.assertRaises(SystemExit) as a:
+                shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
                 out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
                 pkg_integrity.attempt_to_download(NOSIGN_PKT_URL_BAD, out_file)
                 key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
@@ -143,6 +148,7 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             out_key = out_file + '.asc'
             pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
@@ -152,6 +158,7 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_non_matchingsig(self):
         with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             f = open(out_file, 'wb')
             f.write(b'made up date that will fail check')
