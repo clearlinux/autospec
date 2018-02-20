@@ -167,7 +167,8 @@ simple_pats = [
     (r"libproc not found. Please configure without procps", "procps-ng-dev"),
     (r"configure: error: glib2", "glib-dev"),
     (r"C library 'efivar' not found", "efivar-dev"),
-    (r"Has header \"efi.h\": NO", "gnu-efi-dev")]
+    (r"Has header \"efi.h\": NO", "gnu-efi-dev"),
+    (r".*: error: HAVE_INTROSPECTION does not appear in AM_CONDITIONAL", 'gobject-introspection-dev')]
 
 # failed_pattern patterns
 # contains patterns for parsing build.log for missing dependencies
