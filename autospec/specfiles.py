@@ -1211,20 +1211,11 @@ class Specfile(object):
         self._write_strip("export LANG=C")
         self.write_variables()
 
-        self._write_strip("""
-qmake {}QMAKE_CFLAGS=\"$CFLAGS\" QMAKE_CXXFLAGS=\"$CXXFLAGS\" QMAKE_LFLAGS=\"$LDFLAGS\" \\
-    QMAKE_CFLAGS_RELEASE= QMAKE_CXXFLAGS_RELEASE= {}
-        """.format(extra_qmake_args, config.extra_configure))
+        self._write_strip("%qmake {}{}".format(extra_qmake_args, config.extra_configure))
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
         self._write_strip("\n")
-        self._write_strip("%install")
-        self._write_strip("make INSTALL_ROOT=%{buildroot} install " + self.extra_make_install)
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/doc/" + self.name + "/" + file2 + "\n")
+        self.write_make_install()
 
     def write_cargo_pattern(self):
         """Write cargo build pattern to spec file"""
