@@ -512,3 +512,10 @@ boost/bind.hpp, boost-dev
 sox.h, sox-dev
 asciidoc, asciidoc
 gpgconf, gnupg
+libaio.h, libaio-dev
+boost/bind.hpp, boost-dev
+sox.h, sox-dev
+asciidoc, asciidoc
+gpgconf, gnupg
+docbook2man, docbook-utils
+gtkdoc-scan, gtk-doc
