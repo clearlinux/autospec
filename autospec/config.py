@@ -552,6 +552,9 @@ def parse_config_files(path, bump, filemanager):
 
     if packages_file:
         os_packages = set(read_conf_file(packages_file))
+        print("Read ", packages_file)
+    else:
+        os_packages = set(read_conf_file("~/packages"))
 
     wrapper = textwrap.TextWrapper()
     wrapper.initial_indent = "# "
