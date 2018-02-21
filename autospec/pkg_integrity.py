@@ -223,19 +223,21 @@ def head_request(url):
 
 
 def get_signature_url(package_url):
-    if '://pypi.' in package_url[:13]:
+    if 'samba.org' in package_url:
+        return package_url + '.asc'
+    elif '://pypi.' in package_url[:13]:
         return package_url + '.asc'
     elif 'mirrors.kernel.org' in package_url:
         return package_url + '.sig'
     else:
         try:
-            st = head_request(package_url + '.sig')
-            if st == 200 or st == 302:
-                return package_url + '.sig'
             st = head_request(package_url + '.asc')
             if st == 200 or st == 302:
                 return package_url + '.asc'
-            st = head_request(package_url + '.asc')
+            st = head_request(package_url + '.sig')
+            if st == 200 or st == 302:
+                return package_url + '.sig'
+            st = head_request(package_url + '.sign')
             if st == 200 or st == 302:
                 return package_url + '.sign'
         except:
