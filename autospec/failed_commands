@@ -301,8 +301,8 @@ cmake, cmake
 exo-1, pkgconfig(exo-1)
 python2.5, python
 -lpython2.7, python-dev
-python-config, python-dev
-python, python-dev
+python-config, python3-dev
+python, python3-dev
 ZLIB, zlib-dev
 BZip2, bzip2-dev
 BZ2_bzCompress, bzip2-dev
@@ -324,9 +324,9 @@ tgetent, ncurses-dev
 tinfo, ncurses-dev
 term.h, ncurses-dev
 python2.7/Python.h, python-dev
-PythonLibsUnix, python-dev
+PythonLibsUnix, python3-dev
 llvm-config, llvm-dev
-Python.h, python-dev
+Python.h, python3-dev
 SDL, pkgconfig(sdl)
 CURL, curl-dev
 GLIB, glib-dev
