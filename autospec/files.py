@@ -178,6 +178,11 @@ class FileManager(object):
             self.push_package_file(newfn, "attr")
             self.excludes.append(filename)
 
+        # exclude all lib{,32,64}/haswell pkgconfig files
+        hsw_pkgconfig = re.compile(r"/usr/lib(|32|64)/haswell/pkgconfig/.+")
+        if hsw_pkgconfig.search(filename):
+            self.excludes.append(filename)
+
         if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
             return
 
