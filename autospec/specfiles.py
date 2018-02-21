@@ -240,7 +240,7 @@ class Specfile(object):
         deps["bin"] = ["data", "config", "setuid", "attr"]
         deps["lib"] = ["data"]
         deps["lib32"] = ["data"]
-        deps["python"] = ["legacypython", "python3"]
+        deps["python"] = ["python3"]
 
         # migration workaround; if we have a python3 or legacypython package
         # we add an artificial python package
