@@ -70,3 +70,7 @@ WebTest-python=WebTest
 yaml-python=PyYAML
 zaqarclient.queues.v1-python=python-zaqarclient
 zaqarclient.transport-python=python-zaqarclient
+qtpy=QtPy
+qtawesome=QtAwesome
+pygments=Pygments
+pyqt5=PyQt5
