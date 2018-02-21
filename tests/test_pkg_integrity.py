@@ -29,7 +29,8 @@ def mock_attempt_to_download(path, dest=None):
 def mock_head_request(url):
     bad_sigs = ["http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz.sig",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sig",
-                "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc"]
+                "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc",
+                "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sign"]
 
     if url in bad_sigs:
         return 404
@@ -195,7 +196,6 @@ class TestInputGetter(unittest.TestCase):
 
 
 @mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
-@mock.patch('pkg_integrity.head_request', mock_head_request)
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
@@ -230,16 +230,28 @@ class TestUtils(unittest.TestCase):
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
-    def test_get_signature_url(self):
+    def _mock_head_request(url):
+        # make return codes match by url to ensure we are using the expected signature type
+        if url == "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz.sig":
+            return 200
+        elif url == "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc":
+            return 200
+        elif url == "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2.sign":
+            return 200
+        return 404
 
+    @mock.patch('pkg_integrity.head_request', _mock_head_request)
+    def test_get_signature_url(self):
         url_from_gnu = "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz"
         url_from_gnu1 = "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz"
+        url_from_gnu2 = "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2"
         url_from_pypi = "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz"
         url_from_pypi1 = "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
 
         self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu)[-4:], '.sig')
         self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi)[-4:], '.asc')
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu1)[-4:], '.sig')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu1)[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu2)[-5:], '.sign')
         self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi1)[-4:], '.asc')
 
     def test_parse_key_for_email(self):
