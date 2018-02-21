@@ -95,6 +95,7 @@ config_options = {
     "broken_c++": "extend flags with '-std=gnu++98",
     "use_lto": "configure build for lto",
     "use_avx2": "configure build for avx2",
+    "use_avx512": "configure build for avx512",
     "keepstatic": "do not remove static libraries",
     "asneeded": "unset %build LD_AS_NEEDED variable",
     "allow_test_failures": "allow package to build with test failures",
