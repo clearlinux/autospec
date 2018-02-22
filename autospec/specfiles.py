@@ -1275,8 +1275,33 @@ qmake {}QMAKE_CFLAGS=\"$CFLAGS\" QMAKE_CXXFLAGS=\"$CXXFLAGS\" QMAKE_LFLAGS=\"$LD
         self.write_variables()
         self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --prefix /usr --buildtype=plain {0} builddir'.format(config.extra_configure))
         self._write_strip("ninja -v -C builddir")
+
+        if config.config_opts['32bit']:
+            self._write_strip("pushd ../build32")
+            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
+            self._write_strip('export CFLAGS="$CFLAGS -m32"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
+            self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS "'
+                              '"-m32 PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson "'
+                              '"--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} builddir'
+                              .format(config.extra_configure))
+            self._write_strip('ninja -v -C builddir')
+            self._write_strip('popd')
+
         self._write_strip("\n")
         self._write_strip("%install")
+        if config.config_opts['32bit']:
+            self._write_strip('pushd ../build32')
+            self._write_strip('DESTDIR=%{buildroot} ninja -C builddir install')
+            self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
+            self._write_strip("then")
+            self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
+            self._write_strip("    for i in *.pc ; do ln -s $i 32$i ; done")
+            self._write_strip("    popd")
+            self._write_strip("fi")
+            self._write_strip("popd")
+
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         self.write_find_lang()
 
