@@ -231,15 +231,10 @@ def get_signature_url(package_url):
         return package_url + '.sig'
     else:
         try:
-            st = head_request(package_url + '.asc')
-            if st == 200 or st == 302:
-                return package_url + '.asc'
-            st = head_request(package_url + '.sig')
-            if st == 200 or st == 302:
-                return package_url + '.sig'
-            st = head_request(package_url + '.sign')
-            if st == 200 or st == 302:
-                return package_url + '.sign'
+            iter = (package_url + "." + ext for ext in ("asc", "sig", "sign"))
+            for sign_url in iter:
+                if head_request(sign_url) in (200, 302):
+                    return sign_url
         except:
             pass
     return None
