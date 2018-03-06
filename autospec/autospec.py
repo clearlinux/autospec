@@ -200,6 +200,10 @@ def main():
                         help="Clean up mock chroot after building the package")
     parser.add_argument("--infile", action="store", dest="infile", default="",
                         help="type of input file for .specfile creation")
+    parser.add_argument("-m", "--mock-config", action="store", default="clear",
+                        help="Value to pass with Mock's -r option. Defaults to "
+                             "\"clear\", meaning that Mock will use "
+                             "/etc/mock/clear.cfg.")
 
     args = parser.parse_args()
 
@@ -304,7 +308,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package(filemanager, args.cleanup)
+        build.package(filemanager, args.mock_config, args.cleanup)
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0

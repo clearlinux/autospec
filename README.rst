@@ -61,7 +61,7 @@ Synopsis
   usage: autospec.py [-h] [-g] [-n NAME] [-v VERSION]
                      [-a [ARCHIVES [ARCHIVES ...]]] [-l] [-b] [-c CONFIG]
                      [-t TARGET] [-i] [-p] [--non_interactive] [-C]
-                     [--infile INFILE]
+                     [--infile INFILE] [-m MOCK_CONFIG]
                      [url]
 
     url                 (required - unless infile is passed) tarball URL
@@ -91,7 +91,10 @@ optional arguments:
   --infile INFILE       Additional input to contribute to specfile creation.
                         Can be a url, directory of files, or a file.
   -C, --cleanup         Clean up mock chroot after building the package
-
+  -m MOCK_CONFIG, --mock-config MOCK_CONFIG
+                        Value to pass with Mock's -r option. Defaults to
+                        "clear", meaning that Mock will use
+                        /etc/mock/clear.cfg.
 
 
 Requirements
