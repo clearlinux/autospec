@@ -70,6 +70,10 @@ class Specfile(object):
         self.need_avx512_flags = False
         self.tests_config = ""
         self.subdir = ""
+        self.pre_install = ""
+        self.pre_uninstall = ""
+        self.post_install = ""
+        self.post_uninstall = ""
         self.install_macro = "%make_install"
         self.disable_static = "--disable-static"
         self.extra_cmake = ""
@@ -303,6 +307,26 @@ class Specfile(object):
         """
         Write post and pre scripts to spec file
         """
+        if len(self.pre_install):
+            self._write("\n%pre\n")
+            for line in self.pre_install:
+                self._write_strip("{}\n".format(line))
+
+        if len(self.pre_uninstall):
+            self._write("\n%preun\n")
+            for line in self.pre_uninstall:
+                self._write_strip("{}\n".format(line))
+
+        if len(self.post_install):
+            self._write("\n%post\n")
+            for line in self.post_install:
+                self._write_strip("{}\n".format(line))
+
+        if len(self.post_uninstall):
+            self._write("\n%postun\n")
+            for line in self.post_uninstall:
+                self._write_strip("{}\n".format(line))
+
         for pkg in sorted(self.packages):
             if pkg in ["ignore", "main", "locales"]:
                 continue
