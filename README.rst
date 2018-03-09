@@ -251,6 +251,26 @@ install_macro
   The contents of this file be used instead of the automatically detected
   ``install`` routine, i.e. use this if ``%make_install`` is insufficient.
 
+pre_install
+  The contents of this file be executed before ``install`` routine. This file
+  specifies a serie of commands that can be executed in order to set a required
+  environment before the installation stage.
+
+post_install
+  The contents of this file be executed after ``install`` routine. This file
+  specifies a serie of commands that can be executed in order to remove unneeded
+  stuff in the environment after the installation stage.
+
+pre_uninstall
+  The contents of this file be executed before to remove the package. This file
+  specifies a serie of commands that can be executed in order to set a required
+  enviroment before the uninstallation stage.
+
+post_uninstall
+  The contents of this file be executed after to remove the package. This file
+  specifies a serie of commands that can be executed in order to remove unneeded
+  stuff in the environment after the uninstallation stage.
+
 subdir
   Not all packages have their ``Makefile``'s available in the root of the
   tarball.  An example of this may be cross-platform projects that split
