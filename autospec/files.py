@@ -62,6 +62,29 @@ class FileManager(object):
             print("  New %files content found")
             self.newfiles_printed = True
 
+    def compat_exclude(self, filename):
+        """
+        Exclude non-library files if the package is for compatability.
+        """
+        if not config.config_opts.get("compat"):
+            return False
+
+        patterns = [
+            re.compile(r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\."),
+            re.compile(r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\."),
+            re.compile(r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\."),
+            re.compile(r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so"),
+            re.compile(r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so"),
+            re.compile(r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so\.")]
+
+        exclude = True
+        for pat in patterns:
+            if pat.search(filename):
+                exclude = False
+                break
+
+        return exclude
+
     def file_pat_match(self, filename, pattern, package, replacement="", prefix=""):
         """
         Search for pattern in filename, if pattern matches push package file.
@@ -75,7 +98,7 @@ class FileManager(object):
         pat = re.compile(pattern)
         match = pat.search(filename)
         if match:
-            if filename in self.excludes:
+            if filename in self.excludes or self.compat_exclude(filename):
                 self.push_package_file("%exclude " + filename, package)
                 return True
 
