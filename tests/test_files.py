@@ -1,4 +1,5 @@
 import unittest
+import config
 import files
 import tempfile
 import os
@@ -38,6 +39,28 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file('test-fn', 'dev')
         self.assertEqual(self.fm.packages['dev'], set(['test-fn']))
         self.assertTrue(self.fm.newfiles_printed)
+
+    def test_compat_exclude_keep_file(self):
+        """
+        Test compat_exclude with a file that shouldn't be excluded.
+        """
+        config.config_opts['compat'] = True
+        self.assertFalse(self.fm.compat_exclude('/usr/lib64/libfoo.so.1'))
+
+    def test_compat_exclude_exclude_file(self):
+        """
+        Test compat_exclude with a file that should be excluded.
+        """
+        config.config_opts['compat'] = True
+        self.assertTrue(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
+
+    def test_compat_exclude_not_compat_mode(self):
+        """
+        Test compat_exclude with a file that should be excluded but isn't
+        because the package isn't being run in compat mode.
+        """
+        config.config_opts['compat'] = False
+        self.assertFalse(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
 
     def test_file_pat_match(self):
         """

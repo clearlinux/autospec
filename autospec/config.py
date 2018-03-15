@@ -115,7 +115,9 @@ config_options = {
     "security_sensitive": "set flags for security-sensitive builds",
     "so_to_lib": "add .so files to the lib package instead of dev",
     "autoupdate": "this package is trusted enough to automatically update "
-                  "(used by other tools)"}
+                  "(used by other tools)",
+    "compat": "this package is a library compatability package and only "
+              "ships versioned library files"}
 
 # simple_pattern_pkgconfig patterns
 # contains patterns for parsing build.log for missing dependencies
