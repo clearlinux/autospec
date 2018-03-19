@@ -391,6 +391,26 @@ def grab_pip_requirements(pkgname):
                     add_requires(w2)
 
 
+def get_python_build_version_from_classifier(filename):
+    """
+    Detect if setup should use distutils23 or distutils3 only.
+
+    Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
+    setup.py file.  Defaults to distutils23 if no such classifiers are found.
+    """
+
+    with open(filename) as setup_file:
+        data = setup_file.read()
+
+    if "Programming Language :: Python :: 3 :: Only" in data:
+        return "distutils3"
+
+    elif "Programming Language :: Python :: 2 :: Only" in data:
+        return "distutils2"
+
+    return "distutils23"
+
+
 def add_setup_py_requires(filename):
     """
     Detect build requirements listed in setup.py in the install_requires and
@@ -563,7 +583,8 @@ def scan_for_configure(dirn):
             add_buildreq("pbr")
             add_buildreq("pip")
             add_setup_py_requires(dirpath + '/setup.py')
-            buildpattern.set_build_pattern("distutils23", default_score)
+            python_pattern = get_python_build_version_from_classifier(dirpath + '/setup.py')
+            buildpattern.set_build_pattern(python_pattern, default_score)
 
         if "Makefile.PL" in files or "Build.PL" in files:
             buildpattern.set_build_pattern("cpan", default_score)
