@@ -437,12 +437,8 @@ class GPGVerifier(Verifier):
             # <package directory>/<key url basename>
             self.package_sign_path = os.path.join(os.path.dirname(self.package_path),
                                                   os.path.basename(self.key_url))
-        # default pubkey path is the package directory - this is where imports
-        # will go
+        # pubkey path is the package directory - this is where imports will go
         self.pubkey_path = os.path.join(os.path.dirname(self.package_path), "{}.pkey")
-        # fallback to autospec repo for global keyring
-        self.fallback_pubkey_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                                 "keyring", "{}.pkey")
 
     def get_sign(self):
         code = self.download_file(self.key_url, self.package_sign_path)
@@ -471,18 +467,14 @@ class GPGVerifier(Verifier):
         # default location first
         pubkey_loc = self.pubkey_path.format(keyid)
         if not os.path.exists(pubkey_loc):
-            print_info("public key not in default keyring, checking fallback keyring")
-            # no pubkey at default location, fallback to global
-            pubkey_loc = self.fallback_pubkey_path.format(keyid)
-            if not os.path.exists(pubkey_loc):
-                # still nothing, attempt interactive if set to do so
-                self.print_result(False, 'Public key {} not found in keyring'.format(keyid))
-                if not self.interactive or recursion:
-                    return None
-                if attempt_key_import(keyid, self.pubkey_path.format(keyid)):
-                    print(SEPT)
-                    return self.verify(recursion=True)
+            # attempt import the key interactively if set to do so
+            self.print_result(False, 'Public key {} not found'.format(keyid))
+            if not self.interactive or recursion:
                 return None
+            if attempt_key_import(keyid, self.pubkey_path.format(keyid)):
+                print(SEPT)
+                return self.verify(recursion=True)
+            return None
         # public key exists or is imported, verify
         EMAIL = parse_key(pubkey_loc, r':user ID packet: ".* <(.+?)>"\n')
         sign_status = verify_cli(pubkey_loc, self.package_path, self.package_sign_path)
