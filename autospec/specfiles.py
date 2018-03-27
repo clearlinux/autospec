@@ -1282,9 +1282,9 @@ qmake {}QMAKE_CFLAGS=\"$CFLAGS\" QMAKE_CXXFLAGS=\"$CXXFLAGS\" QMAKE_LFLAGS=\"$LD
             self._write_strip('export CFLAGS="$CFLAGS -m32"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
             self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
-            self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS "'
-                              '"-m32 PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson "'
-                              '"--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} builddir'
+            self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS -m32" '
+                              'PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson '
+                              '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} builddir'
                               .format(config.extra_configure))
             self._write_strip('ninja -v -C builddir')
             self._write_strip('popd')
