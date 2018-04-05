@@ -1273,7 +1273,9 @@ qmake {}QMAKE_CFLAGS=\"$CFLAGS\" QMAKE_CXXFLAGS=\"$CXXFLAGS\" QMAKE_LFLAGS=\"$LD
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --prefix /usr --buildtype=plain {0} builddir'.format(config.extra_configure))
+        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --prefix /usr --buildtype=plain {0} {1} builddir'
+                          .format(config.extra_configure,
+                                  config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
 
         if config.config_opts['32bit']:
@@ -1284,8 +1286,9 @@ qmake {}QMAKE_CFLAGS=\"$CFLAGS\" QMAKE_CXXFLAGS=\"$CXXFLAGS\" QMAKE_LFLAGS=\"$LD
             self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
             self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS -m32" '
                               'PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson '
-                              '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} builddir'
-                              .format(config.extra_configure))
+                              '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} {1} builddir'
+                              .format(config.extra_configure,
+                                      config.extra_configure32))
             self._write_strip('ninja -v -C builddir')
             self._write_strip('popd')
 
