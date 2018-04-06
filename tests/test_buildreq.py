@@ -413,7 +413,7 @@ class TestBuildreq(unittest.TestCase):
         with patch(open_name, m_open, create=True):
             build_pattern = buildreq.get_python_build_version_from_classifier("filename")
 
-        self.assertEqual(build_pattern, "distutils23")
+        self.assertEqual(build_pattern, "distutils3")
 
     def test_scan_for_configure(self):
         """
