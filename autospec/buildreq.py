@@ -393,10 +393,10 @@ def grab_pip_requirements(pkgname):
 
 def get_python_build_version_from_classifier(filename):
     """
-    Detect if setup should use distutils23 or distutils3 only.
+    Detect if setup should use distutils2 or distutils3 only.
 
     Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
-    setup.py file.  Defaults to distutils23 if no such classifiers are found.
+    setup.py file.  Defaults to distutils3 if no such classifiers are found.
     """
 
     with open(filename) as setup_file:
@@ -408,7 +408,7 @@ def get_python_build_version_from_classifier(filename):
     elif "Programming Language :: Python :: 2 :: Only" in data:
         return "distutils2"
 
-    return "distutils23"
+    return "distutils3"
 
 
 def add_setup_py_requires(filename):
