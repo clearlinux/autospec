@@ -36,7 +36,7 @@ Example ``autospec.conf`` file::
     upstream = http://yourhost/tarballs/%(HASH)s/%(NAME)s
 
 git
-  The upstream git repository URL base
+  Optional URI template for remote git repository
 
 license_fetch
   Optional URL to use for scanning license files

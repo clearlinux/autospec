@@ -543,7 +543,7 @@ def parse_config_files(path, bump, filemanager):
     read_config_opts(path)
 
     if not git_uri:
-        print("Warning: Set [autospec][git] upstream template for git support")
+        print("Warning: Set [autospec][git] upstream template for remote git URI configuration")
     if not license_fetch:
         print("Warning: Set [autospec][license_fetch] uri for license fetch support")
     if not license_show:
