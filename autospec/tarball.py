@@ -64,8 +64,8 @@ def really_download(upstream_url, destination):
         c.setopt(c.FOLLOWLOCATION, True)
         try:
             c.perform()
-        except pycurl.error:
-            print_fatal("unable to download {}".format(upstream_url))
+        except pycurl.error as excep:
+            print_fatal("unable to download {}: {}".format(upstream_url, excep))
             os.remove(destination)
             exit(1)
         finally:
