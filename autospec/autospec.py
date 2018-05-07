@@ -53,7 +53,7 @@ def add_sources(download_path, archives):
     Add archives to buildpattern sources and archive_details
     """
     for srcf in os.listdir(download_path):
-        if re.search(r".*\.(mount|service|socket|target|timer)$", srcf):
+        if re.search(r".*\.(mount|service|socket|target|timer|path)$", srcf):
             buildpattern.sources["unit"].append(srcf)
     buildpattern.sources["unit"].sort()
     #
