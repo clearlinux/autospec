@@ -436,7 +436,7 @@ class Specfile(object):
                 flags.extend(["-Os", "-ffunction-sections", "-fdata-sections", "-fno-semantic-interposition"])
         if config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
-            flags.append("-mzero-caller-saved-regs")
+            flags.append("-mzero-caller-saved-regs=used")
         if self.need_avx2_flags:
             flags.extend(["-O3", "-march=haswell"])
         if self.need_avx512_flags:
