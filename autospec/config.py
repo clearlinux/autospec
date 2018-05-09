@@ -706,8 +706,7 @@ def parse_config_files(path, bump, filemanager):
         install_macro = content[0]
 
     content = read_conf_file(os.path.join(path, "cmake_args"))
-    if content and content[0]:
-        extra_cmake = content[0]
+    extra_cmake = "\\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "cmake_srcdir"))
     if content and content[0]:
