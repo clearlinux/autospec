@@ -204,6 +204,9 @@ def main():
                         help="Value to pass with Mock's -r option. Defaults to "
                              "\"clear\", meaning that Mock will use "
                              "/etc/mock/clear.cfg.")
+    parser.add_argument("-o", "--mock-opts", action="store", default="",
+                        help="Arbitrary options to pass down to mock when "
+                        "building a package.")
 
     args = parser.parse_args()
 
@@ -308,7 +311,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package(filemanager, args.mock_config, args.cleanup)
+        build.package(filemanager, args.mock_config, args.mock_opts, args.cleanup)
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0

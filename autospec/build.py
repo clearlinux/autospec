@@ -203,7 +203,7 @@ def get_mock_cmd():
     return 'sudo /usr/bin/mock'
 
 
-def package(filemanager, mockconfig, cleanup=False):
+def package(filemanager, mockconfig, mockopts, cleanup=False):
     global round
     global uniqueext
     round = round + 1
@@ -223,8 +223,9 @@ def package(filemanager, mockconfig, cleanup=False):
     shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
     os.makedirs('{}/results'.format(download_path))
     util.call("{} -r {} --buildsrpm --sources=./ --spec={}.spec "
-              "--uniqueext={} --result=results/ {}"
-              .format(mock_cmd, mockconfig, tarball.name, uniqueext, cleanup_flag),
+              "--uniqueext={} --result=results/ {} {}"
+              .format(mock_cmd, mockconfig, tarball.name, uniqueext, cleanup_flag,
+                      mockopts),
               logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
 
     util.call("rm -f results/build.log", cwd=download_path)
