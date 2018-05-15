@@ -571,6 +571,7 @@ def scan_for_configure(dirn):
             buildpattern.set_build_pattern("configure", default_score)
         elif any(f.endswith(".pro") for f in files):
             add_buildreq("qtbase-dev")
+            add_buildreq("qtbase-extras")
             buildpattern.set_build_pattern("qmake", default_score)
 
         if "requires.txt" in files:
