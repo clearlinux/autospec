@@ -20,11 +20,12 @@
 #
 
 import subprocess
+import os
 
 import build
 import buildpattern
 import tarball
-from util import call
+from util import call, write_out
 import config
 
 
@@ -94,6 +95,23 @@ def commit_to_git(path):
     call("git rm no_autostart", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git rm insecure_build", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git rm conservative_flags", check=False, stderr=subprocess.DEVNULL, cwd=path)
+
+    # add a gitignore
+    ignorelist = [
+        ".*~",
+        "*~",
+        "*.swp",
+        ".repo-index",
+        "*.log*",
+        "*.tar*",
+        "*.tgz",
+        "*.zip",
+        "commitmsg",
+        "results/",
+        ""
+    ]
+    write_out(os.path.join(path, '.gitignore'), '\n'.join(ignorelist))
+    call("git add .gitignore", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     if build.success == 0:
         return
