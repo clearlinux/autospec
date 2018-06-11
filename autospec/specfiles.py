@@ -328,7 +328,10 @@ class Specfile(object):
                 continue
 
             self._write("\n%files {}\n".format(pkg))
-            self._write("%defattr(-,root,root,-)\n")
+            if pkg in ["doc"]:
+                self._write("%defattr(0644,root,root,0755)\n")
+            else:
+                self._write("%defattr(-,root,root,-)\n")
             for filename in sorted(self.packages[pkg]):
                 self._write("{}\n".format(self.quote_filename(filename)))
 
