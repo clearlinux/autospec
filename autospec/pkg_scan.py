@@ -24,24 +24,26 @@ import config
 def get_whatrequires(pkg):
     """
     Write list of packages that require current package to file
-    using repoquery what-requires and --recursive commands
+    using dnf repoquery what-requires and --recursive commands
     """
 
-    # clean up yum cache to avoid 'no more mirrors repo' error
+    # clean up dnf cache to avoid 'no more mirrors repo' error
     try:
-        subprocess.check_output(['yum', '--config', config.yum_conf,
-                                 'clean', 'all'])
+        subprocess.check_output(['dnf', '--config', config.yum_conf,
+                                 '--releasever', 'clear', 'clean', 'all'])
     except subprocess.CalledProcessError as err:
-        util.print_warning("Unable to clean yum repo: {}".format(pkg, err))
+        util.print_warning("Unable to clean dnf repo: {}".format(pkg, err))
         return
 
     try:
-        out = subprocess.check_output(['repoquery', '--config', config.yum_conf,
+        out = subprocess.check_output(['dnf', 'repoquery',
+                                       '--config', config.yum_conf,
+                                       '--releasever', 'clear',
                                        '--archlist=src', '--recursive', '--queryformat=%{NAME}',
                                        '--whatrequires', pkg]).decode('utf-8')
 
     except subprocess.CalledProcessError as err:
-        util.print_warning("repoquery whatrequires for {} failed with: {}".format(pkg, err))
+        util.print_warning("dnf repoquery whatrequires for {} failed with: {}".format(pkg, err))
         return
 
     util.write_out('whatrequires', '# This file contains recursive sources that '
