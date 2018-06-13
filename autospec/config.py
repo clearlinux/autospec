@@ -47,6 +47,10 @@ extra_cmake = ""
 cmake_srcdir = ""
 prep_append = []
 subdir = ""
+pre_install = ""
+pre_uninstall = ""
+post_install = ""
+post_uninstall = ""
 install_macro = "%make_install"
 disable_static = "--disable-static"
 make_install_append = []
@@ -501,6 +505,11 @@ def parse_config_files(path, bump, filemanager):
     global cmake_srcdir
     global prep_append
     global subdir
+    global pre_install
+    global pre_uninstall
+    global post_install
+    global post_uninstall
+
     global install_macro
     global disable_static
     global make_install_append
@@ -680,6 +689,18 @@ def parse_config_files(path, bump, filemanager):
     content = read_conf_file(os.path.join(path, "configure64"))
     extra_configure64 = " \\\n".join(content)
 
+    content = read_conf_file(os.path.join(path, "pre_install"))
+    pre_install = content
+
+    content = read_conf_file(os.path.join(path, "pre_uninstall"))
+    pre_uninstall = content
+
+    content = read_conf_file(os.path.join(path, "post_install"))
+    post_install = content
+
+    content = read_conf_file(os.path.join(path, "post_uninstall"))
+    post_uninstall = content
+
     if config_opts["keepstatic"]:
         disable_static = ""
     if config_opts['broken_parallel_build']:
@@ -771,6 +792,10 @@ def load_specfile(specfile):
     specfile.cmake_srcdir = cmake_srcdir or specfile.cmake_srcdir
     specfile.prep_append = prep_append
     specfile.subdir = subdir
+    specfile.pre_install = pre_install
+    specfile.pre_uninstall = pre_uninstall
+    specfile.post_install = post_install
+    specfile.post_uninstall = post_uninstall
     specfile.install_macro = install_macro
     specfile.disable_static = disable_static
     specfile.make_install_append = make_install_append
