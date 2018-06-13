@@ -32,7 +32,7 @@ def get_whatrequires(pkg):
         subprocess.check_output(['dnf', '--config', config.yum_conf,
                                  '--releasever', 'clear', 'clean', 'all'])
     except subprocess.CalledProcessError as err:
-        util.print_warning("Unable to clean dnf repo: {}".format(pkg, err))
+        util.print_warning("Unable to clean dnf repo: {}, {}".format(pkg, err))
         return
 
     try:
