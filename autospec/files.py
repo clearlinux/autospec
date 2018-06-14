@@ -25,6 +25,7 @@ import config
 import re
 import os
 import util
+import avxjudge
 from collections import OrderedDict
 # todo package splits
 
@@ -154,6 +155,18 @@ class FileManager(object):
                 res.add(f)
 
         return (res, removed)
+
+    def is_avx_candidate(self,root):
+        """
+        Check with avxjudge if files has SSE instructions
+        """
+        ret = False
+        for pkg in self.packages:
+            for f in self.packages[pkg]:
+                quiet = 1
+                if (avxjudge.do_file(f,quiet)):
+                    ret = True
+        return ret
 
     def clean_directories(self, root):
         """
