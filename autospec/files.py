@@ -145,7 +145,8 @@ class FileManager(object):
                 res.add(f)
                 continue
 
-            if os.path.isdir(os.path.join(root, f.lstrip("/"))):
+            path = os.path.join(root, f.lstrip("/"))
+            if os.path.isdir(path) and not os.path.islink(path):
                 util.print_warning("Removing directory {} from file list".format(f))
                 self.files_blacklist.add(f)
                 removed = True
