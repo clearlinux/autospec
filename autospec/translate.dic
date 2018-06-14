@@ -74,3 +74,4 @@ qtpy=QtPy
 qtawesome=QtAwesome
 pygments=Pygments
 pyqt5=PyQt5
+PyOpenSSL=pyOpenSSL
