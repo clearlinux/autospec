@@ -213,6 +213,13 @@ class FileManager(object):
             # Patterns for matching files, format is a tuple as follows:
             # (<raw pattern>, <package>, <optional replacement>, <optional prefix>)
             # order matters!
+            (r"^/usr/share/doc/.*/.*COPYING.*", "license"),
+            (r"^/usr/share/doc/.*/.*COPYRIGHT.*", "license"),
+            (r"^/usr/share/doc/.*/.*GPL.*", "license"),
+            (r"^/usr/share/doc/.*/.*MIT.*", "license"),
+            (r"^/usr/share/doc/.*/.*LICENSE.*", "license"),
+            (r"^/usr/share/doc/.*/.*license.*", "license"),
+            (r"^/usr/share/man/", "man"),
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
             (r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"),
             (r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.", "lib"),
