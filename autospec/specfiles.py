@@ -191,7 +191,7 @@ class Specfile(object):
             if pkg == "autostart" and self.no_autostart:
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
-                       "lib32", "dev32", "legacypython"]:
+                       "lib32", "dev32", "legacypython", "doc"]:
                 continue
             self._write("Requires: {}-{}\n".format(self.name, pkg))
 
@@ -822,6 +822,7 @@ class Specfile(object):
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
+            self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.subdir)
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
@@ -835,15 +836,16 @@ class Specfile(object):
             self._write_strip("popd")
 
         if config.config_opts['use_avx512']:
+            self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.subdir)
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%reconfigure {0} {1} {2} "
                               " --libdir=/usr/lib64/haswell/avx512_1 --bindir=/usr/bin/haswell/avx512_1 "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure32))
+                                      config.extra_configure64))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1166,11 +1168,11 @@ class Specfile(object):
             self.need_avx2_flags = True
             self.write_variables()
             self.need_avx2_flags = saved_avx2flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=haswell"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell"')
+            self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
             self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
                               "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64/haswell -DCMAKE_INSTALL_LIBDIR=/usr/lib64/haswell "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make {}{} || :".format(config.parallel_build, self.extra_make))
@@ -1183,11 +1185,11 @@ class Specfile(object):
             self.need_avx512_flags = True
             self.write_variables()
             self.need_avx512_flags = saved_avx512flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512"')
+            self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
                               "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib/haswell/avx512_1 "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64/haswell/avx512_1 "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
