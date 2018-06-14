@@ -75,3 +75,8 @@ CC0, CC0-1.0
 GPL-2.0+LGPL-2.1, GPL-2.0 LGPL-2.1
 Artistic-1.0+GPL-1.0, Artistic-1.0 GPL-1.0
 BSD(3-clause), BSD-3-Clause
+LGPL-2, LGPL-2.0
+GPL(>=-3), GPL-3.0
+GPL(>=-2.1), GPL-2.0
+LGPL(>=-2.1), LGPL-2.1
+AGPL-3, AGPL-3.0
