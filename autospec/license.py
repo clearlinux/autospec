@@ -35,7 +35,7 @@ from util import print_fatal, print_warning
 default_license = "TO BE DETERMINED"
 
 licenses = []
-
+license_files = []
 
 def add_license(lic):
     """
@@ -44,6 +44,7 @@ def add_license(lic):
     otherwise.
     """
     global licenses
+    global license_files
     lic = lic.strip().strip(',')
     result = False
 
@@ -60,7 +61,7 @@ def add_license(lic):
     return result
 
 
-def license_from_copying_hash(copying):
+def license_from_copying_hash(copying, srcdir):
     """Add licenses based on the hash of the copying file"""
     hash_sum = tarball.get_sha1sum(copying)
 
@@ -93,6 +94,10 @@ def license_from_copying_hash(copying):
         if page:
             print("License     : ", page, " (server) (", hash_sum, ")")
             add_license(page)
+            if page != "none":
+                license_files.append(copying[len(srcdir)+1:])
+                
+
             return
 
     if hash_sum in config.license_hashes:
@@ -125,7 +130,7 @@ def scan_for_licenses(srcdir):
     for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
-                license_from_copying_hash(os.path.join(dirpath, name))
+                license_from_copying_hash(os.path.join(dirpath, name), srcdir)
 
     if not licenses:
         print_fatal(" Cannot find any license or {}.license file!\n".format(tarball.name))
@@ -135,4 +140,7 @@ def scan_for_licenses(srcdir):
 
 
 def load_specfile(specfile):
+    global licenses
+    global license_files
     specfile.licenses = licenses if licenses else [default_license]
+    specfile.license_files = license_files
