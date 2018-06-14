@@ -251,6 +251,42 @@ class TestFiles(unittest.TestCase):
                              set(["%dir /directory", "/file1", "/file2"]))
 
 
+    def test_clean_directories_with_symlink_to_dir(self):
+        """
+        Test clean_directories with a symlink to a directory in the list. The
+        symlink should remain, but the directory should be cleaned.
+        """
+        with tempfile.TemporaryDirectory() as tmpd:
+            dirname = os.path.join(tmpd, "directory")
+            linkname = os.path.join(tmpd, "symlink")
+            os.mkdir(dirname)
+            os.symlink(dirname, linkname)
+            self.fm.packages["main"] = set()
+            self.fm.packages["main"].add("/directory")
+            self.fm.packages["main"].add("/symlink")
+            self.fm.clean_directories(tmpd)
+            self.assertEqual(self.fm.packages["main"],
+                             set(["/symlink"]))
+
+
+    def test_clean_directories_with_symlink_to_explicit_dir(self):
+        """
+        Test clean_directories with a symlink to a %dir directory in the list.
+        The symlink and directory should both remain.
+        """
+        with tempfile.TemporaryDirectory() as tmpd:
+            dirname = os.path.join(tmpd, "directory")
+            linkname = os.path.join(tmpd, "symlink")
+            os.mkdir(dirname)
+            os.symlink(dirname, linkname)
+            self.fm.packages["main"] = set()
+            self.fm.packages["main"].add("%dir /directory")
+            self.fm.packages["main"].add("/symlink")
+            self.fm.clean_directories(tmpd)
+            self.assertEqual(self.fm.packages["main"],
+                             set(["%dir /directory", "/symlink"]))
+
+
     def test_clean_directories_with_doc(self):
         """
         Test clean_directories with a %doc directive in the list. This should
