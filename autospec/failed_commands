@@ -549,3 +549,4 @@ qvkgen, qtbase-extras
 rcc, qtbase-extras
 repc, qtremoteobjects-extras
 uic, qtbase-extras
+kpsewhich, texlive
