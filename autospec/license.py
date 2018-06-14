@@ -37,6 +37,7 @@ default_license = "TO BE DETERMINED"
 licenses = []
 license_files = []
 
+
 def add_license(lic):
     """
     Add license from license string lic after checking for duplication or
@@ -95,8 +96,7 @@ def license_from_copying_hash(copying, srcdir):
             print("License     : ", page, " (server) (", hash_sum, ")")
             add_license(page)
             if page != "none":
-                license_files.append(copying[len(srcdir)+1:])
-                
+                license_files.append(copying[len(srcdir) + 1:])
 
             return
 
