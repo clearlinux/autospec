@@ -61,7 +61,7 @@ class TestLicense(unittest.TestCase):
 
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            license.license_from_copying_hash('copying.txt')
+            license.license_from_copying_hash('copying.txt', '')
 
         self.assertIn('GPL-3.0', license.licenses)
 
@@ -83,7 +83,7 @@ class TestLicense(unittest.TestCase):
         license.config.license_show = "license.show.url"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            license.license_from_copying_hash('copying.txt')
+            license.license_from_copying_hash('copying.txt', '')
 
         # restore the hash
         license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')] = bkup_hash
@@ -103,7 +103,7 @@ class TestLicense(unittest.TestCase):
 
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            license.license_from_copying_hash('copying.txt')
+            license.license_from_copying_hash('copying.txt', '')
 
         self.assertEquals(license.licenses, [])
 
@@ -145,7 +145,7 @@ class TestLicense(unittest.TestCase):
                 out = StringIO()
                 with redirect_stdout(out):
                     with self.assertRaises(SystemExit):
-                        license.license_from_copying_hash('copying.txt')
+                        license.license_from_copying_hash('copying.txt', '')
 
         self.assertIn('Failed to fetch license from ', out.getvalue())
 
@@ -182,7 +182,7 @@ class TestLicense(unittest.TestCase):
                 # let's check that the proper thing is being printed as well
                 out = StringIO()
                 with redirect_stdout(out):
-                    license.license_from_copying_hash('copying.txt')
+                    license.license_from_copying_hash('copying.txt', '')
 
         self.assertIn('GPL-3.0', license.licenses)
         self.assertIn('License     :  GPL-3.0  (server)', out.getvalue())
