@@ -216,6 +216,7 @@ def head_request(url):
     curl.setopt(curl.CUSTOMREQUEST, "HEAD")
     curl.setopt(curl.NOBODY, True)
     curl.setopt(curl.TIMEOUT, 5)
+    curl.setopt(curl.FOLLOWLOCATION, True)
     curl.perform()
     http_code = curl.getinfo(pycurl.HTTP_CODE)
     curl.close()
