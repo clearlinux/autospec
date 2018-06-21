@@ -240,3 +240,18 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
         exit(1)
 
     parse_build_results(download_path + "/results/build.log", returncode, filemanager)
+
+    files = os.listdir('{}/results'.format(download_path))
+
+    os.makedirs('{}/results/srpm'.format(download_path), exist_ok=True)
+    os.makedirs('{}/results/debuginfo'.format(download_path), exist_ok=True)
+    os.makedirs('{}/results/logs'.format(download_path), exist_ok=True)
+
+    # organize output files so it's more clear what to use for mixes
+    for f in files:
+        if f.endswith(".src.rpm"):
+            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/srpm/{}'.format(download_path, f))
+        if "debuginfo" in f:
+            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/debuginfo/{}'.format(download_path, f))
+        if f.endswith(".log"):
+            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/logs/{}'.format(download_path, f))
