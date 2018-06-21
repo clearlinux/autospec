@@ -126,7 +126,7 @@ def save_build_log(path, iteration):
     Must be saved outside of the results/ directory since it gets wiped away on
     each round.
     """
-    buildlog = os.path.join(path, "results", "build.log")
+    buildlog = os.path.join(path, "results", "logs", "build.log")
     shutil.copyfile(buildlog, "{}/build.log.round{}".format(path, iteration))
 
 

@@ -38,7 +38,7 @@ def check_regression(pkg_dir):
     if config.config_opts['skip_tests']:
         return
 
-    result = count.parse_log(os.path.join(pkg_dir, "results/build.log"))
+    result = count.parse_log(os.path.join(pkg_dir, "results/logs/build.log"))
     titles = [('Package', 'package name', 1),
               ('Total', 'total tests', 1),
               ('Pass', 'total passing', 1),
