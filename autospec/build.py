@@ -49,7 +49,7 @@ def simple_pattern_pkgconfig(line, pattern, pkgconfig):
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart += buildreq.add_pkgconfig_buildreq(pkgconfig)
+        must_restart += buildreq.add_pkgconfig_buildreq(pkgconfig, cache=True)
 
 
 def simple_pattern(line, pattern, req):
@@ -57,7 +57,7 @@ def simple_pattern(line, pattern, req):
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart += buildreq.add_buildreq(req)
+        must_restart += buildreq.add_buildreq(req, cache=True)
 
 
 def failed_pattern(line, pattern, verbose, buildtool=None):
@@ -72,38 +72,38 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
         if not buildtool:
             req = config.failed_commands[s]
             if req:
-                must_restart += buildreq.add_buildreq(req)
+                must_restart += buildreq.add_buildreq(req, cache=True)
         elif buildtool == 'pkgconfig':
-            must_restart += buildreq.add_pkgconfig_buildreq(s)
+            must_restart += buildreq.add_pkgconfig_buildreq(s, cache=True)
         elif buildtool == 'R':
-            if buildreq.add_buildreq("R-" + s) > 0:
+            if buildreq.add_buildreq("R-" + s, cache=True) > 0:
                 must_restart += 1
                 buildreq.add_requires("R-" + s)
         elif buildtool == 'perl':
-            must_restart += buildreq.add_buildreq('perl(%s)' % s)
+            must_restart += buildreq.add_buildreq('perl(%s)' % s, cache=True)
         elif buildtool == 'pypi':
             s = util.translate(s)
             if not s:
                 return
-            must_restart += buildreq.add_buildreq(util.translate('%s-python' % s))
+            must_restart += buildreq.add_buildreq(util.translate('%s-python' % s), cache=True)
         elif buildtool == 'ruby':
             if s in config.gems:
-                must_restart += buildreq.add_buildreq(config.gems[s])
+                must_restart += buildreq.add_buildreq(config.gems[s], cache=True)
             else:
-                must_restart += buildreq.add_buildreq('rubygem-%s' % s)
+                must_restart += buildreq.add_buildreq('rubygem-%s' % s, cache=True)
         elif buildtool == 'ruby table':
             if s in config.gems:
-                must_restart += buildreq.add_buildreq(config.gems[s])
+                must_restart += buildreq.add_buildreq(config.gems[s], cache=True)
             else:
                 print("Unknown ruby gem match", s)
         elif buildtool == 'maven':
             if s in config.maven_jars:
-                must_restart += buildreq.add_buildreq(config.maven_jars[s])
+                must_restart += buildreq.add_buildreq(config.maven_jars[s], cache=True)
             else:
-                must_restart += buildreq.add_buildreq('jdk-%s' % s)
+                must_restart += buildreq.add_buildreq('jdk-%s' % s, cache=True)
         elif buildtool == 'catkin':
-            must_restart += buildreq.add_pkgconfig_buildreq(s)
-            must_restart += buildreq.add_buildreq(s)
+            must_restart += buildreq.add_pkgconfig_buildreq(s, cache=True)
+            must_restart += buildreq.add_buildreq(s, cache=True)
 
     except:
         if verbose > 0:

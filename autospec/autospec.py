@@ -272,7 +272,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     config.setup_patterns()
     config.config_file = args.config
-    config.parse_config_files(build.download_path, args.bump, filemanager)
+    config.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
     config.parse_existing_spec(build.download_path, tarball.name)
 
     if args.prep_only:
@@ -355,6 +355,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     logcheck(build.download_path)
 
     commitmessage.guess_commit_message(pkg_integrity.IMPORTED)
+    config.create_buildreq_cache(build.download_path, tarball.version)
 
     if args.git:
         git.commit_to_git(build.download_path)

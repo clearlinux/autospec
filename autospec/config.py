@@ -328,6 +328,39 @@ def create_conf(path):
     write_config(config_f, path)
 
 
+def create_buildreq_cache(path, version):
+    """
+    Make the buildreq_cache file
+    """
+    content = read_conf_file(os.path.join(path, "buildreq_cache"))
+    # don't create an empty cache file
+    if len(buildreq.buildreqs_cache) < 1:
+        try:
+            # file was possibly added to git so we should clean it up
+            os.unlink(content)
+        except:
+            pass
+        return
+    if not content:
+        old_version = "no-buildreq-cache"
+    else:
+        old_version = content[0]
+    if old_version == version:
+        # need to update the cache file so set append
+        mode = "a"
+    else:
+        # (re)creating the cache
+        mode = "w"
+    with open(os.path.join(path, 'buildreq_cache'), mode) as cachefile:
+        if old_version == version:
+            # add newline to append new buildreqs to the exist cache
+            cachefile.write("\n".join(["\n"] + list(buildreq.buildreqs_cache)))
+        else:
+            # include version with the cache
+            cachefile.write("\n".join([version] + list(buildreq.buildreqs_cache)))
+    config_files.add('buildreq_cache')
+
+
 def write_config(config_f, path):
     """
     Write the config_f to configfile
@@ -477,7 +510,7 @@ def parse_existing_spec(path, name):
             cves.append(patch.upper().split(".PATCH")[0])
 
 
-def parse_config_files(path, bump, filemanager):
+def parse_config_files(path, bump, filemanager, version):
     """
     Parse the various configuration files that may exist in the package directory
     """
@@ -623,6 +656,12 @@ def parse_config_files(path, bump, filemanager):
     for extra in content:
         print("Adding additional build requirement: %s." % extra)
         buildreq.add_buildreq(extra)
+
+    content = read_conf_file(os.path.join(path, "buildreq_cache"))
+    if content and content[0] == version:
+        for extra in content[1:]:
+            print("Adding additional build (cache) requirement: %s." % extra)
+            buildreq.add_buildreq(extra)
 
     content = read_conf_file(os.path.join(path, "pkgconfig_add"))
     for extra in content:
