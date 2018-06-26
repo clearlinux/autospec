@@ -578,7 +578,6 @@ def scan_for_configure(dirn):
             grab_python_requirements(dirpath + '/requires.txt')
 
         if "setup.py" in files:
-            add_buildreq("python-dev")
             add_buildreq("python3-dev")
             add_buildreq("setuptools")
             add_buildreq("pbr")
@@ -592,7 +591,7 @@ def scan_for_configure(dirn):
 
         if "SConstruct" in files:
             add_buildreq("scons")
-            add_buildreq("python-dev")
+            add_buildreq("python3-dev")
             buildpattern.set_build_pattern("scons", default_score)
 
         if "requirements.txt" in files:
