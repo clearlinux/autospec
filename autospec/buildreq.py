@@ -32,6 +32,7 @@ import subprocess
 
 banned_requires = set()
 buildreqs = set()
+buildreqs_cache = set()
 requires = set()
 extra_cmake = set()
 verbose = False
@@ -53,11 +54,12 @@ autoreconf_reqs = ["gettext-bin",
                    "pkg-config-dev"]
 
 
-def add_buildreq(req):
+def add_buildreq(req, cache=False):
     """
     Add req to the global buildreqs set if req is not banned
     """
     global buildreqs
+    global buildreqs_cache
     new = True
 
     req.strip()
@@ -70,6 +72,8 @@ def add_buildreq(req):
         print("  Adding buildreq:", req)
 
     buildreqs.add(req)
+    if cache:
+        buildreqs_cache.add(req)
     return new
 
 
@@ -95,15 +99,15 @@ def add_requires(req, override=False):
     return new
 
 
-def add_pkgconfig_buildreq(preq):
+def add_pkgconfig_buildreq(preq, cache=False):
     """
     Format preq as pkgconfig req and add to buildreqs
     """
     if config.config_opts['32bit']:
         req = "pkgconfig(32" + preq + ")"
-        add_buildreq(req)
+        add_buildreq(req, cache)
     req = "pkgconfig(" + preq + ")"
-    return add_buildreq(req)
+    return add_buildreq(req, cache)
 
 
 def configure_ac_line(line):
