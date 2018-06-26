@@ -430,7 +430,7 @@ class TestBuildreq(unittest.TestCase):
             buildreq.scan_for_configure(tmpd)
 
         self.assertEqual(buildreq.buildreqs,
-                         set(['go', 'cmake', 'scons', 'python-dev']))
+                         set(['go', 'cmake', 'scons', 'python3-dev']))
 
 
 if __name__ == '__main__':
