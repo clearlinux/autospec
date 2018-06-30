@@ -544,12 +544,12 @@ class Specfile(object):
 
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/")
-            self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("%s_avx2 %s\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
 
         if config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/")
-            self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("%s_avx512 %s\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
 
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
@@ -604,20 +604,14 @@ class Specfile(object):
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
-            self._write_strip("mkdir -p %{buildroot}/usr/lib64/haswell/avx512_1")
             self._write_strip("pushd clr-build-avx2")
-            self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
-            self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/ || :")
+            self._write_strip("%s_avx2 %s || :\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
-            self._write_strip("rm -f %{buildroot}/usr/bin/*")
 
         if config.config_opts['use_avx512']:
-            self._write_strip("mkdir -p %{buildroot}/usr/lib64/haswell/avx512_1")
             self._write_strip("pushd clr-build-avx512")
-            self._write_strip("%s %s || :\n" % (self.install_macro, self.extra_make_install))
-            self._write_strip("mv %{buildroot}/usr/lib64/*so* %{buildroot}/usr/lib64/haswell/avx512_1 || :")
+            self._write_strip("%s_avx512 %s || :\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
-            self._write_strip("rm -f %{buildroot}/usr/bin/*")
 
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
@@ -747,7 +741,6 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%configure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell  "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure64))
@@ -761,7 +754,6 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%configure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell/avx512_1 --bindir=/usr/bin/haswell/avx512_1 "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure64))
@@ -827,7 +819,6 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%reconfigure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell --bindir=/usr/bin/haswell "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure32))
@@ -841,7 +832,6 @@ class Specfile(object):
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%reconfigure {0} {1} {2} "
-                              " --libdir=/usr/lib64/haswell/avx512_1 --bindir=/usr/bin/haswell/avx512_1 "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure64))
@@ -913,8 +903,6 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=haswell "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=haswell "')
             self._write_strip("%autogen {0} {1} {2} "
-                              "--libdir=/usr/lib64/haswell "
-                              "--bindir=/usr/bin/haswell "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure64))
@@ -927,8 +915,6 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip("%autogen {0} {1} {2} "
-                              "--libdir=/usr/lib64/haswell/avx512_1 "
-                              "--bindir=/usr/bin/haswell/avx512_1 "
                               .format(self.disable_static,
                                       config.extra_configure,
                                       config.extra_configure64))
@@ -1170,7 +1156,7 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
             self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
                               "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64/haswell -DCMAKE_INSTALL_LIBDIR=/usr/lib64/haswell "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make {}{} || :".format(config.parallel_build, self.extra_make))
@@ -1187,7 +1173,7 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
                               "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64/haswell/avx512_1 "
+                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
                               "-DCMAKE_AR=/usr/bin/gcc-ar "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
