@@ -142,7 +142,7 @@ class TestTest(unittest.TestCase):
 
         test.os.listdir = listdir_backup
         self.assertEqual(test.tests_config,
-                         'PYTHONPATH=%{buildroot}/usr/lib/python3.6/site-packages '
+                         'PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages '
                          'python3 setup.py test')
 
     def test_scan_for_tests_cmake(self):
