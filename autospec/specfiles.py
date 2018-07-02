@@ -1214,6 +1214,14 @@ class Specfile(object):
         self._write_strip("%qmake {}{}".format(extra_qmake_args, config.extra_configure))
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
+            self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
+            self._write("    QMAKE_LFLAGS+=-march=haswell {}{}\n".format(extra_qmake_args, config.extra_configure))
+            self.write_make_line()
+            self._write_strip("popd")
+
         self._write_strip("\n")
         self.write_make_install()
 
