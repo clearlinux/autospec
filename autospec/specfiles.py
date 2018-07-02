@@ -1157,6 +1157,7 @@ class Specfile(object):
                               "-DLIB_SUFFIX=32 "
                               "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
             self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
+            self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
