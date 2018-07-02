@@ -1110,13 +1110,7 @@ class Specfile(object):
         self._write_strip("mkdir clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
-        self._write_strip("cmake " + self.cmake_srcdir + " -G \"Unix Makefiles\" "
-                          "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                          "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
-                          "-DCMAKE_AR=/usr/bin/gcc-ar "
-                          "-DLIB_SUFFIX=64 "
-                          "-DCMAKE_BUILD_TYPE=RelWithDebInfo "
-                          "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+        self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
 
         # Prep it for PGO
         if config.profile_payload and config.profile_payload[0]:
@@ -1136,12 +1130,9 @@ class Specfile(object):
             self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
             self._write_strip('export CFLAGS="$CFLAGS -m32"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
-            self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
-                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib32 "
-                              "-DCMAKE_AR=/usr/bin/gcc-ar "
+            self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
-                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+                              "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
             self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
@@ -1155,12 +1146,8 @@ class Specfile(object):
             self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
-            self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
-                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
-                              "-DCMAKE_AR=/usr/bin/gcc-ar "
-                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
-            self._write_strip("make {}{} || :".format(config.parallel_build, self.extra_make))
+            self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
+            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
 
         if config.config_opts['use_avx512']:
@@ -1172,11 +1159,7 @@ class Specfile(object):
             self.need_avx512_flags = saved_avx512flags
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip('cmake ' + self.cmake_srcdir + ' -G "Unix Makefiles" '
-                              "-DCMAKE_INSTALL_PREFIX=/usr -DBUILD_SHARED_LIBS:BOOL=ON "
-                              "-DLIB_INSTALL_DIR:PATH=/usr/lib64 "
-                              "-DCMAKE_AR=/usr/bin/gcc-ar "
-                              "-DCMAKE_RANLIB=/usr/bin/gcc-ranlib " + self.extra_cmake)
+            self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
             self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
             self._write_strip("popd")
 
