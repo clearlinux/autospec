@@ -555,6 +555,13 @@ def scan_for_configure(dirn):
     """
     Scan the package directory for build files to determine build pattern
     """
+    # Somewhat temporary measure while python2 is still in use
+    if buildpattern.default_pattern == "distutils23":
+        add_buildreq("python3-core")
+        add_buildreq("python-core")
+        add_buildreq("setuptools-legacypython")
+        add_buildreq("setuptools")
+
     count = 0
     for dirpath, _, files in os.walk(dirn):
         default_score = 2 if dirpath == dirn else 1
