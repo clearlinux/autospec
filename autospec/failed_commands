@@ -47,6 +47,7 @@ mkfontdir, mkfontdir-bin
 mkfontscale, mkfontscale-bin
 doxygen, doxygen
 krb5/krb.h, krb5-dev
+-lkrb5, krb5-dev
 krb/krb5.h, krb5-dev
 krb5-config, krb5-dev
 X, pkgconfig(x11)
@@ -65,6 +66,7 @@ openssl/hmac.h, openssl-dev
 libgnutls, gnutls-dev
 attr/libattr.h, attr-dev
 acl/libacl.h, acl-dev
+acl_init, acl-dev
 openssl/ssl.h, openssl-dev
 Ogg, libogg-dev
 X, pkgconfig(x11)
@@ -196,6 +198,7 @@ xrandr, pkgconfig(xrandr)
 mateconf-sanity-check-2, mate-conf-dev
 zenity, zenity
 gobject-introspection, gobject-introspection-dev
+/usr/bin/g-ir-scanner, gobject-introspection-dev
 XCOMPOSITE extension, libXcomposite-dev
 xauth, xauth
 gconftool-2, GConf-dev
@@ -496,6 +499,8 @@ LIBCAP_NG_PATH, libcap-ng-dev
 talloc.h, talloc-dev
 parted, parted-dev
 et/com_err.h, e2fsprogs-dev
+-lcom_err, e2fsprogs-dev
+dvipdf, texlive
 XTest extension, libXtst-dev
 LIBEXIF, libexif-dev
 LIBGD, libgd-dev
@@ -550,3 +555,41 @@ rcc, qtbase-extras
 repc, qtremoteobjects-extras
 uic, qtbase-extras
 kpsewhich, texlive
+python2, python-core
+python2.7, python-core
+-lpcre, pcre-dev
+dnsmasq, dnsmasq
+gtk-doc documentation, gtk-doc
+pkg-config, pkg-config
+acl_get_file in -lacl, acl-dev
+acl_get in -lsec, acl-dev
+libmpfr, mpfr-dev
+a traditional french locale, glibc-locale
+a traditional japanese locale, glibc-locale
+a transitional chinese locale, glibc-locale
+a french Unicode locale, glibc-locale
+-licuuc, icu4c-dev
+tkConfig.sh, tk-dev
+tclConfig.sh, tcl-dev
+tcl.h, tcl-dev
+tk.h, tk-dev
+lex library, flex
+dialog, dialog
+byacc, bison
+libusb-1.0, libusb-dev
+xdg-open, xdg-utils
+libgnutls-config, gnutls-dev
+java, openjdk
+php, php
+-lXdmcp, libXdmcp-dev
+NDCTL, pkgconfig(libndctl)
+acl_delete_fd_np, acl-dev
+acl_delete_file_np, acl-dev
+acl_copy_ext_native, acl-dev
+acl_create_entry_np, acl-dev
+acl_to_short_text, acl-dev
+acl_free_text, acl-dev
+ACL_TYPE_EXTENDED, acl-dev
+TBB, tbb-dev
+ibverbs, libibverbs-dev
+NUMA, numactl-dev
