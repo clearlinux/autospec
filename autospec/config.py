@@ -67,6 +67,7 @@ signature = None
 yum_conf = None
 
 failed_commands = {}
+ignored_commands = list()
 maven_jars = {}
 gems = {}
 license_hashes = {}
@@ -459,13 +460,19 @@ def setup_patterns():
     Read each pattern configuration file and assign to the appropriate variable
     """
     global failed_commands
+    global ignored_commands
     global maven_jars
     global gems
     global license_hashes
     global license_translations
     global license_blacklist
     global qt_modules
+
+    file_dir = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(file_dir, "ignored_commands")
+
     read_pattern_conf("failed_commands", failed_commands)
+    ignored_commands = read_conf_file(file_path)
     read_pattern_conf("maven_jars", maven_jars)
     read_pattern_conf("gems", gems)
     read_pattern_conf("license_hashes", license_hashes)

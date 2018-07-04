@@ -18,6 +18,7 @@
 #
 # Deduce and emit the patterns for %build
 #
+import buildreq
 
 default_pattern = "make"
 pattern_strength = 0
@@ -34,6 +35,12 @@ def set_build_pattern(pattern, strength):
         return
     default_pattern = pattern
     pattern_strength = strength
+
+    if "distutils23" in pattern:
+        buildreq.add_buildreq("python3-core")
+        buildreq.add_buildreq("python-core")
+        buildreq.add_buildreq("setuptools-legacypython")
+        buildreq.add_buildreq("setuptools")
 
 
 def load_specfile(specfile):

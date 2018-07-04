@@ -35,6 +35,7 @@ must_restart = 0
 base_path = None
 download_path = None
 uniqueext = ''
+warned_about = list()
 
 
 def setup_workingdir(workingdir):
@@ -60,14 +61,53 @@ def simple_pattern(line, pattern, req):
         must_restart += buildreq.add_buildreq(req, cache=True)
 
 
+def cleanup_req(s: str) -> str:
+    if "is wanted" in s:
+        s = ""
+    if "should be defined" in s:
+        s = ""
+    if "are broken" in s:
+        s = ""
+    if "is broken" in s:
+        s = ""
+    if s[0:4] == 'for ':
+        s = s[4:]
+    s = s.replace(" works as expected", "")
+    s = s.replace(" usability", "")
+    s = s.replace(" argument", "")
+    s = s.replace(" environment variable", "")
+    s = s.replace(" environment var", "")
+    s = s.replace(" presence", "")
+    s = s.replace(" support", "")
+    s = s.replace(" implementation is broken", "")
+    s = s.replace(" is broken", "")
+    s = s.replace(" files can be found", "")
+    s = s.replace(" can be found", "")
+    s = s.replace(" is declared", "")
+    s = s.replace("whether to build ", "")
+    s = s.replace("whether ", "")
+    s = s.replace("library containing ", "")
+    s = s.replace("x86_64-generic-linux-gnu-", "")
+    s = s.replace("i686-generic-linux-gnu-", "")
+    s = s.strip()
+    return s
+
+
 def failed_pattern(line, pattern, verbose, buildtool=None):
     global must_restart
+    global warned_about
 
     pat = re.compile(pattern)
     match = pat.search(line)
     if not match:
         return
     s = match.group(1)
+    # standard configure cleanups
+    s = cleanup_req(s)
+
+    if s in config.ignored_commands:
+        return
+
     try:
         if not buildtool:
             req = config.failed_commands[s]
@@ -80,6 +120,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
                 must_restart += 1
                 buildreq.add_requires("R-" + s)
         elif buildtool == 'perl':
+            s = s.replace('inc::', '')
             must_restart += buildreq.add_buildreq('perl(%s)' % s, cache=True)
         elif buildtool == 'pypi':
             s = util.translate(s)
@@ -106,8 +147,9 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             must_restart += buildreq.add_buildreq(s, cache=True)
 
     except:
-        if verbose > 0:
+        if s not in warned_about and s[:2] != '--':
             print("Unknown pattern match: ", s)
+            warned_about.append(s)
 
 
 def parse_build_results(filename, returncode, filemanager):
