@@ -273,6 +273,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     config.setup_patterns()
     config.config_file = args.config
     config.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
+    config.setup_patterns(config.failed_pattern_dir)
     config.parse_existing_spec(build.download_path, tarball.name)
 
     if args.prep_only:

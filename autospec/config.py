@@ -65,6 +65,7 @@ old_keyid = None
 profile_payload = None
 signature = None
 yum_conf = None
+failed_pattern_dir = None
 
 failed_commands = {}
 maven_jars = {}
@@ -433,28 +434,37 @@ def read_conf_file(path):
         return []
 
 
-def read_pattern_conf(filename, dest, list_format=False):
+def read_pattern_conf(filename, dest, list_format=False, path=None):
     """
     Read a fail-pattern configuration file in the form of
     <pattern>, <package> and ignore lines starting with "#"
     """
-    file_dir = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(file_dir, filename)
-    with open(file_path, "r") as patfile:
-        for line in patfile:
-            if line.startswith("#"):
-                continue
-            # Make list format a dict for faster lookup times
-            if list_format:
-                dest[line.strip()] = True
-                continue
-            # split from the right a maximum of one time, since the pattern
-            # string might contain ", "
-            pattern, package = line.rsplit(", ", 1)
-            dest[pattern] = package.rstrip()
+    file_repo_dir = os.path.dirname(os.path.abspath(__file__))
+    file_conf_path = os.path.join(path, filename) if path else None
+    file_repo_path = os.path.join(file_repo_dir, filename)
+    if not os.path.isfile(file_repo_path):
+        return
+    if file_conf_path and os.path.isfile(file_conf_path):
+        # The file_conf_path version of a pattern will be used in case of conflict
+        file_path = [file_repo_path, file_conf_path]
+    else:
+        file_path = [file_repo_path]
+    for fpath in file_path:
+        with open(fpath, "r") as patfile:
+            for line in patfile:
+                if line.startswith("#"):
+                    continue
+                # Make list format a dict for faster lookup times
+                if list_format:
+                    dest[line.strip()] = True
+                    continue
+                # split from the right a maximum of one time, since the pattern
+                # string might contain ", "
+                pattern, package = line.rsplit(", ", 1)
+                dest[pattern] = package.rstrip()
 
 
-def setup_patterns():
+def setup_patterns(path=None):
     """
     Read each pattern configuration file and assign to the appropriate variable
     """
@@ -465,13 +475,13 @@ def setup_patterns():
     global license_translations
     global license_blacklist
     global qt_modules
-    read_pattern_conf("failed_commands", failed_commands)
-    read_pattern_conf("maven_jars", maven_jars)
-    read_pattern_conf("gems", gems)
-    read_pattern_conf("license_hashes", license_hashes)
-    read_pattern_conf("license_translations", license_translations)
-    read_pattern_conf("license_blacklist", license_blacklist, list_format=True)
-    read_pattern_conf("qt_modules", qt_modules)
+    read_pattern_conf("failed_commands", failed_commands, path=path)
+    read_pattern_conf("maven_jars", maven_jars, path=path)
+    read_pattern_conf("gems", gems, path=path)
+    read_pattern_conf("license_hashes", license_hashes, path=path)
+    read_pattern_conf("license_translations", license_translations, path=path)
+    read_pattern_conf("license_blacklist", license_blacklist, list_format=True, path=path)
+    read_pattern_conf("qt_modules", qt_modules, path=path)
 
 
 def parse_existing_spec(path, name):
@@ -542,6 +552,7 @@ def parse_config_files(path, bump, filemanager, version):
     global autoreconf
     global yum_conf
     global custom_desc
+    global failed_pattern_dir
 
     packages_file = None
 
@@ -559,12 +570,15 @@ def parse_config_files(path, bump, filemanager, version):
         license_show = config['autospec'].get('license_show', None)
         packages_file = config['autospec'].get('packages_file', None)
         yum_conf = config['autospec'].get('yum_conf', None)
+        failed_pattern_dir = config['autospec'].get('failed_pattern_dir', None)
 
         # support reading the local files relative to config_file
         if packages_file and not os.path.isabs(packages_file):
             packages_file = os.path.join(os.path.dirname(config_file), packages_file)
         if yum_conf and not os.path.isabs(yum_conf):
             yum_conf = os.path.join(os.path.dirname(config_file), yum_conf)
+        if failed_pattern_dir and not os.path.isabs(failed_pattern_dir):
+            failed_pattern_dir = os.path.join(os.path.dirname(config_file), failed_pattern_dir)
 
         if not packages_file:
             print("Warning: Set [autospec][packages_file] path to package list file for "
