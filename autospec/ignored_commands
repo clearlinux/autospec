@@ -1,3 +1,6 @@
+# This file contains ignored commands from configure output
+# in the form: <configure line>
+# Lines beginning with '#' are ignored.
 mt
 for mt
 whether we are cross compiling
