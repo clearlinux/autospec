@@ -542,14 +542,14 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
 
-        if config.config_opts['use_avx2']:
-            self._write_strip("pushd ../buildavx2/")
-            self._write_strip("%s_avx2 %s\n" % (self.install_macro, self.extra_make_install))
-            self._write_strip("popd")
-
         if config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/")
             self._write_strip("%s_avx512 %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("popd")
+
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/")
+            self._write_strip("%s_avx2 %s\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
 
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
@@ -603,14 +603,14 @@ class Specfile(object):
             self._write_strip("fi")
             self._write_strip("popd")
 
-        if config.config_opts['use_avx2']:
-            self._write_strip("pushd clr-build-avx2")
-            self._write_strip("%s_avx2 %s || :\n" % (self.install_macro, self.extra_make_install))
-            self._write_strip("popd")
-
         if config.config_opts['use_avx512']:
             self._write_strip("pushd clr-build-avx512")
             self._write_strip("%s_avx512 %s || :\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("popd")
+
+        if config.config_opts['use_avx2']:
+            self._write_strip("pushd clr-build-avx2")
+            self._write_strip("%s_avx2 %s || :\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
 
         self._write_strip("pushd clr-build")
