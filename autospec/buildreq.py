@@ -72,7 +72,7 @@ def add_buildreq(req, cache=False):
         print("  Adding buildreq:", req)
 
     buildreqs.add(req)
-    if cache:
+    if cache and new:
         buildreqs_cache.add(req)
     return new
 

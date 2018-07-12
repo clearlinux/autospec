@@ -357,7 +357,7 @@ def create_buildreq_cache(path, version):
     with open(os.path.join(path, 'buildreq_cache'), mode) as cachefile:
         if old_version == version:
             # add newline to append new buildreqs to the exist cache
-            cachefile.write("\n".join(["\n"] + list(buildreq.buildreqs_cache)))
+            cachefile.write("\n".join([""] + list(buildreq.buildreqs_cache)))
         else:
             # include version with the cache
             cachefile.write("\n".join([version] + list(buildreq.buildreqs_cache)))
