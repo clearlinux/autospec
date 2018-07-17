@@ -424,13 +424,15 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'test.go'), 'w').close()
+            open(os.path.join(tmpd, 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'CMakeLists.txt'), 'w').close()
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
+            open(os.path.join(tmpd, 'meson.build'), 'w').close()
 
             buildreq.scan_for_configure(tmpd)
 
         self.assertEqual(buildreq.buildreqs,
-                         set(['go', 'cmake', 'scons', 'python3-dev']))
+                         set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
 
 
 if __name__ == '__main__':
