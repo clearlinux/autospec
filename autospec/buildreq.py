@@ -567,11 +567,11 @@ def scan_for_configure(dirn):
         default_score = 2 if dirpath == dirn else 1
 
         if any(f.endswith(".go") for f in files):
-            add_buildreq("go")
+            add_buildreq("buildreq-golang")
             buildpattern.set_build_pattern("golang", default_score)
 
         if "CMakeLists.txt" in files and "configure.ac" not in files:
-            add_buildreq("cmake")
+            add_buildreq("buildreq-cmake")
             buildpattern.set_build_pattern("cmake", default_score)
 
             srcdir = os.path.abspath(os.path.join(dirn, "clr-build", config.cmake_srcdir or ".."))
@@ -581,14 +581,14 @@ def scan_for_configure(dirn):
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
             buildpattern.set_build_pattern("configure", default_score)
         elif any(f.endswith(".pro") for f in files):
-            add_buildreq("qtbase-dev")
-            add_buildreq("qtbase-extras")
+            add_buildreq("buildreq-qmake")
             buildpattern.set_build_pattern("qmake", default_score)
 
         if "requires.txt" in files:
             grab_python_requirements(dirpath + '/requires.txt')
 
         if "setup.py" in files:
+            add_buildreq("buildreq-distutils3")
             add_buildreq("python3-dev")
             add_buildreq("setuptools")
             add_buildreq("pbr")
@@ -598,8 +598,8 @@ def scan_for_configure(dirn):
             buildpattern.set_build_pattern(python_pattern, default_score)
 
         if "Makefile.PL" in files or "Build.PL" in files:
-            add_buildreq("perl-Module-Build")
             buildpattern.set_build_pattern("cpan", default_score)
+            add_buildreq("buildreq-cpan")
 
         if "SConstruct" in files:
             add_buildreq("scons")
@@ -610,9 +610,7 @@ def scan_for_configure(dirn):
             grab_python_requirements(dirpath + '/requirements.txt')
 
         if "meson.build" in files:
-            add_buildreq("meson")
-            add_buildreq("ninja")
-            add_buildreq("python3")
+            add_buildreq("buildreq-meson")
             buildpattern.set_build_pattern("meson", default_score)
 
         for name in files:
