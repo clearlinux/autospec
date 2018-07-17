@@ -28,7 +28,6 @@ import configparser
 
 import build
 import buildpattern
-import buildreq
 from util import call, print_fatal, write_out
 
 name = ""
@@ -255,12 +254,10 @@ def detect_build_from_url(url):
     # R package
     if "cran.r-project.org" in url or "cran.rstudio.com" in url:
         buildpattern.set_build_pattern("R", 10)
-        buildreq.add_buildreq("clr-R-helpers")
 
     # python
     if "pypi.python.org" in url or "pypi.debian.net" in url:
         buildpattern.set_build_pattern("distutils3", 10)
-        buildreq.add_buildreq("python3-dev")
 
     # cpan
     if ".cpan.org/" in url or ".metacpan.org/" in url:
