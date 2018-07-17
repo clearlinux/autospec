@@ -598,6 +598,7 @@ def scan_for_configure(dirn):
             buildpattern.set_build_pattern(python_pattern, default_score)
 
         if "Makefile.PL" in files or "Build.PL" in files:
+            add_buildreq("perl-Module-Build")
             buildpattern.set_build_pattern("cpan", default_score)
 
         if "SConstruct" in files:
