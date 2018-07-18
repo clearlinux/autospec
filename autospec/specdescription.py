@@ -119,7 +119,7 @@ def description_from_spec(specfile):
             else:
                 words = clean_license_string(words).split()
                 for word in words:
-                    if ":" not in word or word.startswith('http'):
+                    if ":" not in word and not word.startswith("@"):
                         print("Adding license from spec:", word)
                         license.add_license(word)
 
