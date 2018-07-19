@@ -381,10 +381,6 @@ class Specfile(object):
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file"""
         self._write_strip("%prep")
-        for archive in self.sources["archive"]:
-            self._write_strip("tar -xf %{{SOURCE{}}}".format(self.source_index[archive]))
-        if self.sources["archive"]:
-            self._write_strip("cd ..")
         if ruby_pattern:
             self._write_strip("gem unpack %{SOURCE0}")
             self._write_strip("%setup -q -D -T -n " + self.tarball_prefix)
@@ -394,12 +390,16 @@ class Specfile(object):
                 self._write_strip("%setup -q -c -n " + self.tarball_prefix)
             else:
                 self._write_strip("%setup -q -n " + self.tarball_prefix)
+                for archive in self.sources["archive"]:
+                    self._write_strip("cd ..")
+                    self._write_strip("%setup -q -T -D -n {0} -b {1}"
+                                      .format(self.tarball_prefix,
+                                              self.source_index[archive]))
 
         for archive in self.sources["archive"]:
-            self._write_strip('mkdir -p %{{_topdir}}/BUILD/{0}/{1}'
-                              .format(self.tarball_prefix,
-                                      self.archive_details[archive + "destination"]))
-            self._write_strip('mv %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}'
+            self._write_strip("mkdir -p {}"
+                              .format(self.archive_details[archive + "destination"]))
+            self._write_strip("mv %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
                               .format(self.archive_details[archive + "prefix"],
                                       self.tarball_prefix,
                                       self.archive_details[archive + "destination"]))
