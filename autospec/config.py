@@ -745,27 +745,28 @@ def parse_config_files(path, bump, filemanager, version):
         parallel_build = ""
 
     content = read_conf_file(os.path.join(path, "make_args"))
-    if content and content[0]:
-        extra_make = content[0]
+    if content:
+        extra_make = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "make32_args"))
-    if content and content[0]:
-        extra32_make = content[0]
+    if content:
+        extra32_make = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "make_install_args"))
-    if content and content[0]:
-        extra_make_install = content[0]
+    if content:
+        extra_make_install = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "make32_install_args"))
-    if content and content[0]:
-        extra_make32_install = content[0]
+    if content:
+        extra_make32_install = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "install_macro"))
     if content and content[0]:
         install_macro = content[0]
 
     content = read_conf_file(os.path.join(path, "cmake_args"))
-    extra_cmake = " \\\n".join(content)
+    if content:
+        extra_cmake = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "cmake_srcdir"))
     if content and content[0]:
