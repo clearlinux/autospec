@@ -143,4 +143,4 @@ def load_specfile(specfile):
     global licenses
     global license_files
     specfile.licenses = licenses if licenses else [default_license]
-    specfile.license_files = license_files
+    specfile.license_files = sorted(license_files)
