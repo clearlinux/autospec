@@ -420,6 +420,13 @@ def name_and_version(name_arg, version_arg, filemanager):
             name = m.group(1).strip()
             version = convert_version(m.group(2))
 
+    if "gitlab.com" in url:
+        # https://gitlab.com/leanlabsio/kanban/-/archive/1.7.1/kanban-1.7.1.tar.gz
+        m = re.search(r"gitlab\.com/.*/(.*)/-/archive/(.*)/", url)
+        if m:
+            name = m.group(1).strip()
+            version = convert_version(m.group(2))
+
     # override name and version from commandline
     name = name_arg if name_arg else name
     version = version_arg if version_arg else version
