@@ -341,10 +341,10 @@ def name_and_version(name_arg, version_arg, filemanager):
         # define regex accepted for valid packages, important for specific
         # patterns to come before general ones
         github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/[v|r]?.*/(.*).tar",
-                           r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z-_]*-(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z_]*-(.*).tar",
                            r"https?://github.com/(.*)/(.*?)/archive/[vVrR]?(.*).tar",
                            r"https?://github.com/(.*)/.*-downloads/releases/download/.*?/(.*)-(.*).tar",
-                           r"https?://github.com/(.*)/(.*?)/releases/download/.*?/(.*).tar",
+                           r"https?://github.com/(.*)/(.*?)/releases/download/(.*)/",
                            r"https?://github.com/(.*)/(.*?)/files/.*?/(.*).tar"]
 
         for pattern in github_patterns:
@@ -358,7 +358,10 @@ def name_and_version(name_arg, version_arg, filemanager):
                     name = re.sub("release-", '', name)
                     name = re.sub("\d*$", '', name)
                 rawname = name
-                version = convert_version(m.group(3))
+                version = m.group(3).replace(name, '')
+                if "archive" not in pattern:
+                    version = re.sub(r"^[-_.a-zA-Z]+", "", version)
+                version = convert_version(version)
                 giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
 

@@ -746,7 +746,7 @@ https://github.com/intel-iot-devkit/mraa/archive/v1.4.0.tar.gz,mraa,1.4.0
 http://pypi.debian.net/msgpack-python/msgpack-python-0.4.8.tar.gz,msgpack-python,0.4.8
 http://downloads.sourceforge.net/project/msmtp/msmtp/1.6.6/msmtp-1.6.6.tar.xz,msmtp,1.6.6
 https://01.org/sites/default/files/downloads/msr-tools/msr-tools-1.3.zip,msr-tools,1.3
-https://github.com/Mellanox/mstflint/releases/download/v4.7.0-1/mstflint-4.7.0.tar.gz,mstflint,4.7.0
+https://github.com/Mellanox/mstflint/releases/download/v4.7.0-1/mstflint-4.7.0.tar.gz,mstflint,4.7.0.1
 http://bitmath.org/code/mtdev/mtdev-1.1.5.tar.gz,mtdev,1.1.5
 http://ftp.gnome.org/pub/GNOME/sources/murrine/0.98/murrine-0.98.2.tar.xz,murrine,0.98.2
 https://www.musl-libc.org/releases/musl-1.1.16.tar.gz,musl,1.1.16
@@ -890,7 +890,7 @@ https://sourceforge.net/projects/pcre/files/pcre2/10.30/pcre2-10.30.tar.gz,pcre2
 http://pypi.debian.net/pecan/pecan-1.2.1.tar.gz,pecan,1.2.1
 https://github.com/erocarrera/pefile/releases/download/v2017.8.1/pefile-2017.8.1.tar.gz,pefile,2017.8.1
 http://pypi.debian.net/pep8/pep8-1.7.0.tar.gz,pep8,1.7.0
-https://github.com/linux-rdma/perftest/releases/download/V4.1-0.2/perftest-4.1-0.2.g770623f.tar.gz,perftest,4.1.0.2.g770623f
+https://github.com/linux-rdma/perftest/releases/download/V4.1-0.2/perftest-4.1-0.2.g770623f.tar.gz,perftest,4.1.0.2
 http://search.cpan.org/CPAN/authors/id/E/ET/ETHER/B-Hooks-EndOfScope-0.21.tar.gz,perl-B-Hooks-EndOfScope,0.21
 http://search.cpan.org/CPAN/authors/id/D/DA/DAGOLDEN/Capture-Tiny-0.46.tar.gz,perl-Capture-Tiny,0.46
 http://search.cpan.org/CPAN/authors/id/T/TM/TMTM/Class-Data-Inheritable-0.08.tar.gz,perl-Class-Data-Inheritable,0.08
