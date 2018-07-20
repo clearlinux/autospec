@@ -115,7 +115,7 @@ class TestTarballVersionName(unittest.TestCase):
         tarball.subprocess.check_output = mock_gen(rv=UNZIP_OUT)
         tarball.build.base_path = '.'
         self.assertEqual(tarball.build_unzip('zip/path'),
-                         ('unzip -d . zip/path', 'prefix-dir'))
+                         ('unzip -qq -d . zip/path', 'prefix-dir'))
 
     def test_build_unzip_nohash(self):
         """
@@ -131,7 +131,7 @@ class TestTarballVersionName(unittest.TestCase):
         tarball.subprocess.check_output = mock_gen(rv=unzip_nohash)
         tarball.build.base_path = '.'
         self.assertEqual(tarball.build_unzip('zip/path'),
-                         ('unzip -d . zip/path', 'prefix-dir'))
+                         ('unzip -qq -d . zip/path', 'prefix-dir'))
 
     def test_build_gem_unpack(self):
         """
