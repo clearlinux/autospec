@@ -145,7 +145,10 @@ Variables included:
     * Build dependencies
     * Commands - These are appended to the associated files as comments
       * ``configure``
-      * ``make_install_append``
+      * ``prep_prepend``
+      * ``build_prepend``
+      * ``install_prepend``
+      * ``install_append``
 
 
 Control files
@@ -245,10 +248,25 @@ make32_install_args
   macro in the ``.spec`` for the 32bit build. Again it is appended after
   make_install_args so 32bit specific overrides can be added.
 
-make_install_append
-  Additional actions that should take place after the ``make install`` step has
-  completed. This will be placed in the resulting ``.spec``, and is used for
+prep_prepend
+  Additional actions that should take place directly after ``%prep``
+  This will be placed in the resulting ``.spec``, and is used for
   situations where fine-grained control is required.
+
+build_prepend
+  Additional actions that should take place directly after ``%build``
+  This will be placed in the resulting ``.spec``, and is used for
+  situations where fine-grained control is required.
+
+install_prepend
+  Additional actions that should take place directly after ``%install``
+  This will be placed in the resulting ``.spec``, and is used for
+  situations where fine-grained control is required.
+
+install_append
+  Additional actions that should take place at the very end of the
+  ``%install`` section. This will be placed in the resulting ``.spec``,
+  and is used for situations where fine-grained control is required.
 
 install_macro
   The contents of this file be used instead of the automatically detected

@@ -66,7 +66,6 @@ class Specfile(object):
         self.rawname = ""
         self.golibpath = ""
         self.archive_details = {}
-        self.prep_append = []
         self.need_avx2_flags = False
         self.need_avx512_flags = False
         self.tests_config = ""
@@ -75,7 +74,10 @@ class Specfile(object):
         self.disable_static = "--disable-static"
         self.extra_cmake = ""
         self.cmake_srcdir = ".."
-        self.make_install_append = []
+        self.prep_prepend = []
+        self.build_prepend = []
+        self.install_prepend = []
+        self.install_append = []
         self.excludes = []
         self.keyid = ""
         self.email = ""
@@ -298,7 +300,7 @@ class Specfile(object):
             pattern_method()
 
         self.write_source_installs()
-        self.write_make_install_append()
+        self.write_install_append()
         # self.write_systemd_units()
 
     def write_scriplets(self):
@@ -353,6 +355,7 @@ class Specfile(object):
     def write_lang_c(self, export_epoch=False):
         """Write C language pattern"""
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         if export_epoch:
@@ -381,6 +384,7 @@ class Specfile(object):
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file"""
         self._write_strip("%prep")
+        self.write_prep_prepend()
         if ruby_pattern:
             self._write_strip("gem unpack %{SOURCE0}")
             self._write_strip("%setup -q -D -T -n " + self.tarball_prefix)
@@ -417,15 +421,6 @@ class Specfile(object):
             self._write_strip("cp -a {} buildavx512".format(self.tarball_prefix))
             self._write_strip("popd")
         self._write_strip("\n")
-        self.write_prep_append()
-
-    def write_prep_append(self):
-        """write out any custom supplied commands at the very end of the %prep section"""
-        if self.prep_append and self.prep_append[0]:
-            for line in self.prep_append:
-                self._write_strip("{}\n".format(line))
-
-            self._write_strip("\n")
 
     def write_variables(self):
         """Write variable exports to spec file"""
@@ -517,6 +512,7 @@ class Specfile(object):
     def write_make_install(self):
         """Write install section to spec file for make builds"""
         self._write_strip("%install")
+        self.write_install_prepend()
         # time.time() returns a float, but we only need second-precision
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
@@ -559,13 +555,37 @@ class Specfile(object):
 
         self.write_find_lang()
 
-    def write_make_install_append(self):
-        """write out any custom supplied commands at the very end of the %install section"""
-        if self.make_install_append and self.make_install_append[0]:
-            self._write_strip("## make_install_append content")
-            for line in self.make_install_append:
+    def write_prep_prepend(self):
+        """write out any custom supplied commands at the start of the %prep section"""
+        if self.prep_prepend:
+            self._write_strip("## prep_prepend content")
+            for line in self.prep_prepend:
                 self._write_strip("{}\n".format(line))
-            self._write_strip("## make_install_append end")
+            self._write_strip("## prep_prepend end")
+
+    def write_build_prepend(self):
+        """write out any custom supplied commands at the start of the %build section"""
+        if self.build_prepend:
+            self._write_strip("## build_prepend content")
+            for line in self.build_prepend:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## build_prepend end")
+
+    def write_install_prepend(self):
+        """write out any custom supplied commands at the start of the %install section"""
+        if self.install_prepend:
+            self._write_strip("## install_prepend content")
+            for line in self.install_prepend:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## install_prepend end")
+
+    def write_install_append(self):
+        """write out any custom supplied commands at the very end of the %install section"""
+        if self.install_append:
+            self._write_strip("## install_append content")
+            for line in self.install_append:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## install_append end")
 
     def write_source_installs(self):
         """write out installs from SourceX lines"""
@@ -582,6 +602,7 @@ class Specfile(object):
     def write_cmake_install(self):
         """Write install section to spec file for cmake builds"""
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
 
@@ -937,6 +958,7 @@ class Specfile(object):
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
 
         if len(self.license_files) > 0:
@@ -961,6 +983,7 @@ class Specfile(object):
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
 
         if len(self.license_files) > 0:
@@ -990,6 +1013,7 @@ class Specfile(object):
             self._write_strip(self.tests_config)
 
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
 
@@ -1013,6 +1037,7 @@ class Specfile(object):
         self._write_strip("\n")
 
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("export LANG=C")
@@ -1073,12 +1098,14 @@ class Specfile(object):
         """Write build pattern for ruby packages"""
         self.write_prep(ruby_pattern=True)
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("gem build {}.gemspec".format(self.name))
         self._write_strip("\n")
 
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("%global gem_dir $(ruby -e'puts Gem.default_dir')")
         self._write_strip("gem install -V \\")
         self._write_strip("  --local \\")
@@ -1177,6 +1204,7 @@ class Specfile(object):
 
         self.write_prep()
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self.write_variables()
@@ -1200,6 +1228,7 @@ class Specfile(object):
         self.write_prep()
         src_dir = "/usr/share/rust/src/{0}".format(self.name)
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("mkdir .cargo")
         self._write("echo \"[source.crates-io]\nreplace-with = 'vendored-sources'\n[source.vendored-sources]\ndirectory = '{}'\" > .cargo/config\n".format(os.path.dirname(src_dir)))
@@ -1211,17 +1240,18 @@ class Specfile(object):
         self._write_strip("cargo build --release")
         self._write_strip("\n")
         self._write_strip("%install")
+        self.write_install_prepend()
         if self.cargo_bin:
             self._write_strip("cargo install --frozen --root /")
         self._write_strip("cargo clean")
         self._write_strip("install -d -p %{buildroot}" + src_dir)
         self._write_strip("cp -a . %{buildroot}" + src_dir)
-        self.write_make_install_append()
 
     def write_cpan_pattern(self):
         """Write cpan build pattern to spec file"""
         self.write_prep()
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("if test -f Makefile.PL; then")
@@ -1234,6 +1264,7 @@ class Specfile(object):
         self._write_strip("\n")
         self.write_check()
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
@@ -1255,12 +1286,14 @@ class Specfile(object):
         """Write scons build pattern to spec file"""
         self.write_prep()
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self.write_variables()
         self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
         self._write_strip("\n")
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("scons install " + self.extra_make_install)
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
@@ -1272,12 +1305,14 @@ class Specfile(object):
         """Write build pattern for go packages"""
         self.write_prep()
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("export GOPATH=\"$PWD\"")
         self._write_strip("go build")
         self._write_strip("\n")
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
@@ -1292,10 +1327,12 @@ class Specfile(object):
 
         self.write_prep()
         self._write_strip("%build")
+        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("python3 /usr/share/java-utils/mvn_build.py " + self.extra_make)
         self._write_strip("\n")
         self._write_strip("%install")
+        self.write_install_prepend()
         self._write_strip("xmvn-install  -R .xmvn-reactor -n {} -d %{{buildroot}}"
                           .format(mvn))
 
@@ -1325,6 +1362,7 @@ class Specfile(object):
 
         self._write_strip("\n")
         self._write_strip("%install")
+        self.write_install_prepend()
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
             for file in self.license_files:

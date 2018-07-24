@@ -45,11 +45,13 @@ extra_make_install = ""
 extra_make32_install = ""
 extra_cmake = ""
 cmake_srcdir = ""
-prep_append = []
 subdir = ""
 install_macro = "%make_install"
 disable_static = "--disable-static"
-make_install_append = []
+prep_prepend = []
+build_prepend = []
+install_prepend = []
+install_append = []
 patches = []
 autoreconf = False
 custom_desc = ""
@@ -548,11 +550,13 @@ def parse_config_files(path, bump, filemanager, version):
     global extra_make32_install
     global extra_cmake
     global cmake_srcdir
-    global prep_append
     global subdir
     global install_macro
     global disable_static
-    global make_install_append
+    global prep_prepend
+    global build_prepend
+    global install_prepend
+    global install_append
     global patches
     global autoreconf
     global yum_conf
@@ -808,8 +812,14 @@ def parse_config_files(path, bump, filemanager, version):
         buildreq.add_buildreq("gcc-libgcc32")
         buildreq.add_buildreq("gcc-libstdc++32")
 
-    make_install_append = read_conf_file(os.path.join(path, "make_install_append"))
-    prep_append = read_conf_file(os.path.join(path, "prep_append"))
+    prep_prepend = read_conf_file(os.path.join(path, "prep_prepend"))
+    if os.path.isfile(os.path.join(path, "prep_append")):
+        os.rename(os.path.join(path, "prep_append"), os.path.join(path, "build_prepend"))
+    build_prepend = read_conf_file(os.path.join(path, "build_prepend"))
+    install_prepend = read_conf_file(os.path.join(path, "install_prepend"))
+    if os.path.isfile(os.path.join(path, "make_install_append")):
+        os.rename(os.path.join(path, "make_install_append"), os.path.join(path, "install_append"))
+    install_append = read_conf_file(os.path.join(path, "install_append"))
 
     profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
 
@@ -829,10 +839,12 @@ def load_specfile(specfile):
     specfile.extra_make32_install = extra_make32_install
     specfile.extra_cmake = extra_cmake
     specfile.cmake_srcdir = cmake_srcdir or specfile.cmake_srcdir
-    specfile.prep_append = prep_append
     specfile.subdir = subdir
     specfile.install_macro = install_macro
     specfile.disable_static = disable_static
-    specfile.make_install_append = make_install_append
+    specfile.prep_prepend = prep_prepend
+    specfile.build_prepend = build_prepend
+    specfile.install_prepend = install_prepend
+    specfile.install_append = install_append
     specfile.patches = patches
     specfile.autoreconf = autoreconf
