@@ -49,8 +49,10 @@ def commit_to_git(path):
     call("git add upstream", cwd=path)
     call("bash -c 'shopt -s failglob; git add *.spec'", cwd=path)
     call("git add %s.tmpfiles" % tarball.name, check=False, stderr=subprocess.DEVNULL, cwd=path)
-    call("git add make_install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
-    call("git add prep_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add prep_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add build_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add install_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add series", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.asc'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.sig'", check=False, stderr=subprocess.DEVNULL, cwd=path)
@@ -78,6 +80,8 @@ def commit_to_git(path):
     call("git add description", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     # remove deprecated config files
+    call("git rm make_install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git rm prep_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git rm use_clang", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git rm use_lto", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git rm use_avx2", check=False, stderr=subprocess.DEVNULL, cwd=path)

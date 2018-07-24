@@ -27,9 +27,9 @@ cmd_mappings = {
     "do_configure_prepend": "configure",
     "do_configure_append": "configure",
     "EXTRA_OECONF": "configure",
-    "do_install": "make_install_append",
-    "do_install_append": "make_install_append",
-    "do_install_prepend": "make_install_append"
+    "do_install": "install_append",
+    "do_install_append": "install_append",
+    "do_install_prepend": "install_prepend"
 }
 
 
