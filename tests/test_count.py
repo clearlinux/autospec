@@ -431,6 +431,31 @@ pats = [
     # pth
     ('OK - ALL TESTS SUCCESSFULLY PASSED.',
      [0, 0, 0, 0, 0, 1, 1, 0, 0, 0]),
+    # casync (uses meson / ninja)
+    ("ninja: Entering directory `builddir'\n"
+     '[0/1] /usr/bin/python3 -u /usr/bin/meson test --no-rebuild --print-errorlogs\n'
+     ' 1/16 test-script.sh                          OK      21.20 s \n'
+     ' 2/16 test-script-sha256.sh                   OK      23.13 s \n'
+     ' 3/16 test-script-gzip.sh                     OK      20.91 s \n'
+     ' 4/16 test-script-xz.sh                       OK      29.97 s \n'
+     ' 5/16 test-nbd.sh                             OK       0.91 s \n'
+     ' 6/16 test-fuse.sh                            OK       1.25 s \n'
+     ' 7/16 test-cachunk                            OK       0.02 s \n'
+     ' 8/16 test-cachunker                          OK       0.70 s \n'
+     ' 9/16 test-cachunker-histogram                OK       2.04 s \n'
+     '10/16 test-cadigest                           OK      10.01 s \n'
+     '11/16 test-caencoder                          OK       0.05 s \n'
+     '12/16 test-camakebst                          OK       3.21 s \n'
+     '13/16 test-caorigin                           OK       0.00 s \n'
+     '14/16 test-casync                             OK       0.74 s \n'
+     '15/16 test-cautil                             OK       0.00 s \n'
+     '16/16 test-util                               OK       0.01 s \n'
+     '\n'
+     'OK:        16\n'
+     'FAIL:       0\n'
+     'SKIP:       0\n'
+     'TIMEOUT:    0\n',
+     [16, 16, 0, 0, 0, 0, 0, 0, 0, 0]),
 ]
 
 backup_zero_test_data = count.zero_test_data
