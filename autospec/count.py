@@ -129,6 +129,25 @@ def convert_int(intstr):
         return 0
 
 
+def parse_meson_test(lines):
+    global total_pass
+    global total_fail
+    global total_skip
+    for line in lines:
+        line = line.rstrip().split()
+        if len(line) != 2:
+            continue
+        if line[0] == 'OK:':
+            total_pass = convert_int(line[1])
+        elif line[0] == 'FAIL:':
+            total_fail = convert_int(line[1])
+        elif line[0] == 'SKIP:':
+            total_skip = convert_int(line[1])
+        elif line[0] == 'TIMEOUT:':
+            # Count timeouts as failures.
+            total_fail = convert_int(line[1])
+
+
 def parse_log(log, pkgname=''):
     global total_tests
     global total_pass
@@ -151,7 +170,7 @@ def parse_log(log, pkgname=''):
                   "+ make check",
                   "##### Testing packages."]
 
-    for line in lines:
+    for idx, line in enumerate(lines):
         line = line.rstrip()
 
         for zline in zero_lines:
@@ -160,6 +179,11 @@ def parse_log(log, pkgname=''):
                     zero_test_data()
                 else:
                     incheck = True
+
+        if "/usr/bin/meson test" in line:
+            zero_test_data()
+            parse_meson_test(lines[idx:])
+            break
 
         match = re.search(r"CLR-XTEST: Package: (.*)", line)
         if match:
