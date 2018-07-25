@@ -1324,6 +1324,7 @@ class Specfile(object):
             self._write_strip('popd')
 
         self._write_strip("\n")
+        self.write_check()
         self._write_strip("%install")
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/doc/" + self.name)
