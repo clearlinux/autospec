@@ -308,6 +308,45 @@ def rakefile(filename):
                 print("Rakefile-new: rubygem-" + s)
 
 
+def parse_cmake(filename):
+    """
+    Scan a .cmake or CMakeLists.txt file for what's it's actually looking for
+    """
+    findpackage = re.compile(r"find_package\((\w+)\b.*\)", re.I)
+    pkgconfig = re.compile(r"pkg_check_modules\(\w+ (.*)\)", re.I)
+    pkg_search_modifiers = {'REQUIRED', 'QUIET', 'NO_CMAKE_PATH',
+                            'NO_CMAKE_ENVIRONMENT_PATH', 'IMPORTED_TARGET'}
+    extractword = re.compile(r'(?:"([^"]+)"|(\S+))(.*)')
+
+    with open(filename, "r", encoding="latin-1") as f:
+        lines = f.readlines()
+    for line in lines:
+        match = findpackage.search(line)
+        if match:
+            module = match.group(1)
+            try:
+                pkg = config.cmake_modules[module]
+                add_buildreq(pkg)
+            except:
+                pass
+
+        match = pkgconfig.search(line)
+        if match:
+            rest = match.group(1)
+            while rest:
+                wordmatch = extractword.search(rest)
+                if not wordmatch:
+                    break
+                rest = wordmatch.group(3)
+                if wordmatch.group(2) in pkg_search_modifiers:
+                    continue
+                # Only one of the two groups can match at a time
+                pkg = wordmatch.group(1)
+                if not pkg:
+                    pkg = wordmatch.group(2)
+                add_pkgconfig_buildreq(pkg)
+
+
 def qmake_profile(filename):
     """
     Scan .pro file for build requirements
@@ -640,6 +679,9 @@ def scan_for_configure(dirn):
                 buildpattern.set_build_pattern("autogen", default_score)
             if name.lower() == "cmakelists.txt":
                 buildpattern.set_build_pattern("cmake", default_score)
+                parse_cmake(os.path.join(dirpath, name))
+            if name.endswith(".cmake") and buildpattern.default_pattern == "cmake":
+                parse_cmake(os.path.join(dirpath, name))
 
     can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
     if not can_reconf:
