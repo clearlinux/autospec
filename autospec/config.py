@@ -77,6 +77,7 @@ license_hashes = {}
 license_translations = {}
 license_blacklist = {}
 qt_modules = {}
+cmake_modules = {}
 
 cves = []
 
@@ -480,6 +481,7 @@ def setup_patterns(path=None):
     global license_translations
     global license_blacklist
     global qt_modules
+    global cmake_modules
 
     read_pattern_conf("ignored_commands", ignored_commands, list_format=True, path=path)
     read_pattern_conf("failed_commands", failed_commands, path=path)
@@ -489,6 +491,7 @@ def setup_patterns(path=None):
     read_pattern_conf("license_translations", license_translations, path=path)
     read_pattern_conf("license_blacklist", license_blacklist, list_format=True, path=path)
     read_pattern_conf("qt_modules", qt_modules, path=path)
+    read_pattern_conf("cmake_modules", cmake_modules, path=path)
 
 
 def parse_existing_spec(path, name):
