@@ -8,6 +8,8 @@
 -Wunknown-attributes
 -Wunknown-warning-option
 -lc should be explicitly linked in
+-ldld
+-lmkl
 -lposix1e
 -lsec
 -lselinux
@@ -25,18 +27,26 @@
 <limits.h> defines MIN and MAX
 <pthread.h> pollutes the namespace
 AIX ACL
+ARM NEON in current arch/CFLAGS
 Avahi
 AvailabilityMacros.h
 BeOS
+C compiler handles -Werror -Wunknown-warning-option
 C symbols are prefixed with underscore at the linker level
+CC
+CDPARANOIA
+CELT051
 CFLocaleCopyCurrent
 CFPreferencesCopyAppValue
 CYGWIN or MSYS environment
 Darwin (Mac OS X)
+GTK_QUARTZ
+HP-UX
 LIBPSL
 LIBTEAMDCTL
 LUA_PREFIX
 Minix Amsterdam compiler
+MobileCoreServices/MobileCoreServices.h
 OS.h
 QNX
 SELINUX
@@ -47,25 +57,42 @@ _FILE_OFFSET_BITS value needed large files
 _LARGEFILE_SOURCE value needed for large files
 _LARGEFILE_SOURCE value needed large files
 __ApplePrivate_gss_acquire_cred_ex_f
+__INTEL_COMPILER
+__SUNPRO_C
 __argv
+__clang__
 __freadahead
 __freadptr
 __freadptrinc
 __fseterr
+__i386__
 __mktime_internal
+__popcnt
+__popcnt64
 __res_init
 __secure_getenv
 __sys_siglist
+__uint128_t
 __xpg4
+_byteswap_ulong
+_byteswap_ushort
+_doprnt
 _fseeki64
+_getpid
+_putenv_s
 _set_invalid_parameter_handler
 _snprintf
+_strdup
 _xpg4_setrunelocale in -lxpg4
+a
+a statically linked program can dlopen itself
 a turkish Unicode locale
 abs
 acl_get_file in -lposix1e
 acos
 acosh
+any prototype needed for pread
+any prototype needed for pwrite
 ar
 arithmetic hrtime_t
 as
@@ -74,6 +101,8 @@ asinh
 atan
 atanh
 bcopy
+binary relocation should be enabled
+broken poll
 bstring.h
 byte ordering is bigendian
 c++
@@ -82,6 +111,7 @@ cc
 ceil
 clang option to accept ISO C89
 clock_gettime
+closefrom
 compiler driver understands Ada
 compilers -Wno-format-truncation
 compilers -Wno-tautological-compare
@@ -96,14 +126,18 @@ default print user
 desired default level of POSIX conformance
 directio
 dirfd is a macro
+dl.h
 dlltool
+dlopen
 dlopen()
 dns_sd.h
 dustat.h
+eatmydata
 erf
 erfc
 exp
 external symbol _system_configuration
+extra flags to get ANSI library prototypes
 fabs
 fallocate
 fdatasync
@@ -121,12 +155,18 @@ for x86_64-generic-linux-gnu-objdump
 for x86_64-generic-linux-gnu-strip
 fpurge
 frame.h
+g++ option to enable C++11 features
 gai_strerrorA
 gcc
+gcc is Clang
 gcc needs -traditional
 gcc option to accept ISO C89
 gcc option to accept ISO C99
 gcc option to enable C11 features
+gcc understands --disable-instructions
+gcc understands --omg-optimized
+gcc understands -Wold-style-definition
+gcc understands -Wstrict-prototypes
 gccgo
 gccs -Wall
 getaddrinfo
@@ -142,6 +182,7 @@ gethostbyname
 gethostbyname... (cach
 gethrtime
 getifaddrs
+getifaddrs() and AF_LINK
 getlocalename_l
 getmntent
 getmntinfo
@@ -165,13 +206,22 @@ hstrerror
 hurd.h
 hypot
 iconv_open
+ieeefp.h
+if -lm is required for maths functions
 if : is a manifest tool
 if X11 header
+if building the Windows installer
 if character set is EBCDIC
+if compiler needs -Werror to reject unknown flags
+if compiling for Mac OS X
+if compiling for Win32
 if g++ static flag -static works
 if gcc static flag -static works
 if gcc supports -fno-rtti -fno-exceptions
+if gccs -Werror=unknown-warning-option
+if gccs -Werror=unused-command-line-argument
 if gccs -fno-rtti -fno-exceptions
+if more special flags are required for pthreads
 inet_ntop
 inet_ntop... (cach
 inet_pton
@@ -188,6 +238,7 @@ lchmod
 ld
 libc.h
 libiconv_open
+libnet.h version 1.1.x
 library containing opendir
 library containing strerror
 libsigsegv
@@ -219,33 +270,46 @@ minix/config.h usability
 minor_t
 mntctl function and struct vmount
 mode_to_security_class
+more special flags are required for pthreads
 mt
 multithread API to use
 mxml.h
 nanosleep
 nanotime
 nanouptime
+native Win32
+native macOS
 nfs/vfs.h
 nm
+objc
+objcc
 objcopy
 objdump
 obstacks that work with any size object
 opendir
+plugin documentation
 posix_spawn
 precise C stack overflow detection
 printfs the 'n' directive
 priv.h
+process.h
 pstat_getdynamic
 pstat_getstatic
 pthread_create using -lpthreads
 pthread_np.h
 pthread_rwlock_rdlock prefers a writer to a reader
+pthread_setname_np(const char*)
 pthread_sigmask
 pthread_sigmask is only a macro
+pthreads work with -Kthread
+pthreads work with -kthread
+pthreads work without any flags
 pyinotify
+python2.6
 ranlib
 readelf
 removefile
+rint
 rresvport_af
 sched_getaffinity_np
 selinux/context.h
@@ -254,6 +318,8 @@ selinux/selinux.h
 setfilecon
 setsid
 setsockopt
+shl_load
+shl_load in -ldld
 sig2str
 sighandler_t
 sighandlers must be reinstalled
@@ -265,6 +331,9 @@ smack_new_label_from_self in -lsmack
 snprintf
 socket
 socket in -lsocket
+socketpair
+some Darwin platform
+some Win32 platform
 special C compiler options needed for large files
 special C compiler options needed large files
 sqrt
@@ -301,6 +370,7 @@ struct utmp.ut_exit.ut_exit
 struct utmp.ut_exit.ut_termination
 struct utmpx.ut_exit.ut_exit
 struct utmpx.ut_exit.ut_termination
+symbols are prefixed
 sys/access.h
 sys/dirent.h
 sys/fs/s5param.h
@@ -316,6 +386,7 @@ sys/sysmp.h
 sys/systemcfg.h
 sys/systeminfo.h
 sys/table.h
+sys/thr.h
 sys/ucred.h
 sys/utime.h
 sysmp
@@ -327,10 +398,16 @@ tanh
 termios.h defines TIOCGWINSZ
 termios.h needs _XOPEN_SOURCE
 tgetflag
+the BeOS
 the C locale is free of encoding errors
+the pthreads library -llthread
+the pthreads library -lpthreads
 the systems xlc include
+thr_self
 timezone_t
 to enable maintainer-specific portions of Makefiles
+to turn on debugging
+to turn on profiling
 to use C++
 to use statvfs64
 toupper
@@ -343,8 +420,14 @@ util/debug.h
 util/msg18n.h
 vasnprintf
 vfork.h
+w32api/winbase.h
+w32api/wtypes.h
+w3m
 we are cross compiling
+we are using the GNU Objective C compiler
+we build a relocatable package
 we need to force -D_FILE_OFFSET_BITS=64
+wget
 whether -Wmissing-braces works as expected
 whether -Wparentheses-equality works as expected
 whether -Wtypedef-redefinition works as expected
@@ -353,14 +436,18 @@ whether -Wunknown-warning-option works as expected
 whether -lc should be explicitly linked in
 whether to build static libraries
 whether we are cross compiling
+wincrypt.h
 windmc
+windows.h
 windres
+winsock2.h
 wint_t is too small
 with code coverage
 with code coverage support
 working alloca.h
 working mmap
 working nanosleep
+ws2tcpip.h
 x86_64-generic-linux-gnu-dlltool
 x86_64-generic-linux-gnu-mt
 x86_64-generic-linux-gnu-objdump
