@@ -285,9 +285,9 @@ failed_pats = [
      r".*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
     (r"\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information "
      r"available", 0, 'maven'),
-    (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, 'catkin'),
-    (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, 'catkin'),
-    (r"^.*\"(.*)\" with any of the following names.*$", 0, 'catkin')]
+    (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
+    (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
+    (r"^.*\"(.*)\" with any of the following names.*$", 0, None)]
 
 
 def get_metadata_conf():
