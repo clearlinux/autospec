@@ -337,6 +337,9 @@ def clean_python_req(req, add_python=True):
     if req.find("#") == 0:
         return ""
     ret = req.rstrip("\n\r").strip()
+    i = ret.find(";")
+    if i > 0:
+        ret = ret[:i]
     i = ret.find("<")
     if i > 0:
         ret = ret[:i]

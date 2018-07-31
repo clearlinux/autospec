@@ -229,6 +229,8 @@ class TestBuildreq(unittest.TestCase):
         """
         self.assertEqual(buildreq.clean_python_req('requirement >= 1.1.2'),
                          'requirement')
+        self.assertEqual(buildreq.clean_python_req('requirement ; python_version > 1.1.2'),
+                         'requirement')
 
     def test_clean_python_req_comment(self):
         """
