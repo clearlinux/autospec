@@ -8,11 +8,14 @@
 .git
 .mit
 .txt
+1-2-3
 1.0
+1.1
 2.0
 2BSD
 3-clause
 3BSD
+@CPACK_RPM_PACKAGE_LICENSE@
 APL-2.0
 ASL
 Artistic
@@ -49,9 +52,11 @@ MPL
 Modified
 Muddy-MIT
 New
+OFL
 PIL
 PSF-2+
 Public
+SIL
 See
 Software
 Standard
@@ -62,6 +67,7 @@ UNKNOWN
 Unlimited
 Version
 Version-2.0
+What
 advertising
 and
 classifiers)
@@ -73,6 +79,9 @@ exceptions
 for
 gpl
 http://nmap.org/man/man-legal.html
+is
+it
+later
 license
 ndg/httpsclient/LICENCE
 new
@@ -81,6 +90,7 @@ open_source
 or
 public
 style
+under?
 unknown
 using
 version-2
