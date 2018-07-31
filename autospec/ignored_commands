@@ -1,369 +1,370 @@
 # This file contains ignored commands from configure output
 # in the form: <configure line>
+# This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
-mt
-for mt
-whether we are cross compiling
-gcc option to accept ISO C89
-for gcc option to accept ISO C89
-minix/config.h usability
-minix/config.h presence
-minix/config.h
-for minix/config.h
-x86_64-generic-linux-gnu-objdump
-for x86_64-generic-linux-gnu-objdump
-x86_64-generic-linux-gnu-dlltool
-for x86_64-generic-linux-gnu-dlltool
-x86_64-generic-linux-gnu-strip
-for x86_64-generic-linux-gnu-strip
-sysroot
-for sysroot
-x86_64-generic-linux-gnu-mt
-for x86_64-generic-linux-gnu-mt
-if : is a manifest tool
-if gcc supports -fno-rtti -fno-exceptions
-if gcc static flag -static works
-whether -lc should be explicitly linked in
-whether to build static libraries
-whether -Wunknown-warning-option works as expected
-whether -Wunknown-attributes works as expected
-whether -Wtypedef-redefinition works as expected
-whether -Wparentheses-equality works as expected
-whether -Wmissing-braces works as expected
-install_name_tool
-we are cross compiling
-objdump
-dlltool
-strip
--lc should be explicitly linked in
-static libraries
-if g++ static flag -static works
-CFPreferencesCopyAppValue
-CFLocaleCopyCurrent
-byte ordering is bigendian
-/etc/redhat-release
-/etc/fedora-release
-/etc/mandriva-release
-/etc/SuSE-release
-/etc/debian_version
-/etc/gentoo-release
-with code coverage support
--Wunknown-warning-option
--Wunknown-attributes
--Wtypedef-redefinition
--Wparentheses-equality
 -Wmissing-braces
-gcc option to accept ISO C99
-strerror
-library containing strerror
-BeOS
-QNX
-Darwin (Mac OS X)
-AvailabilityMacros.h
-if character set is EBCDIC
-is_selinux_enabled in -lselinux
--lselinux
-socket in -lsocket
--lsocket
-if X11 header
-CYGWIN or MSYS environment
-toupper
-main in -lelf
-opendir
-library containing opendir
-sys/systeminfo.h
-sys/stream.h
-libc.h
-util/debug.h
-util/msg18n.h
-frame.h
-sys/access.h
-sys/ptem.h
-pthread_np.h
-gcc needs -traditional
-stack_t has an ss_base field
-tputs() uses outfuntype
-/dev/ptc
-getcwd
-getpseudotty
-sigsetjmp
-sigvec
-stricmp
-strnicmp
-_LARGEFILE_SOURCE value needed large files
-special C compiler options needed large files
-_FILE_OFFSET_BITS value needed large files
-stat() ignores a trailing slash
-acl_get_file in -lposix1e
+-Wparentheses-equality
+-Wtypedef-redefinition
+-Wunknown-attributes
+-Wunknown-warning-option
+-lc should be explicitly linked in
 -lposix1e
 -lsec
-Solaris ACL
-AIX ACL
-_xpg4_setrunelocale in -lxpg4
+-lselinux
+-lsmack
+-lsocket
 -lxpg4
-dlopen()
-we need to force -D_FILE_OFFSET_BITS=64
-LUA_PREFIX
-gnatbind
-gnatmake
-compiler driver understands Ada
-gm4
-gnum4
-as
-ld
-lipo
-windres
-windmc
-objcopy
-readelf
-cc
-c++
-gcc
-gccgo
-ar
-nm
-ranlib
-to enable maintainer-specific portions of Makefiles
-gccs -Wall
-how to run the C preprocessor
-memory.h
-stdint.h
-unistd.h
-size_t
-working alloca.h
-working mmap
-cygwin
-bcopy
-memcpy
-libunwind-ia64.h
-fpurge
-__freadahead
-getprogname
-getexecname
-vasnprintf
-xlocale.h
-precise C stack overflow detection
-libsigsegv
-system header files limit the line length
-long double and double are the same
-fflush works on input streams
-multithread API to use
-<limits.h> defines MIN and MAX
-posix_spawn
-C symbols are prefixed with underscore at the linker level
-wint_t is too small
-stdint.h predates C++11
-_snprintf
-printfs the 'n' directive
-to use C++
-_fseeki64
-__argv
-gettimeofday clobbers localtime buffer
-the C locale is free of encoding errors
-obstacks that work with any size object
-a turkish Unicode locale
-dirfd is a macro
-getlocalename_l
-Minix Amsterdam compiler
-_LARGEFILE_SOURCE value needed for large files
-special C compiler options needed for large files
-_FILE_OFFSET_BITS value needed for large files
-_set_invalid_parameter_handler
 // is distinct from /
-login_tty
-tgetflag
-snprintf
-termios.h defines TIOCGWINSZ
-sys/dirent.h
-libutil.h
-sys/utime.h
-selinux/selinux.h
-selinux/context.h
-sighandler_t
-lstat accepts an empty string
-stat accepts an empty string
-vfork.h
-cos
-tan
-exp
-sqrt
-cbrt
-log
-log10
-asin
-acos
-atan
-sinh
-cosh
-tanh
-asinh
-acosh
-atanh
-floor
-ceil
-fabs
-erf
-erfc
-j0
-j1
-y0
-y1
-hypot
-sighandlers must be reinstalled
-strlcpy
-strlcat
-mxml.h
-abs
-getspent
-bstring.h
-sys/ucred.h
-iconv_open
-libiconv_open
-st_gen member in stat structure
-removefile
-clang option to accept ISO C89
-compilers -Wno-unused-result
-compilers -Wsign-conversion
-compilers -Wno-tautological-compare
-compilers -Wno-format-truncation
-socket
-gethostbyaddr
-getifaddrs
-hstrerror
-rresvport_af
-__res_init
-getaddrinfo
-getnameinfo
-struct sockaddr.sa_len
-sys/sockio.h
-kqueue
-pthread_create using -lpthreads
+/dev/ptc
+/etc/SuSE-release
+/etc/debian_version
+/etc/fedora-release
+/etc/gentoo-release
+/etc/mandriva-release
+/etc/redhat-release
+<limits.h> defines MIN and MAX
+<pthread.h> pollutes the namespace
+AIX ACL
 Avahi
-dns_sd.h
-launch_activate_socket
-launch.h
-default print user
-default print group
-__ApplePrivate_gss_acquire_cred_ex_f
-if gccs -fno-rtti -fno-exceptions
-__secure_getenv
-with code coverage
-SELINUX
-LIBTEAMDCTL
+AvailabilityMacros.h
+BeOS
+C symbols are prefixed with underscore at the linker level
+CFLocaleCopyCurrent
+CFPreferencesCopyAppValue
+CYGWIN or MSYS environment
+Darwin (Mac OS X)
 LIBPSL
-history.h
-gcc option to enable C11 features
+LIBTEAMDCTL
+LUA_PREFIX
+Minix Amsterdam compiler
+OS.h
+QNX
+SELINUX
+Solaris ACL
 Unknown pattern match:
-lchmod
+_FILE_OFFSET_BITS value needed for large files
+_FILE_OFFSET_BITS value needed large files
+_LARGEFILE_SOURCE value needed for large files
+_LARGEFILE_SOURCE value needed large files
+__ApplePrivate_gss_acquire_cred_ex_f
+__argv
+__freadahead
 __freadptr
 __freadptrinc
 __fseterr
-microuptime
-nanouptime
-nanotime
-mbslen
-pthread_sigmask
+__mktime_internal
+__res_init
+__secure_getenv
+__sys_siglist
+__xpg4
+_fseeki64
+_set_invalid_parameter_handler
+_snprintf
+_xpg4_setrunelocale in -lxpg4
+a turkish Unicode locale
+abs
+acl_get_file in -lposix1e
+acos
+acosh
+ar
+arithmetic hrtime_t
+as
+asin
+asinh
+atan
+atanh
+bcopy
+bstring.h
+byte ordering is bigendian
+c++
+cbrt
+cc
+ceil
+clang option to accept ISO C89
+clock_gettime
+compiler driver understands Ada
+compilers -Wno-format-truncation
+compilers -Wno-tautological-compare
+compilers -Wno-unused-result
+compilers -Wsign-conversion
+cos
+cosh
+crtdefs.h
+cygwin
+default print group
+default print user
+desired default level of POSIX conformance
 directio
+dirfd is a macro
+dlltool
+dlopen()
+dns_sd.h
+dustat.h
+erf
+erfc
+exp
+external symbol _system_configuration
+fabs
+fallocate
+fdatasync
+fdatasync... (cach
+fflush works on input streams
+filefrag
+floor
+for gcc option to accept ISO C89
+for minix/config.h
+for mt
+for sysroot
+for x86_64-generic-linux-gnu-dlltool
+for x86_64-generic-linux-gnu-mt
+for x86_64-generic-linux-gnu-objdump
+for x86_64-generic-linux-gnu-strip
+fpurge
+frame.h
+gai_strerrorA
+gcc
+gcc needs -traditional
+gcc option to accept ISO C89
+gcc option to accept ISO C99
+gcc option to enable C11 features
+gccgo
+gccs -Wall
+getaddrinfo
+getattrat
+getcwd
+getcwd aborts when 4k < cwd_length < 16k
+getexecname
+getgrent_nomembers
 getgrgid_nomembers
 getgrnam_nomembers
-getgrent_nomembers
-sys/fs_types.h
-crtdefs.h
-priv.h
-hurd.h
-OS.h
-st_dm_mode in struct stat
-struct stat
-strmode
+gethostbyaddr
 gethostbyname
-getservbyname
-inet_ntop
-arithmetic hrtime_t
-setsockopt
-external symbol _system_configuration
-desired default level of POSIX conformance
-setfilecon
-strerror_r with POSIX signature
-use of TIOCGWINSZ requires termios.h
-clock_gettime
-fdatasync
-to use statvfs64
-dustat.h
-sys/fs/s5param.h
-statfs that truncates block counts
-how to do getaddrinfo, freeaddrinfo and getnameinfo... checking for getaddrinfo
-gai_strerrorA
-getcwd aborts when 4k < cwd_length < 16k
-gethrtime
-sys/loadavg.h
 gethostbyname... (cach
-inet_ntop... (cach
-isapipe
-__xpg4
-link(2) dereferences a symlink
-pthread_rwlock_rdlock prefers a writer to a reader
-mbswidth in <wchar.h>
-__mktime_internal
-listmntent
-getmntinfo
-struct fsstat.f_fstypename
+gethrtime
+getifaddrs
+getlocalename_l
 getmntent
-listmntent of Cray/Unicos-9
-mntctl function and struct vmount
-sys/mntent.h
-sys/mkdev.h
-struct statfs.f_fstypename
-nanosleep
-working nanosleep
-sys/pstat.h
-sys/sysmp.h
-sched_getaffinity_np
-pstat_getdynamic
-sysmp
-machine/hal_sysinfo.h
-sys/table.h
-sys/systemcfg.h
-pstat_getstatic
-getsysinfo
-table
+getmntinfo
+getnameinfo
 getppriv
-<pthread.h> pollutes the namespace
-struct utmpx.ut_exit.ut_exit
-struct utmp.ut_exit.ut_exit
-struct utmpx.ut_exit.ut_termination
-struct utmp.ut_exit.ut_termination
-selinux/flask.h
+getprogname
+getpseudotty
+getservbyname
 getservbyname... (cach
-sig2str
-smack_new_label_from_self in -lsmack
--lsmack
-struct stat.st_birthtimespec.tv_nsec
-struct stat.st_birthtimensec
-struct stat.st_birthtim.tv_nsec
-localtime loops forever near extrema
-timezone_t
-tzset clobbers localtime buffer
-use of struct winsize requires sys/ptem.h
+getspent
+getsysinfo
+gettimeofday clobbers localtime buffer
+gm4
+gnatbind
+gnatmake
+gnum4
+history.h
+how to do getaddrinfo, freeaddrinfo and getnameinfo... checking for getaddrinfo
+how to run the C preprocessor
+hstrerror
+hurd.h
+hypot
+iconv_open
+if : is a manifest tool
+if X11 header
+if character set is EBCDIC
+if g++ static flag -static works
+if gcc static flag -static works
+if gcc supports -fno-rtti -fno-exceptions
+if gccs -fno-rtti -fno-exceptions
+inet_ntop
+inet_ntop... (cach
 inet_pton
+install_name_tool
 ioctl with POSIX signature
-pthread_sigmask is only a macro
-struct stat.st_author
+is_selinux_enabled in -lselinux
+isapipe
+j0
+j1
+kqueue
+launch.h
+launch_activate_socket
+lchmod
+ld
+libc.h
+libiconv_open
+library containing opendir
+library containing strerror
+libsigsegv
+libunwind-ia64.h
+libutil.h
+link(2) dereferences a symlink
+lipo
+listmntent
+listmntent of Cray/Unicos-9
+localtime caches TZ
+localtime loops forever near extrema
+log
+log10
+login_tty
+long double and double are the same
+lstat accepts an empty string
+machine/hal_sysinfo.h
+main in -lelf
 major_t
-minor_t
-mode_to_security_class
 matchpathcon_init_prefix
+mbslen
+mbswidth in <wchar.h>
+memcpy
+memory.h
+microuptime
+minix/config.h
+minix/config.h presence
+minix/config.h usability
+minor_t
+mntctl function and struct vmount
+mode_to_security_class
+mt
+multithread API to use
+mxml.h
+nanosleep
+nanotime
+nanouptime
 nfs/vfs.h
+nm
+objcopy
+objdump
+obstacks that work with any size object
+opendir
+posix_spawn
+precise C stack overflow detection
+printfs the 'n' directive
+priv.h
+pstat_getdynamic
+pstat_getstatic
+pthread_create using -lpthreads
+pthread_np.h
+pthread_rwlock_rdlock prefers a writer to a reader
+pthread_sigmask
+pthread_sigmask is only a macro
+pyinotify
+ranlib
+readelf
+removefile
+rresvport_af
+sched_getaffinity_np
+selinux/context.h
+selinux/flask.h
+selinux/selinux.h
+setfilecon
+setsid
+setsockopt
+sig2str
+sighandler_t
+sighandlers must be reinstalled
+sigsetjmp
+sigvec
+sinh
+size_t
+smack_new_label_from_self in -lsmack
+snprintf
+socket
+socket in -lsocket
+special C compiler options needed for large files
+special C compiler options needed large files
+sqrt
+st_dm_mode in struct stat
+st_gen member in stat structure
+stack_t has an ss_base field
+stat accepts an empty string
+stat() ignores a trailing slash
+statfs that truncates block counts
+static libraries
+stdint.h
+stdint.h predates C++11
+strerror
+strerror_r with POSIX signature
+stricmp
+strip
+strlcat
+strlcpy
+strmode
+strnicmp
+struct fsstat.f_fstypename
+struct sockaddr.sa_len
+struct stat
+struct stat.st_author
+struct stat.st_birthtim.tv_nsec
+struct stat.st_birthtimensec
+struct stat.st_birthtimespec.tv_nsec
+struct statfs.f_fstypename
+struct statfs.f_namemax
 struct statvfs.f_basetype
 struct statvfs.f_fstypename
 struct statvfs.f_type
-struct statfs.f_namemax
-fdatasync... (cach
-localtime caches TZ
-getattrat
+struct utmp.ut_exit.ut_exit
+struct utmp.ut_exit.ut_termination
+struct utmpx.ut_exit.ut_exit
+struct utmpx.ut_exit.ut_termination
+sys/access.h
+sys/dirent.h
+sys/fs/s5param.h
+sys/fs_types.h
+sys/loadavg.h
+sys/mkdev.h
+sys/mntent.h
+sys/pstat.h
+sys/ptem.h
+sys/sockio.h
+sys/stream.h
+sys/sysmp.h
+sys/systemcfg.h
+sys/systeminfo.h
+sys/table.h
+sys/ucred.h
+sys/utime.h
+sysmp
+sysroot
+system header files limit the line length
+table
+tan
+tanh
+termios.h defines TIOCGWINSZ
 termios.h needs _XOPEN_SOURCE
-__sys_siglist
+tgetflag
+the C locale is free of encoding errors
 the systems xlc include
-setsid
-fallocate
-filefrag
-pyinotify
+timezone_t
+to enable maintainer-specific portions of Makefiles
+to use C++
+to use statvfs64
+toupper
+tputs() uses outfuntype
+tzset clobbers localtime buffer
+unistd.h
+use of TIOCGWINSZ requires termios.h
+use of struct winsize requires sys/ptem.h
+util/debug.h
+util/msg18n.h
+vasnprintf
+vfork.h
+we are cross compiling
+we need to force -D_FILE_OFFSET_BITS=64
+whether -Wmissing-braces works as expected
+whether -Wparentheses-equality works as expected
+whether -Wtypedef-redefinition works as expected
+whether -Wunknown-attributes works as expected
+whether -Wunknown-warning-option works as expected
+whether -lc should be explicitly linked in
+whether to build static libraries
+whether we are cross compiling
+windmc
+windres
+wint_t is too small
+with code coverage
+with code coverage support
+working alloca.h
+working mmap
+working nanosleep
+x86_64-generic-linux-gnu-dlltool
+x86_64-generic-linux-gnu-mt
+x86_64-generic-linux-gnu-objdump
+x86_64-generic-linux-gnu-strip
+xlocale.h
+y0
+y1
