@@ -1,15 +1,16 @@
 # This file maps the qmake entry for the QT or QT_PRIVATE variable to the
 # pkgconfig equivalent, to be added to BuildRequires. Please keep sorted.
+# This file is sorted with LC_COLLATE=C
 # Format: <qmake key>, <pkgconfig value>
 3danimation, Qt53DAnimation
 3dcore, Qt53DCore
 3dextras, Qt53DExtras
 3dinput, Qt53DInput
 3dlogic, Qt53DLogic
+3dquick, Qt53DQuick
 3dquickanimation, Qt53DQuickAnimation
 3dquickextras, Qt53DQuickExtras
 3dquickinput, Qt53DQuickInput
-3dquick, Qt53DQuick
 3dquickrender, Qt53DQuickRender
 3dquickscene2d, Qt53DQuickScene2D
 3drender, Qt53DRender
@@ -27,18 +28,18 @@ help, Qt5Help
 location, Qt5Location
 multimedia, Qt5Multimedia
 multimediawidgets, Qt5MultimediaWidgets
-networkauth, Qt5NetworkAuth
 network, Qt5Network
+networkauth, Qt5NetworkAuth
 nfc, Qt5Nfc
-openglextensions, Qt5OpenGLExtensions
 opengl, Qt5OpenGL
+openglextensions, Qt5OpenGLExtensions
 positioning, Qt5Positioning
 printsupport, Qt5PrintSupport
 purchasing, Qt5Purchasing
 qml, Qt5Qml
 qmltest, Qt5QuickTest
-quickcontrols2, Qt5QuickControls2
 quick, Qt5Quick
+quickcontrols2, Qt5QuickControls2
 quickwidgets, Qt5QuickWidgets
 remoteobjects, Qt5RemoteObjects
 script, Qt5Script
@@ -63,5 +64,5 @@ webkitwidgets, Qt5WebKitWidgets
 websockets, Qt5WebSockets
 widgets, Qt5Widgets
 x11extras, Qt5X11Extras
-xmlpatterns, Qt5XmlPatterns
 xml, Qt5Xml
+xmlpatterns, Qt5XmlPatterns

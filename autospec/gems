@@ -1,21 +1,19 @@
 # This file contains failure patterns and the ruby gems they are associated with
 # in the form: <pattern>, <gem>
+# This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
-hoe, rubygem-hoe
-rspec/core/rake_task, rubygem-rspec-core
-bundler/gem_tasks, rubygem-rubygems-tasks
-bundler/setup, rubygem-bundler
-echoe, rubygem-echoe
-sass, rubygem-sass
-redcarpet, rubygem-redcarpet
 action_view/helpers/sanitize_helper, rubygem-actionview
 appraisal/file, rubygem-appraisal
 benchmark/ips, rubygem-benchmark-ips
 builder, rubygem-builder
 bundler, rubygem-bundler
+bundler/gem_tasks, rubygem-rubygems-tasks
+bundler/setup, rubygem-bundler
+echoe, rubygem-echoe
 gem_hadar, rubygem-gem_hadar
 gherkin/rubify, rubygem-gherkin
 guard/compat/test/helper, rubygem-guard-compat
+hoe, rubygem-hoe
 html/pipeline, rubygem-html-pipeline
 minitest/autorun, rubygem-minitest
 minitest/unit, rubygem-minitest
@@ -23,10 +21,13 @@ mocha/setup, rubygem-mocha
 nokogiri/diff, rubygem-nokogiri-diff
 pdf/reader, rubygem-pdf-reader
 pry, rubygem-pry
-rake/extensiontask, rubygem-rake-compiler
 rack/test, rubygem-rack-test
 rack/utils, rubygem-rack
+rake/extensiontask, rubygem-rake-compiler
+redcarpet, rubygem-redcarpet
 rspec/core, rubygem-rspec-core
+rspec/core/rake_task, rubygem-rspec-core
 rspec/its, rubygem-rspec-its
 rspec/mocks, rubygem-rspec-mocks
+sass, rubygem-sass
 test/unit, rubygem-test-unit
