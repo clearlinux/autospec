@@ -19,7 +19,6 @@
 import argparse
 import sys
 import os
-import shutil
 import re
 import tempfile
 import configparser
