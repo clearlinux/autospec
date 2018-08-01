@@ -119,15 +119,16 @@ def read_old_metadata():
             archives)
 
 
-def save_build_log(path, iteration):
+def save_mock_logs(path, iteration):
     """
-    Save build log to <path>/build.log.round<iteration>
-
-    Must be saved outside of the results/ directory since it gets wiped away on
-    each round.
+    Save Mock build logs to <path>/results/round<iteration>-*.log
     """
-    buildlog = os.path.join(path, "results", "logs", "build.log")
-    shutil.copyfile(buildlog, "{}/build.log.round{}".format(path, iteration))
+    basedir = os.path.join(path, "results")
+    loglist = ["build", "root", "srpm-build", "srpm-root", "mock_srpm", "mock_build"]
+    for l in loglist:
+        src = "{}/{}.log".format(basedir, l)
+        dest = "{}/round{}-{}.log".format(basedir, iteration, l)
+        os.rename(src, dest)
 
 
 def write_prep(workingdir):
@@ -328,7 +329,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
         if build.round > 20 or build.must_restart == 0:
             break
 
-        save_build_log(build.download_path, build.round)
+        save_mock_logs(build.download_path, build.round)
 
     test.check_regression(build.download_path)
 

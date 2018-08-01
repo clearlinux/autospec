@@ -262,38 +262,28 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
 
     print("{} mock chroot at /var/lib/mock/clear-{}".format(tarball.name, uniqueext))
 
-    shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
-    os.makedirs('{}/results'.format(download_path))
+    if round == 1:
+        shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
+        os.makedirs('{}/results'.format(download_path))
+
     util.call("{} -r {} --buildsrpm --sources=./ --spec={}.spec "
               "--uniqueext={} --result=results/ {} {}"
               .format(mock_cmd, mockconfig, tarball.name, uniqueext, cleanup_flag,
                       mockopts),
-              logfile="%s/mock_srpm.log" % download_path, cwd=download_path)
+              logfile="%s/results/mock_srpm.log" % download_path, cwd=download_path)
 
-    util.call("rm -f results/build.log", cwd=download_path)
+    # back up srpm mock logs
+    util.call("mv results/root.log results/srpm-root.log", cwd=download_path)
+    util.call("mv results/build.log results/srpm-build.log", cwd=download_path)
+
     srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
     returncode = util.call("{} -r {} --result=results/ {} "
                            "--enable-plugin=ccache  --uniqueext={} {}"
                            .format(mock_cmd, mockconfig, srcrpm, uniqueext, cleanup_flag),
-                           logfile="%s/mock_build.log" % download_path, check=False, cwd=download_path)
+                           logfile="%s/results/mock_build.log" % download_path, check=False, cwd=download_path)
     # sanity check the build log
     if not os.path.exists(download_path + "/results/build.log"):
         util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
         exit(1)
 
     parse_build_results(download_path + "/results/build.log", returncode, filemanager)
-
-    files = os.listdir('{}/results'.format(download_path))
-
-    os.makedirs('{}/results/srpm'.format(download_path), exist_ok=True)
-    os.makedirs('{}/results/debuginfo'.format(download_path), exist_ok=True)
-    os.makedirs('{}/results/logs'.format(download_path), exist_ok=True)
-
-    # organize output files so it's more clear what to use for mixes
-    for f in files:
-        if f.endswith(".src.rpm"):
-            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/srpm/{}'.format(download_path, f))
-        if "debuginfo" in f:
-            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/debuginfo/{}'.format(download_path, f))
-        if f.endswith(".log"):
-            shutil.move('{}/results/{}'.format(download_path, f), '{}/results/logs/{}'.format(download_path, f))
