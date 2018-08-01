@@ -114,6 +114,7 @@ def commit_to_git(path):
         "*.zip",
         "commitmsg",
         "results/",
+        "rpms/",
         ""
     ]
     write_out(os.path.join(path, '.gitignore'), '\n'.join(ignorelist))
