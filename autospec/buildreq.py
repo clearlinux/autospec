@@ -91,7 +91,7 @@ def add_requires(req, override=False):
         return False
     if req not in buildreqs and req not in config.os_packages and not override:
         if req:
-            print("requirement '{}' not found is buildreqs or os_packages, skipping".format(req))
+            print("requirement '{}' not found in buildreqs or os_packages, skipping".format(req))
         return False
     if new:
         # print("Adding requirement:", req)
