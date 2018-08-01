@@ -23,7 +23,7 @@ import re
 
 
 def logcheck(pkg_loc):
-    log = os.path.join(pkg_loc, 'results', 'logs', 'build.log')
+    log = os.path.join(pkg_loc, 'results', 'build.log')
     if not os.path.exists(log):
         print('build log is missing, unable to perform logcheck.')
         return
