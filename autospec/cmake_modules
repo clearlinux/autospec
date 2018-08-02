@@ -1,50 +1,48 @@
 # This file maps the CMake FIND_PACKAGE name to the packaage name, to be
 # added to BuildRequires. Please keep the list sorted
 # Format: <cmake modulename>, <pkg name(s)>
-AVIFile, avifile-dev
 ALSA, alsa-lib-dev
 ASPELL, aspell-dev
 Argon2, argon2-dev
 Backtrace, glibc-dev
 BISON, bison-dev
-BLAS, openblas-dev
+BLAS, openblas
 BZip2, bzip2-dev
 Boost, boost-dev
 CURL, curl-dev
 Cups, cups-dev
 Curses, ncurses-dev
-Doxygen, doxygen-dev
+Doxygen, doxygen
 EXPAT, expat-dev
 FLEX, flex
 FLTK, fltk-dev
 Freetype, freetype-dev
 GDAL, gdal-dev
 GLEW, glew-dev
-GLU, glu-devel
+GLU, glu-dev
 GLUT, freeglut-dev
 GSL, gsl-dev
 GTest, googletest-dev
 GTK2, gtk+-dev
 Gcrypt, libgcrypt-dev
-Gettext, gettext-devel
+Gettext, gettext-dev
 Git, git
 GnuTLS, gnutls-dev
 Gnuplot, gnuplot-dev
 HDF5, hdf5-dev
-Hg, hg
 ICU, icu4c-dev
 Iconv, glibc-dev
 Intl, glibc-dev
 JPEG, libjpeg-turbo-dev
 Java, openjdk9
 JNI, openjdk9-dev
-LATEX, latex
+LATEX, texlive
 LibArchive, libarchive-dev
 LibGPGError, libgpg-error-dev
 LibLZMA, xz-dev
 LibXml2, libxml2-dev
 LibXslt, libxslt-dev
-Lua, lu-dev
+Lua, lua-dev
 MPI, openmpi-dev
 Motif, motif-dev
 OpenAL, openal-soft-dev
@@ -56,7 +54,7 @@ PHP4, php-dev
 PNG, libpng-dev
 Patch, patch
 Perl, perl
-PerlLibs, perl-dev
+PerlLibs, perl
 PkgConfig, pkg-config
 PostgreSQL, postgresql-dev
 Protobuf, protobuf-dev
@@ -70,10 +68,9 @@ Ruby, ruby
 SDL, SDL-dev
 SDL_image, SDL_image-dev
 SDL_mixer, SDL_mixer-dev
-SDL_sound, SDL_sound-dev
 SDL_net, SDL_net-dev
 SDL_ttf, SDL_ttf-dev
-SWIG, swig-dev
+SWIG, swig
 Subversion, subversion
 TCL, tcl-dev tk-dev
 TIFF, tiff-dev
