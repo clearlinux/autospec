@@ -250,16 +250,21 @@ make32_install_args
 
 prep_prepend
   Additional actions that should take place directly after ``%prep``
-  This will be placed in the resulting ``.spec``, and is used for
-  situations where fine-grained control is required.
+  and before the ``%setup`` macro.  This will be placed in the
+  resulting ``.spec``, and is used for situations where fine-grained
+  control is required.
 
 build_prepend
   Additional actions that should take place directly after ``%build``
-  This will be placed in the resulting ``.spec``, and is used for
-  situations where fine-grained control is required.
+  and before the ``%configure`` macro or equivalent (``%cmake``,
+  etc.). If autospec is creating AVX2, AVX-512 or 32-bit, these
+  actions will be repeated for each of those builds, This will be
+  placed in the resulting ``.spec``, and is used for situations where
+  fine-grained control is required.
 
 install_prepend
-  Additional actions that should take place directly after ``%install``
+  Additional actions that should take place directly after
+  ``%install`` but before the ``%make_install`` macro (or equivalent).
   This will be placed in the resulting ``.spec``, and is used for
   situations where fine-grained control is required.
 

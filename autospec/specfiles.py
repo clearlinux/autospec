@@ -742,6 +742,7 @@ class Specfile(object):
         self._write_strip("\n")
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
             self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
@@ -760,6 +761,7 @@ class Specfile(object):
         if config.config_opts['use_avx2']:
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
@@ -772,6 +774,7 @@ class Specfile(object):
 
         if config.config_opts['use_avx512']:
             self._write_strip("unset PKG_CONFIG_PATH")
+            self.write_build_prepend()
             self._write_strip("pushd ../buildavx512/" + self.subdir)
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
@@ -820,6 +823,7 @@ class Specfile(object):
             self._write_strip("popd")
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
             self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
@@ -838,6 +842,7 @@ class Specfile(object):
         if config.config_opts['use_avx2']:
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
@@ -851,6 +856,7 @@ class Specfile(object):
         if config.config_opts['use_avx512']:
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
@@ -913,6 +919,7 @@ class Specfile(object):
         self._write_strip("\n")
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
             self._write_strip('export CFLAGS="$CFLAGS -m32"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
@@ -930,6 +937,7 @@ class Specfile(object):
 
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=haswell "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=haswell "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=haswell "')
@@ -942,6 +950,7 @@ class Specfile(object):
 
         if config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512 "')
@@ -1163,6 +1172,7 @@ class Specfile(object):
         if config.config_opts['32bit']:
             self._write_strip("mkdir -p clr-build32")
             self._write_strip("pushd clr-build32")
+            self.write_build_prepend()
             self.write_variables()
             self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
             self._write_strip('export CFLAGS="$CFLAGS -m32"')
@@ -1179,6 +1189,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build-avx2")
             saved_avx2flags = self.need_avx2_flags
             self.need_avx2_flags = True
+            self.write_build_prepend()
             self.write_variables()
             self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
@@ -1192,6 +1203,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build-avx512")
             saved_avx512flags = self.need_avx512_flags
             self.need_avx512_flags = True
+            self.write_build_prepend()
             self.write_variables()
             self.need_avx512_flags = saved_avx512flags
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
@@ -1224,6 +1236,7 @@ class Specfile(object):
         self.write_make_line()
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self.write_build_prepend()
             self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
             self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
             self._write("    QMAKE_LFLAGS+=-march=haswell {}{}\n".format(extra_qmake_args, config.extra_configure))
