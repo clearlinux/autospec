@@ -348,22 +348,11 @@ def create_buildreq_cache(path, version):
             pass
         return
     if not content:
-        old_version = "no-buildreq-cache"
+        pkgs = sorted(buildreq.buildreqs_cache)
     else:
-        old_version = content[0]
-    if old_version == version:
-        # need to update the cache file so set append
-        mode = "a"
-    else:
-        # (re)creating the cache
-        mode = "w"
-    with open(os.path.join(path, 'buildreq_cache'), mode) as cachefile:
-        if old_version == version:
-            # add newline to append new buildreqs to the exist cache
-            cachefile.write("\n".join([""] + list(buildreq.buildreqs_cache)))
-        else:
-            # include version with the cache
-            cachefile.write("\n".join([version] + list(buildreq.buildreqs_cache)))
+        pkgs = sorted(set(content[1:]).union(buildreq.buildreqs_cache))
+    with open(os.path.join(path, 'buildreq_cache'), "w") as cachefile:
+        cachefile.write("\n".join([version] + pkgs))
     config_files.add('buildreq_cache')
 
 
