@@ -165,12 +165,15 @@ def is_number(num_str):
         return False
 
 
-def parse_modules_list(modules_string):
+def parse_modules_list(modules_string, is_cmake=False):
     """
     parse the modules_string for the list of modules, stripping out the version
     requirements
     """
-    modules = [m.strip('[]') for m in modules_string.split()]
+    if is_cmake:
+        modules = [m for m in re.split(r'([><]?=)', modules_string)]
+    else:
+        modules = [m.strip('[]') for m in modules_string.split()]
     res = []
     next_is_ver = False
     for mod in modules:
@@ -341,10 +344,12 @@ def parse_cmake(filename):
                 if wordmatch.group(2) in pkg_search_modifiers:
                     continue
                 # Only one of the two groups can match at a time
-                pkg = wordmatch.group(1)
-                if not pkg:
-                    pkg = wordmatch.group(2)
-                add_pkgconfig_buildreq(pkg)
+                module = wordmatch.group(1)
+                if not module:
+                    module = wordmatch.group(2)
+                # We have a match, so strip out any version info
+                for m in parse_modules_list(module, is_cmake=True):
+                    add_pkgconfig_buildreq(m)
 
 
 def qmake_profile(filename):
