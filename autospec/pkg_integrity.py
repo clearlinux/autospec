@@ -244,6 +244,8 @@ def get_signature_url(package_url):
 def get_hash_url(package_url):
     if 'download.gnome.org' in package_url:
         return package_url.replace('.tar.xz', '.sha256sum')
+    if 'download.qt.io' in package_url:
+        return package_url + '.sha256'
     return None
 
 
