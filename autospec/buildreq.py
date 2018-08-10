@@ -313,7 +313,7 @@ def parse_cmake(filename):
     Scan a .cmake or CMakeLists.txt file for what's it's actually looking for
     """
     findpackage = re.compile(r"find_package\((\w+)\b.*\)", re.I)
-    pkgconfig = re.compile(r"pkg_check_modules\(\w+ (.*)\)", re.I)
+    pkgconfig = re.compile(r"pkg_check_modules\s*\(\w+ (.*)\)", re.I)
     pkg_search_modifiers = {'REQUIRED', 'QUIET', 'NO_CMAKE_PATH',
                             'NO_CMAKE_ENVIRONMENT_PATH', 'IMPORTED_TARGET'}
     extractword = re.compile(r'(?:"([^"]+)"|(\S+))(.*)')
