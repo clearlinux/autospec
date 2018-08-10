@@ -67,18 +67,33 @@ def scan_for_tests(src_dir):
         return
 
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
+    make_check = "make VERBOSE=1 V=1 {}check".format(makeflags)
+    cmake_check = "make test"
+    if config.config_opts['allow_test_failures']:
+        make_check += " || :"
+        cmake_check += " || :"
+
     testsuites = {
-        "makecheck": "make VERBOSE=1 V=1 {}check".format(makeflags),
+        "makecheck": make_check,
         "perlcheck": "make TEST_VERBOSE=1 test",
         "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages "
                     "python3 setup.py test",
-        "cmake": "pushd clr-build ; make test ; popd",
+        "cmake": "cd clr-build; " + cmake_check,
         "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" +
                     tarball.tarball_prefix +
                     "\nrake --trace test TESTOPTS=\"-v\"\npopd",
         "rspec": "pushd %{buildroot}%{gem_dir}/gems/" +
                  tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
+    if config.config_opts['32bit']:
+        testsuites["makecheck"] += "\ncd ../build32;\n" + make_check
+        testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check
+    if config.config_opts['use_avx2']:
+        testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check
+        testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check
+    if config.config_opts['use_avx512']:
+        testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check
+        testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check
 
     files = os.listdir(src_dir)
 
@@ -167,10 +182,6 @@ def scan_for_tests(src_dir):
             config_elements = tests_config.split("\n")
             config_elements.pop()
             tests_config = "\n".join(config_elements) + " || :\npopd"
-        elif tests_config == testsuites["cmake"]:
-            tests_config = "pushd clr-build ; make test ||: ; popd"
-        else:
-            tests_config = tests_config + " || :"
 
 
 def load_specfile(specfile):

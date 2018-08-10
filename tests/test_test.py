@@ -158,7 +158,7 @@ class TestTest(unittest.TestCase):
 
         test.os.listdir = listdir_backup
         self.assertEqual(test.tests_config,
-                         'pushd clr-build ; make test ; popd')
+                         'cd clr-build; make test')
 
     def test_scan_for_tests_rakefile(self):
         """
