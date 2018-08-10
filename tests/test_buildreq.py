@@ -436,6 +436,20 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(buildreq.buildreqs,
                          set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
 
+    def test_parse_cmake_pkg_check_modules(self):
+        """
+        Test parse_cmake to ensure accurate detection of versioned and
+        unversioned pkgconfig modules.
+        """
+        content = 'pkg_check_modules(GLIB gio-unix-2.0>=2.46.0 glib-2.0 REQUIRED)'
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, 'fname'), 'w') as f:
+                f.write(content)
+            buildreq.parse_cmake(os.path.join(tmpd, 'fname'))
+
+        self.assertEqual(buildreq.buildreqs,
+                         set(['pkgconfig(gio-unix-2.0)', 'pkgconfig(glib-2.0)']))
+
 
 if __name__ == '__main__':
     unittest.main(buffer=True)
