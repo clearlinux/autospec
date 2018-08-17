@@ -684,8 +684,8 @@ def scan_for_configure(dirn):
                 buildpattern.set_build_pattern("autogen", default_score)
             if name.lower() == "cmakelists.txt":
                 buildpattern.set_build_pattern("cmake", default_score)
-                parse_cmake(os.path.join(dirpath, name))
-            if name.endswith(".cmake") and buildpattern.default_pattern == "cmake":
+            if (name.lower() == "cmakelists.txt" or name.endswith(".cmake")) \
+               and buildpattern.default_pattern == "cmake":
                 parse_cmake(os.path.join(dirpath, name))
 
     can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
