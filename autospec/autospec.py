@@ -275,6 +275,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     config.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
     config.setup_patterns(config.failed_pattern_dir)
     config.parse_existing_spec(build.download_path, tarball.name)
+    filemanager.compile_patterns()
 
     if args.prep_only:
         write_prep(workingdir)

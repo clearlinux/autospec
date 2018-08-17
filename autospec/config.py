@@ -711,11 +711,8 @@ def parse_config_files(path, bump, filemanager, version):
 
     content = read_conf_file(os.path.join(path, "attrs"))
     for line in content:
-        attr = re.split(r'\(|\)|,', line)
-        attr = [a.strip() for a in attr]
-        filename = attr.pop()
         print("attr for: %s." % filename)
-        filemanager.attrs[filename] = attr
+    filemanager.attrs += content
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
