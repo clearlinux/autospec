@@ -63,6 +63,11 @@ def really_download(upstream_url, destination):
         c.setopt(c.FOLLOWLOCATION, True)
         try:
             c.perform()
+            code = c.getinfo(pycurl.HTTP_CODE)
+            if code != 200:
+                print_fatal("get request to {} returned {}".format(upstream_url, code))
+                os.remove(destination)
+                exit(1)
         except pycurl.error as excep:
             print_fatal("unable to download {}: {}".format(upstream_url, excep))
             os.remove(destination)
