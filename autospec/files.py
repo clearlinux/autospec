@@ -39,6 +39,7 @@ class FileManager(object):
         self.files_blacklist = set()
         self.excludes = []
         self.extras = []
+        self.dev_extras = []
         self.setuid = []
         self.attrs = {}
         self.locales = []
@@ -188,6 +189,9 @@ class FileManager(object):
         # extras
         if filename in self.extras:
             self.push_package_file(filename, "extras")
+            self.excludes.append(filename)
+        if filename in self.dev_extras:
+            self.push_package_file(filename, "dev")
             self.excludes.append(filename)
 
         if filename in self.setuid:
