@@ -696,12 +696,17 @@ def parse_config_files(path, bump, filemanager, version):
 
     content = read_conf_file(os.path.join(path, "extras"))
     for extra in content:
-        print("extras for: %s." % extra)
+        print("extras for  : %s." % extra)
     filemanager.extras += content
+
+    content = read_conf_file(os.path.join(path, "dev_extras"))
+    for extra in content:
+        print("dev for     : %s." % extra)
+    filemanager.dev_extras += content
 
     content = read_conf_file(os.path.join(path, "setuid"))
     for suid in content:
-        print("setuid for: %s." % suid)
+        print("setuid for  : %s." % suid)
     filemanager.setuid += content
 
     content = read_conf_file(os.path.join(path, "attrs"))
