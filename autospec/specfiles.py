@@ -245,6 +245,8 @@ class Specfile(object):
         deps["lib"] = ["data", "license"]
         deps["lib32"] = ["data", "license"]
         deps["python"] = ["python3"]
+        if config.config_opts['dev_requires_extras']:
+            deps["dev"].append("extras")
 
         # migration workaround; if we have a python3 or legacypython package
         # we add an artificial python package
