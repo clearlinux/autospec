@@ -329,6 +329,12 @@ extras
   one to keep the main package slim and split out optional functionality or
   files.
 
+dev_extras
+  Same as "extras" above, but instead of the files being placed in an
+  ``-extras'' subpackage, they will be placed in the ``-dev'' one. Use this
+  functionality to place files used only for development against this
+  software that Autospec does not automatically detect.
+
 setuid
   Each line in this file should contain the full path to a binary in the
   resulting build that should have the ``setuid`` attribute set with the
