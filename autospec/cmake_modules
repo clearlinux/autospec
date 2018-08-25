@@ -62,8 +62,8 @@ Python, python3
 PythonInterp, python3
 Python3, compat-python36 python3-dev
 PythonLibs, python3-dev
-Qt5, qtbase-dev qtbase-extras mesa-dev
-Qt5LinguistTools, qttools-dev qttools-extras
+Qt5, qtbase-dev mesa-dev
+Qt5LinguistTools, qttools-dev
 Ruby, ruby
 SDL, SDL-dev
 SDL_image, SDL_image-dev
