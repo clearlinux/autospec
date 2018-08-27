@@ -1144,7 +1144,7 @@ class Specfile(object):
         self.subdir = "clr-build"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
-        self._write_strip("mkdir clr-build")
+        self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
         self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
@@ -1161,7 +1161,7 @@ class Specfile(object):
         self._write_strip("popd")
 
         if config.config_opts['32bit']:
-            self._write_strip("mkdir clr-build32")
+            self._write_strip("mkdir -p clr-build32")
             self._write_strip("pushd clr-build32")
             self.write_variables()
             self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
@@ -1175,7 +1175,7 @@ class Specfile(object):
             self._write_strip("popd")
 
         if config.config_opts['use_avx2']:
-            self._write_strip("mkdir clr-build-avx2")
+            self._write_strip("mkdir -p clr-build-avx2")
             self._write_strip("pushd clr-build-avx2")
             saved_avx2flags = self.need_avx2_flags
             self.need_avx2_flags = True
@@ -1188,7 +1188,7 @@ class Specfile(object):
             self._write_strip("popd")
 
         if config.config_opts['use_avx512']:
-            self._write_strip("mkdir clr-build-avx512")
+            self._write_strip("mkdir -p clr-build-avx512")
             self._write_strip("pushd clr-build-avx512")
             saved_avx512flags = self.need_avx512_flags
             self.need_avx512_flags = True
