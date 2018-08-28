@@ -133,6 +133,16 @@ class TestTarballVersionName(unittest.TestCase):
         self.assertEqual(tarball.build_unzip('zip/path'),
                          ('unzip -qq -d . zip/path', 'prefix-dir'))
 
+    def test_build_un7z(self):
+        """
+        Test build_un7z
+        """
+        check_output_backup = subprocess.check_output
+        tarball.subprocess.check_output = mock_gen(rv=UN7Z_OUT)
+        tarball.build.base_path = '.'
+        self.assertEqual(tarball.build_un7z('zip/path'),
+                         ('7z x -o. zip/path', 'src'))
+
     def test_build_gem_unpack(self):
         """
         Test build_gem_unpack
@@ -199,6 +209,37 @@ GEM_OUT = '/path/to/dir/file1\n'                           \
           '...\n'                                          \
           'Unpacked gem: \'/path/to/gem/test-prefix\''
 
+
+UN7Z_OUT = '\n'                                                             \
+           '7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : '      \
+           '2016-05-21\n'                                                   \
+           'p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,' \
+           '64 bits,4 CPUs Intel(R) Core(TM) i5-6260U CPU @ 1.80GHz (406E3)'\
+           ',ASM,AES-NI)\n'                                                 \
+           '\n'                                                             \
+           'Scanning the drive for archives:\n'                             \
+           '1 file, 7933454 bytes (7748 KiB)\n'                             \
+           '\n'                                                             \
+           'Listing archive: converted_ogg_to_mp3-0.91.7z\n'                \
+           '\n'                                                             \
+           '--\n'                                                           \
+           'Path = converted_ogg_to_mp3-0.91.7z\n'                          \
+           'Type = 7z\n'                                                    \
+           'Physical Size = 7933454\n'                                      \
+           'Headers Size = 1526\n'                                          \
+           'Method = LZMA2:23\n'                                            \
+           'Solid = +\n'                                                    \
+           'Blocks = 1\n'                                                   \
+           '\n'                                                             \
+           '   Date      Time    Attr         Size   Compressed  Name\n'    \
+           '------------------- ----- ------------ ------------  '          \
+           '------------------------\n'                                     \
+           '2018-05-15 05:50:54 ....A        25095      7931928  '          \
+           'src/activities/chronos/resource/sound/1.mp3\n'                  \
+           '2018-05-15 05:50:54 ....A        23214               '          \
+           'src/activities/chronos/resource/sound/2.mp3\n'                  \
+           '2018-05-15 05:50:54 ....A        36589               '          \
+           'src/activities/chronos/resource/sound/3.mp3\n'
 
 # Run test_setup to generate tests
 test_setup()
