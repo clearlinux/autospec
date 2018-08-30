@@ -503,3 +503,12 @@ URL. The implementation should show the now-stored license file via a
 web page, and enable a human to make a decision on the license. This is
 then stored internally, allowing future requests to automatically know
 the license type when this hash is encountered again.
+
+
+Integration of systemd unit files
+=================================
+``autospec`` can add most systemd template file types by having a file in the
+filename.extension in the build directory. Supported extensions are:
+``mount, service, socket, target, timer, path and tmpfiles``. The files will
+be added as Source# entries and be installed to their appropriate system
+location.
