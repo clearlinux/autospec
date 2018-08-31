@@ -293,8 +293,8 @@ build_pattern
   * ruby: ruby language package
   * maven: Java language package
   * configure: Traditional ``%configure`` autotools route
-  * configure_ac: Like ``configure, but performs ``%reconfigure`` to regenerate
-    ``./configure``
+  * configure_ac: Like ``configure``, but performs ``%reconfigure`` to
+    regenerate ``./configure``
   * autogen: Similar to ``configure_ac`` but uses the existing ``./autogen.sh``
     instead of ``%reconfigure``
   * cmake: Traditional builds using CMake
