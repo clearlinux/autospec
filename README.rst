@@ -299,9 +299,16 @@ build_pattern
     instead of ``%reconfigure``
   * cmake: Traditional builds using CMake
   * qmake: qmake (Qt5) projects
+  * make: Run ``make`` followed by ``make install``, skipping configure. Note
+    that this is the fallback build pattern in case no other build patterns are
+    autodetected
   * distutils: Only build the Pythonic package with Python 2
   * distutils3: Only build the Pythonic package with Python 3
   * distutils23: Build the Pythonic package using both Python 2 and Python 3
+  * meson: Build package with Meson/Ninja
+  * \[WIP\] cargo: Build Rust package with Cargo
+  * \[WIP\] golang: Build Go package
+  * \[WIP\] scons: Build package with Scons
 
 series
   This file contains a list of patches to apply during the build, using the
