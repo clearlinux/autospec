@@ -195,6 +195,7 @@ failed_pats = [
     (r"Checking for (.*?)\s*: not found", 0, None),
     (r"configure: error: pkg-config missing (.*)", 0, None),
     (r"configure: error: Cannot find (.*)\. Make sure", 0, None),
+    (r"configure: error: (.*) not found", 0, None),
     (r"checking for (.*?)\.\.\. no", 0, None),
     (r"checking for (.*) support\.\.\. no", 0, None),
     (r"checking (.*?)\.\.\. no", 0, None),
