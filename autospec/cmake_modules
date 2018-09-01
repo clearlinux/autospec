@@ -13,14 +13,14 @@ CURL, curl-dev
 Cups, cups-dev
 Curses, ncurses-dev
 Doxygen, doxygen
-EGL, extra-cmake-modules
+EGL, extra-cmake-modules pkgconfig(egl)
 EXPAT, expat-dev
 FLEX, flex
 FLTK, fltk-dev
 Freetype, freetype-dev
 GDAL, gdal-dev
 GLEW, glew-dev
-GLIB2, extra-cmake-modules
+GLIB2, extra-cmake-modules pkgconfig(glib-2.0)
 GLU, glu-dev
 GLUT, freeglut-dev
 GSL, gsl-dev
@@ -31,7 +31,7 @@ Gettext, gettext-dev
 Git, git
 GnuTLS, gnutls-dev
 Gnuplot, gnuplot-dev
-Gperf, extra-cmake-modules
+Gperf, extra-cmake-modules gperf
 HDF5, hdf5-dev
 ICU, icu4c-dev
 Iconv, glibc-dev
@@ -40,11 +40,11 @@ Intl, glibc-dev
 JNI, openjdk9-dev
 JPEG, libjpeg-turbo-dev
 Java, openjdk9
-KF5, extra-cmake-modules
+#KF5, extra-cmake-modules # parsed by Autospec
 LATEX, texlive
 LibArchive, libarchive-dev
 LibGPGError, libgpg-error-dev
-LibGit2, extra-cmake-modules
+LibGit2, extra-cmake-modules pkgconfig(libgit2)
 LibLZMA, xz-dev
 LibXml2, libxml2-dev
 LibXslt, libxslt-dev
@@ -53,7 +53,7 @@ MPI, openmpi-dev
 Motif, motif-dev
 OpenAL, openal-soft-dev
 OpenCL, beignet-dev
-OpenEXR, extra-cmake-modules
+OpenEXR, extra-cmake-modules pkgconfig(OpenEXR)
 OpenGL, mesa-dev
 OpenMP, cmake
 OpenSSL, openssl-dev
@@ -63,20 +63,19 @@ Patch, patch
 Perl, perl
 PerlLibs, perl
 PkgConfig, pkg-config
-Png2Ico, extra-cmake-modules
-Poppler, extra-cmake-modules
+Png2Ico, extra-cmake-modules png2ico
+Poppler, extra-cmake-modules pkgconfig(poppler)
 PostgreSQL, postgresql-dev
 Protobuf, protobuf-dev
-PulseAudio, extra-cmake-modules
+PulseAudio, extra-cmake-modules pkgconfig(libpulse)
 Python, python3
 Python3, compat-python36 python3-dev
 PythonInterp, python3
 PythonLibs, python3-dev
-PythonModuleGeneration, extra-cmake-modules
-QHelpGenerator, extra-cmake-modules
+QHelpGenerator, extra-cmake-modules qttools-dev
 Qt5, qtbase-dev mesa-dev
 Qt5LinguistTools, qttools-dev
-QtWaylandScanner, extra-cmake-modules
+QtWaylandScanner, extra-cmake-modules qtwayland-dev
 Ruby, ruby
 SDL, SDL-dev
 SDL_image, SDL_image-dev
@@ -84,9 +83,9 @@ SDL_mixer, SDL_mixer-dev
 SDL_net, SDL_net-dev
 SDL_ttf, SDL_ttf-dev
 SWIG, swig
-Sasl2, extra-cmake-modules
+Sasl2, extra-cmake-modules pkgconfig(libsasl2)
 Seccomp, extra-cmake-modules
-SharedMimeInfo, extra-cmake-modules
+SharedMimeInfo, extra-cmake-modules shared-mime-info
 Subversion, subversion
 TCL, tcl-dev tk-dev
 TIFF, tiff-dev
@@ -95,11 +94,11 @@ Tclsh, tcl
 Threads, glibc-dev
 UnixCommands, bash coreutils gzip
 Vulkan, vulkan-sdk-dev
-Wayland, extra-cmake-modules
-WaylandScanner, extra-cmake-modules
+Wayland, extra-cmake-modules pkgconfig(wayland-client)
+WaylandScanner, extra-cmake-modules wayland
 Wget, wget
 Wish, tk
 X11, libX11-dev libICE-dev libSM-dev libXau-dev libXcomposite-dev libXcursor-dev libXdamage-dev libXdmcp-dev libXext-dev libXfixes-dev libXft-dev libXi-dev libXinerama-dev libXi-dev libXmu-dev libXpm-dev libXrandr-dev libXrender-dev libXres-dev libXScrnSaver-dev libXt-dev libXtst-dev libXv-dev libXxf86misc-dev libXxf86vm-dev
-X11_XCB, extra-cmake-modules
-XCB, extra-cmake-modules
+X11_XCB, extra-cmake-modules pkgconfig(x11-xcb)
+XCB, extra-cmake-modules pkgconfig(xcb) xcb-util-cursor-dev xcb-util-image-dev xcb-util-keysyms-dev xcb-util-renderutil-dev xcb-util-wm-dev xcb-utl-dev
 ZLIB, zlib-dev
