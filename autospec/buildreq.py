@@ -165,13 +165,24 @@ def is_number(num_str):
         return False
 
 
+def is_version(num_str):
+    """
+    Return True if num_str looks like a version number
+    """
+    if re.search('^\d+(\.\d+)*$', num_str):
+        return True
+
+    return False
+
+
 def parse_modules_list(modules_string, is_cmake=False):
     """
     parse the modules_string for the list of modules, stripping out the version
     requirements
     """
     if is_cmake:
-        modules = [m for m in re.split(r'([><]?=)', modules_string)]
+        modules = [m for m in re.split(r'(\s*[><]?=\s*)', modules_string)]
+        modules = filter(None, modules)
     else:
         modules = [m.strip('[]') for m in modules_string.split()]
     res = []
@@ -186,6 +197,9 @@ def parse_modules_list(modules_string, is_cmake=False):
             continue
 
         if is_number(mod):
+            continue
+
+        if is_version(mod):
             continue
 
         if mod.startswith('$'):
