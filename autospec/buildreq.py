@@ -181,7 +181,7 @@ def parse_modules_list(modules_string, is_cmake=False):
     requirements
     """
     if is_cmake:
-        modules = [m for m in re.split(r'(\s*[><]?=\s*)', modules_string)]
+        modules = [m for m in re.split(r'\s*([><]?=|\${?[^}]*}?)\s*', modules_string)]
         modules = filter(None, modules)
     else:
         modules = [m.strip('[]') for m in modules_string.split()]

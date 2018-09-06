@@ -465,5 +465,20 @@ class TestBuildreq(unittest.TestCase):
                          set(['pkgconfig(gio-unix-2.0)', 'pkgconfig(glib-2.0)']))
 
 
+    def test_parse_cmake_pkg_check_modules_variables(self):
+        """
+        Test parse_cmake to ensure accurate handling of versioned
+        pkgconfig modules with variable version strings.
+        """
+        content = 'pkg_check_modules(AVCODEC libavcodec${_avcodec_ver} libavutil$_avutil_ver)'
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, 'fname'), 'w') as f:
+                f.write(content)
+            buildreq.parse_cmake(os.path.join(tmpd, 'fname'))
+
+        self.assertEqual(buildreq.buildreqs,
+                         set(['pkgconfig(libavcodec)', 'pkgconfig(libavutil)']))
+
+
 if __name__ == '__main__':
     unittest.main(buffer=True)
