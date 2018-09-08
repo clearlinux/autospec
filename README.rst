@@ -147,6 +147,7 @@ Variables included:
       * ``configure``
       * ``prep_prepend``
       * ``build_prepend``
+      * ``make_prepend``
       * ``install_prepend``
       * ``install_append``
 
@@ -261,6 +262,14 @@ build_prepend
   actions will be repeated for each of those builds, This will be
   placed in the resulting ``.spec``, and is used for situations where
   fine-grained control is required.
+
+make_prepend
+  Additional actions that should take place directly after the
+  configuring step and before the ``%make`` macro or equivalent. If
+  autospec is creating AVX2, AVX-512 or 32-bit, these actions will be
+  repeated for each of those builds, before their respective make
+  steps. This will be placed in the resulting ``.spec``, and is used
+  for situations where fine-grained control is required.
 
 install_prepend
   Additional actions that should take place directly after

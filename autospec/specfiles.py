@@ -76,6 +76,7 @@ class Specfile(object):
         self.cmake_srcdir = ".."
         self.prep_prepend = []
         self.build_prepend = []
+        self.make_prepend = []
         self.install_prepend = []
         self.install_append = []
         self.excludes = []
@@ -378,6 +379,11 @@ class Specfile(object):
 
         make <config.parallel_build> <extra_make>
         """
+        if self.make_prepend:
+            self._write_strip("## make_prepend content")
+            for line in self.make_prepend:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## make_prepend end")
         if build32:
             self._write_strip("make {}{}{}".format(config.parallel_build, self.extra_make, self.extra32_make))
         else:

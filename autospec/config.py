@@ -50,6 +50,7 @@ install_macro = "%make_install"
 disable_static = "--disable-static"
 prep_prepend = []
 build_prepend = []
+make_prepend = []
 install_prepend = []
 install_append = []
 patches = []
@@ -549,6 +550,7 @@ def parse_config_files(path, bump, filemanager, version):
     global disable_static
     global prep_prepend
     global build_prepend
+    global make_prepend
     global install_prepend
     global install_append
     global patches
@@ -814,6 +816,7 @@ def parse_config_files(path, bump, filemanager, version):
     prep_prepend = read_conf_file(os.path.join(path, "prep_prepend"))
     if os.path.isfile(os.path.join(path, "prep_append")):
         os.rename(os.path.join(path, "prep_append"), os.path.join(path, "build_prepend"))
+    make_prepend = read_conf_file(os.path.join(path, "make_prepend"))
     build_prepend = read_conf_file(os.path.join(path, "build_prepend"))
     install_prepend = read_conf_file(os.path.join(path, "install_prepend"))
     if os.path.isfile(os.path.join(path, "make_install_append")):
@@ -843,6 +846,7 @@ def load_specfile(specfile):
     specfile.disable_static = disable_static
     specfile.prep_prepend = prep_prepend
     specfile.build_prepend = build_prepend
+    specfile.make_prepend = make_prepend
     specfile.install_prepend = install_prepend
     specfile.install_append = install_append
     specfile.patches = patches
