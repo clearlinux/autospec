@@ -271,10 +271,10 @@ class Specfile(object):
 
             for dep in deps.get(pkg, []):
                 if dep in self.packages:
-                    self._write("Requires: {}-{}\n".format(self.name, dep))
+                    self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, dep))
 
             for prov in provides.get(pkg, []):
-                self._write("Provides: {}-{}\n".format(self.name, prov))
+                self._write("Provides: {}-{} = %{{version}}-%{{release}}\n".format(self.name, prov))
 
             if pkg == "python":
                 if self.name != self.name.lower():
