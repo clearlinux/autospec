@@ -22,6 +22,7 @@ import os
 import re
 import tempfile
 import configparser
+import fileinput
 
 import build
 import buildpattern
@@ -321,6 +322,10 @@ def package(args, url, name, archives, workingdir, infile_dict):
                                                tarball.name,
                                                tarball.version,
                                                tarball.release)
+        if filemanager.is_avx_candidate(mock_chroot):
+            print("Autospec found files candidates to AVX technology !")
+            print("Is recomended to set use_avx2 = true in options.conf")
+
         if filemanager.clean_directories(mock_chroot):
             # directories added to the blacklist, need to re-run
             build.must_restart += 1

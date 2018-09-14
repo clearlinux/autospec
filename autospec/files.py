@@ -25,6 +25,9 @@ import config
 import re
 import os
 import util
+import sys
+sys.path.append('/usr/share/clr-avx-tools/')
+from avxjudge import do_file
 from collections import OrderedDict
 # todo package splits
 
@@ -155,6 +158,29 @@ class FileManager(object):
                 res.add(f)
 
         return (res, removed)
+
+    def is_avx_candidate(self,root):
+        """
+        Check with avxjudge if files has SSE instructions
+        """
+        ret = False
+        for pkg in self.packages:
+            for f in self.packages[pkg]:
+                path = os.path.join(root, f.lstrip("/"))
+                quiet = 1
+                verbose = 0
+                quiet = 1
+                deltype = "sse"
+                if os.path.isfile(path):
+                    sys.stdout = open(os.devnull, 'w')
+                    sys.stderr = open(os.devnull, 'w')
+                    records = do_file(path, verbose, quiet, deltype)
+                    sys.stdout = sys.__stdout__
+                    sys.stderr = sys.__stderr__
+                    if records.total_counts["sse"]:
+                        ret = True
+
+        return ret
 
     def clean_directories(self, root):
         """
