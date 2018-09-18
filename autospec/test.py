@@ -86,14 +86,14 @@ def scan_for_tests(src_dir):
                  tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
     if config.config_opts['32bit']:
-        testsuites["makecheck"] += "\ncd ../build32;\n" + make_check
-        testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check
+        testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"
+        testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check + " || :"
     if config.config_opts['use_avx2']:
-        testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check
-        testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check
+        testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check + " || :"
+        testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check + " || :"
     if config.config_opts['use_avx512']:
-        testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check
-        testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check
+        testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check + " || :"
+        testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check + " || :"
 
     files = os.listdir(src_dir)
 
