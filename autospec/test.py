@@ -69,15 +69,18 @@ def scan_for_tests(src_dir):
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
     make_check = "make VERBOSE=1 V=1 {}check".format(makeflags)
     cmake_check = "make test"
+    perl_check = "make TEST_VERBOSE=1 test"
+    setup_check = "PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages python3 setup.py test"
     if config.config_opts['allow_test_failures']:
         make_check += " || :"
         cmake_check += " || :"
+        perl_check += " || :"
+        setup_check += " || :"
 
     testsuites = {
         "makecheck": make_check,
-        "perlcheck": "make TEST_VERBOSE=1 test",
-        "setup.py": "PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages "
-                    "python3 setup.py test",
+        "perlcheck": perl_check,
+        "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
         "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" +
                     tarball.tarball_prefix +
