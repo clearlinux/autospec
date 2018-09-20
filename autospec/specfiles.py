@@ -1155,6 +1155,8 @@ class Specfile(object):
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file"""
         self.subdir = "clr-build"
+        if self.extra_make == "" or self.extra_cmake == " ":
+            self.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self._write_strip("mkdir -p clr-build")
@@ -1182,7 +1184,7 @@ class Specfile(object):
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
                               "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
-            self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
+            self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
 
@@ -1197,7 +1199,7 @@ class Specfile(object):
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
             self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
-            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
+            self.write_make_line()
             self._write_strip("popd")
 
         if config.config_opts['use_avx512']:
@@ -1211,7 +1213,7 @@ class Specfile(object):
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
-            self._write_strip("make VERBOSE=1 {}{} || :".format(config.parallel_build, self.extra_make))
+            self.write_make_line()
             self._write_strip("popd")
 
         self._write_strip("\n")
