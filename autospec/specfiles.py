@@ -195,7 +195,7 @@ class Specfile(object):
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
                        "lib32", "dev32", "legacypython", "doc"]:
                 continue
-            self._write("Requires: {}-{}\n".format(self.name, pkg))
+            self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, pkg))
 
         for pkg in sorted(self.requires):
             self._write("Requires: {}\n".format(pkg))

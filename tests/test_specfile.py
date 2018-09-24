@@ -96,8 +96,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.requires.add("pkg2")
         self.specfile.no_autostart = True
         self.specfile.write_main_subpackage_requires()
-        expect = ["Requires: pkg-bin\n",
-                  "Requires: pkg-lib\n",
+        expect = ["Requires: pkg-bin = %{version}-%{release}\n",
+                  "Requires: pkg-lib = %{version}-%{release}\n",
                   "Requires: pkg1\n",
                   "Requires: pkg2\n"]
         self.assertEqual(expect, self.WRITES)
@@ -117,9 +117,9 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.requires.add("pkg1")
         self.specfile.requires.add("pkg2")
         self.specfile.write_main_subpackage_requires()
-        expect = ["Requires: pkg-autostart\n",
-                  "Requires: pkg-bin\n",
-                  "Requires: pkg-lib\n",
+        expect = ["Requires: pkg-autostart = %{version}-%{release}\n",
+                  "Requires: pkg-bin = %{version}-%{release}\n",
+                  "Requires: pkg-lib = %{version}-%{release}\n",
                   "Requires: pkg1\n",
                   "Requires: pkg2\n"]
         self.assertEqual(expect, self.WRITES)
