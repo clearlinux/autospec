@@ -432,7 +432,7 @@ cap_rights_init, libcap-ng-dev
 cargo, cargo
 ccolamd.h, SuiteSparse-dev
 cffi, cffi
-clang, llvm-dev
+clang, llvm
 cmake, cmake
 cmdtest, cmdtest
 cmp, diffutils
