@@ -190,7 +190,7 @@ class Specfile(object):
         """
         Write subpackage build requirements
         """
-        for pkg in self.packages:
+        for pkg in sorted(self.packages):
             if pkg == "autostart" and self.no_autostart:
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
