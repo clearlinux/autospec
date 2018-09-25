@@ -430,6 +430,12 @@ class Specfile(object):
             self._write_strip("popd")
         self._write_strip("\n")
 
+    def write_32bit_exports(self):
+        self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
+        self._write_strip('export CFLAGS="$CFLAGS -m32"')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
+        self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
+
     def write_variables(self):
         """Write variable exports to spec file"""
         flags = []
@@ -749,10 +755,7 @@ class Specfile(object):
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
             self.write_build_prepend()
-            self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
-            self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+            self.write_32bit_exports()
             self._write_strip("%configure {0} {1} {2} "
                               " --libdir=/usr/lib32 "
                               "--build=i686-generic-linux-gnu "
@@ -830,10 +833,7 @@ class Specfile(object):
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
             self.write_build_prepend()
-            self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
-            self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+            self.write_32bit_exports()
             self._write_strip("%reconfigure {0} {1} {2} "
                               "--libdir=/usr/lib32 "
                               "--build=i686-generic-linux-gnu "
@@ -890,10 +890,7 @@ class Specfile(object):
         self._write_strip("\n")
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
-            self._write_strip("export PKG_CONFIG_PATH=\"/usr/lib32/pkgconfig\"")
-            self._write_strip("export CFLAGS=\"$CFLAGS -m32\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m32\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m32\"")
+            self.write_32bit_exports()
             self.write_make_line(True)
             self._write_strip("popd")
         self.write_check()
@@ -926,10 +923,7 @@ class Specfile(object):
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
             self.write_build_prepend()
-            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
-            self._write_strip('export CFLAGS="$CFLAGS -m32"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
+            self.write_32bit_exports()
             self._write_strip("%autogen {0} {1} {2} "
                               "--libdir=/usr/lib32 "
                               "--build=i686-generic-linux-gnu "
@@ -1180,9 +1174,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build32")
             self.write_build_prepend()
             self.write_variables()
-            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
-            self._write_strip('export CFLAGS="$CFLAGS -m32"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
+            self.write_32bit_exports()
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
                               "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
@@ -1377,10 +1369,7 @@ class Specfile(object):
 
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32")
-            self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
-            self._write_strip('export CFLAGS="$CFLAGS -m32"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
+            self.write_32bit_exports()
             self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS -m32" '
                               'PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson '
                               '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} {1} builddir'
