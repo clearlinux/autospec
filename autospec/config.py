@@ -802,7 +802,7 @@ def parse_config_files(path, bump, filemanager, version):
 
     if config_opts['use_clang']:
         config_opts['funroll-loops'] = False
-        buildreq.add_buildreq("llvm-dev")
+        buildreq.add_buildreq("llvm")
 
     if config_opts['32bit']:
         buildreq.add_buildreq("glibc-libc32")
