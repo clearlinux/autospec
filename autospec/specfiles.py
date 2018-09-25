@@ -1371,8 +1371,7 @@ class Specfile(object):
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32")
             self.write_32bit_exports()
-            self._write_strip('CFLAGS="$CFLAGS -m32" CXXFLAGS="$CXXFLAGS -m32" LDFLAGS="$LDFLAGS -m32" '
-                              'PKG_CONFIG_PATH="/usr/lib32/pkgconfig" meson '
+            self._write_strip('meson '
                               '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} {1} builddir'
                               .format(config.extra_configure,
                                       config.extra_configure32))
