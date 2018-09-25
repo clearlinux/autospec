@@ -432,6 +432,7 @@ class Specfile(object):
 
     def write_32bit_exports(self):
         self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
+        self._write_strip('export ASFLAGS="$ASFLAGS --32"')
         self._write_strip('export CFLAGS="$CFLAGS -m32"')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -m32"')
         self._write_strip('export LDFLAGS="$LDFLAGS -m32"')
