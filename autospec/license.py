@@ -24,6 +24,7 @@
 import sys
 import os
 import re
+import shlex
 import tarball
 import pycurl
 import urllib.parse
@@ -96,7 +97,8 @@ def license_from_copying_hash(copying, srcdir):
             print("License     : ", page, " (server) (", hash_sum, ")")
             add_license(page)
             if page != "none":
-                license_files.append(copying[len(srcdir) + 1:])
+                lic_path = copying[len(srcdir) + 1:]
+                license_files.append(shlex.quote(lic_path))
 
             return
 
