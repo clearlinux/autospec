@@ -571,11 +571,11 @@ def process_archives(archives):
         tar_files = glob.glob("{}/*".format(tar_path))
         move_cmd = "mv "
         for tar_file in tar_files:
-            move_cmd += tar_file + " "
-        move_cmd += '{0}/{1}'.format(path, destination)
+            move_cmd += '"{}"'.format(tar_file) + " "
+        move_cmd += '"{0}/{1}"'.format(path, destination)
 
         mkdir_cmd = "mkdir -p "
-        mkdir_cmd += '{0}/{1}'.format(path, destination)
+        mkdir_cmd += '"{0}/{1}"'.format(path, destination)
 
         print("mkdir " + mkdir_cmd)
         call(mkdir_cmd)
