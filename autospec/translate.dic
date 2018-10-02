@@ -38,6 +38,7 @@ manilaclient-python=python-manilaclient
 mistralclient.api.v2-python=python-mistralclient
 mock=python-mock
 netaddr-python=netaddr
+Opcodes=opcodes
 openstackclient.tests-python=python-openstackclient
 openstack.nose-plugin-python=openstack.nose_plugin
 os_brick.initiator-python=os-brick
