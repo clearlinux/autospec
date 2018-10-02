@@ -89,6 +89,7 @@ def cleanup_req(s: str) -> str:
     s = s.replace("library containing ", "")
     s = s.replace("x86_64-generic-linux-gnu-", "")
     s = s.replace("i686-generic-linux-gnu-", "")
+    s = s.replace("'", "")
     s = s.strip()
     return s
 
