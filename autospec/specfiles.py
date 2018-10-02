@@ -335,7 +335,7 @@ class Specfile(object):
                 continue
 
             self._write("\n%files {}\n".format(pkg))
-            if pkg in ["doc"]:
+            if pkg in ["doc", "license", "man"]:
                 self._write("%defattr(0644,root,root,0755)\n")
             else:
                 self._write("%defattr(-,root,root,-)\n")
