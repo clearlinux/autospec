@@ -75,3 +75,7 @@ qtawesome=QtAwesome
 pygments=Pygments
 pyqt5=PyQt5
 PyOpenSSL=pyOpenSSL
+async_timeout=async-timeout
+sqlalchemy=SQLAlchemy
+pytest_runner=pytest-runner
+pyyaml=PyYAML
