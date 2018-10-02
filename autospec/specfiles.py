@@ -177,6 +177,8 @@ class Specfile(object):
         """
         Write package summary to spec file
         """
+        if len(self.default_sum.strip()) < 1:
+            self.default_sum = "No summary provided"
         self._write("Summary  : {}\n".format(self.default_sum.strip()))
         self._write("Group    : Development/Tools\n")
 
