@@ -291,6 +291,7 @@ failed_pats = [
      r"available", 0, 'maven'),
     (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
     (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
+    (r"Add the installation prefix of \"(.*)\" to CMAKE_PREFIX_PATH", 0, None),
     (r"^.*\"(.*)\" with any of the following names.*$", 0, None)]
 
 
