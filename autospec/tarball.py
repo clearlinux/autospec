@@ -25,6 +25,7 @@ import shutil
 import subprocess
 import pycurl
 import configparser
+import buildreq
 
 import build
 import buildpattern
@@ -427,6 +428,12 @@ def name_and_version(name_arg, version_arg, filemanager):
                 version = convert_version(version)
                 giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
+
+    if "gnome.org" in url:
+        buildreq.add_buildreq("buildreq-gnome")
+
+    if "kde.org" in url or "https://github.com/KDE" in url:
+        buildreq.add_buildreq("buildreq-kde")
 
     # construct github giturl from gnome projects
     if not giturl and "download.gnome.org" in url:
