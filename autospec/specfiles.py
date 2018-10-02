@@ -997,7 +997,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
+        self._write_strip("python3 setup.py build  " + config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
@@ -1014,7 +1014,7 @@ class Specfile(object):
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
-        self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot}")
+        self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
