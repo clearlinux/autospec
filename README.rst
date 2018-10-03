@@ -225,6 +225,11 @@ configure
   ``./configure`` for an autootools based tarball would result in ``%configure
   --disable-static`` being emitted in the ``.spec``.
 
+configure32, configure64, configure_avx2, configure_avx512
+  These files are appended to the ``%configure'' macro after the
+  contents of the ``configure'' file above. They are used for 32-bit,
+  regular 64-bit, AVX2 and AVX512 builds, respectively.
+
 cmake_args
   This file contains arguments that should be passed to the ``%cmake`` macro for
   CMake based tarballs. As an example, adding ``-DUSE_LIB64=ON`` to

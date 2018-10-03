@@ -780,7 +780,7 @@ class Specfile(object):
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure64))
+                                      config.extra_configure_avx2))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -794,7 +794,7 @@ class Specfile(object):
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure64))
+                                      config.extra_configure_avx512))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -858,7 +858,7 @@ class Specfile(object):
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure32))
+                                      config.extra_configure_avx2))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -872,7 +872,7 @@ class Specfile(object):
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure64))
+                                      config.extra_configure_avx512))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -947,7 +947,7 @@ class Specfile(object):
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure64))
+                                      config.extra_configure_avx2))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -960,7 +960,7 @@ class Specfile(object):
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.disable_static,
                                       config.extra_configure,
-                                      config.extra_configure64))
+                                      config.extra_configure_avx512))
             self.write_make_line()
             self._write_strip("popd")
 
