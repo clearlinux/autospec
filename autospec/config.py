@@ -36,6 +36,8 @@ from util import call, write_out
 extra_configure = ""
 extra_configure32 = ""
 extra_configure64 = ""
+extra_configure_avx2 = ""
+extra_configure_avx512 = ""
 config_files = set()
 parallel_build = " %{?_smp_mflags} "
 urlban = ""
@@ -530,6 +532,8 @@ def parse_config_files(path, bump, filemanager, version):
     global extra_configure
     global extra_configure32
     global extra_configure64
+    global extra_configure_avx2
+    global extra_configure_avx512
     global config_files
     global parallel_build
     global license_fetch
@@ -744,6 +748,12 @@ def parse_config_files(path, bump, filemanager, version):
 
     content = read_conf_file(os.path.join(path, "configure64"))
     extra_configure64 = " \\\n".join(content)
+
+    content = read_conf_file(os.path.join(path, "configure_avx2"))
+    extra_configure_avx2 = " \\\n".join(content)
+
+    content = read_conf_file(os.path.join(path, "configure_avx512"))
+    extra_configure_avx512 = " \\\n".join(content)
 
     if config_opts["keepstatic"]:
         disable_static = ""
