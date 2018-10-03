@@ -93,7 +93,7 @@ TclStub, tcl-dev
 Tclsh, tcl
 Threads, glibc-dev
 UnixCommands, bash coreutils gzip
-Vulkan, vulkan-sdk-dev
+Vulkan, Vulkan-Headers-dev Vulkan-Loader-dev Vulkan-Tools
 Wayland, extra-cmake-modules pkgconfig(wayland-client)
 WaylandScanner, extra-cmake-modules wayland
 Wget, wget
