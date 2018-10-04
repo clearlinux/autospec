@@ -85,9 +85,11 @@ class TestTest(unittest.TestCase):
         content = 'check:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
+            test.buildpattern.default_pattern = "configure"
             test.scan_for_tests('pkgdir')
 
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config,
                          'make VERBOSE=1 V=1 %{?_smp_mflags} check')
 
@@ -97,12 +99,13 @@ class TestTest(unittest.TestCase):
         """
         listdir_backup = os.listdir
         test.os.listdir = mock_generator(['Makefile.am'])
-        content = 'check:'
-        m_open = mock_open(read_data=content)
+        m_open = mock_open()
         with patch(self.open_name, m_open, create=True):
+            test.buildpattern.default_pattern = "configure_ac"
             test.scan_for_tests('pkgdir')
 
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config,
                          'make VERBOSE=1 V=1 %{?_smp_mflags} check')
 
@@ -112,8 +115,10 @@ class TestTest(unittest.TestCase):
         """
         listdir_backup = os.listdir
         test.os.listdir = mock_generator(['Makefile.PL'])
+        test.buildpattern.default_pattern = "cpan"
         test.scan_for_tests('pkgdir')
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config, 'make TEST_VERBOSE=1 test')
 
     def test_scan_for_tests_perlcheck_in(self):
@@ -125,8 +130,11 @@ class TestTest(unittest.TestCase):
         content = 'test:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
+            test.buildpattern.default_pattern = "cpan"
             test.scan_for_tests('pkgdir')
+
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config, 'make TEST_VERBOSE=1 test')
 
     def test_scan_for_tests_setup(self):
@@ -138,9 +146,11 @@ class TestTest(unittest.TestCase):
         content = 'test_suite'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
+            test.buildpattern.default_pattern = "distutils3"
             test.scan_for_tests('pkgdir')
 
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config,
                          'PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages '
                          'python3 setup.py test')
@@ -154,71 +164,13 @@ class TestTest(unittest.TestCase):
         content = 'enable_testing'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
+            test.buildpattern.default_pattern = "cmake"
             test.scan_for_tests('pkgdir')
 
         test.os.listdir = listdir_backup
+        test.buildpattern.default_pattern = "make"
         self.assertEqual(test.tests_config,
                          'cd clr-build; make test')
-
-    def test_scan_for_tests_rakefile(self):
-        """
-        Test scan_for_tests with rakefile suite
-        """
-        test.tarball.name = 'rubygem-test'
-        listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['Rakefile'])
-        test.scan_for_tests('pkgdir')
-        test.os.listdir = listdir_backup
-        self.assertEqual(test.tests_config,
-                         'pushd %{buildroot}%{gem_dir}/gems/' +
-                         test.tarball.tarball_prefix +
-                         '\nrake --trace test '
-                         'TESTOPTS=\"-v\"\npopd')
-        self.assertEqual(test.buildreq.buildreqs,
-                         set(['rubygem-rake',
-                              'rubygem-test-unit',
-                              'rubygem-minitest',
-                              'ruby']))
-
-    def test_scan_for_tests_rspec(self):
-        """
-        Test scan_for_tests with rspec suite
-        """
-        test.tarball.name = 'rubygem-test'
-        listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['spec'])
-        test.scan_for_tests('pkgdir')
-        test.os.listdir = listdir_backup
-        self.assertEqual(test.tests_config,
-                         'pushd %{buildroot}%{gem_dir}/gems/' +
-                         test.tarball.tarball_prefix +
-                         '\nrspec -I.:lib spec/\npopd')
-        self.assertEqual(test.buildreq.buildreqs,
-                         set(['rubygem-diff-lcs',
-                              'rubygem-rspec',
-                              'rubygem-devise',
-                              'rubygem-rspec-mocks',
-                              'rubygem-rspec-support',
-                              'rubygem-rspec-core',
-                              'rubygem-rspec-expectations']))
-
-    def test_scan_for_tests_rubygem(self):
-        """
-        Test scan_for_tests with ruby suite
-        """
-        test.tarball.name = 'rubygem-test'
-        with tempfile.TemporaryDirectory() as tmpd:
-            # create the test files
-            os.mkdir(os.path.join(tmpd, 'test'))
-            open(os.path.join(tmpd, 'test', 'test_a.rb'), 'w').close()
-            open(os.path.join(tmpd, 'test', 'b_test.rb'), 'w').close()
-            test.scan_for_tests(tmpd)
-
-        self.assertEqual(test.tests_config,
-                         'pushd %{buildroot}%{gem_dir}/gems/'
-                         '\nruby -v -I.:lib:test test*/test_*.rb'
-                         '\nruby -v -I.:lib:test test*/*_test.rb'
-                         '\npopd')
 
     def test_scan_for_tests_tox_requires(self):
         """

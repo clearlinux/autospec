@@ -22,7 +22,6 @@
 import buildpattern
 import buildreq
 import count
-import glob
 import os
 import tarball
 import config
@@ -100,7 +99,7 @@ def scan_for_tests(src_dir):
 
     files = os.listdir(src_dir)
 
-    if "CMakeLists.txt" in files:
+    if buildpattern.default_pattern == "cmake":
         makefile_path = os.path.join(src_dir, "CMakeLists.txt")
         if not os.path.isfile(makefile_path):
             return
@@ -108,56 +107,26 @@ def scan_for_tests(src_dir):
         if "enable_testing" in open(makefile_path, encoding='latin-1').read():
             tests_config = testsuites["cmake"]
 
-    if "Makefile.in" in files:
+    elif buildpattern.default_pattern in ["cpan", "configure", "configure_ac", "autogen"] and "Makefile.in" in files:
         makefile_path = os.path.join(src_dir, "Makefile.in")
-        if not os.path.isfile(makefile_path):
-            return
+        if os.path.isfile(makefile_path):
+            with open(makefile_path, 'r', encoding="latin-1") as make_fp:
+                lines = make_fp.readlines()
+            for line in lines:
+                if line.startswith("check:"):
+                    tests_config = testsuites["makecheck"]
+                    break
+                if line.startswith("test:"):
+                    tests_config = testsuites["perlcheck"]
+                    break
 
-        with open(makefile_path, 'r', encoding="latin-1") as make_fp:
-            lines = make_fp.readlines()
-
-        for line in lines:
-            if line.startswith("check:"):
-                tests_config = testsuites["makecheck"]
-                break
-            if line.startswith("test:"):
-                tests_config = testsuites["perlcheck"]
-                break
-
-    elif "Makefile.am" in files:
+    elif buildpattern.default_pattern in ["configure", "configure_ac", "autogen"] and "Makefile.am" in files:
         tests_config = testsuites["makecheck"]
 
-    elif tarball.name.startswith("rubygem"):
-        if any(t in files for t in ["test", "tests"]):
-            r_testdir = [f for f in files if "test" in f if "." not in f].pop()
-            pre_test = glob.glob(os.path.join(src_dir, "test*/test_*.rb"))
-            post_test = glob.glob(os.path.join(src_dir, "test*/*_test.rb"))
-            tests_config = "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix
-            if pre_test:
-                tests_config += "\nruby -v -I.:lib:" + r_testdir + " test*/test_*.rb"
-            if post_test:
-                tests_config += "\nruby -v -I.:lib:" + r_testdir + " test*/*_test.rb"
-
-            tests_config += "\npopd"
-
-        elif "spec" in files:
-            buildreq.add_buildreq("rubygem-rspec")
-            buildreq.add_buildreq("rubygem-rspec-core")
-            buildreq.add_buildreq("rubygem-rspec-expectations")
-            buildreq.add_buildreq("rubygem-rspec-support")
-            buildreq.add_buildreq("rubygem-rspec-mocks")
-            buildreq.add_buildreq("rubygem-devise")
-            buildreq.add_buildreq("rubygem-diff-lcs")
-            tests_config = testsuites["rspec"]
-        elif "Rakefile" in files:
-            tests_config = testsuites["rakefile"]
-            buildreq.add_buildreq("ruby")
-            buildreq.add_buildreq("rubygem-rake")
-            buildreq.add_buildreq("rubygem-test-unit")
-            buildreq.add_buildreq("rubygem-minitest")
-    elif "Makefile.PL" in files:
+    elif buildpattern.default_pattern in ["cpan"] and "Makefile.PL" in files:
         tests_config = testsuites["perlcheck"]
-    elif "setup.py" in files:
+
+    elif buildpattern.default_pattern in ["distutils3", "distutils23"] and "setup.py" in files:
         with open(os.path.join(src_dir, "setup.py"), 'r',
                   encoding="ascii",
                   errors="surrogateescape") as setup_fp:
@@ -179,12 +148,6 @@ def scan_for_tests(src_dir):
         buildreq.add_buildreq("virtualenv")
         buildreq.add_buildreq("pluggy")
         buildreq.add_buildreq("py-python")
-
-    if tests_config != "" and config.config_opts['allow_test_failures']:
-        if tarball.name.startswith("rubygem"):
-            config_elements = tests_config.split("\n")
-            config_elements.pop()
-            tests_config = "\n".join(config_elements) + " || :\npopd"
 
 
 def load_specfile(specfile):
