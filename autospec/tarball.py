@@ -43,13 +43,21 @@ archives = []
 giturl = ""
 
 
+def get_contents(filename):
+    """
+    Get contents of filename (tar file)
+    """
+    with open(filename, "rb") as f:
+        return f.read()
+    return None
+
+
 def get_sha1sum(filename):
     """
     Get sha1 sum of filename (tar file)
     """
     sh = hashlib.sha1()
-    with open(filename, "rb") as f:
-        sh.update(f.read())
+    sh.update(get_contents(filename))
     return sh.hexdigest()
 
 
