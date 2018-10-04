@@ -24,6 +24,7 @@
 import sys
 import os
 import re
+import hashlib
 import shlex
 import tarball
 import pycurl
@@ -65,12 +66,16 @@ def add_license(lic):
 
 def license_from_copying_hash(copying, srcdir):
     """Add licenses based on the hash of the copying file"""
-    hash_sum = tarball.get_sha1sum(copying)
+    data = tarball.get_contents(copying)
+    if data.startswith(b'#!'):
+        # Not a license if this is a script
+        return
+
+    sh = hashlib.sha1()
+    sh.update(data)
+    hash_sum = sh.hexdigest()
 
     if config.license_fetch:
-        with open(copying, "r", encoding="latin-1") as myfile:
-            data = myfile.read()
-
         values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
         data = urllib.parse.urlencode(values)
         data = data.encode('utf-8')
@@ -126,8 +131,8 @@ def scan_for_licenses(srcdir):
                "notice",
                "copyrights",
                "about_bsd.txt"]
-    # look for files that start with copying or licen[cs]e (spelling errors)
-    # or end with licen[cs]e
+    # look for files that start with copying or licen[cs]e (but are
+    # not likely scripts) or end with licen[cs]e
     target_pat = re.compile(r"^((copying)|(licen[cs]e))|(licen[cs]e)$")
     for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
