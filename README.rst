@@ -299,8 +299,9 @@ subdir
   directories for each step in the build.
 
 cmake_srcdir
- The contents of this file are a path the source directory in which to run cmake
- for non-standard packages.
+ The contents of this file are a path to the source directory in which to run
+ cmake for non-standard packages. This path is relative to the clr-build
+ subdirectory, which is created directly below the source package's root.
 
 build_pattern
   In certain situations, the automatically detected build pattern may not work
