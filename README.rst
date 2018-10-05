@@ -288,7 +288,7 @@ install_append
   and is used for situations where fine-grained control is required.
 
 install_macro
-  The contents of this file be used instead of the automatically detected
+  The contents of this file will be used instead of the automatically detected
   ``install`` routine, i.e. use this if ``%make_install`` is insufficient.
 
 subdir
