@@ -246,6 +246,7 @@ class Specfile(object):
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
         deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "man"]
         deps["lib"] = ["data", "libexec", "license"]
+        deps["libexec"] = ["config", "license"]
         deps["lib32"] = ["data", "license"]
         deps["python"] = ["python3"]
         if config.config_opts['dev_requires_extras']:
