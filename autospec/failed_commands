@@ -59,7 +59,7 @@
 -lpam, Linux-PAM-dev
 -lpcre, pcre-dev
 -lpopt, popt-dev
--lproxy, libproxy-dev
+-lproxy, pacrunner-dev
 -lpython2.7, python-dev
 -lreadline, readline-dev
 -lssl, openssl-dev
@@ -581,7 +581,7 @@ libnettle, nettle-dev nettle-lib
 libpng, pkgconfig(libpng)
 libpng-config, pkgconfig(libpng)
 libpng/png.h, pkgconfig(libpng)
-libproxy-1.0 pkg-config data, libproxy-dev
+libproxy-1.0 pkg-config data, pacrunner-dev
 library ldap, openldap-dev
 librsvg-2.0, librsvg-dev
 libudev.h, systemd-dev
