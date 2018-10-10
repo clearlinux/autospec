@@ -1159,6 +1159,7 @@ class Specfile(object):
             self.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
+        self.write_build_prepend()
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
@@ -1172,7 +1173,7 @@ class Specfile(object):
             self._write_strip("\nmake clean\n")
             self._write_strip("{0}".format(self.get_profile_use_flags()))
 
-        self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
+        self.write_make_line()
         self._write_strip("popd")
 
         if config.config_opts['32bit']:
