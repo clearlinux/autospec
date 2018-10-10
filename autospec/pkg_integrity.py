@@ -177,10 +177,6 @@ class Verifier(object):
         print(SEPT)
 
     @staticmethod
-    def download_file(url, destination):
-        return attempt_to_download(url, destination)
-
-    @staticmethod
     def quit():
         print('Critical error quitting...')
         exit(1)
@@ -210,32 +206,46 @@ class Verifier(object):
         print(SEPT)
 
 
-def head_request(url):
-    curl = pycurl.Curl()
-    curl.setopt(curl.URL, url)
-    curl.setopt(curl.CUSTOMREQUEST, "HEAD")
-    curl.setopt(curl.NOBODY, True)
-    curl.setopt(curl.TIMEOUT, 5)
-    curl.setopt(curl.FOLLOWLOCATION, True)
-    curl.perform()
-    http_code = curl.getinfo(pycurl.HTTP_CODE)
-    curl.close()
-    return http_code
+def download_file(url, destination):
+
+    if os.path.isdir(destination):
+        sign_file = os.path.join(destination, os.path.basename(url))
+    else:
+        sign_file = destination
+
+    with open(sign_file, 'wb') as f:
+        curl = pycurl.Curl()
+        curl.setopt(curl.URL, url)
+        curl.setopt(curl.WRITEDATA, f)
+        curl.setopt(curl.FOLLOWLOCATION, True)
+        curl.setopt(curl.FAILONERROR, True)
+        try:
+            curl.perform()
+        except pycurl.error as e:
+            print(e.args)
+            return None
+        code = curl.getinfo(pycurl.HTTP_CODE)
+        curl.close()
+        if code != 200:
+            os.unlink(sign_file)
+            return None
+        return sign_file
 
 
-def get_signature_url(package_url):
+def get_signature_file(package_url, package_path):
     if 'samba.org' in package_url:
-        return package_url + '.asc'
+        return download_file(package_url + '.asc', package_path)
     elif '://pypi.' in package_url[:13]:
-        return package_url + '.asc'
+        return download_file(package_url + '.asc', package_path)
     elif 'mirrors.kernel.org' in package_url:
-        return package_url + '.sig'
+        return download_file(package_url + '.sig', package_path)
     else:
         try:
             iter = (package_url + "." + ext for ext in ("asc", "sig", "sign"))
             for sign_url in iter:
-                if head_request(sign_url) in (200, 302):
-                    return sign_url
+                sign_file = download_file(sign_url, package_path)
+                if sign_file is not None:
+                    return sign_file
         except:
             pass
     return None
@@ -319,24 +329,27 @@ class GnomeOrgVerifier(ShaSumVerifier):
         ShaSumVerifier.__init__(self, **kwargs)
 
     @staticmethod
-    def get_shasum_url(package_url):
-        url = "{}.sha256sum".format(package_url.replace(".tar.xz", ""))
-        if head_request(url) == 200:
-            return url
-        url = "{}.sha256sum".format(package_url)
-        if head_request(url) == 200:
-            return url
+    def fetch_shasum(shasum_url):
+        data = BytesIO()
+        curl = pycurl.Curl()
+        curl.setopt(curl.URL, shasum_url)
+        curl.setopt(curl.WRITEFUNCTION, data.write)
+        curl.setopt(curl.FOLLOWLOCATION, True)
+        curl.perform()
+        code = curl.getinfo(pycurl.HTTP_CODE)
+        curl.close()
+        if code == 200:
+            return data.getvalue().decode('utf-8')
         return None
 
     @staticmethod
     def get_shasum(package_url):
-        data = BytesIO()
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, package_url)
-        curl.setopt(curl.WRITEFUNCTION, data.write)
-        curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.perform()
-        return data.getvalue().decode('utf-8')
+        for shasum_url in (package_url.replace(".tar.xz", ".sha256sum"),
+                           "{}.sha256sum".format(package_url)):
+            shasum = GnomeOrgVerifier.fetch_shasum(shasum_url)
+            if shasum:
+                return shasum
+        return None
 
     @staticmethod
     def parse_shasum(shasum_text):
@@ -350,14 +363,13 @@ class GnomeOrgVerifier(ShaSumVerifier):
         if self.package_url is None:
             self.print_result(False, err_msg='Package URL can not be None for GnomeOrgVerifier')
             return None
-        shasum_url = self.get_shasum_url(self.package_url)
-        if shasum_url is None:
+        shasum = self.get_shasum(self.package_url)
+        if shasum is None:
             self.print_result(False, err_msg='Unable to find shasum URL for {}'.format(self.package_url))
             return None
-        shasum = self.get_shasum(shasum_url)
         shasum = self.parse_shasum(shasum)
         if shasum is None:
-            self.print_result(False, err_msg='Unable to parse shasum {}'.format(shasum_url))
+            self.print_result(False, err_msg='Unable to parse shasum {}'.format(shasum))
             return None
         return self.verify_sum(shasum)
 
@@ -431,10 +443,6 @@ class GPGVerifier(Verifier):
         if not self.key_url and self.package_check:
             # signature exists locally, don't try to download self.url
             self.key_url = self.url.rstrip('/') + get_file_ext(self.package_check)
-        if not self.key_url and self.url:
-            # signature does not exist locally, find signature url from self.url,
-            # may require a HEAD request.
-            self.key_url = get_signature_url(self.url)
         if not self.package_sign_path:
             # the key exists (or will exist) at
             # <package directory>/<key url basename>
@@ -661,26 +669,6 @@ def sign_isvalid(sig_filename):
     return keyid is not None
 
 
-def attempt_to_download(url, sign_filename=None):
-    """Download file helper"""
-    with open(sign_filename, 'wb') as f:
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, url)
-        curl.setopt(curl.WRITEDATA, f)
-        curl.setopt(curl.FOLLOWLOCATION, True)
-        try:
-            curl.perform()
-        except pycurl.error as e:
-            print(e.args)
-            return None
-        code = curl.getinfo(pycurl.HTTP_CODE)
-        curl.close()
-        if code != 200:
-            os.unlink(sign_filename)
-        return code
-    return None
-
-
 def filename_from_url(url):
     return os.path.basename(url)
 
@@ -703,16 +691,6 @@ def apply_verification(verifier, **kwargs):
     else:
         v = verifier(**kwargs)
         return v.verify()
-
-
-def from_url(url, download_path, interactive=True):
-    package_name = filename_from_url(url)
-    package_path = os.path.join(download_path, package_name)
-    verifier = get_verifier(package_name)
-    return apply_verification(verifier, **{
-                              'package_path': package_path,
-                              'url': url,
-                              'interactive': interactive})
 
 
 def from_disk(url, package_path, package_check, interactive=True):
@@ -747,14 +725,11 @@ def attempt_verification_per_domain(package_path, url):
 
 
 def get_integrity_file(package_path):
-    if os.path.exists(package_path + '.asc'):
-        return package_path + '.asc'
-    if os.path.exists(package_path + '.sig'):
-        return package_path + '.sig'
-    if os.path.exists(package_path + '.sign'):
-        return package_path + '.sign'
-    if os.path.exists(package_path + '.sha256'):
-        return package_path + '.sha256'
+    iter = (package_path + "." + ext for ext in ("asc", "sig", "sign", "sha256"))
+    for sign_file in iter:
+        if os.path.isfile(sign_file):
+            return sign_file
+    return None
 
 
 def check(url, download_path, interactive=True):
@@ -771,13 +746,13 @@ def check(url, download_path, interactive=True):
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, interactive=interactive)
     elif package_path[-4:] == '.gem':
-        verified = from_url(url, download_path, interactive=interactive)
+        signature_file = get_signature_file(url, download_path)
+        verified = from_disk(url, package_path, signature_file, interactive=interactive)
     else:
-        print_info('{}.asc or {}.sha256 not found'.format(package_name, package_name))
-        signature_url = get_signature_url(url)
-        if signature_url is not None:
-            print_info('Attempting to download {}'.format(signature_url))
-            verified = from_url(url, download_path)
+        print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, download_path))
+        signature_file = get_signature_file(url, download_path)
+        if signature_file is not None:
+            verified = from_disk(url, package_path, signature_file, interactive=interactive)
             if verified is None:
                 print_info('Unable to find a signature, attempting domain verification')
                 verified = attempt_verification_per_domain(package_path, url)
