@@ -21,24 +21,28 @@ GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
-def mock_attempt_to_download(path, dest=None):
-    if dest:
-        shutil.copyfile(os.path.join(TESTDIR, os.path.basename(path)), dest)
-        return 200
-
-def mock_head_request(url):
+def mock_download_file(url, dst):
     bad_sigs = ["http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz.sig",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sig",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sign"]
 
+
+    src = os.path.join(TESTDIR, os.path.basename(url))
+    if os.path.isdir(dst):
+        dst = os.path.join(dst, os.path.basename(url))
+    if os.path.isfile(src):
+        if os.path.isdir(dst):
+            dst = os.path.join(dst, os.path.basename(url))
+        shutil.copyfile(src, dst)
+        return dst
+
     if url in bad_sigs:
-        return 404
-    return 200
+        return None
+    return dst
 
 
-@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
-@mock.patch('pkg_integrity.head_request', mock_head_request)
+@mock.patch('pkg_integrity.download_file', mock_download_file)
 class TestCheckFn(unittest.TestCase):
 
     def setUp(self):
@@ -50,8 +54,7 @@ class TestCheckFn(unittest.TestCase):
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
-            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
-            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
+            pkg_integrity.download_file(PACKAGE_URL, tmpd)
             result = pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
@@ -59,37 +62,42 @@ class TestCheckFn(unittest.TestCase):
         """ Download signature for local verification """
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
-            out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            pkg_integrity.attempt_to_download(NOSIGN_PKT_URL, out_file)
-            key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL))
-            pkg_integrity.attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
+            pkg_integrity.download_file(NOSIGN_PKT_URL, tmpd)
+            sign_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL) + ".asc")
+            pkg_integrity.download_file(NOSIGN_SIGN_URL, sign_file)
             result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
             self.assertTrue(result)
 
 
-@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
+@mock.patch('pkg_integrity.download_file', mock_download_file)
 class TestDomainBasedVerifiers(unittest.TestCase):
 
     def run_test_for_domain(self, Verifier, url):
         with tempfile.TemporaryDirectory() as tmpd:
-            package_path = os.path.join(tmpd, os.path.basename(url))
-            pkg_integrity.attempt_to_download(url, package_path)
+            package_path = pkg_integrity.download_file(url, tmpd)
             verifier = Verifier(**{'package_path': package_path, 
                                    'url': url})
             return verifier.verify()
         return None
 
-
     def test_pypi(self):
         result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
         self.assertTrue(result)
 
+    def _mock_fetch_shasum(url):
+        return (
+                "100395496483fcea7ba03fc1655c7a770f7f2e12e93be8bda2e31fec42debde0 pygobject-3.24.0.news\n"
+                "ae417db3be2a197b403bba6472cfb35a6e642cd802660832acb9c96123f79463  pygobject-3.24.0.changes\n"
+                "4e228b1c0f36e810acd971fad1c7030014900d8427c308d63a560f3f1037fa3c pygobject-3.24.0.tar.xz"
+                )
+
+    @mock.patch('pkg_integrity.GnomeOrgVerifier.fetch_shasum', _mock_fetch_shasum)
     def test_gnome_org(self):
         result = self.run_test_for_domain(pkg_integrity.GnomeOrgVerifier, GNOME_SHA256_PKG)
         self.assertTrue(result)        
 
 
-@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
+@mock.patch('pkg_integrity.download_file', mock_download_file)
 class TestGEMShaVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -100,9 +108,8 @@ class TestGEMShaVerifier(unittest.TestCase):
 
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
-            pkg_integrity.attempt_to_download(GEM_PKT, out_file)
-            result = pkg_integrity.from_url(GEM_PKT, tmpd)
+            pkg_integrity.download_file(GEM_PKT, tmpd)
+            result = pkg_integrity.check(GEM_PKT, tmpd)
             self.assertTrue(result)
 
     def test_non_matchingsha(self):
@@ -112,12 +119,11 @@ class TestGEMShaVerifier(unittest.TestCase):
             f.write(b'this is made up data that will force a failure')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                pkg_integrity.from_url(GEM_PKT, tmpd)
+                pkg_integrity.check(GEM_PKT, tmpd)
             self.assertEqual(a.exception.code, 1)
 
 
-@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
-@mock.patch('pkg_integrity.head_request', mock_head_request)
+@mock.patch('pkg_integrity.download_file', mock_download_file)
 class TestGPGVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -129,21 +135,18 @@ class TestGPGVerifier(unittest.TestCase):
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
-            out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
-            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
-            out_file1 = os.path.join(tmpd, os.path.basename(XATTR_PKT_URL))
-            pkg_integrity.attempt_to_download(XATTR_PKT_URL, out_file1)
-            result = pkg_integrity.from_url(PACKAGE_URL, tmpd)
+            pkg_integrity.download_file(PACKAGE_URL, tmpd)
+            pkg_integrity.download_file(XATTR_PKT_URL, tmpd)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
     def test_check_quit(self):
         with tempfile.TemporaryDirectory() as tmpd:
             with self.assertRaises(SystemExit) as a:
                 shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
-                out_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
-                pkg_integrity.attempt_to_download(NOSIGN_PKT_URL_BAD, out_file)
-                key_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD))
-                pkg_integrity.attempt_to_download(NOSIGN_SIGN_URL, key_file + '.asc')
+                pkg_integrity.download_file(NOSIGN_PKT_URL_BAD, tmpd)
+                sign_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD) + ".asc")
+                pkg_integrity.download_file(NOSIGN_SIGN_URL, sign_file)
                 result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
                 self.assertEqual(a.exception.code, 1)
 
@@ -151,9 +154,9 @@ class TestGPGVerifier(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
-            out_key = out_file + '.asc'
-            pkg_integrity.attempt_to_download(PACKAGE_URL, out_file)
-            pkg_integrity.attempt_to_download(PACKAGE_URL + '.asc', out_key)
+            out_key = out_file + ".asc"
+            pkg_integrity.download_file(PACKAGE_URL, tmpd)
+            pkg_integrity.download_file(PACKAGE_URL + ".asc", tmpd)
             result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
             self.assertTrue(result)
 
@@ -165,7 +168,7 @@ class TestGPGVerifier(unittest.TestCase):
             f.write(b'made up date that will fail check')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                pkg_integrity.from_url(PACKAGE_URL, tmpd)
+                pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
@@ -176,8 +179,7 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_result_on_nosign_package(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            out_file = os.path.join(tmpd, os.path.basename(NO_SIGN_PKT_URL))
-            pkg_integrity.attempt_to_download(NO_SIGN_PKT_URL, out_file)
+            pkg_integrity.download_file(NO_SIGN_PKT_URL, tmpd)
             result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
             self.assertIsNone(result)
 
@@ -195,7 +197,6 @@ class TestInputGetter(unittest.TestCase):
         self.assertIsNone(answer)
 
 
-@mock.patch('pkg_integrity.attempt_to_download', mock_attempt_to_download)
 class TestUtils(unittest.TestCase):
 
     def setUp(self):
@@ -208,10 +209,17 @@ class TestUtils(unittest.TestCase):
         x = pkg_integrity.get_verifier('file.abcd')
         self.assertEqual(x, None)
 
-        y = pkg_integrity.get_verifier('xorriso-1.4.6.tar.gz')(package_path='', url='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz')
+        y = pkg_integrity.get_verifier('xorriso-1.4.6.tar.gz')(
+                package_path='',
+                url='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz',
+                package_check='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz.asc'
+                )
         self.assertTrue(isinstance(y, pkg_integrity.GPGVerifier))
 
-        z = pkg_integrity.get_verifier('jeweler-2.1.1.gem')(package_path='', url='https://rubygems.org/downloads/jeweler-2.1.1.gem')
+        z = pkg_integrity.get_verifier('jeweler-2.1.1.gem')(
+                package_path='',
+                url='https://rubygems.org/downloads/jeweler-2.1.1.gem'
+                )
         self.assertTrue(isinstance(z, pkg_integrity.GEMShaVerifier))
 
     def test_get_keyid(self):
@@ -230,17 +238,17 @@ class TestUtils(unittest.TestCase):
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
-    def _mock_head_request(url):
+    def _mock_download_file(url, dst):
         # make return codes match by url to ensure we are using the expected signature type
-        if url == "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz.sig":
-            return 200
-        elif url == "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc":
-            return 200
-        elif url == "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2.sign":
-            return 200
-        return 404
+        if url in ("http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz.sig",
+                "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc",
+                "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2.sign",
+                "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz.asc",
+                "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz.asc"):
+            return os.path.join(dst, os.path.basename(url))
+        return None
 
-    @mock.patch('pkg_integrity.head_request', _mock_head_request)
+    @mock.patch('pkg_integrity.download_file', _mock_download_file)
     def test_get_signature_url(self):
         url_from_gnu = "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz"
         url_from_gnu1 = "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz"
@@ -248,11 +256,11 @@ class TestUtils(unittest.TestCase):
         url_from_pypi = "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz"
         url_from_pypi1 = "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
 
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu)[-4:], '.sig')
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi)[-4:], '.asc')
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu1)[-4:], '.asc')
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_gnu2)[-5:], '.sign')
-        self.assertEqual(pkg_integrity.get_signature_url(url_from_pypi1)[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu, '.')[-4:], '.sig')
+        self.assertEqual(pkg_integrity.get_signature_file(url_from_pypi, '.')[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu1, '.')[-4:], '.asc')
+        self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu2, '.')[-5:], '.sign')
+        self.assertEqual(pkg_integrity.get_signature_file(url_from_pypi1, '.')[-4:], '.asc')
 
     def test_parse_key_for_email(self):
         def check_pubkey(algo, email):
