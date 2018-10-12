@@ -973,6 +973,8 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not config.config_opts['skip_tests']:
@@ -980,6 +982,8 @@ class Specfile(object):
             # Prevent setuptools from hitting the internet
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
+        if self.subdir:
+            self._write_strip("popd")
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
@@ -990,7 +994,11 @@ class Specfile(object):
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot}")
+        if self.subdir:
+            self._write_strip("popd")
         self.write_find_lang()
 
     def write_distutils3_pattern(self):
@@ -998,6 +1006,8 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python3 setup.py build  " + config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not config.config_opts['skip_tests']:
@@ -1005,6 +1015,8 @@ class Specfile(object):
             # Prevent setuptools from hitting the internet
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
+        if self.subdir:
+            self._write_strip("popd")
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("rm -rf %{buildroot}")
@@ -1014,8 +1026,11 @@ class Specfile(object):
             for file in self.license_files:
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
-
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
+        if self.subdir:
+            self._write_strip("popd")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
@@ -1026,6 +1041,8 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
         self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
         self._write_strip("\n")
@@ -1034,7 +1051,8 @@ class Specfile(object):
             # Prevent setuptools from hitting the internet
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
-
+        if self.subdir:
+            self._write_strip("popd")
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
@@ -1046,8 +1064,12 @@ class Specfile(object):
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot} --force")
         self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot} --force")
+        if self.subdir:
+            self._write_strip("popd")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
