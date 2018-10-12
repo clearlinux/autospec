@@ -1159,7 +1159,6 @@ class Specfile(object):
             self.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
-        self.write_build_prepend()
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
