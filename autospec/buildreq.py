@@ -434,6 +434,13 @@ def grab_python_requirements(descfile):
         lines = f.readlines()
 
     for line in lines:
+        # don't add the test section
+        if clean_python_req(line) == '[test]':
+            break
+        if clean_python_req(line) == '[testing]':
+            break
+        if clean_python_req(line) == '[dev]':
+            break
         add_requires(clean_python_req(line))
 
 
