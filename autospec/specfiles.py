@@ -1259,9 +1259,16 @@ class Specfile(object):
         self._write_strip("export LANG=C")
         self.write_variables()
 
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
         self._write_strip("%qmake {}{}".format(extra_qmake_args, config.extra_configure))
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
+
+        if self.subdir:
+            self._write_strip("popd")
+
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.subdir)
             self.write_build_prepend()
