@@ -40,6 +40,15 @@ licenses = []
 license_files = []
 
 
+def process_licenses(lics):
+    """
+    The license server response may contain multiple space-separated licenses.
+    Add each license individually.
+    """
+    for lic in lics.split():
+        add_license(lic)
+
+
 def add_license(lic):
     """
     Add license from license string lic after checking for duplication or
@@ -100,7 +109,8 @@ def license_from_copying_hash(copying, srcdir):
         page = response.decode('utf-8').strip()
         if page:
             print("License     : ", page, " (server) (", hash_sum, ")")
-            add_license(page)
+            process_licenses(page)
+
             if page != "none":
                 lic_path = copying[len(srcdir) + 1:]
                 license_files.append(shlex.quote(lic_path))
