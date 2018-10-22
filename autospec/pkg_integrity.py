@@ -223,6 +223,7 @@ def download_file(url, destination):
             curl.perform()
         except pycurl.error as e:
             print(e.args)
+            os.unlink(sign_file)
             return None
         code = curl.getinfo(pycurl.HTTP_CODE)
         curl.close()
