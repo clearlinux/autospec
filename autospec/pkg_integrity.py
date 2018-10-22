@@ -207,48 +207,48 @@ class Verifier(object):
 
 
 def download_file(url, destination):
-
-    if os.path.isdir(destination):
-        sign_file = os.path.join(destination, os.path.basename(url))
-    else:
-        sign_file = destination
-
-    with open(sign_file, 'wb') as f:
+    with open(destination, 'wb') as f:
         curl = pycurl.Curl()
         curl.setopt(curl.URL, url)
         curl.setopt(curl.WRITEDATA, f)
         curl.setopt(curl.FOLLOWLOCATION, True)
         curl.setopt(curl.FAILONERROR, True)
-        try:
-            curl.perform()
-        except pycurl.error as e:
-            print(e.args)
-            os.unlink(sign_file)
-            return None
+        curl.perform()
         code = curl.getinfo(pycurl.HTTP_CODE)
         curl.close()
         if code != 200:
-            os.unlink(sign_file)
             return None
-        return sign_file
+        return destination
 
 
 def get_signature_file(package_url, package_path):
+    sign_urls = []
     if 'samba.org' in package_url:
-        return download_file(package_url + '.asc', package_path)
+        sign_urls.append(package_url + '.asc')
     elif '://pypi.' in package_url[:13]:
-        return download_file(package_url + '.asc', package_path)
+        sign_urls.append(package_url + '.asc')
     elif 'mirrors.kernel.org' in package_url:
-        return download_file(package_url + '.sig', package_path)
+        sign_urls.append(package_url + '.sig')
     else:
+        iter = (package_url + "." + ext for ext in ("asc", "sig", "sign"))
+        for sign_url in iter:
+            sign_urls.append(sign_url)
+
+    sign_file = None
+    dest = None
+    for url in sign_urls:
         try:
-            iter = (package_url + "." + ext for ext in ("asc", "sig", "sign"))
-            for sign_url in iter:
-                sign_file = download_file(sign_url, package_path)
-                if sign_file is not None:
-                    return sign_file
-        except:
-            pass
+            dest = os.path.join(package_path, os.path.basename(url))
+            sign_file = download_file(url, dest)
+            if sign_file is not None:
+                return sign_file
+            elif os.path.exists(dest):
+                os.unlink(dest)
+        except pycurl.error as e:
+            print(e.args)
+            if os.path.exists(dest):
+                os.unlink(dest)
+
     return None
 
 
