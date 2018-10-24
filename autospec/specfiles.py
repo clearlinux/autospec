@@ -599,6 +599,9 @@ class Specfile(object):
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
         if config.config_opts['32bit']:
             self._write_strip("pushd clr-build32")
             self._write_strip("%make_install32 {} {}".format(self.extra_make_install,
@@ -624,6 +627,10 @@ class Specfile(object):
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
         self._write_strip("popd")
+
+        if self.subdir:
+            self._write_strip("popd")
+
         self.write_find_lang()
 
     @staticmethod
@@ -1148,6 +1155,10 @@ class Specfile(object):
             self.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
@@ -1205,8 +1216,12 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("popd")
 
+        if self.subdir:
+            self._write_strip("popd")
+
         self._write_strip("\n")
         self.write_check()
+
         self.write_cmake_install()
 
     def write_qmake_pattern(self):
