@@ -128,7 +128,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         autostart = '/usr/lib/systemd/system/some.target.wants/some'
         self.fm.push_file(autostart)
-        calls = [call(autostart, 'autostart'), call('%exclude ' + autostart, 'config')]
+        calls = [call(autostart, 'autostart'), call('%exclude ' + autostart, 'services')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_file_extras(self):
