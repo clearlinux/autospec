@@ -150,7 +150,7 @@ def process_NEWS(newsfile):
         return commitmessage, cves
 
     # now search for CVEs
-    pat = re.compile("(CVE\-[0-9]+\-[0-9]+)")
+    pat = re.compile(r"(CVE\-[0-9]+\-[0-9]+)")
     for news in newslines[start:stop]:
         match = pat.search(news)
         if match:

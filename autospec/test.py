@@ -81,11 +81,11 @@ def scan_for_tests(src_dir):
         "perlcheck": perl_check,
         "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" +
-                    tarball.tarball_prefix +
-                    "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" +
-                 tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
+        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/"
+                    + tarball.tarball_prefix
+                    + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/"
+                    + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
     if config.config_opts['32bit']:
         testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"

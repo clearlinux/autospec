@@ -169,7 +169,7 @@ def is_version(num_str):
     """
     Return True if num_str looks like a version number
     """
-    if re.search('^\d+(\.\d+)*$', num_str):
+    if re.search(r'^\d+(\.\d+)*$', num_str):
         return True
 
     return False

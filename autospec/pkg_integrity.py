@@ -383,9 +383,9 @@ class PyPiVerifier(MD5Verifier):
 
     def parse_name(self):
         pkg_name = os.path.basename(self.package_path)
-        name, _ = re.split('-\d+\.', pkg_name, maxsplit=1)
+        name, _ = re.split(r'-\d+\.', pkg_name, maxsplit=1)
         release_no = pkg_name.replace(name + '-', '')
-        extensions = "({})".format("|".join(['\.tar\.gz$', '\.zip$', '\.tgz$', '\.tar\.bz2$']))
+        extensions = "({})".format("|".join([r'\.tar\.gz$', r'\.zip$', r'\.tgz$', r'\.tar\.bz2$']))
         ext = re.search(extensions, release_no)
         if ext is not None:
             release_no = release_no.replace(ext.group(), '')
@@ -541,7 +541,7 @@ class GEMShaVerifier(Verifier):
         if os.path.exists(self.package_path) is False:
             self.print_result(False, 'GEM was not found {}'.format(self.package_path))
             return
-        name, _ = re.split('-\d+\.', gemname)
+        name, _ = re.split(r'-\d+\.', gemname)
         number = gemname.replace(name + '-', '')
         geminfo = self.get_rubygems_info(name)
         gemsha = self.get_gemnumber_sha(geminfo, number)

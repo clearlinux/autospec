@@ -1,5 +1,5 @@
 check: autospec/*.py
-	@flake8 --max-line-length=199 --ignore=E722 $^
+	@flake8 $^
 
 test_pkg_integrity:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_pkg_integrity.py

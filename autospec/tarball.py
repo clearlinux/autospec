@@ -273,9 +273,9 @@ def download_tarball(target_dir):
         config_f = configparser.ConfigParser(interpolation=None)
         config_f.read('options.conf')
         if "package" in config_f.sections():
-            if (config_f["package"].get("name") == name or
-                    config_f["package"].get("url") == url or
-                    config_f["package"].get("archives") == " ".join(archives)):
+            if (config_f["package"].get("name") == name
+                    or config_f["package"].get("url") == url
+                    or config_f["package"].get("archives") == " ".join(archives)):
                 target = os.getcwd()
             if "giturl" in config_f["package"]:
                 giturl = config_f["package"].get("giturl")
@@ -427,8 +427,8 @@ def name_and_version(name_arg, version_arg, filemanager):
                     # Only take the repo name as the package name if it's more descriptive
                     name = repo
                 elif name != repo:
-                    name = re.sub("release-", '', name)
-                    name = re.sub("\d*$", '', name)
+                    name = re.sub(r"release-", '', name)
+                    name = re.sub(r"\d*$", '', name)
                 rawname = name
                 version = m.group(3).replace(name, '')
                 if "archive" not in pattern:

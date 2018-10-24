@@ -62,8 +62,8 @@ def add_sources(download_path, archives):
     # directories which usually reside in directories such as
     # /run or /tmp.
     #
-    if os.path.exists(os.path.normpath(build.download_path +
-                                       "/{0}.tmpfiles".format(tarball.name))):
+    if os.path.exists(os.path.normpath(
+            build.download_path + "/{0}.tmpfiles".format(tarball.name))):
         buildpattern.sources["tmpfile"].append(
             "{}.tmpfiles".format(tarball.name))
     if tarball.gcov_file:
