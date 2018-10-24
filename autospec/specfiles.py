@@ -160,10 +160,8 @@ class Specfile(object):
         Append additional source files - systemd unit files, gcov, and
         additional source tarballs are the currently supported file types.
         """
-        for count, source in enumerate(sorted(self.sources["unit"] +
-                                              self.sources["archive"] +
-                                              self.sources["tmpfile"] +
-                                              self.sources["gcov"])):
+        for count, source in enumerate(
+                sorted(self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"])):
             self.source_index[source] = count + 1
             if self.urlban:
                 source = re.sub(self.urlban, "localhost", source)
@@ -1472,7 +1470,7 @@ class Specfile(object):
         quoted = ''
         # Capture any directive prefix separately from actual filename
         #                          (1                   )(3 )
-        directive_re = re.compile("(%\w+(\([^\)]*\))?\s+)(.*)")
+        directive_re = re.compile(r"(%\w+(\([^\)]*\))?\s+)(.*)")
         parts = directive_re.match(filename)
         if parts:
             # Add prefix to the output

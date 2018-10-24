@@ -1249,12 +1249,12 @@ def parse_log(log, pkgname=''):
         # == 55 tests, 48 stderr failures, 6 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
         # == 125 tests, 12 stderr failures, 0 stdout failures, 0 stderrB failures, 0 stdoutB failures, 0 post failures ==
         match = re.search(r"\=\= ([0-9]+) tests?\, ([0-9]+) stderr failures?\, ([0-9]+) stdout failures?\, "
-                          "([0-9]+) stderrB failures?\, ([0-9]+) stdoutB failures?\, ([0-9]+) post failures? \=\=", line)
+                          r"([0-9]+) stderrB failures?\, ([0-9]+) stdoutB failures?\, ([0-9]+) post failures? \=\=", line)
         if match and incheck:
             total_tests += convert_int(match.group(1))
             total_fail += (convert_int(match.group(2)) + convert_int(match.group(3)) + convert_int(match.group(4)) + convert_int(match.group(5)) + convert_int(match.group(6)))
-            total_pass += (convert_int(match.group(1)) - (convert_int(match.group(2)) + convert_int(match.group(3)) + convert_int(match.group(4)) + convert_int(match.group(5)) +
-                                                          convert_int(match.group(6))))
+            total_pass += \
+                (convert_int(match.group(1)) - (convert_int(match.group(2)) + convert_int(match.group(3)) + convert_int(match.group(4)) + convert_int(match.group(5)) + convert_int(match.group(6))))
             continue
 
         # zsh
