@@ -97,13 +97,17 @@ def license_from_copying_hash(copying, srcdir):
         c.setopt(c.FOLLOWLOCATION, 1)
         try:
             c.perform()
-        except Exception as excep:
+            code = c.getinfo(pycurl.HTTP_CODE)
+            if code != 200:
+                print_fatal("Fetching license from {} returned {}"
+                            .format(config.license_fetch, code))
+                exit(1)
+        except pycurl.error as excep:
             print_fatal("Failed to fetch license from {}: {}"
                         .format(config.license_fetch, excep))
+            exit(1)
+        finally:
             c.close()
-            sys.exit(1)
-
-        c.close()
 
         response = buffer.getvalue()
         page = response.decode('utf-8').strip()
