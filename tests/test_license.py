@@ -122,7 +122,7 @@ class TestLicense(unittest.TestCase):
                 pass
 
             def perform(_):
-                raise Exception('Test Exception')
+                raise pycurl.error('Test Exception')
 
             def close(_):
                 pass
@@ -168,6 +168,26 @@ class TestLicense(unittest.TestCase):
         # set the mocks
         license.BytesIO = MockBytesIO
 
+        class MockCurl():
+            URL = None
+            WRITEDATA = None
+            POSTFIELDS = None
+            FOLLOWLOCATION = 0
+            def setopt(_, __, ___):
+                pass
+
+            def perform(_):
+                pass
+
+            def close(_):
+                pass
+
+            def getinfo(_, __):
+                return 200
+
+        # set the mock curl
+        license.pycurl.Curl = MockCurl
+
         license.config.license_fetch = 'license.server.url'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
             content = copyingf.read()
@@ -189,6 +209,9 @@ class TestLicense(unittest.TestCase):
 
         # unset the manual mock
         license.BytesIO = BytesIO
+
+        # unset the manual mock
+        license.pycurl.Curl = pycurl.Curl
 
     def test_scan_for_licenses(self):
         """
