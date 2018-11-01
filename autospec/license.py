@@ -94,7 +94,8 @@ def license_from_copying_hash(copying, srcdir):
         c.setopt(c.URL, config.license_fetch)
         c.setopt(c.WRITEDATA, buffer)
         c.setopt(c.POSTFIELDS, data)
-        c.setopt(c.FOLLOWLOCATION, 1)
+        c.setopt(c.FOLLOWLOCATION, True)
+        c.setopt(c.FAILONERROR, True)
         try:
             c.perform()
             code = c.getinfo(pycurl.HTTP_CODE)
