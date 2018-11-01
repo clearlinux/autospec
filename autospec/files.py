@@ -222,6 +222,7 @@ class FileManager(object):
             (r"^/usr/share/man/man2", "dev"),
             (r"^/usr/share/man/man3", "dev"),
             (r"^/usr/share/man/", "man"),
+            (r"^/usr/share/abi/", "abi"),
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.so\.", "plugins"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so\.", "lib"),
