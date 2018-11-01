@@ -118,6 +118,7 @@ class TestLicense(unittest.TestCase):
             WRITEDATA = None
             POSTFIELDS = None
             FOLLOWLOCATION = 0
+            FAILONERROR = False
             def setopt(_, __, ___):
                 pass
 
@@ -173,6 +174,7 @@ class TestLicense(unittest.TestCase):
             WRITEDATA = None
             POSTFIELDS = None
             FOLLOWLOCATION = 0
+            FAILONERROR = False
             def setopt(_, __, ___):
                 pass
 
