@@ -194,7 +194,7 @@ class Specfile(object):
             if pkg == "autostart" and self.no_autostart:
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
-                       "lib32", "dev32", "legacypython", "doc"]:
+                       "lib32", "dev32", "legacypython", "doc", "abi"]:
                 continue
             self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, pkg))
 
