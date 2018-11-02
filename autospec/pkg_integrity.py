@@ -244,8 +244,8 @@ def get_signature_file(package_url, package_path):
                 return sign_file
             elif os.path.exists(dest):
                 os.unlink(dest)
-        except pycurl.error as e:
-            print(e.args)
+        except pycurl.error:
+            print(f"Download of signature file {url} failed")
             if os.path.exists(dest):
                 os.unlink(dest)
 
