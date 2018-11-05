@@ -1150,7 +1150,6 @@ class Specfile(object):
 
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file."""
-        self.subdir = "clr-build"
         if self.extra_make == "" or self.extra_cmake == " ":
             self.extra_make = "VERBOSE=1"
         self.write_prep()
