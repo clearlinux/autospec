@@ -37,9 +37,7 @@ default_summary_score = 0
 
 
 def clean_license_string(lic):
-    """
-    Clean up license string by replacing substrings
-    """
+    """Clean up license string by replacing substrings."""
     if lic.find("same as") >= 0:
         return ""
 
@@ -66,10 +64,7 @@ def clean_license_string(lic):
 
 
 def assign_summary(summary, score):
-    """
-    Assign summary to default_summary if score is greater than
-    default_summary_score
-    """
+    """Assign summary to default_summary if score is greater than default_summary_score."""
     global default_summary
     global default_summary_score
     if score > default_summary_score:
@@ -78,10 +73,7 @@ def assign_summary(summary, score):
 
 
 def assign_description(description, score):
-    """
-    Assign description to default_description if score is greater than
-    default_description_score
-    """
+    """Assign description to default_description if score is greater than default_description_score."""
     global default_description
     global default_description_score
     if score > default_description_score:
@@ -90,10 +82,7 @@ def assign_description(description, score):
 
 
 def description_from_spec(specfile):
-    """
-    Parse any existing RPM specfiles
-    resulting score: 4
-    """
+    """Parse any existing RPM specfiles."""
     try:
         with open(specfile, 'r', encoding="latin-1") as specfd:
             lines = specfd.readlines()
@@ -137,10 +126,7 @@ def description_from_spec(specfile):
 
 
 def description_from_pkginfo(pkginfo):
-    """
-    Parse existing package info files
-    resulting score: 4
-    """
+    """Parse existing package info files."""
     try:
         with open(pkginfo, 'r', encoding="latin-1") as pkgfd:
             lines = pkgfd.readlines()
@@ -180,10 +166,7 @@ def description_from_pkginfo(pkginfo):
 
 
 def summary_from_pkgconfig(pkgfile, package):
-    """
-    Parse pkgconfig files for Description: lines
-    resulting score: 2/3
-    """
+    """Parse pkgconfig files for Description: lines."""
     try:
         with open(pkgfile, "r", encoding="latin-1") as pkgfd:
             lines = pkgfd.readlines()
@@ -199,10 +182,7 @@ def summary_from_pkgconfig(pkgfile, package):
 
 
 def summary_from_R(pkgfile):
-    """
-    Parse DESCRIPTION file for Title: lines
-    resulting score: 3
-    """
+    """Parse DESCRIPTION file for Title: lines."""
     try:
         with open(pkgfile, "r", encoding="latin-1") as pkgfd:
             lines = pkgfd.readlines()
@@ -217,9 +197,7 @@ def summary_from_R(pkgfile):
 
 
 def skipline(line):
-    """
-    Some lines from a readme are just boilerplate and should be skipped
-    """
+    """Skip boilerplate readme lines."""
     if line.endswith("introduction"):
         return True
 
@@ -234,10 +212,7 @@ def skipline(line):
 
 
 def description_from_readme(readmefile):
-    """
-    Try to pick the first paragraph or two from the readme file
-    resulting score: 1/1.5
-    """
+    """Try to pick the first paragraph or two from the readme file."""
     try:
         with open(readmefile, "r", encoding="latin-1") as readmefd:
             lines = readmefd.readlines()
@@ -264,10 +239,7 @@ def description_from_readme(readmefile):
 
 
 def scan_for_description(package, dirn):
-    """
-    Scan the project directory for things we can use to guess a description and
-    summary
-    """
+    """Scan the project directory for things we can use to guess a description and summary."""
     for dirpath, _, files in os.walk(dirn):
         for name in files:
             if name.lower().endswith(".spec"):
@@ -291,9 +263,7 @@ def scan_for_description(package, dirn):
 
 
 def load_specfile(specfile):
-    """
-    Load specfile with parse results
-    """
+    """Load specfile with parse results."""
     specfile.default_sum = default_summary
     if config.custom_desc:
         specfile.default_desc = "\n".join(config.custom_desc)

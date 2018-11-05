@@ -27,7 +27,7 @@ archive_details = {}
 
 
 def set_build_pattern(pattern, strength):
-    """Set the global default pattern and pattern strength"""
+    """Set the global default pattern and pattern strength."""
     global default_pattern
     global pattern_strength
     if strength <= pattern_strength:
@@ -37,7 +37,7 @@ def set_build_pattern(pattern, strength):
 
 
 def load_specfile(specfile):
-    """Load specfile object with relevant data"""
+    """Load specfile object with relevant data."""
     specfile.sources = sources
     specfile.default_pattern = default_pattern
     specfile.archive_details = archive_details

@@ -19,14 +19,14 @@
 # Actually build the package
 #
 
-import buildreq
-import re
-import tarball
 import os
+import re
 import shutil
 import subprocess
 
+import buildreq
 import config
+import tarball
 import util
 
 success = 0
@@ -39,6 +39,7 @@ warned_about = set()
 
 
 def setup_workingdir(workingdir):
+    """Create directory for expanding tar file."""
     global base_path
     global download_path
     base_path = workingdir
@@ -46,6 +47,7 @@ def setup_workingdir(workingdir):
 
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig):
+    """Check for pkgconfig patterns and restart build as needed."""
     global must_restart
     pat = re.compile(pattern)
     match = pat.search(line)
@@ -54,6 +56,7 @@ def simple_pattern_pkgconfig(line, pattern, pkgconfig):
 
 
 def simple_pattern(line, pattern, req):
+    """Check for simple patterns and restart the build as needed."""
     global must_restart
     pat = re.compile(pattern)
     match = pat.search(line)
@@ -62,6 +65,7 @@ def simple_pattern(line, pattern, req):
 
 
 def cleanup_req(s: str) -> str:
+    """Strip unhelpful strings from requirements."""
     if "is wanted" in s:
         s = ""
     if "should be defined" in s:
@@ -95,6 +99,7 @@ def cleanup_req(s: str) -> str:
 
 
 def failed_pattern(line, pattern, verbose, buildtool=None):
+    """Check against failed patterns to restart build as needed."""
     global must_restart
     global warned_about
 
@@ -147,13 +152,14 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             must_restart += buildreq.add_pkgconfig_buildreq(s, cache=True)
             must_restart += buildreq.add_buildreq(s, cache=True)
 
-    except:
+    except Exception:
         if s not in warned_about and s[:2] != '--':
             print("Unknown pattern match: ", s)
             warned_about.add(s)
 
 
 def parse_build_results(filename, returncode, filemanager):
+    """Handle build log contents."""
     global must_restart
     global success
     buildreq.verbose = 1
@@ -209,6 +215,7 @@ def parse_build_results(filename, returncode, filemanager):
 
 
 def reserve_path(path):
+    """Try to pre-populate directory at path."""
     try:
         subprocess.check_output(['sudo', 'mkdir', path], stderr=subprocess.STDOUT)
     except subprocess.CalledProcessError as err:
@@ -219,9 +226,7 @@ def reserve_path(path):
 
 
 def get_uniqueext(dirn, dist, name):
-    """
-    Find a unique name to create mock chroot without reusing an old one
-    """
+    """Find a unique name to create mock chroot without reusing an old one."""
     # Default to tarball name
     resultsdir = os.path.join(dirn, "{}-{}".format(dist, name))
     if reserve_path(resultsdir):
@@ -239,6 +244,7 @@ def get_uniqueext(dirn, dist, name):
 
 
 def get_mock_cmd():
+    """Set mock command to use sudo as needed."""
     # Some distributions (e.g. Fedora) use consolehelper to run mock,
     # while others (e.g. Clear Linux) expect the user run it via sudo.
     if os.path.basename(os.path.realpath('/usr/bin/mock')) == 'consolehelper':
@@ -247,6 +253,7 @@ def get_mock_cmd():
 
 
 def package(filemanager, mockconfig, mockopts, cleanup=False):
+    """Run main package build routine."""
     global round
     global uniqueext
     round = round + 1

@@ -16,13 +16,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from util import print_fatal, write_out
-
 import os
 import re
 
+from util import print_fatal, write_out
+
 
 def logcheck(pkg_loc):
+    """Try to discover configuration options that were automatically switched off."""
     log = os.path.join(pkg_loc, 'results', 'build.log')
     if not os.path.exists(log):
         print('build log is missing, unable to perform logcheck.')
@@ -82,4 +83,5 @@ def logcheck(pkg_loc):
 
 
 def write_misses(pkg_loc, misses):
+    """Create configure_misses file with automatically disabled configuration options."""
     write_out(os.path.join(pkg_loc, 'configure_misses'), '\n'.join(misses))

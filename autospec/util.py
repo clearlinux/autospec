@@ -27,6 +27,7 @@ os_paths = None
 
 
 def call(command, logfile=None, check=True, **kwargs):
+    """Subprocess.call convenience wrapper."""
     returncode = 1
     full_args = {
         "args": shlex.split(command),
@@ -56,6 +57,7 @@ def _file_write(self, s):
 
 
 def translate(package):
+    """Convert terms to their alternate definition."""
     global dictionary
     for item in dictionary:
         if item.startswith(package + "="):
@@ -64,19 +66,22 @@ def translate(package):
 
 
 def print_fatal(message):
+    """Print color coded fatal errors."""
     print("[\033[1m\033[91mFATAL\033[0m] {}".format(message))
 
 
 def print_warning(message):
+    """Print color coded warnings."""
     print("[\033[31;1mWARNING\033[0m] {}".format(message))
 
 
 def print_infile(message):
+    """Print colored INIFILE content."""
     print("[\033[1;34mINFILE\033[0m] {}".format(message))
 
 
 def binary_in_path(binary):
-    """ Determine if the given binary exists in the provided filesystem paths """
+    """Determine if the given binary exists in the provided filesystem paths."""
     global os_paths
     if not os_paths:
         os_paths = os.getenv("PATH", default="/usr/bin:/bin").split(os.pathsep)
@@ -88,5 +93,6 @@ def binary_in_path(binary):
 
 
 def write_out(filename, content, mode="w", encode=None):
+    """File.write convenience wrapper."""
     with open(filename, mode, encoding=encode) as require_f:
         require_f.write(content)

@@ -19,18 +19,18 @@
 # Commit to git
 #
 
-import subprocess
 import os
+import subprocess
 
 import build
 import buildpattern
+import config
 import tarball
 from util import call, write_out
-import config
 
 
 def commit_to_git(path):
-
+    """Update package's git tree for autospec managed changes."""
     call("git init", stdout=subprocess.DEVNULL, cwd=path)
 
     # This config is used for setting the remote URI, so it is optional.

@@ -17,40 +17,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import sys
+import configparser
 import os
 import re
+import sys
 import tempfile
-import configparser
+import test
 
+from abireport import examine_abi
 import build
 import buildpattern
 import buildreq
+import commitmessage
 import config
 import files
 import git
-import license
-import specdescription
-import tarball
-import test
-import commitmessage
-import pkg_integrity
-import specfiles
-import pkg_scan
 import infile_handler
 import infile_update_spec
-
-from util import print_fatal, binary_in_path, write_out, print_infile
-from abireport import examine_abi
+import license
 from logcheck import logcheck
+import pkg_integrity
+import pkg_scan
+import specdescription
+import specfiles
+import tarball
+from util import binary_in_path, print_fatal, print_infile, write_out
 
 sys.path.append(os.path.dirname(__file__))
 
 
 def add_sources(download_path, archives):
-    """
-    Add archives to buildpattern sources and archive_details
-    """
+    """Add archives to buildpattern sources and archive_details."""
     for srcf in os.listdir(download_path):
         if re.search(r".*\.(mount|service|socket|target|timer|path)$", srcf):
             buildpattern.sources["unit"].append(srcf)
@@ -74,7 +71,7 @@ def add_sources(download_path, archives):
 
 
 def check_requirements(use_git):
-    """ Ensure all requirements are satisfied before continuing """
+    """Ensure all requirements are satisfied before continuing."""
     required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio", "readelf"]
 
     if use_git:
@@ -88,9 +85,7 @@ def check_requirements(use_git):
 
 
 def load_specfile(specfile):
-    """
-    Gather all information from static analysis into Specfile instance
-    """
+    """Gather all information from static analysis into Specfile instance."""
     config.load_specfile(specfile)
     tarball.load_specfile(specfile)
     specdescription.load_specfile(specfile)
@@ -101,6 +96,7 @@ def load_specfile(specfile):
 
 
 def read_old_metadata():
+    """Handle options.conf providing package, url and archives."""
     if not os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
         return None, None, []
 
@@ -119,9 +115,7 @@ def read_old_metadata():
 
 
 def save_mock_logs(path, iteration):
-    """
-    Save Mock build logs to <path>/results/round<iteration>-*.log
-    """
+    """Save Mock build logs to <path>/results/round<iteration>-*.log."""
     basedir = os.path.join(path, "results")
     loglist = ["build", "root", "srpm-build", "srpm-root", "mock_srpm", "mock_build"]
     for l in loglist:
@@ -131,9 +125,7 @@ def save_mock_logs(path, iteration):
 
 
 def write_prep(workingdir):
-    """
-    Write metadata to the local workingdir when --prep-only is used
-    """
+    """Write metadata to the local workingdir when --prep-only is used."""
     if config.urlban:
         used_url = re.sub(config.urlban, "localhost", tarball.url)
     else:
@@ -153,9 +145,7 @@ def write_prep(workingdir):
 
 
 def main():
-    """
-    Main function for autospec
-    """
+    """Entry point for autospec."""
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--skip-git",
                         action="store_false", dest="git", default=True,
@@ -221,7 +211,7 @@ def main():
         if not url:
             try:
                 url = infile_dict.get('URL')
-            except:
+            except Exception:
                 pass
             else:
                 print_infile("Source url found: {}".format(url))
@@ -247,6 +237,7 @@ def main():
 
 
 def package(args, url, name, archives, workingdir, infile_dict):
+    """Entry point for building a package with autospec."""
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
 
@@ -265,7 +256,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
                 for word in dotlic.read().split():
                     if ":" not in word:
                         license.add_license(word)
-        except:
+        except Exception:
             pass
         license.scan_for_licenses(_dir)
         exit(0)
@@ -343,7 +334,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
                 print(readme_f.read())
 
             print("*********************\n")
-        except:
+        except Exception:
             pass
 
     examine_abi(build.download_path)

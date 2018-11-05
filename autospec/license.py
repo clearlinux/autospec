@@ -21,17 +21,19 @@
 # exact matches on hashes of the COPYING file
 #
 
-import sys
+import hashlib
 import os
 import re
-import hashlib
 import shlex
-import tarball
-import pycurl
+import sys
 import urllib.parse
-import config
 from io import BytesIO
 
+import config
+
+import pycurl
+
+import tarball
 from util import print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
@@ -41,7 +43,8 @@ license_files = []
 
 
 def process_licenses(lics):
-    """
+    """Handle licenses string from the license server.
+
     The license server response may contain multiple space-separated licenses.
     Add each license individually.
     """
@@ -50,7 +53,8 @@ def process_licenses(lics):
 
 
 def add_license(lic):
-    """
+    """Add licenses from the server.
+
     Add license from license string lic after checking for duplication or
     presence in the blacklist. Returns False if no license were added, True
     otherwise.
@@ -74,7 +78,7 @@ def add_license(lic):
 
 
 def license_from_copying_hash(copying, srcdir):
-    """Add licenses based on the hash of the copying file"""
+    """Add licenses based on the hash of the copying file."""
     data = tarball.get_contents(copying)
     if data.startswith(b'#!'):
         # Not a license if this is a script
@@ -133,10 +137,7 @@ def license_from_copying_hash(copying, srcdir):
 
 
 def scan_for_licenses(srcdir):
-    """
-    Scan the project directory for things we can use to guess a description
-    and summary
-    """
+    """Scan the project directory for things we can use to guess a description and summary."""
     targets = ["copyright",
                "copyright.txt",
                "apache-2.0",
@@ -164,6 +165,7 @@ def scan_for_licenses(srcdir):
 
 
 def load_specfile(specfile):
+    """Get licenses from the specfile content."""
     global licenses
     global license_files
     specfile.licenses = licenses if licenses else [default_license]

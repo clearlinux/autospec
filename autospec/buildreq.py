@@ -19,16 +19,15 @@
 # Deduce and manage build requirements
 #
 
+import ast
 import os
 import re
-import ast
-
-import toml
+import subprocess
 
 import buildpattern
-import util
 import config
-import subprocess
+import toml
+import util
 
 banned_requires = set()
 buildreqs = set()
@@ -55,9 +54,7 @@ autoreconf_reqs = ["gettext-bin",
 
 
 def add_buildreq(req, cache=False):
-    """
-    Add req to the global buildreqs set if req is not banned
-    """
+    """Add req to the global buildreqs set if req is not banned."""
     global buildreqs
     global buildreqs_cache
     new = True
@@ -78,10 +75,7 @@ def add_buildreq(req, cache=False):
 
 
 def add_requires(req, override=False):
-    """
-    Add req to the global requires set if it is present in buildreqs and
-    os_packages and is not banned.
-    """
+    """Add req to the global requires set if it is present in buildreqs and os_packages and is not banned."""
     global requires
     new = True
     req = req.strip()
@@ -100,9 +94,7 @@ def add_requires(req, override=False):
 
 
 def add_pkgconfig_buildreq(preq, cache=False):
-    """
-    Format preq as pkgconfig req and add to buildreqs
-    """
+    """Format preq as pkgconfig req and add to buildreqs."""
     if config.config_opts['32bit']:
         req = "pkgconfig(32" + preq + ")"
         add_buildreq(req, cache)
@@ -111,9 +103,7 @@ def add_pkgconfig_buildreq(preq, cache=False):
 
 
 def configure_ac_line(line):
-    """
-    Parse configure_ac line and add appropriate buildreqs
-    """
+    """Parse configure_ac line and add appropriate buildreqs."""
     # print("----\n", line, "\n----")
     # ignore comments
     if line.startswith('#'):
@@ -155,9 +145,7 @@ def configure_ac_line(line):
 
 
 def is_number(num_str):
-    """
-    Return True if num_str can be represented as a number
-    """
+    """Return True if num_str can be represented as a number."""
     try:
         float(num_str)
         return True
@@ -166,9 +154,7 @@ def is_number(num_str):
 
 
 def is_version(num_str):
-    """
-    Return True if num_str looks like a version number
-    """
+    """Return True if num_str looks like a version number."""
     if re.search(r'^\d+(\.\d+)*$', num_str):
         return True
 
@@ -176,10 +162,7 @@ def is_version(num_str):
 
 
 def parse_modules_list(modules_string, is_cmake=False):
-    """
-    parse the modules_string for the list of modules, stripping out the version
-    requirements
-    """
+    """Parse the modules_string for the list of modules, stripping out the version requirements."""
     if is_cmake:
         modules = [m for m in re.split(r'\s*([><]?=|\${?[^}]*}?)\s*', modules_string)]
         modules = filter(None, modules)
@@ -212,9 +195,7 @@ def parse_modules_list(modules_string, is_cmake=False):
 
 
 def parse_configure_ac(filename):
-    """
-    Parse the configure.ac file for build requirements
-    """
+    """Parse the configure.ac file for build requirements."""
     buf = ""
     depth = 0
     # print("Configure parse: ", filename)
@@ -239,7 +220,7 @@ def parse_configure_ac(filename):
 
 
 def parse_cargo_toml(filename):
-    """Update build requirements using Cargo.toml
+    """Update build requirements using Cargo.toml.
 
     Set the build requirements for building rust programs using cargo.
     """
@@ -259,9 +240,7 @@ def parse_cargo_toml(filename):
 
 
 def set_build_req():
-    """
-    Add build requirements based on the buildpattern pattern
-    """
+    """Add build requirements based on the buildpattern pattern."""
     if buildpattern.default_pattern == "maven":
         maven_reqs = ["apache-maven",
                       "xmvn",
@@ -307,9 +286,7 @@ def set_build_req():
 
 
 def rakefile(filename):
-    """
-    Scan Rakefile for build requirements
-    """
+    """Scan Rakefile for build requirements."""
     with open(filename, "r", encoding="latin-1") as f:
         lines = f.readlines()
 
@@ -326,9 +303,7 @@ def rakefile(filename):
 
 
 def parse_cmake(filename):
-    """
-    Scan a .cmake or CMakeLists.txt file for what's it's actually looking for
-    """
+    """Scan a .cmake or CMakeLists.txt file for what's it's actually looking for."""
     findpackage = re.compile(r"find_package\((\w+)\b.*\)", re.I)
     pkgconfig = re.compile(r"pkg_check_modules\s*\(\w+ (.*)\)", re.I)
     pkg_search_modifiers = {'REQUIRED', 'QUIET', 'NO_CMAKE_PATH',
@@ -344,7 +319,7 @@ def parse_cmake(filename):
             try:
                 pkg = config.cmake_modules[module]
                 add_buildreq(pkg)
-            except:
+            except Exception:
                 pass
 
         match = pkgconfig.search(line)
@@ -367,9 +342,7 @@ def parse_cmake(filename):
 
 
 def qmake_profile(filename):
-    """
-    Scan .pro file for build requirements
-    """
+    """Scan .pro file for build requirements."""
     with open(filename, "r", encoding="latin-1") as f:
         lines = f.readlines()
 
@@ -384,14 +357,12 @@ def qmake_profile(filename):
             try:
                 pc = config.qt_modules[module]
                 add_buildreq('pkgconfig({})'.format(pc))
-            except:
+            except Exception:
                 pass
 
 
 def clean_python_req(req, add_python=True):
-    """
-    Strip version information from req
-    """
+    """Strip version information from req."""
     if req.find("#") == 0:
         return ""
     ret = req.rstrip("\n\r").strip()
@@ -427,9 +398,7 @@ def clean_python_req(req, add_python=True):
 
 
 def grab_python_requirements(descfile):
-    """
-    Add python requirements from requirements.txt file
-    """
+    """Add python requirements from requirements.txt file."""
     with open(descfile, "r", encoding="latin-1") as f:
         lines = f.readlines()
 
@@ -445,12 +414,10 @@ def grab_python_requirements(descfile):
 
 
 def grab_pip_requirements(pkgname):
-    """
-    Determine python requirements for pkgname using pip show
-    """
+    """Determine python requirements for pkgname using pip show."""
     try:
         pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
-    except:
+    except Exception:
         return
     lines = pipeout.decode("utf-8").split('\n')
     for line in lines:
@@ -464,13 +431,11 @@ def grab_pip_requirements(pkgname):
 
 
 def get_python_build_version_from_classifier(filename):
-    """
-    Detect if setup should use distutils2 or distutils3 only.
+    """Detect if setup should use distutils2 or distutils3 only.
 
     Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
     setup.py file.  Defaults to distutils3 if no such classifiers are found.
     """
-
     with open(filename) as setup_file:
         data = setup_file.read()
 
@@ -484,9 +449,7 @@ def get_python_build_version_from_classifier(filename):
 
 
 def add_setup_py_requires(filename):
-    """
-    Detect build requirements listed in setup.py in the install_requires and
-    setup_requires lists.
+    """Detect build requirements listed in setup.py in the install_requires and setup_requires lists.
 
     Handles the following patterns:
     install_requires='one'
@@ -535,7 +498,7 @@ def add_setup_py_requires(filename):
                         if req:
                             add_requires(dep)
 
-                    except:
+                    except Exception:
                         # do not fail, the line contained a variable and
                         # had to be skipped
                         pass
@@ -559,7 +522,7 @@ def add_setup_py_requires(filename):
                     if req:
                         add_requires(dep)
 
-                except:
+                except Exception:
                     # Do not fail, just keep looking
                     pass
 
@@ -581,13 +544,14 @@ def add_setup_py_requires(filename):
                 if req:
                     add_requires(dep)
 
-            except:
+            except Exception:
                 # do not fail, the line contained a variable and had to
                 # be skipped
                 pass
 
 
 def parse_catkin_deps(cmakelists_file):
+    """Determine requirements for catkin packages."""
     f = open(cmakelists_file, "r", encoding="latin-1")
     lines = f.readlines()
     pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
@@ -620,9 +584,7 @@ def parse_catkin_deps(cmakelists_file):
 
 
 def scan_for_configure(dirn):
-    """
-    Scan the package directory for build files to determine build pattern
-    """
+    """Scan the package directory for build files to determine build pattern."""
     if buildpattern.default_pattern == "distutils":
         add_buildreq("buildreq-distutils")
     elif buildpattern.default_pattern == "distutils23":
@@ -731,9 +693,7 @@ def scan_for_configure(dirn):
 
 
 def load_specfile(specfile):
-    """
-    Load specfile object with necessary buildreq data
-    """
+    """Load specfile object with necessary buildreq data."""
     specfile.buildreqs = buildreqs
     specfile.requires = requires
     specfile.cargo_bin = cargo_bin

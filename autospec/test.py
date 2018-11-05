@@ -19,21 +19,20 @@
 # Deduce and emmit the patterns for %check
 #
 
+import os
+
 import buildpattern
 import buildreq
-import count
-import os
-import tarball
 import config
+import count
+import tarball
 import util
 
 tests_config = ""
 
 
 def check_regression(pkg_dir):
-    """
-    Check the build log for test regressions using the count module
-    """
+    """Check the build log for test regressions using the count module."""
     if config.config_opts['skip_tests']:
         return
 
@@ -57,9 +56,7 @@ def check_regression(pkg_dir):
 
 
 def scan_for_tests(src_dir):
-    """
-    Scan source directory for test files and set tests_config accordingly
-    """
+    """Scan source directory for test files and set tests_config accordingly."""
     global tests_config
 
     if config.config_opts['skip_tests'] or tests_config:
@@ -81,11 +78,8 @@ def scan_for_tests(src_dir):
         "perlcheck": perl_check,
         "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/"
-                    + tarball.tarball_prefix
-                    + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/"
-                    + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
+        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
     }
     if config.config_opts['32bit']:
         testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"
@@ -139,7 +133,7 @@ def scan_for_tests(src_dir):
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
                        "R CMD check --no-manual --no-examples --no-codoc -l " \
                        "%{buildroot}/usr/lib64/R/library "                    \
-                       + tarball.rawname + "|| : \ncp ~/.stash/* "                 \
+                       + tarball.rawname + "|| : \ncp ~/.stash/* "            \
                        "%{buildroot}/usr/lib64/R/library/*/libs/ || :"
 
     if "tox.ini" in files:
@@ -151,7 +145,5 @@ def scan_for_tests(src_dir):
 
 
 def load_specfile(specfile):
-    """
-    Load the specfile object
-    """
+    """Load the specfile object."""
     specfile.tests_config = tests_config

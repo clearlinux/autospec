@@ -17,18 +17,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import configparser
 import glob
 import hashlib
 import os
 import re
 import shutil
 import subprocess
-import pycurl
-import configparser
-import buildreq
 
 import build
 import buildpattern
+import buildreq
+import pycurl
 from util import call, print_fatal, write_out
 
 name = ""
@@ -44,27 +44,21 @@ giturl = ""
 
 
 def get_contents(filename):
-    """
-    Get contents of filename (tar file)
-    """
+    """Get contents of filename (tar file)."""
     with open(filename, "rb") as f:
         return f.read()
     return None
 
 
 def get_sha1sum(filename):
-    """
-    Get sha1 sum of filename (tar file)
-    """
+    """Get sha1 sum of filename (tar file)."""
     sh = hashlib.sha1()
     sh.update(get_contents(filename))
     return sh.hexdigest()
 
 
 def really_download(upstream_url, destination):
-    """
-    Ok, really download the tarball from url
-    """
+    """Ok, really download the tarball from url."""
     with open(destination, 'wb') as dfile:
         c = pycurl.Curl()
         c.setopt(c.URL, upstream_url)
@@ -86,9 +80,7 @@ def really_download(upstream_url, destination):
 
 
 def check_or_get_file(upstream_url, tarfile):
-    """
-    Download tarball from url unless it is present locally
-    """
+    """Download tarball from url unless it is present locally."""
     tarball_path = build.download_path + "/" + tarfile
     if not os.path.isfile(tarball_path):
         really_download(upstream_url, tarball_path)
@@ -96,9 +88,7 @@ def check_or_get_file(upstream_url, tarfile):
 
 
 def build_untar(tarball_path):
-    """
-    Determine extract command and tarball prefix from tar -tf output
-    """
+    """Determine extract command and tarball prefix from tar -tf output."""
     tar_prefix = ""
     try:
         tarball_contents = subprocess.check_output(
@@ -129,7 +119,7 @@ def build_untar(tarball_path):
 
 
 def build_unzip(zip_path):
-    """Return correct unzip command and the prefix folder name of the contents of zip file
+    """Return correct unzip command and the prefix folder name of the contents of zip file.
 
     This function will run the zip file through a content list, parsing that list to get the
     root folder name containing the zip file's contents.
@@ -166,7 +156,7 @@ def build_unzip(zip_path):
 
 
 def build_un7z(zip_path):
-    """Return correct 7z command and the prefix folder name of the contents of 7z file
+    """Return correct 7z command and the prefix folder name of the contents of 7z file.
 
     This function will run the 7z file through a content list, parsing that list to get the
     root folder name containing the 7z file's contents.
@@ -224,7 +214,8 @@ def build_un7z(zip_path):
 
 
 def build_gem_unpack(tarball_path):
-    """
+    """Create gem unpack command.
+
     gem unpack --verbose
     /path/to/dir/file1
     /path/to/dir/file2
@@ -244,9 +235,7 @@ def build_gem_unpack(tarball_path):
 
 
 def print_header():
-    """
-    Print header for autospec run
-    """
+    """Print header for autospec run."""
     print("\n")
     print("Processing", url)
     print("=" * 105)
@@ -256,10 +245,7 @@ def print_header():
 
 
 def download_tarball(target_dir):
-    global giturl
-
-    """
-    Download tarball at url (global) to target_dir
+    """Download tarball at url (global) to target_dir.
 
     priority for target directory:
     - target_dir set from args
@@ -267,15 +253,15 @@ def download_tarball(target_dir):
       any of the options match what has been detected.
     - curdir/name
     """
+    global giturl
+
     tarfile = os.path.basename(url)
     target = os.path.join(os.getcwd(), name)
     if os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
         config_f = configparser.ConfigParser(interpolation=None)
         config_f.read('options.conf')
         if "package" in config_f.sections():
-            if (config_f["package"].get("name") == name
-                    or config_f["package"].get("url") == url
-                    or config_f["package"].get("archives") == " ".join(archives)):
+            if (config_f["package"].get("name") == name or config_f["package"].get("url") == url or config_f["package"].get("archives") == " ".join(archives)):
                 target = os.getcwd()
             if "giturl" in config_f["package"]:
                 giturl = config_f["package"].get("giturl")
@@ -291,9 +277,7 @@ def download_tarball(target_dir):
 
 
 def convert_version(ver_str):
-    """
-    Remove disallowed characters from the version
-    """
+    """Remove disallowed characters from the version."""
     # banned substrings. It is better to remove these here instead of filtering
     # them out with expensive regular expressions
     banned_subs = ["x86.64", "source", "src", "all", "bin", "release", "rh",
@@ -328,10 +312,7 @@ def convert_version(ver_str):
 
 
 def detect_build_from_url(url):
-    """
-    Detect build patterns and build requirements from the patterns detected
-    in the url.
-    """
+    """Detect build patterns and build requirements from the patterns detected in the url."""
     # R package
     if "cran.r-project.org" in url or "cran.rstudio.com" in url:
         buildpattern.set_build_pattern("R", 10)
@@ -358,9 +339,7 @@ def detect_build_from_url(url):
 
 
 def name_and_version(name_arg, version_arg, filemanager):
-    """
-    Parse the url for the package name and version
-    """
+    """Parse the url for the package name and version."""
     global name
     global rawname
     global version
@@ -518,9 +497,7 @@ def name_and_version(name_arg, version_arg, filemanager):
 
 
 def set_gcov():
-    """
-    Set the gcov file name
-    """
+    """Set the gcov file name."""
     global gcov_file
     gcov_path = os.path.join(build.download_path, name + ".gcov")
     if os.path.isfile(gcov_path):
@@ -528,17 +505,13 @@ def set_gcov():
 
 
 def write_upstream(sha, tarfile, mode="w"):
-    """
-    Write the upstream hash to the upstream file
-    """
+    """Write the upstream hash to the upstream file."""
     write_out(os.path.join(build.download_path, "upstream"),
               os.path.join(sha, tarfile) + "\n", mode=mode)
 
 
 def find_extract(tar_path, tarfile):
-    """
-    Determine the extract command and tarball_prefix
-    """
+    """Determine the extract command and tarball_prefix."""
     tar_prefix = "{}-{}".format(name, version)
     if tarfile.lower().endswith('.zip'):
         extract_cmd, tar_prefix = build_unzip(tar_path)
@@ -551,9 +524,7 @@ def find_extract(tar_path, tarfile):
 
 
 def prepare_and_extract(extract_cmd):
-    """
-    Prepare the directory and extract the tarball
-    """
+    """Prepare the directory and extract the tarball."""
     shutil.rmtree(os.path.join(build.base_path, name), ignore_errors=True)
     shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
     os.makedirs("{}".format(build.base_path), exist_ok=True)
@@ -562,9 +533,7 @@ def prepare_and_extract(extract_cmd):
 
 
 def process_archives(archives):
-    """
-    Download and process archives
-    """
+    """Download and process archives."""
     for archive, destination in zip(archives[::2], archives[1::2]):
         source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
         if source_tarball_path.lower().endswith('.zip'):
@@ -594,9 +563,7 @@ def process_archives(archives):
 
 
 def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
-    """
-    Download and process the tarball at url_arg
-    """
+    """Download and process the tarball at url_arg."""
     global url
     global name
     global version
@@ -634,9 +601,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
 
 
 def load_specfile(specfile):
-    """
-    Load the specfile object with the tarball_prefix, gcov_file, and rawname
-    """
+    """Load the specfile object with the tarball_prefix, gcov_file, and rawname."""
     specfile.tarball_prefix = tarball_prefix
     specfile.gcov_file = gcov_file
     specfile.rawname = rawname

@@ -1,5 +1,5 @@
 check: autospec/*.py
-	@flake8 $^
+	@flake8 --ignore=D100,I201 $^
 
 test_pkg_integrity:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_pkg_integrity.py

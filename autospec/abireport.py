@@ -21,12 +21,13 @@
 # appropriately sorted, in that a diff only occurs when the shared libraries
 # in the package themselves actually change too.
 
-import subprocess
-import re
 import os
-import sys
-import util
+import re
 import shutil
+import subprocess
+import sys
+
+import util
 
 valid_dirs = ["/usr/lib", "/usr/lib64"]
 
@@ -51,6 +52,7 @@ ignored_symbols = [
 
 
 def get_output(cmd):
+    """Return output from subprocess.getoutput."""
     try:
         o = subprocess.getoutput(cmd)
         return o
@@ -59,6 +61,7 @@ def get_output(cmd):
 
 
 def get_soname(path):
+    """Use objdump to find the SONAME of a file."""
     cmd = "objdump -p \"{}\"|grep SONAME".format(path)
     try:
         line = get_output(cmd)
@@ -72,7 +75,7 @@ def get_soname(path):
 
 
 def get_shared_dependencies(path):
-    ''' Return the shared dependencies for a given path '''
+    """Return the shared dependencies for a given path."""
     ret = set()
     cmd = "readelf -d {}".format(path)
 
@@ -87,8 +90,7 @@ def get_shared_dependencies(path):
 
 
 def get_all_dependencies(path):
-    ''' Determine all dependencies in the given path '''
-
+    """Determine all dependencies in the given path."""
     deps = set()
 
     sonames = set()
@@ -118,7 +120,7 @@ def get_all_dependencies(path):
 
 
 def get_file_magic(path):
-    ''' Return the 'magic' for a given path '''
+    """Return the 'magic' for a given path."""
     cmd = "file \"{}\"".format(path)
     try:
         line = get_output(cmd).split("\n")[0]
@@ -128,7 +130,7 @@ def get_file_magic(path):
 
 
 def is_dynamic_binary(path):
-    ''' Determine if a given path is a dynamic binary '''
+    """Determine if a given path is a dynamic binary."""
     if not os.path.exists(path) or not os.path.isfile(path):
         return False
     mg = get_file_magic(path)
@@ -140,6 +142,7 @@ def is_dynamic_binary(path):
 
 
 def is_file_valid(path):
+    """Validate file is an SO."""
     if not os.path.exists(path) or os.path.islink(path):
         return False
     mg = get_file_magic(path)
@@ -151,6 +154,7 @@ def is_file_valid(path):
 
 
 def dump_symbols(path):
+    """Get symbols from a file."""
     cmd = "nm --defined-only -g --dynamic \"{}\"".format(path)
     lines = None
 
@@ -179,6 +183,7 @@ def dump_symbols(path):
 
 
 def purge_tree(tree):
+    """Run rm -fr."""
     if not os.path.exists(tree):
         return
     try:
@@ -189,6 +194,7 @@ def purge_tree(tree):
 
 
 def truncate_file(path):
+    """Zero file content."""
     if not os.path.exists(path):
         return
     with open(path, "r+", encoding="utf-8") as trunc:
@@ -196,7 +202,7 @@ def truncate_file(path):
 
 
 def examine_abi(download_path):
-    """ Proxy the ABI reporting to the right function """
+    """Proxy the ABI reporting to the right function."""
     download_path = os.path.abspath(download_path)
     results_dir = os.path.abspath(os.path.join(download_path, "results"))
 
@@ -212,7 +218,7 @@ def examine_abi(download_path):
 
 
 def examine_abi_host(download_path, results_dir):
-    """ Make use of the hostside abireport tool """
+    """Make use of the hostside abireport tool."""
     try:
         util.call("abireport scan-packages \"{}\"".format(results_dir),
                   cwd=download_path)
@@ -221,7 +227,7 @@ def examine_abi_host(download_path, results_dir):
 
 
 def examine_abi_fallback(download_path, results_dir):
-    """ Missing abireport so fallback to internal scanning """
+    """Missing abireport so fallback to internal scanning."""
     old_dir = os.getcwd()
 
     rpms = set()
