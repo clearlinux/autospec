@@ -19,21 +19,21 @@
 # %files section management
 #
 
-import build
-import tarball
-import config
-import re
 import os
-import util
+import re
 from collections import OrderedDict
-# todo package splits
+
+import build
+import config
+import tarball
+import util
 
 
 class FileManager(object):
-    """
-    Files class handles spec file %files section management
-    """
+    """Class to handle spec file %files section management."""
+
     def __init__(self):
+        """Set defaults for FileManager."""
         self.packages = OrderedDict()  # per sub-package file list for spec purposes
         self.files = []  # global file list to weed out dupes
         self.files_blacklist = set()
@@ -50,10 +50,7 @@ class FileManager(object):
         self.want_dev_split = True
 
     def push_package_file(self, filename, package="main"):
-        """
-        Add found %file and indicate to build module that we must restart the
-        build.
-        """
+        """Add found %file and indicate to build module that we must restart the build."""
         if package not in self.packages:
             self.packages[package] = set()
 
@@ -64,9 +61,7 @@ class FileManager(object):
             self.newfiles_printed = True
 
     def compat_exclude(self, filename):
-        """
-        Exclude non-library files if the package is for compatability.
-        """
+        """Exclude non-library files if the package is for compatability."""
         if not config.config_opts.get("compat"):
             return False
 
@@ -87,10 +82,10 @@ class FileManager(object):
         return exclude
 
     def file_pat_match(self, filename, pattern, package, replacement="", prefix=""):
-        """
-        Search for pattern in filename, if pattern matches push package file.
-        If that file is also in the excludes list, prepend "%exclude " before
-        pushing the filename.
+        """Search for pattern in filename.
+
+        Attempt to find pattern in filename, if pattern matches push package file.
+        If that file is also in the excludes list, prepend "%exclude " before pushing the filename.
         Returns True if a file was pushed, False otherwise.
         """
         if not replacement:
@@ -109,10 +104,7 @@ class FileManager(object):
             return False
 
     def file_is_locale(self, filename):
-        """
-        If a file is a locale, appends to self.locales and returns True,
-        returns False otherwise
-        """
+        """If a file is a locale, appends to self.locales and returns True, returns False otherwise."""
         pat = re.compile(r"^/usr/share/locale/.*/(.*)\.mo")
         match = pat.search(filename)
         if match:
@@ -128,9 +120,7 @@ class FileManager(object):
             return False
 
     def _clean_dirs(self, root, files):
-        """
-        Do the work to remove the directories from the files list
-        """
+        """Do the work to remove the directories from the files list."""
         res = set()
         removed = False
 
@@ -157,9 +147,7 @@ class FileManager(object):
         return (res, removed)
 
     def clean_directories(self, root):
-        """
-        Remove directories from file list
-        """
+        """Remove directories from file list."""
         removed = False
         for pkg in self.packages:
             self.packages[pkg], _rem = self._clean_dirs(root, self.packages[pkg])
@@ -169,10 +157,7 @@ class FileManager(object):
         return removed
 
     def push_file(self, filename):
-        """
-        Perform a number of checks against the filename and push the filename
-        if appropriate.
-        """
+        """Perform a number of checks against the filename and push the filename if appropriate."""
         if filename in self.files or filename in self.files_blacklist:
             return
 
@@ -321,9 +306,7 @@ class FileManager(object):
         self.push_package_file(filename)
 
     def remove_file(self, filename):
-        """
-        Remove filename from local file list
-        """
+        """Remove filename from local file list."""
         hit = False
 
         if filename in self.files:
@@ -340,10 +323,7 @@ class FileManager(object):
             build.must_restart += 1
 
     def load_specfile(self, specfile):
-        """
-        Load a specfile instance with relevant information to be written to the
-        spec file.
-        """
+        """Load a specfile instance with relevant information to be written to the spec file."""
         specfile.packages = self.packages
         specfile.excludes = self.excludes
         specfile.locales = self.locales

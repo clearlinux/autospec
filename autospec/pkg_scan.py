@@ -17,16 +17,17 @@
 #
 import subprocess
 
-import util
 import config
+import util
 
 
 def get_whatrequires(pkg):
     """
-    Write list of packages that require current package to file
-    using dnf repoquery what-requires and --recursive commands
-    """
+    Write list of packages.
 
+    Write packages that require the current package to a file
+    using dnf repoquery what-requires and --recursive commands.
+    """
     # clean up dnf cache to avoid 'no more mirrors repo' error
     try:
         subprocess.check_output(['dnf', '--config', config.yum_conf,

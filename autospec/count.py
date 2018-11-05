@@ -15,8 +15,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
-import re
+
 import argparse
+import re
 
 testcount = {}
 testpass = {}
@@ -41,6 +42,7 @@ name = ''
 
 
 def zero_test_data():
+    """Zero test results."""
     global total_tests
     global total_pass
     global total_fail
@@ -64,6 +66,7 @@ def zero_test_data():
 
 
 def sanitize_counts():
+    """Validate test counts are within sane bounds."""
     global total_tests
     global total_pass
     global total_fail
@@ -94,6 +97,7 @@ def sanitize_counts():
 
 
 def collect_output():
+    """Sum test results."""
     if not testcount.get(name):
         testcount[name] = 0 if not testcount.get(name) else testcount[name]
     if not testpass.get(name):
@@ -123,6 +127,7 @@ def collect_output():
 
 
 def convert_int(intstr):
+    """Integer conversion wrapper."""
     try:
         return int(intstr)
     except ValueError:
@@ -130,6 +135,7 @@ def convert_int(intstr):
 
 
 def parse_meson_test(lines):
+    """Parse outout of meson tests logs."""
     global total_pass
     global total_fail
     global total_skip
@@ -149,6 +155,7 @@ def parse_meson_test(lines):
 
 
 def parse_log(log, pkgname=''):
+    """Parse output of test logs."""
     global total_tests
     global total_pass
     global total_fail
@@ -1346,6 +1353,7 @@ def parse_log(log, pkgname=''):
 
 
 def string_out():
+    """Output test result counts."""
     retstr = ""
     for key in sorted(testcount):
         # key may be an empty string, which is fine since this is handled by

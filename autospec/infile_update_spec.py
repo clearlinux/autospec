@@ -17,8 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-import re
 import os
+import re
+
 from util import print_infile
 
 
@@ -34,11 +35,10 @@ cmd_mappings = {
 
 
 def update_summary(bb_dict, specfile):
-    """
-    Updates the default summary to the summary or description scraped from
-    the bitbake file. The bitbake "SUMMARY" variable is first priority,
-    then the "DESCRIPTION" variable. If neither exist, set set it back to the
-    specfile value.
+    """Update the default summary to the summary or description scraped from the bitbake file.
+
+    The bitbake "SUMMARY" variable is first priority, then the "DESCRIPTION" variable. If neither
+    exist, set set it back to the specfile value.
     """
     specfile.default_sum = bb_dict.get("SUMMARY") or \
         bb_dict.get("DESCRIPTION") or specfile.default_sum
@@ -49,10 +49,7 @@ def update_summary(bb_dict, specfile):
 
 
 def update_licenses(bb_dict, specfile):
-    """
-    The specfile contains a list of licenses for a package, if the bitbake
-    license is not included in that list, add it.
-    """
+    """Add the bitbake license if it is not included in the specfile."""
     if "LICENSE" in bb_dict:
         if bb_dict.get("LICENSE").lower() not in [l.lower() for l in specfile.licenses]:
             specfile.licenses.append(bb_dict.get("LICENSE"))
@@ -60,10 +57,7 @@ def update_licenses(bb_dict, specfile):
 
 
 def update_build_deps(bb_dict, specfile):
-    """
-    Add build dependencies to the buildreq set, if the bb_dict scraped build
-    time dependencies.
-    """
+    """Add build dependencies to the buildreq set, if the bb_dict scraped build time dependencies."""
     if bb_dict.get('DEPENDS'):
         for dep in bb_dict.get('DEPENDS').split():
             dep = re.match(r"(\$\{PYTHON_PN\}\-)?([a-zA-Z0-9\-]+)", dep).group(2)
@@ -75,7 +69,8 @@ def update_build_deps(bb_dict, specfile):
 
 
 def write_cmd_files(bb_dict, dirname):
-    """
+    """Add commented out do_ commands to their autospec equivalent files.
+
     Append "do_" task commands that are scraped from the bitbake file(s). Some
     of these commands have append/prepend. These operations are performed
     prior to being added to the dict. This function appends all commands to
@@ -92,7 +87,7 @@ def write_cmd_files(bb_dict, dirname):
 
 
 def update_specfile(specfile, bb_dict, dirname):
-
+    """Update specifle based on bitbake configuration."""
     update_summary(bb_dict, specfile)
     update_licenses(bb_dict, specfile)
     update_build_deps(bb_dict, specfile)

@@ -19,18 +19,18 @@
 # Parse config files
 #
 
+import configparser
 import os
-import sys
 import re
 import subprocess
+import sys
 import test
 import textwrap
-import configparser
 
-import tarball
 import buildpattern
 import buildreq
 import license
+import tarball
 from util import call, write_out
 
 extra_configure = ""
@@ -298,9 +298,7 @@ failed_pats = [
 
 
 def get_metadata_conf():
-    """
-    gather package metadata from the tarball module
-    """
+    """Gather package metadata from the tarball module."""
     metadata = {}
     metadata['name'] = tarball.name
     if urlban:
@@ -315,9 +313,7 @@ def get_metadata_conf():
 
 
 def create_conf(path):
-    """
-    Create options.conf file. Use deprecated configuration files or defaults to populate
-    """
+    """Create options.conf file and use deprecated configuration files or defaults to populate."""
     config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
 
     # first the metadata
@@ -341,16 +337,14 @@ def create_conf(path):
 
 
 def create_buildreq_cache(path, version):
-    """
-    Make the buildreq_cache file
-    """
+    """Make the buildreq_cache file."""
     content = read_conf_file(os.path.join(path, "buildreq_cache"))
     # don't create an empty cache file
     if len(buildreq.buildreqs_cache) < 1:
         try:
             # file was possibly added to git so we should clean it up
             os.unlink(content)
-        except:
+        except Exception:
             pass
         return
     if not content:
@@ -363,17 +357,13 @@ def create_buildreq_cache(path, version):
 
 
 def write_config(config_f, path):
-    """
-    Write the config_f to configfile
-    """
+    """Write the config_f to configfile."""
     with open(os.path.join(path, 'options.conf'), 'w') as configfile:
         config_f.write(configfile)
 
 
 def read_config_opts(path):
-    """
-    Read config options from path/options.conf
-    """
+    """Read config options from path/options.conf."""
     global config_opts
     opts_path = os.path.join(path, 'options.conf')
     if not os.path.exists(opts_path):
@@ -395,9 +385,7 @@ def read_config_opts(path):
 
 
 def rewrite_config_opts(path):
-    """
-    Rewrite options.conf file when an option has changed (verify_required for example)
-    """
+    """Rewrite options.conf file when an option has changed (verify_required for example)."""
     config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
     config_f['package'] = get_metadata_conf()
     config_f['autospec'] = {}
@@ -416,16 +404,12 @@ def rewrite_config_opts(path):
 
 
 def filter_blanks(lines):
-    """
-    Filter out blank lines from the line list
-    """
+    """Filter out blank lines from the line list."""
     return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
 
 
 def read_conf_file(path):
-    """
-    read configuration file at path
-    """
+    """Read configuration file at path."""
     try:
         with open(path, "r") as f:
             config_files.add(os.path.basename(path))
@@ -435,9 +419,9 @@ def read_conf_file(path):
 
 
 def read_pattern_conf(filename, dest, list_format=False, path=None):
-    """
-    Read a fail-pattern configuration file in the form of
-    <pattern>, <package> and ignore lines starting with "#"
+    """Read a fail-pattern configuration file.
+
+    Read fail-pattern config file in the form of <pattern>, <package> and ignore lines starting with '#.'
     """
     file_repo_dir = os.path.dirname(os.path.abspath(__file__))
     file_conf_path = os.path.join(path, filename) if path else None
@@ -465,9 +449,7 @@ def read_pattern_conf(filename, dest, list_format=False, path=None):
 
 
 def setup_patterns(path=None):
-    """
-    Read each pattern configuration file and assign to the appropriate variable
-    """
+    """Read each pattern configuration file and assign to the appropriate variable."""
     global failed_commands
     global ignored_commands
     global maven_jars
@@ -490,9 +472,7 @@ def setup_patterns(path=None):
 
 
 def parse_existing_spec(path, name):
-    """
-    Determine the old version, old patch list, old keyid, and cves from old spec file
-    """
+    """Determine the old version, old patch list, old keyid, and cves from old spec file."""
     global old_version
     global old_patches
     global old_keyid
@@ -526,9 +506,7 @@ def parse_existing_spec(path, name):
 
 
 def parse_config_files(path, bump, filemanager, version):
-    """
-    Parse the various configuration files that may exist in the package directory
-    """
+    """Parse the various configuration files that may exist in the package directory."""
     global extra_configure
     global extra_configure32
     global extra_configure64
@@ -620,9 +598,7 @@ def parse_config_files(path, bump, filemanager, version):
     wrapper.subsequent_indent = "# "
 
     def write_default_conf_file(name, description):
-        """
-        Write default configuration file with description to file name
-        """
+        """Write default configuration file with description to file name."""
         config_files.add(name)
         filename = os.path.join(path, name)
         if os.path.isfile(filename):
@@ -839,9 +815,7 @@ def parse_config_files(path, bump, filemanager, version):
 
 
 def load_specfile(specfile):
-    """
-    Load specfile object with configuration
-    """
+    """Load specfile object with configuration."""
     specfile.urlban = urlban
     specfile.keepstatic = config_opts['keepstatic']
     specfile.no_autostart = config_opts['no_autostart']

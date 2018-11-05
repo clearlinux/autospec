@@ -19,12 +19,14 @@
 
 import os
 import re
-import requests
 import tempfile
 from urllib.request import urlretrieve
 
-import util
 import infile_bb_parser
+
+import requests
+
+import util
 
 
 # filetypes and their parse order (lower parsed first)
@@ -33,6 +35,8 @@ parsable_filetypes = {'.inc': 1, '.bb': 2}
 
 def parse_ext(path):
     """
+    Check if a file can be parsed based on its extension.
+
     Gets the extension of a file and determines if the filetype can be handled
     by the infile_parser. If so, it returns the extension. If not, it returns
     nothing, which will cause the file_handler to return and infile parsing
@@ -71,17 +75,12 @@ def check_url_content(url):
 
 
 def sort_files(x):
-    """
-    Sorts files depending on their priority in the parsable_filetypes dict.
-    """
+    """Sorts files depending on their priority in the parsable_filetypes dict."""
     return parsable_filetypes.get(os.path.splitext(x)[1])
 
 
 def parse_infile(bb_fp, output_dict, parse_type):
-    """
-    Depending on the type of file, scrape and parse the infile file returning
-    the dictionary of collected data.
-    """
+    """Scrape and parse the infile file returning the dictionary of collected data based on its type."""
     if parse_type == "bb":
         return infile_bb_parser.bb_scraper(bb_fp, output_dict)
     elif parse_type == "inc":
@@ -90,6 +89,8 @@ def parse_infile(bb_fp, output_dict, parse_type):
 
 def file_handler(indata, output_dict):
     """
+    File or url parsing frontend.
+
     This function determines whether the input is a file or a url. If it is a
     url it checks that it is in the correct format (plaintext), downloads the
     url to a temporary file and passes the file handler to be scraped.
@@ -98,7 +99,6 @@ def file_handler(indata, output_dict):
 
     The type of parsing bitbake, inc, deb, etc is based on the file extension.
     """
-
     # If ext is not parsable, return from using infile parser on that file.
     parse_type = parse_ext(indata)
     if not parse_type:
@@ -129,6 +129,8 @@ def file_handler(indata, output_dict):
 
 def infile_reader(indata, name):
     """
+    Parse an infile.
+
     The infile parser can take 3 different inputs:
       A url to a file
       A directory with multiple files or urls
