@@ -45,6 +45,8 @@ class TestTest(unittest.TestCase):
         with patch(open_name, m_open, create=True):
             check.check_regression('pkgdir')
 
+        check.count.parse_log = parse_log_backup
+
         exp_call = unittest.mock.call().write('Total : 120\n'
                                               'Pass : 100\n'
                                               'Fail : 20\n'
@@ -65,6 +67,8 @@ class TestTest(unittest.TestCase):
         open_name = 'util.open'
         with patch(open_name, m_open, create=True):
             check.check_regression('pkgdir')
+
+        check.count.parse_log = parse_log_backup
 
         exp_call = unittest.mock.call().write('Package : test-a\n'
                                               'Total : 120\n'
