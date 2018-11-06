@@ -13,6 +13,7 @@ class TestSpecfileWrite(unittest.TestCase):
     def setUp(self):
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
         self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2')
+        specfiles.config.config_opts['dev_requires_extras'] = False
 
         def mock_write(string):
             self.WRITES.append(string)
