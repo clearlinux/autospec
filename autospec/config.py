@@ -24,11 +24,11 @@ import os
 import re
 import subprocess
 import sys
-import test
 import textwrap
 
 import buildpattern
 import buildreq
+import check
 import license
 import tarball
 from util import call, write_out
@@ -774,7 +774,7 @@ def parse_config_files(path, bump, filemanager, version):
 
     content = read_conf_file(os.path.join(path, "make_check_command"))
     if content:
-        test.tests_config = '\n'.join(content)
+        check.tests_config = '\n'.join(content)
 
     content = read_conf_file(os.path.join(path, tarball.name + ".license"))
     if content and content[0]:

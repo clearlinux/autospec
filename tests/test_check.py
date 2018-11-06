@@ -2,7 +2,8 @@ import os
 import tempfile
 import unittest
 from unittest.mock import mock_open, patch
-import test
+
+import check
 
 
 def mock_generator(rv=None):
@@ -16,19 +17,19 @@ class TestTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.open_name = 'test.open'
-        test.config.config_opts['skip_tests'] = False
-        test.config.config_opts['allow_test_failures'] = False
-        test.config.config_opts['32bit'] = False
-        test.config.config_opts['use_avx2'] = False
-        test.config.config_opts['use_avx512'] = False
-        test.os.path.isfile = mock_generator(True)
+        self.open_name = 'check.open'
+        check.config.config_opts['skip_tests'] = False
+        check.config.config_opts['allow_test_failures'] = False
+        check.config.config_opts['32bit'] = False
+        check.config.config_opts['use_avx2'] = False
+        check.config.config_opts['use_avx512'] = False
+        check.os.path.isfile = mock_generator(True)
 
     def setUp(self):
-        test.tests_config = ''
-        test.tarball.name = ''
-        test.buildreq.buildreqs = set()
-        test.buildpattern.default_pattern = "make"
+        check.tests_config = ''
+        check.tarball.name = ''
+        check.buildreq.buildreqs = set()
+        check.buildpattern.default_pattern = "make"
 
     def test_check_regression(self):
         """
@@ -37,12 +38,12 @@ class TestTest(unittest.TestCase):
         def mock_parse_log(log):
             return ',120,100,20,0,0'
 
-        parse_log_backup = test.count.parse_log
-        test.count.parse_log = mock_parse_log
+        parse_log_backup = check.count.parse_log
+        check.count.parse_log = mock_parse_log
         m_open = mock_open()
         open_name = 'util.open'
         with patch(open_name, m_open, create=True):
-            test.check_regression('pkgdir')
+            check.check_regression('pkgdir')
 
         exp_call = unittest.mock.call().write('Total : 120\n'
                                               'Pass : 100\n'
@@ -58,12 +59,12 @@ class TestTest(unittest.TestCase):
         def mock_parse_log(log):
             return 'test-a,120,100,20,0,0\ntest-b,10,5,3,2,1'
 
-        parse_log_backup = test.count.parse_log
-        test.count.parse_log = mock_parse_log
+        parse_log_backup = check.count.parse_log
+        check.count.parse_log = mock_parse_log
         m_open = mock_open()
         open_name = 'util.open'
         with patch(open_name, m_open, create=True):
-            test.check_regression('pkgdir')
+            check.check_regression('pkgdir')
 
         exp_call = unittest.mock.call().write('Package : test-a\n'
                                               'Total : 120\n'
@@ -84,16 +85,16 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with makecheck suite
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['Makefile.in'])
+        check.os.listdir = mock_generator(['Makefile.in'])
         content = 'check:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            test.buildpattern.default_pattern = "configure"
-            test.scan_for_tests('pkgdir')
+            check.buildpattern.default_pattern = "configure"
+            check.scan_for_tests('pkgdir')
 
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config,
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config,
                          'make VERBOSE=1 V=1 %{?_smp_mflags} check')
 
     def test_scan_for_tests_makecheck_am(self):
@@ -101,15 +102,15 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with makecheck suite via Makefile.am
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['Makefile.am'])
+        check.os.listdir = mock_generator(['Makefile.am'])
         m_open = mock_open()
         with patch(self.open_name, m_open, create=True):
-            test.buildpattern.default_pattern = "configure_ac"
-            test.scan_for_tests('pkgdir')
+            check.buildpattern.default_pattern = "configure_ac"
+            check.scan_for_tests('pkgdir')
 
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config,
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config,
                          'make VERBOSE=1 V=1 %{?_smp_mflags} check')
 
     def test_scan_for_tests_perlcheck_PL(self):
@@ -117,44 +118,44 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with perlcheck suite
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['Makefile.PL'])
-        test.buildpattern.default_pattern = "cpan"
-        test.scan_for_tests('pkgdir')
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config, 'make TEST_VERBOSE=1 test')
+        check.os.listdir = mock_generator(['Makefile.PL'])
+        check.buildpattern.default_pattern = "cpan"
+        check.scan_for_tests('pkgdir')
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config, 'make TEST_VERBOSE=1 test')
 
     def test_scan_for_tests_perlcheck_in(self):
         """
         Test scan_for_tests with perlcheck suite via Makefile.in
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['Makefile.in'])
+        check.os.listdir = mock_generator(['Makefile.in'])
         content = 'test:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            test.buildpattern.default_pattern = "cpan"
-            test.scan_for_tests('pkgdir')
+            check.buildpattern.default_pattern = "cpan"
+            check.scan_for_tests('pkgdir')
 
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config, 'make TEST_VERBOSE=1 test')
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config, 'make TEST_VERBOSE=1 test')
 
     def test_scan_for_tests_setup(self):
         """
         Test scan_for_tests with setup.py suite
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['setup.py'])
+        check.os.listdir = mock_generator(['setup.py'])
         content = 'test_suite'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            test.buildpattern.default_pattern = "distutils3"
-            test.scan_for_tests('pkgdir')
+            check.buildpattern.default_pattern = "distutils3"
+            check.scan_for_tests('pkgdir')
 
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config,
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config,
                          'PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages '
                          'python3 setup.py test')
 
@@ -163,16 +164,16 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with cmake suite
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['CMakeLists.txt'])
+        check.os.listdir = mock_generator(['CMakeLists.txt'])
         content = 'enable_testing'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            test.buildpattern.default_pattern = "cmake"
-            test.scan_for_tests('pkgdir')
+            check.buildpattern.default_pattern = "cmake"
+            check.scan_for_tests('pkgdir')
 
-        test.os.listdir = listdir_backup
-        test.buildpattern.default_pattern = "make"
-        self.assertEqual(test.tests_config,
+        check.os.listdir = listdir_backup
+        check.buildpattern.default_pattern = "make"
+        self.assertEqual(check.tests_config,
                          'cd clr-build; make test')
 
     def test_scan_for_tests_tox_requires(self):
@@ -181,10 +182,10 @@ class TestTest(unittest.TestCase):
         build requirements
         """
         listdir_backup = os.listdir
-        test.os.listdir = mock_generator(['tox.ini'])
-        test.scan_for_tests('pkgdir')
-        test.os.listdir = listdir_backup
-        self.assertEqual(test.buildreq.buildreqs,
+        check.os.listdir = mock_generator(['tox.ini'])
+        check.scan_for_tests('pkgdir')
+        check.os.listdir = listdir_backup
+        self.assertEqual(check.buildreq.buildreqs,
                          set(['tox',
                               'pytest',
                               'virtualenv',

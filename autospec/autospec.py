@@ -22,12 +22,12 @@ import os
 import re
 import sys
 import tempfile
-import test
 
 from abireport import examine_abi
 import build
 import buildpattern
 import buildreq
+import check
 import commitmessage
 import config
 import files
@@ -92,7 +92,7 @@ def load_specfile(specfile):
     license.load_specfile(specfile)
     buildreq.load_specfile(specfile)
     buildpattern.load_specfile(specfile)
-    test.load_specfile(specfile)
+    check.load_specfile(specfile)
 
 
 def read_old_metadata():
@@ -277,7 +277,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     license.scan_for_licenses(_dir)
     commitmessage.scan_for_changes(build.download_path, _dir)
     add_sources(build.download_path, archives)
-    test.scan_for_tests(_dir)
+    check.scan_for_tests(_dir)
 
     #
     # Now, we have enough to write out a specfile, and try to build it.
@@ -321,7 +321,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
         save_mock_logs(build.download_path, build.round)
 
-    test.check_regression(build.download_path)
+    check.check_regression(build.download_path)
 
     if build.success == 0:
         print_fatal("Build failed, aborting")
