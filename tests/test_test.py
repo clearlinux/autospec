@@ -19,6 +19,9 @@ class TestTest(unittest.TestCase):
         self.open_name = 'test.open'
         test.config.config_opts['skip_tests'] = False
         test.config.config_opts['allow_test_failures'] = False
+        test.config.config_opts['32bit'] = False
+        test.config.config_opts['use_avx2'] = False
+        test.config.config_opts['use_avx512'] = False
         test.os.path.isfile = mock_generator(True)
 
     def setUp(self):
