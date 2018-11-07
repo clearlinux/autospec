@@ -27,13 +27,8 @@ def mock_download_file(url, dst):
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sign"]
 
-
     src = os.path.join(TESTDIR, os.path.basename(url))
-    if os.path.isdir(dst):
-        dst = os.path.join(dst, os.path.basename(url))
     if os.path.isfile(src):
-        if os.path.isdir(dst):
-            dst = os.path.join(dst, os.path.basename(url))
         shutil.copyfile(src, dst)
         return dst
 
@@ -53,8 +48,10 @@ class TestCheckFn(unittest.TestCase):
 
     def test_check_matching_sign_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
-            pkg_integrity.download_file(PACKAGE_URL, tmpd)
+            pkey = "023A4420C7EC6914.pkey"
+            shutil.copy(os.path.join(TESTKEYDIR, pkey), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)) + ".asc", tmpd)
             result = pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
@@ -62,9 +59,7 @@ class TestCheckFn(unittest.TestCase):
         """ Download signature for local verification """
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
-            pkg_integrity.download_file(NOSIGN_PKT_URL, tmpd)
-            sign_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL) + ".asc")
-            pkg_integrity.download_file(NOSIGN_SIGN_URL, sign_file)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL)), tmpd)
             result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
             self.assertTrue(result)
 
@@ -74,8 +69,10 @@ class TestDomainBasedVerifiers(unittest.TestCase):
 
     def run_test_for_domain(self, Verifier, url):
         with tempfile.TemporaryDirectory() as tmpd:
-            package_path = pkg_integrity.download_file(url, tmpd)
-            verifier = Verifier(**{'package_path': package_path, 
+            filen = os.path.basename(url)
+            shutil.copy(os.path.join(TESTDIR, filen), tmpd)
+            package_path = os.path.join(tmpd, filen)
+            verifier = Verifier(**{'package_path': package_path,
                                    'url': url})
             return verifier.verify()
         return None
@@ -94,7 +91,7 @@ class TestDomainBasedVerifiers(unittest.TestCase):
     @mock.patch('pkg_integrity.GnomeOrgVerifier.fetch_shasum', _mock_fetch_shasum)
     def test_gnome_org(self):
         result = self.run_test_for_domain(pkg_integrity.GnomeOrgVerifier, GNOME_SHA256_PKG)
-        self.assertTrue(result)        
+        self.assertTrue(result)
 
 
 @mock.patch('pkg_integrity.download_file', mock_download_file)
@@ -108,7 +105,8 @@ class TestGEMShaVerifier(unittest.TestCase):
 
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            pkg_integrity.download_file(GEM_PKT, tmpd)
+            filen = os.path.basename(GEM_PKT)
+            shutil.copy(os.path.join(TESTDIR, filen), tmpd)
             result = pkg_integrity.check(GEM_PKT, tmpd)
             self.assertTrue(result)
 
@@ -135,28 +133,33 @@ class TestGPGVerifier(unittest.TestCase):
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
-            pkg_integrity.download_file(PACKAGE_URL, tmpd)
-            pkg_integrity.download_file(XATTR_PKT_URL, tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
             result = pkg_integrity.check(PACKAGE_URL, tmpd)
             self.assertTrue(result)
 
-    def test_check_quit(self):
+    def test_invalid_key(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            with self.assertRaises(SystemExit) as a:
-                shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
-                pkg_integrity.download_file(NOSIGN_PKT_URL_BAD, tmpd)
-                sign_file = os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD) + ".asc")
-                pkg_integrity.download_file(NOSIGN_SIGN_URL, sign_file)
-                result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
-                self.assertEqual(a.exception.code, 1)
+            shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL_BAD)), tmpd)
+            with open(os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD) + ".asc"), 'w') as ofile:
+                ofile.write("Invalid signature")
+            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
+            self.assertIsNone(result)
+
+    def test_key_not_found(self):
+        with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL_BAD)), tmpd)
+            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
+            self.assertIsNone(result)
 
     def test_from_disk(self):
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             out_key = out_file + ".asc"
-            pkg_integrity.download_file(PACKAGE_URL, tmpd)
-            pkg_integrity.download_file(PACKAGE_URL + ".asc", tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)) + ".asc", tmpd)
             result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
             self.assertTrue(result)
 
@@ -179,7 +182,7 @@ class TestGPGVerifier(unittest.TestCase):
 
     def test_result_on_nosign_package(self):
         with tempfile.TemporaryDirectory() as tmpd:
-            pkg_integrity.download_file(NO_SIGN_PKT_URL, tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL)), tmpd)
             result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
             self.assertIsNone(result)
 
