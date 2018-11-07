@@ -495,12 +495,12 @@ class GPGVerifier(Verifier):
 
     def get_sign(self):
         """Attempt to download gpg signature file."""
-        code = self.download_file(self.key_url, self.package_sign_path)
-        if code == 200:
+        sign_file = download_file(self.key_url, self.package_sign_path)
+        if sign_file is not None:
             return True
         else:
-            msg = "Unable to download file {} http code {}"
-            self.print_result(False, msg.format(self.key_url, code))
+            msg = "Unable to download file {}"
+            self.print_result(False, msg.format(self.key_url))
 
     def verify(self, recursion=False):
         """Verify file using gpg signature."""
@@ -515,7 +515,10 @@ class GPGVerifier(Verifier):
             return None
         if sign_isvalid(self.package_sign_path) is False:
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
-            os.unlink(self.package_sign_path)
+            try:
+                os.unlink(self.package_sign_path)
+            except Exception:
+                pass
             return None
         # valid signature exists at package_sign_path, operate on it now
         keyid = get_keyid(self.package_sign_path)

@@ -14,6 +14,7 @@ def mock_generator(rv=None):
 
 
 class TestTest(unittest.TestCase):
+    backup_isfile = check.os.path.isfile
 
     @classmethod
     def setUpClass(self):
@@ -24,6 +25,10 @@ class TestTest(unittest.TestCase):
         check.config.config_opts['use_avx2'] = False
         check.config.config_opts['use_avx512'] = False
         check.os.path.isfile = mock_generator(True)
+
+    @classmethod
+    def tearDownClass(self):
+        check.os.path.isfile = self.backup_isfile
 
     def setUp(self):
         check.tests_config = ''
