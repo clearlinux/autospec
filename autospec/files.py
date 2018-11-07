@@ -250,6 +250,7 @@ class FileManager(object):
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.so$", so_dest + '32'),
+            (r"^/usr/lib64/haswell/avx512_1/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib/*.a"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib64/*.a"),
