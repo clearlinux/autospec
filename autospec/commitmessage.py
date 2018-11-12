@@ -50,6 +50,7 @@ def scan_for_changes(download_path, directory):
             target = os.path.join(download_path, config.transforms[item.lower()])
             try:
                 shutil.copy(source, target)
+                os.chmod(target, 0o644)
             except Exception as e:
                 print("Error copying file: %s", e)
                 sys.exit(1)
