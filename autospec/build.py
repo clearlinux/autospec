@@ -158,6 +158,27 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             warned_about.add(s)
 
 
+def parse_buildroot_log(filename, returncode):
+    """Handle buildroot log contents."""
+    if returncode == 0:
+        return
+    global must_restart
+    must_restart = 0
+    is_clean = True
+    util.call("sync")
+    with open(filename, "r", encoding="latin-1") as rootlog:
+        loglines = rootlog.readlines()
+
+    missing_pat = re.compile(r"^.*No matching package to install: '(.*)'$")
+    for line in loglines:
+        match = missing_pat.match(line)
+        if match is not None:
+            util.print_fatal("Cannot resolve dependency name: {}".format(match.group(1)))
+            is_clean = False
+
+    return is_clean
+
+
 def parse_build_results(filename, returncode, filemanager):
     """Handle build log contents."""
     global must_restart
@@ -294,4 +315,6 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
         util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
         exit(1)
 
-    parse_build_results(download_path + "/results/build.log", returncode, filemanager)
+    is_clean = parse_buildroot_log(download_path + "/results/root.log", returncode)
+    if is_clean:
+        parse_build_results(download_path + "/results/build.log", returncode, filemanager)
