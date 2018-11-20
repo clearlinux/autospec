@@ -161,7 +161,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
 def parse_buildroot_log(filename, returncode):
     """Handle buildroot log contents."""
     if returncode == 0:
-        return
+        return True
     global must_restart
     must_restart = 0
     is_clean = True
