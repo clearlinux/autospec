@@ -377,13 +377,13 @@ class Specfile(object):
                                       .format(self.tarball_prefix,
                                               self.source_index[archive]))
 
-        for archive in self.sources["archive"]:
+        for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             self._write_strip("mkdir -p {}"
-                              .format(self.archive_details[archive + "destination"]))
-            self._write_strip("mv %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
+                              .format(destination))
+            self._write_strip("cp -r %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
                               .format(self.archive_details[archive + "prefix"],
                                       self.tarball_prefix,
-                                      self.archive_details[archive + "destination"]))
+                                      destination))
         self.apply_patches()
         if config.config_opts['32bit']:
             self._write_strip("pushd ..")

@@ -65,8 +65,9 @@ def add_sources(download_path, archives):
             "{}.tmpfiles".format(tarball.name))
     if tarball.gcov_file:
         buildpattern.sources["gcov"].append(tarball.gcov_file)
+    buildpattern.sources["archive"] = archives[::2]
+    buildpattern.sources["destination"] = archives[1::2]
     for archive, destination in zip(archives[::2], archives[1::2]):
-        buildpattern.sources["archive"].append(archive)
         buildpattern.archive_details[archive + "destination"] = destination
 
 
