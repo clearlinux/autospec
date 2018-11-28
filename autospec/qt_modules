@@ -57,7 +57,7 @@ waylandclient, Qt5WaylandClient
 waylandcompositor, Qt5WaylandCompositor
 webchannel, Qt5WebChannel
 webengine, Qt5WebEngine
-webenginecore, QtWebEngineCore
+webenginecore, Qt5WebEngineCore
 webenginewidgets, Qt5WebEngineWidgets
 webkit, Qt5WebKit
 webkitwidgets, Qt5WebKitWidgets
