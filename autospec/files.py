@@ -280,8 +280,10 @@ class FileManager(object):
             # now a set of catch-all rules
             (r"^/etc/", "config", "", "%config "),
             (r"^/usr/etc/", "config", "", "%config "),
-            (r"^/lib/systemd", "services"),
-            (r"^/usr/lib/systemd", "services"),
+            (r"^/lib/systemd/system/", "services"),
+            (r"^/lib/systemd/user/", "services"),
+            (r"^/usr/lib/systemd/system/", "services"),
+            (r"^/usr/lib/systemd/user/", "services"),
             (r"^/usr/lib/udev/rules.d", "config"),
             (r"^/usr/lib/modules-load.d", "config"),
             (r"^/usr/lib/tmpfiles.d", "config"),
