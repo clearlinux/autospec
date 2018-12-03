@@ -363,6 +363,16 @@ def parse_log(log, pkgname=''):
             total_skip += convert_int(match.group(3))
             continue
 
+        # mercurial
+        # running 59 tests using 8 parallel processes
+        # # Ran 55 tests, 4 skipped, 0 failed.
+        match = re.search(r"^# Ran ([0-9]+) tests\, ([0-9]+) skipped\, ([0-9]+) failed.", line)
+        if match and incheck:
+            total_fail += convert_int(match.group(3))
+            total_skip += convert_int(match.group(2))
+            total_pass += (convert_int(match.group(1)) - convert_int(match.group(2)) - convert_int(match.group(3)))
+            continue
+
         # swift
         # ========= 1 failed, 1287 passed, 1 warnings, 62 error in 35.77 seconds =========
         match = re.search(r"== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) warnings\, ([0-9]+) error in ", line)
