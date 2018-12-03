@@ -28,7 +28,7 @@ import subprocess
 import build
 import buildpattern
 import buildreq
-import pycurl
+import download
 from util import call, print_fatal, write_out
 
 name = ""
@@ -57,33 +57,11 @@ def get_sha1sum(filename):
     return sh.hexdigest()
 
 
-def really_download(upstream_url, destination):
-    """Ok, really download the tarball from url."""
-    with open(destination, 'wb') as dfile:
-        c = pycurl.Curl()
-        c.setopt(c.URL, upstream_url)
-        c.setopt(c.WRITEDATA, dfile)
-        c.setopt(c.FOLLOWLOCATION, True)
-        try:
-            c.perform()
-            code = c.getinfo(pycurl.HTTP_CODE)
-            if code != 200:
-                print_fatal("get request to {} returned {}".format(upstream_url, code))
-                os.remove(destination)
-                exit(1)
-        except pycurl.error as excep:
-            print_fatal("unable to download {}: {}".format(upstream_url, excep))
-            os.remove(destination)
-            exit(1)
-        finally:
-            c.close()
-
-
 def check_or_get_file(upstream_url, tarfile):
     """Download tarball from url unless it is present locally."""
     tarball_path = build.download_path + "/" + tarfile
     if not os.path.isfile(tarball_path):
-        really_download(upstream_url, tarball_path)
+        download.do_curl(upstream_url, dest=tarball_path, is_fatal=True)
     return tarball_path
 
 

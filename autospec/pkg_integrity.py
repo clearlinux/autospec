@@ -10,12 +10,11 @@ import signal
 import sys
 import tempfile
 from contextlib import contextmanager
-from io import BytesIO
 from subprocess import PIPE, Popen, TimeoutExpired
 from urllib.parse import urlparse
 
 import config
-import pycurl
+import download
 import util
 
 GPG_CLI = False
@@ -223,22 +222,6 @@ class Verifier(object):
         print(SEPT)
 
 
-def download_file(url, destination):
-    """Download signature file."""
-    with open(destination, 'wb') as f:
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, url)
-        curl.setopt(curl.WRITEDATA, f)
-        curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.setopt(curl.FAILONERROR, True)
-        curl.perform()
-        code = curl.getinfo(pycurl.HTTP_CODE)
-        curl.close()
-        if code != 200:
-            return None
-        return destination
-
-
 def get_signature_file(package_url, package_path):
     """Attempt to build signature file URL and download it."""
     sign_urls = []
@@ -256,17 +239,10 @@ def get_signature_file(package_url, package_path):
     sign_file = None
     dest = None
     for url in sign_urls:
-        try:
-            dest = os.path.join(package_path, os.path.basename(url))
-            sign_file = download_file(url, dest)
-            if sign_file is not None:
-                return sign_file
-            elif os.path.exists(dest):
-                os.unlink(dest)
-        except pycurl.error:
-            print(f"Download of signature file {url} failed")
-            if os.path.exists(dest):
-                os.unlink(dest)
+        dest = os.path.join(package_path, os.path.basename(url))
+        sign_file = download.do_curl(url, dest)
+        if sign_file is not None:
+            return sign_file
 
     return None
 
@@ -361,17 +337,11 @@ class GnomeOrgVerifier(ShaSumVerifier):
     @staticmethod
     def fetch_shasum(shasum_url):
         """Get shasum file from gnome.org."""
-        data = BytesIO()
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, shasum_url)
-        curl.setopt(curl.WRITEFUNCTION, data.write)
-        curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.perform()
-        code = curl.getinfo(pycurl.HTTP_CODE)
-        curl.close()
-        if code == 200:
+        data = download.do_curl(shasum_url)
+        if data:
             return data.getvalue().decode('utf-8')
-        return None
+        else:
+            return None
 
     @staticmethod
     def get_shasum(package_url):
@@ -431,14 +401,11 @@ class PyPiVerifier(MD5Verifier):
     def get_info(package_name):
         """Get json dump of pypi package."""
         url = PYPIORG_API.format(package_name)
-        data = BytesIO()
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, url)
-        curl.setopt(curl.WRITEFUNCTION, data.write)
-        curl.setopt(curl.FOLLOWLOCATION, True)
-        curl.perform()
-        json_data = json.loads(data.getvalue().decode('utf-8'))
-        return json_data
+        data = download.do_curl(url)
+        if data:
+            return json.loads(data.getvalue().decode('utf-8'))
+        else:
+            return None
 
     @staticmethod
     def get_source_release(package_fullname, releases):
@@ -495,7 +462,7 @@ class GPGVerifier(Verifier):
 
     def get_sign(self):
         """Attempt to download gpg signature file."""
-        sign_file = download_file(self.key_url, self.package_sign_path)
+        sign_file = download.do_curl(self.key_url, self.package_sign_path)
         if sign_file is not None:
             return True
         else:
@@ -569,13 +536,11 @@ class GEMShaVerifier(Verifier):
     def get_rubygems_info(package_name):
         """Get json dump of ruby gem."""
         url = RUBYORG_API.format(package_name)
-        data = BytesIO()
-        curl = pycurl.Curl()
-        curl.setopt(curl.URL, url)
-        curl.setopt(curl.WRITEFUNCTION, data.write)
-        curl.perform()
-        json_data = json.loads(data.getvalue().decode('utf-8'))
-        return json_data
+        data = download.do_curl(url)
+        if data:
+            return json.loads(data.getvalue().decode('utf-8'))
+        else:
+            return None
 
     @staticmethod
     def get_gemnumber_sha(gems, number):

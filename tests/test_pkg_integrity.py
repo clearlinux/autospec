@@ -1,8 +1,12 @@
+from io import BytesIO
+import json
 import os
 import shutil
-import mock
-import unittest
 import tempfile
+import unittest
+from unittest.mock import patch
+
+import download
 import pkg_integrity
 
 
@@ -21,23 +25,24 @@ GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
-def mock_download_file(url, dst):
+def mock_download_do_curl(url, dst=None):
     bad_sigs = ["http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz.sig",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sig",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.asc",
                 "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz.sign"]
-
+    if not dst:
+        return BytesIO(b'foobar')
     src = os.path.join(TESTDIR, os.path.basename(url))
-    if os.path.isfile(src):
+    if dst and os.path.isfile(src):
         shutil.copyfile(src, dst)
         return dst
-
+    else:
+        return None
     if url in bad_sigs:
         return None
-    return dst
 
 
-@mock.patch('pkg_integrity.download_file', mock_download_file)
+@patch('download.do_curl', mock_download_do_curl)
 class TestCheckFn(unittest.TestCase):
 
     def setUp(self):
@@ -64,8 +69,28 @@ class TestCheckFn(unittest.TestCase):
             self.assertTrue(result)
 
 
-@mock.patch('pkg_integrity.download_file', mock_download_file)
+@patch('download.do_curl', mock_download_do_curl)
 class TestDomainBasedVerifiers(unittest.TestCase):
+
+    def _mock_pypi_get_info(pkg):
+        info = '''
+        {
+            "info": {
+                "author_email": "user@example.com",
+                "name": "tappy"
+            },
+            "releases": {
+                "0.9.0": [],
+                "0.9.2": [
+                    {
+                        "filename": "tappy-0.9.2.tar.gz",
+                        "md5_digest": "82e7f161746987b4da64c3347a2a2959"
+                    }
+                ]
+            }
+        }
+        '''
+        return json.loads(info)
 
     def run_test_for_domain(self, Verifier, url):
         with tempfile.TemporaryDirectory() as tmpd:
@@ -77,6 +102,7 @@ class TestDomainBasedVerifiers(unittest.TestCase):
             return verifier.verify()
         return None
 
+    @patch('pkg_integrity.PyPiVerifier.get_info', _mock_pypi_get_info)
     def test_pypi(self):
         result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
         self.assertTrue(result)
@@ -88,13 +114,13 @@ class TestDomainBasedVerifiers(unittest.TestCase):
                 "4e228b1c0f36e810acd971fad1c7030014900d8427c308d63a560f3f1037fa3c pygobject-3.24.0.tar.xz"
                 )
 
-    @mock.patch('pkg_integrity.GnomeOrgVerifier.fetch_shasum', _mock_fetch_shasum)
+    @patch('pkg_integrity.GnomeOrgVerifier.fetch_shasum', _mock_fetch_shasum)
     def test_gnome_org(self):
         result = self.run_test_for_domain(pkg_integrity.GnomeOrgVerifier, GNOME_SHA256_PKG)
         self.assertTrue(result)
 
 
-@mock.patch('pkg_integrity.download_file', mock_download_file)
+@patch('download.do_curl', mock_download_do_curl)
 class TestGEMShaVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -103,6 +129,22 @@ class TestGEMShaVerifier(unittest.TestCase):
         pkg_integrity.config.rewrite_config_opts = mock_rewrite
         pkg_integrity.config.config_opts['verify_required'] = False
 
+    def _mock_get_gem_info(pkg):
+        info = '''
+        [
+            {
+                "number": "2.0.0",
+                "sha": "2ac86b58bd2d0b4164c6d82e6d46381c987c47b0eb76428fd6e616370af2cc67"
+            },
+            {
+                "number": "1.2.1",
+                "sha": "b391da81ea5efb96d648e69c852e386a269129f543e371c8db64ada80342ac5f"
+            }
+        ]
+        '''
+        return json.loads(info)
+
+    @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
     def test_from_url(self):
         with tempfile.TemporaryDirectory() as tmpd:
             filen = os.path.basename(GEM_PKT)
@@ -110,6 +152,7 @@ class TestGEMShaVerifier(unittest.TestCase):
             result = pkg_integrity.check(GEM_PKT, tmpd)
             self.assertTrue(result)
 
+    @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
     def test_non_matchingsha(self):
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
@@ -121,7 +164,7 @@ class TestGEMShaVerifier(unittest.TestCase):
             self.assertEqual(a.exception.code, 1)
 
 
-@mock.patch('pkg_integrity.download_file', mock_download_file)
+@patch('download.do_curl', mock_download_do_curl)
 class TestGPGVerifier(unittest.TestCase):
 
     def setUp(self):
@@ -241,7 +284,7 @@ class TestUtils(unittest.TestCase):
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
-    def _mock_download_file(url, dst):
+    def _mock_download_file(url, dst=None):
         # make return codes match by url to ensure we are using the expected signature type
         if url in ("http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz.sig",
                 "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc",
@@ -251,7 +294,7 @@ class TestUtils(unittest.TestCase):
             return os.path.join(dst, os.path.basename(url))
         return None
 
-    @mock.patch('pkg_integrity.download_file', _mock_download_file)
+    @patch('download.do_curl', _mock_download_file)
     def test_get_signature_url(self):
         url_from_gnu = "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz"
         url_from_gnu1 = "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz"
