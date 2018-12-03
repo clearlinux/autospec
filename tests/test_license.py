@@ -1,11 +1,14 @@
-import license
-import unittest
-import pycurl
-import tempfile
-import os
 from contextlib import redirect_stdout
 from io import BytesIO, StringIO
+import os
+import tempfile
+import unittest
 from unittest.mock import patch, mock_open, MagicMock
+
+import pycurl
+
+import download
+import license
 
 
 class TestLicense(unittest.TestCase):
@@ -107,8 +110,7 @@ class TestLicense(unittest.TestCase):
 
         self.assertEquals(license.licenses, [])
 
-    @patch('pycurl.Curl')
-    def test_license_from_copying_hash_license_server_excep(self, mock_pycurl_curl):
+    def test_license_from_copying_hash_license_server_excep(self):
         """
         Test license_from_copying_hash with license server when pycurl raises
         an exception.
@@ -129,7 +131,7 @@ class TestLicense(unittest.TestCase):
                 pass
 
         # set the mock curl
-        license.pycurl.Curl = MockCurl
+        download.pycurl.Curl = MockCurl
 
         license.config.license_fetch = 'license.server.url'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
@@ -148,13 +150,12 @@ class TestLicense(unittest.TestCase):
                     with self.assertRaises(SystemExit):
                         license.license_from_copying_hash('copying.txt', '')
 
-        self.assertIn('Failed to fetch license from ', out.getvalue())
+        self.assertIn('Unable to fetch license.server.url: Test Exception', out.getvalue())
 
         # unset the manual mock
-        license.pycurl.Curl = pycurl.Curl
+        download.pycurl.Curl = pycurl.Curl
 
-    @patch('pycurl.Curl')
-    def test_license_from_copying_hash_license_server(self, mock_pycurl_curl):
+    def test_license_from_copying_hash_license_server(self):
         """
         Test license_from_copying_hash with license server. This is heavily
         mocked.
@@ -167,7 +168,7 @@ class TestLicense(unittest.TestCase):
                 return 'GPL-3.0'.encode('utf-8')
 
         # set the mocks
-        license.BytesIO = MockBytesIO
+        download.BytesIO = MockBytesIO
 
         class MockCurl():
             URL = None
@@ -188,7 +189,7 @@ class TestLicense(unittest.TestCase):
                 return 200
 
         # set the mock curl
-        license.pycurl.Curl = MockCurl
+        download.pycurl.Curl = MockCurl
 
         license.config.license_fetch = 'license.server.url'
         with open('tests/COPYING_TEST', 'rb') as copyingf:
@@ -210,10 +211,10 @@ class TestLicense(unittest.TestCase):
         self.assertIn('License     :  GPL-3.0  (server)', out.getvalue())
 
         # unset the manual mock
-        license.BytesIO = BytesIO
+        download.BytesIO = BytesIO
 
         # unset the manual mock
-        license.pycurl.Curl = pycurl.Curl
+        download.pycurl.Curl = pycurl.Curl
 
     def test_scan_for_licenses(self):
         """

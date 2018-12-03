@@ -27,11 +27,9 @@ import re
 import shlex
 import sys
 import urllib.parse
-from io import BytesIO
 
 import config
-
-import pycurl
+import download
 
 import tarball
 from util import print_fatal, print_warning
@@ -93,27 +91,7 @@ def license_from_copying_hash(copying, srcdir):
         data = urllib.parse.urlencode(values)
         data = data.encode('utf-8')
 
-        buffer = BytesIO()
-        c = pycurl.Curl()
-        c.setopt(c.URL, config.license_fetch)
-        c.setopt(c.WRITEDATA, buffer)
-        c.setopt(c.POSTFIELDS, data)
-        c.setopt(c.FOLLOWLOCATION, True)
-        c.setopt(c.FAILONERROR, True)
-        try:
-            c.perform()
-            code = c.getinfo(pycurl.HTTP_CODE)
-            if code != 200:
-                print_fatal("Fetching license from {} returned {}"
-                            .format(config.license_fetch, code))
-                exit(1)
-        except pycurl.error as excep:
-            print_fatal("Failed to fetch license from {}: {}"
-                        .format(config.license_fetch, excep))
-            exit(1)
-        finally:
-            c.close()
-
+        buffer = download.do_curl(config.license_fetch, post=data, is_fatal=True)
         response = buffer.getvalue()
         page = response.decode('utf-8').strip()
         if page:
