@@ -453,7 +453,7 @@ class PyPiVerifier(MD5Verifier):
         global EMAIL
         print("Searching for package information in pypi")
         name, release = self.parse_name()
-        info = self.get_info(name)
+        info = PyPiVerifier.get_info(name)
         releases_info = info.get('releases', None)
         if releases_info is None:
             self.print_result(False, err_msg='Error in package info from {}'.format(PYPIORG_API))
@@ -595,8 +595,8 @@ class GEMShaVerifier(Verifier):
             return
         name, _ = re.split(r'-\d+\.', gemname)
         number = gemname.replace(name + '-', '')
-        geminfo = self.get_rubygems_info(name)
-        gemsha = self.get_gemnumber_sha(geminfo, number)
+        geminfo = GEMShaVerifier.get_rubygems_info(name)
+        gemsha = GEMShaVerifier.get_gemnumber_sha(geminfo, number)
 
         if geminfo is None:
             self.print_result(False, "unable to parse info for gem {}".format(gemname))
