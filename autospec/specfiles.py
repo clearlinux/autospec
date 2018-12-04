@@ -965,6 +965,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
@@ -977,6 +978,7 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("popd")
         self._write_strip("%install")
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
@@ -1011,6 +1013,7 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("popd")
         self._write_strip("%install")
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
