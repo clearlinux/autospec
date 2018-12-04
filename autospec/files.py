@@ -248,6 +248,8 @@ class FileManager(object):
             (r"^/usr/lib64/qt5/", "lib"),
             (r"^/usr/lib32/qt5/", "lib32"),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.so$", so_dest),
+            (r"^/usr/lib64/libkdeinit5_[a-zA-Z0-9._+-]*\.so$", "lib"),
+            (r"^/usr/lib32/libkdeinit5_[a-zA-Z0-9._+-]*\.so$", "lib32"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.so$", so_dest + '32'),
             (r"^/usr/lib64/haswell/avx512_1/[a-zA-Z0-9._+-]*\.so$", so_dest),
