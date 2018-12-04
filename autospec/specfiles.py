@@ -998,6 +998,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("python3 setup.py build  " + config.extra_configure)
