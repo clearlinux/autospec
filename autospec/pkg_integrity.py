@@ -348,9 +348,9 @@ class MD5Verifier(Verifier):
         return md5_digest == self.md5_digest
 
 
-# gnome.org Verifier
-class GnomeOrgVerifier(ShaSumVerifier):
-    """Verify sha sums for gnome.org."""
+# Generic download verifier
+class GenericDownloadVerifier(ShaSumVerifier):
+    """Downloads a .sha256 file before verifying"""
 
     def __init__(self, **kwargs):
         """Initialize with gnome.org url."""
@@ -360,7 +360,7 @@ class GnomeOrgVerifier(ShaSumVerifier):
 
     @staticmethod
     def fetch_shasum(shasum_url):
-        """Get shasum file from gnome.org."""
+        """Get shasum file from website."""
         data = BytesIO()
         curl = pycurl.Curl()
         curl.setopt(curl.URL, shasum_url)
@@ -376,9 +376,42 @@ class GnomeOrgVerifier(ShaSumVerifier):
     @staticmethod
     def get_shasum(package_url):
         """Try and get sha url based on package url."""
+        hash_url = get_hash_url(package_url)
+        if hash_url is None:
+            return None
+        print_info('Attempting to download {} for domain verification'.format(hash_url))
+        shasum = GenericDownloadVerifier.fetch_shasum(hash_url)
+        if shasum:
+            return shasum
+        return None
+
+    def verify(self):
+        """Verify tar file with sha from website."""
+        if self.package_url is None:
+            self.print_result(False, err_msg='Package URL can not be None')
+            return None
+        shasum = self.get_shasum(self.package_url)
+        if shasum is None:
+            self.print_result(False, err_msg='Unable to find shasum URL for {}'.format(self.package_url))
+            return None
+        shasum = shasum.split(' ')[0]
+        return self.verify_sum(shasum)
+
+
+# gnome.org Verifier
+class GnomeOrgVerifier(GenericDownloadVerifier):
+    """Verify sha sums for gnome.org."""
+
+    def __init__(self, **kwargs):
+        """Initialize with gnome.org url."""
+        GenericDownloadVerifier.__init__(self, **kwargs)
+
+    @staticmethod
+    def get_shasum(package_url):
+        """Try and get sha url based on package url."""
         for shasum_url in (package_url.replace(".tar.xz", ".sha256sum"),
                            "{}.sha256sum".format(package_url)):
-            shasum = GnomeOrgVerifier.fetch_shasum(shasum_url)
+            shasum = GenericDownloadVerifier.fetch_shasum(shasum_url)
             if shasum:
                 return shasum
         return None
@@ -784,12 +817,12 @@ def attempt_verification_per_domain(package_path, url):
     }.get(domain, None)
 
     if verifier is None:
-        return None
+        verifier = GenericDownloadVerifier
     else:
         print_info('Verification based on domain {}'.format(domain))
-        return apply_verification(verifier, **{
-                                  'package_path': package_path,
-                                  'url': url})
+    return apply_verification(verifier, **{
+                              'package_path': package_path,
+                              'url': url})
 
 
 def get_integrity_file(package_path):
@@ -826,9 +859,7 @@ def check(url, download_path, interactive=True):
             if verified is None:
                 print_info('Unable to find a signature, attempting domain verification')
                 verified = attempt_verification_per_domain(package_path, url)
-        elif get_hash_url(url) is not None:
-            hash_url = get_hash_url(url)
-            print_info('Attempting to download {} for domain verification'.format(hash_url))
+        else:
             verified = attempt_verification_per_domain(package_path, url)
 
     if verified is None and config.config_opts['verify_required']:
