@@ -1203,6 +1203,7 @@ class Specfile(object):
             self.write_variables()
             self.write_32bit_exports()
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
+                              "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
                               "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
