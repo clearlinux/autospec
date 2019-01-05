@@ -1196,20 +1196,6 @@ class Specfile(object):
         self.write_make_line()
         self._write_strip("popd")
 
-        if config.config_opts['32bit']:
-            self._write_strip("mkdir -p clr-build32")
-            self._write_strip("pushd clr-build32")
-            self.write_build_prepend()
-            self.write_variables()
-            self.write_32bit_exports()
-            self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
-                              "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
-                              "-DLIB_SUFFIX=32 "
-                              "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
-            self.write_make_line()
-            self._write_strip("unset PKG_CONFIG_PATH")
-            self._write_strip("popd")
-
         if config.config_opts['use_avx2']:
             self._write_strip("mkdir -p clr-build-avx2")
             self._write_strip("pushd clr-build-avx2")
@@ -1236,6 +1222,20 @@ class Specfile(object):
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
+            self._write_strip("popd")
+
+        if config.config_opts['32bit']:
+            self._write_strip("mkdir -p clr-build32")
+            self._write_strip("pushd clr-build32")
+            self.write_build_prepend()
+            self.write_variables()
+            self.write_32bit_exports()
+            self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
+                              "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
+                              "-DLIB_SUFFIX=32 "
+                              "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
+            self.write_make_line()
+            self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
 
         if self.subdir:
