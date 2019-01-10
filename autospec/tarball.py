@@ -67,6 +67,9 @@ def check_or_get_file(upstream_url, tarfile):
 
 def build_untar(tarball_path):
     """Determine extract command and tarball prefix from tar -tf output."""
+    if tarball_path.lower().endswith('.lz'):
+        buildreq.add_buildreq("lzip")
+
     tar_prefix = ""
     try:
         tarball_contents = subprocess.check_output(
