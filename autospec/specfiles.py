@@ -25,6 +25,7 @@ import time
 import types
 from collections import OrderedDict
 
+import buildreq
 import config
 from util import _file_write
 
@@ -181,6 +182,9 @@ class Specfile(object):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
                        "lib32", "dev32", "legacypython", "doc", "abi"]:
+                continue
+            # honor requires_ban for manual overrides
+            if "{}-{}".format(self.name, pkg) in buildreq.banned_requires:
                 continue
             self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, pkg))
 
