@@ -242,6 +242,8 @@ def scan_for_description(package, dirn):
     """Scan the project directory for things we can use to guess a description and summary."""
     for dirpath, _, files in os.walk(dirn):
         for name in files:
+            if name.lower().endswith(".pdf"):
+                continue
             if name.lower().endswith(".spec"):
                 description_from_spec(os.path.join(dirpath, name))
             if name.lower().endswith("pkg-info"):
