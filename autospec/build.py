@@ -179,6 +179,16 @@ def parse_buildroot_log(filename, returncode):
     return is_clean
 
 
+def check_for_warning_pattern(line):
+    """Print warning if a line matches against a warning list."""
+    warning_patterns = [
+        "march=native"
+    ]
+    for pat in warning_patterns:
+        if pat in line:
+            util.print_warning("Build log contains: {}".format(pat))
+
+
 def parse_build_results(filename, returncode, filemanager):
     """Handle build log contents."""
     global must_restart
@@ -201,6 +211,8 @@ def parse_build_results(filename, returncode, filemanager):
 
         for pat in config.failed_pats:
             failed_pattern(line, *pat)
+
+        check_for_warning_pattern(line)
 
         # search for files to add to the %files section
         # track with infiles. If infiles == 1 we found the header
