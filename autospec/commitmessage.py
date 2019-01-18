@@ -52,7 +52,7 @@ def scan_for_changes(download_path, directory):
                 shutil.copy(source, target)
                 os.chmod(target, 0o644)
             except Exception as e:
-                print("Error copying file: %s", e)
+                print("Error copying file: {}".format(e))
                 sys.exit(1)
             found.append(item)
 
