@@ -1075,6 +1075,43 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
         self.write_find_lang()
 
+    def write_distutils36_pattern(self):
+        """Write build pattern for python packages using distutils36."""
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+        self._write_strip("python3.6 setup.py build -b py3 " + config.extra_configure)
+        self._write_strip("\n")
+        if self.tests_config and not config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            # Prevent setuptools from hitting the internet
+            self.write_proxy_exports()
+            self._write_strip(self.tests_config)
+        if self.subdir:
+            self._write_strip("popd")
+        self._write_strip("%install")
+        self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
+        self._write_strip("rm -rf %{buildroot}")
+        self.write_install_prepend()
+
+        if len(self.license_files) > 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
+            for file in self.license_files:
+                file2 = file.replace("/", "_")
+                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+        self._write_strip("python3.6 -tt setup.py build -b py3 install --root=%{buildroot} --force")
+        if self.subdir:
+            self._write_strip("popd")
+        self._write_strip("echo ----[ mark ]----")
+        self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
+        self._write_strip("echo ----[ mark ]----")
+        self.write_find_lang()
+
     def write_R_pattern(self):
         """Write build pattern for R packages."""
         self.write_prep()

@@ -587,6 +587,8 @@ def scan_for_configure(dirn):
     """Scan the package directory for build files to determine build pattern."""
     if buildpattern.default_pattern == "distutils":
         add_buildreq("buildreq-distutils")
+    elif buildpattern.default_pattern == "distutils36":
+        add_buildreq("buildreq-distutils36")
     elif buildpattern.default_pattern == "distutils23":
         add_buildreq("buildreq-distutils23")
     elif buildpattern.default_pattern == "distutils3":
