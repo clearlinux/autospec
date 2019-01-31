@@ -152,8 +152,8 @@ def process_NEWS(newsfile):
     for news in newslines[start:stop]:
         match = pat.search(news)
         if match:
-                s = match.group(1)
-                cves.add(s)
+            s = match.group(1)
+            cves.add(s)
 
     # compile commitmessage to return
     commitmessage.append("")
