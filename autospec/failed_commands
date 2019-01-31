@@ -776,6 +776,7 @@ xrandr, pkgconfig(xrandr)
 xslt-config, libxslt-dev
 xsltproc, libxslt-bin
 yacc, bison
+yaml, PyYAML
 yasm, yasm
 yytext is a pointer, flex
 zenity, zenity

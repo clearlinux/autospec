@@ -239,6 +239,7 @@ failed_pats = [
     (r"Could not find suitable distribution for Requirement.parse\('([a-zA-Z\-]*)", 0, None),
     (r"unable to execute '([a-zA-Z\-]*)': No such file or directory", 0, None),
     (r"Unable to find '(.*)'", 0, None),
+    (r"Unable to `import (.*)`", 0, None),
     (r"Downloading https?://.*\.python\.org/packages/.*/.?/([A-Za-z]*)/.*", 0, None),
     (r"configure\: error\: ([a-zA-Z0-9]+) is required to build", 0, None),
     (r".* /usr/bin/([a-zA-Z0-9-_]*).*not found", 0, None),
