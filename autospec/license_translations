@@ -2,6 +2,7 @@
 # with in the form: <license string>: <license>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
+2-clause, BSD-2-Clause
 AGPL-3, AGPL-3.0
 APL-2.0, Apache-2.0
 APL2, Apache-2.0
@@ -34,6 +35,7 @@ GPL-2, GPL-2.0
 GPL-2.0+, GPL-2.0+
 GPL-2.0+LGPL-2.1, GPL-2.0 LGPL-2.1
 GPL-2.0, GPL-2.0
+GPL-2.0-or-later, GPL-2.0+
 GPL-3+, GPL-3.0
 GPL-3, GPL-3.0
 GPL-3.0+, GPL-3.0+
@@ -46,12 +48,14 @@ GPLv2+, GPL-2.0+
 GPLv2, GPL-2.0
 GPLv3+, GPL-3.0+
 GPLv3, GPL-3.0
+ISCL, ISC
 LGPL(>=-2), LGPL-2.0+
 LGPL(>=-2.1), LGPL-2.1
 LGPL(>=2), LGPL-2.0+
 LGPL-2, LGPL-2.0
 LGPL-2.0+, LGPL-2.0+
 LGPL-2.1+, LGPL-2.1+
+LGPL-2.1-or-later, LGPL-2.1+
 LGPL-3, LGPL-3.0
 LGPLv2+, LGPL-2.1+
 LGPLv2, LGPL-2.0
@@ -62,9 +66,11 @@ LGPLv3, LGPL-3.0
 MPL-2, MPL-2.0
 MPL2, MPL-2.0
 MPLv1.1, MPL-1.1
+MPLv2, MPL-2.0
 MPLv2.0, MPL-2.0
 MPLv2.0,, MPL-2.0
 PSF, Python-2.0
+Perl, Artistic-1.0-Perl
 Python, Python-2.0
 VIM, Vim
 ZLIB, Zlib
