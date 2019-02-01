@@ -113,7 +113,7 @@ def build_unzip(zip_path):
     and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
     """
     prefix = ""
-    contents = subprocess.check_output(["unzip", "-l", zip_path], universal_newlines=True)
+    contents = subprocess.check_output(["unzip", "-q", "-l", zip_path], universal_newlines=True)
     lines = contents.splitlines() if contents else []
     # looking for directory prefix in unzip output as it may differ from default
     if len(lines) > 3:
