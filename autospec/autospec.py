@@ -325,6 +325,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     check.check_regression(build.download_path)
 
     if build.success == 0:
+        config.create_buildreq_cache(build.download_path, tarball.version)
         print_fatal("Build failed, aborting")
         sys.exit(1)
     elif os.path.isfile("README.clear"):
