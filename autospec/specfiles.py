@@ -451,11 +451,18 @@ class Specfile(object):
                 flags.extend(["-O3"])
             else:
                 flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
-        if config.config_opts['use_lto'] and self.default_pattern != 'qmake':
-            flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
-            self._write_strip("export AR=gcc-ar\n")
-            self._write_strip("export RANLIB=gcc-ranlib\n")
-            self._write_strip("export NM=gcc-nm\n")
+        if self.default_pattern != 'qmake':
+            if config.config_opts['use_lto']:
+                flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
+                self._write_strip("export AR=gcc-ar\n")
+                self._write_strip("export RANLIB=gcc-ranlib\n")
+                self._write_strip("export NM=gcc-nm\n")
+            elif not config.config_opts['use_clang']:
+                # This works around an issue in GCC that prevents some programs
+                # from being linked: despite `use_lto` being false, `lto1` exits
+                # with an internal compiler error: "bytecode stream: expected tag
+                # identifier_node instead of LTO_UNKNOWN".
+                self._write('export LDFLAGS="${LDFLAGS} -fno-lto"\n')
         if config.config_opts['fast-math']:
             flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
         if config.config_opts['pgo']:
