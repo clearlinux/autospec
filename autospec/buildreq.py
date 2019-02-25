@@ -399,6 +399,19 @@ def clean_python_req(req, add_python=True):
 
 def grab_python_requirements(descfile):
     """Add python requirements from requirements.txt file."""
+    if "/demo/" in descfile:
+        return
+    if "/doc/" in descfile:
+        return
+    if "/docs/" in descfile:
+        return
+    if "/example/" in descfile:
+        return
+    if "/test/" in descfile:
+        return
+    if "/tests/" in descfile:
+        return
+
     with open(descfile, "r", encoding="latin-1") as f:
         lines = f.readlines()
 
@@ -410,6 +423,14 @@ def grab_python_requirements(descfile):
             break
         if clean_python_req(line) == '[dev]':
             break
+        if clean_python_req(line) == '[doc]':
+            break
+        if clean_python_req(line) == '[docs]':
+            break
+        if 'pytest' in line:
+            continue
+        if clean_python_req(line) == 'mock':
+            continue
         add_requires(clean_python_req(line))
 
 
