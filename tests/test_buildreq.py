@@ -464,6 +464,22 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(buildreq.buildreqs,
                          set(['pkgconfig(gio-unix-2.0)', 'pkgconfig(glib-2.0)']))
 
+    def test_parse_cmake_pkg_check_modules_in_a_comment(self):
+        """
+        Test parse_cmake to ensure it ignores pkg_check_modules in comments.
+        """
+        content = '''
+# For example, consider the following patch to some CMakeLists.txt.
+#     - pkg_check_modules(FOO REQUIRED foo>=1.0)
+#     + pkg_check_modules(FOO REQUIRED foo>=2.0)
+'''
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, 'fname'), 'w') as f:
+                f.write(content)
+            buildreq.parse_cmake(os.path.join(tmpd, 'fname'))
+
+        self.assertEqual(buildreq.buildreqs,
+                         set([]))
 
     def test_parse_cmake_pkg_check_modules_variables(self):
         """
