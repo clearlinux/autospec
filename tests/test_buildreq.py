@@ -25,6 +25,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.verbose = False
         buildreq.cargo_bin = False
         buildreq.config.config_opts['32bit'] = False
+        buildreq.config.cmake_modules = {}
         buildreq.config.os_packages = set()
         buildreq.buildpattern.pattern_strength = 0
 
@@ -495,6 +496,28 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(buildreq.buildreqs,
                          set(['pkgconfig(libavcodec)', 'pkgconfig(libavutil)']))
 
+    def test_parse_cmake_find_package(self):
+        """
+        Test parse_cmake to ensure accurate handling of find_package.
+        """
+        buildreq.config.cmake_modules = {
+            "valid": "valid",
+            "valid_but_commented": "valid_but_commented",
+            "different_name": "another_name",
+        }
+        content = '''
+find_package(valid)
+#find_package(foo)
+  # find_package(valid_but_commented)
+find_package(different_name)
+'''
+        with tempfile.TemporaryDirectory() as tmpd:
+            with open(os.path.join(tmpd, 'fname'), 'w') as f:
+                f.write(content)
+            buildreq.parse_cmake(os.path.join(tmpd, 'fname'))
+
+        self.assertEqual(buildreq.buildreqs,
+                         set(['valid', 'another_name']))
 
 if __name__ == '__main__':
     unittest.main(buffer=True)
