@@ -225,7 +225,7 @@ class Specfile(object):
         deps["dev"] = ["lib", "bin", "data"]
         deps["doc"] = ["man"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
-        deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "man", "services"]
+        deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "services"]
         deps["lib"] = ["data", "libexec", "license"]
         deps["libexec"] = ["config", "license"]
         deps["lib32"] = ["data", "license"]
