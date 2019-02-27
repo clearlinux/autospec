@@ -134,6 +134,7 @@ DGA, pkgconfig(xf86dgaproto)
 DMXMODULES, libdmx-dev
 DOXYGEN, doxygen
 DRI2PROTO, pkgconfig(dri2proto)
+DocBook DTDs, docbook-xml
 DocBook XML DTD V4.3 in XML catalog, docbook-xml
 DocBookXML4, docbook-xml
 DocBookXSL, docbook-xml
@@ -229,11 +230,13 @@ GLIB2, glib-dev
 GLUT library, freeglut-dev
 GMP, gmp-dev
 GNU MP, gmp-dev
+GNU libidn, libidn-dev
 GNUTLS, gnutls-dev
 GPGME, gpgme-dev
 GSTREAMER, gstreamer-dev
 GSettingSchemas, gsettings-desktop-schemas
 GTK, gtk+-dev
+GnuTLS, gnutls-dev
 Gperf, gperf
 Gpgmepp, gpgme-dev
 Gphoto2, libgphoto2-dev
@@ -908,6 +911,7 @@ nc, netcat
 ncurses.h, ncurses-dev
 ncurses.h, pkgconfig(ncursesw)
 ncurses/term.h, ncurses-dev
+ncursesw, ncurses-dev
 ncursesw.h, ncurses-dev
 ncursesw/curses.h, ncurses-dev
 neon-config, neon-dev
@@ -919,6 +923,7 @@ nghttp, nghttp2-dev
 nl_handle_alloc, libnl-dev
 nose, nose
 nosexcover, nosexcover
+notmuch.h, notmuch-dev
 nroff, groff
 nspr.h, nspr-dev
 nsupdate, bind-utils
