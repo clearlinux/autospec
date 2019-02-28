@@ -258,7 +258,13 @@ def guess_commit_message(keyinfo):
                                  .format(tarball.name, tarball.version))
     commitmessage.append("")
 
-    for newsfile in ["NEWS", "ChangeLog"]:
+    # Only use Changelog if the giturl isn't defined as it is often
+    # duplicate content from the git log.
+    if tarball.giturl:
+        newsfiles = ["NEWS"]
+    else:
+        newsfiles = ["NEWS", "ChangeLog"]
+    for newsfile in newsfiles:
         # parse news files for relevant version updates and cve fixes
         newcommitmessage, newcves = process_NEWS(newsfile)
         commitmessage.extend(newcommitmessage)

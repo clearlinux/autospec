@@ -370,6 +370,7 @@ def write_config(config_f, path):
 def read_config_opts(path):
     """Read config options from path/options.conf."""
     global config_opts
+    global transforms
     opts_path = os.path.join(path, 'options.conf')
     if not os.path.exists(opts_path):
         create_conf(path)
@@ -387,6 +388,16 @@ def read_config_opts(path):
     # configuration file may exist without any comments (either due to an older
     # version of autospec or if it was user-created)
     rewrite_config_opts(path)
+
+    # Don't use the ChangeLog files if the giturl is set
+    # ChangeLog is just extra noise when we can already see the gitlog
+    if "package" in config_f.sections() and config_f['package'].get('giturl'):
+        keys = []
+        for k, v in transforms.items():
+            if v == "ChangeLog":
+                keys.append(k)
+        for k in keys:
+            transforms.pop(k)
 
 
 def rewrite_config_opts(path):
