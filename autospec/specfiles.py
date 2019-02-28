@@ -1417,7 +1417,7 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
         self._write_strip("export GOPATH=\"$PWD\"")
-        self._write_strip("go build")
+        self._write_strip("go build {}".format(self.extra_make))
         self._write_strip("\n")
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
