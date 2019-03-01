@@ -58,6 +58,7 @@ install_append = []
 patches = []
 autoreconf = False
 custom_desc = ""
+set_gopath = True
 
 license_fetch = None
 license_show = None
@@ -542,6 +543,7 @@ def parse_config_files(path, bump, filemanager, version):
     global install_append
     global patches
     global autoreconf
+    global set_gopath
     global yum_conf
     global custom_desc
     global failed_pattern_dir
@@ -839,3 +841,4 @@ def load_specfile(specfile):
     specfile.install_append = install_append
     specfile.patches = patches
     specfile.autoreconf = autoreconf
+    specfile.set_gopath = set_gopath

@@ -56,6 +56,7 @@ class Specfile(object):
         self.locales = []
         self.default_pattern = ""
         self.autoreconf = False
+        self.set_gopath = True
         self.extra_make = ""
         self.extra32_make = ""
         self.extra_make_install = ""
@@ -1416,7 +1417,8 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C")
-        self._write_strip("export GOPATH=\"$PWD\"")
+        if self.set_gopath:
+            self._write_strip("export GOPATH=\"$PWD\"")
         self._write_strip("go build {}".format(self.extra_make))
         self._write_strip("\n")
         self._write_strip("%install")
