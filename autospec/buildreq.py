@@ -636,7 +636,7 @@ def scan_for_configure(dirn):
         if any(f.endswith(".go") for f in files):
             add_buildreq("buildreq-golang")
             buildpattern.set_build_pattern("golang", default_score)
-            if any(f == "go.mod" for f in files):
+            if "go.mod" in files:
                 config.set_gopath = False
 
         if "CMakeLists.txt" in files and "configure.ac" not in files:
