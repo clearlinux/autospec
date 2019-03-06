@@ -28,6 +28,7 @@ import shlex
 import sys
 import urllib.parse
 
+import chardet
 import config
 import download
 
@@ -85,6 +86,16 @@ def license_from_copying_hash(copying, srcdir):
     sh = hashlib.sha1()
     sh.update(data)
     hash_sum = sh.hexdigest()
+
+    """ decode license text """
+    detected = chardet.detect(data)
+    license_charset = detected['encoding']
+    if license_charset == 'ISO-8859-1':
+        if b'\xff' in data:
+            license_charset = 'ISO-8859-13'
+        elif b'\xd2' in data and b'\xd3' in data:
+            license_charset = 'mac_roman'
+    data = data.decode(license_charset)
 
     if config.license_fetch:
         values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
