@@ -320,7 +320,7 @@ KF5KHtml, khtml-dev
 KF5KIO, kio-dev
 KF5KMahjongglib, libkmahjongg-dev
 KF5KdepimDBusInterfaces, kdepim-apps-libs-dev
-KF5Kipi, kipi-dev
+KF5Kipi, libkipi-dev
 KF5Kirigami2, kirigami2-dev
 KF5KontactInterface, kontactinterface-dev
 KF5Kross, kross-dev
