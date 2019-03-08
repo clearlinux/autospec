@@ -226,7 +226,6 @@ def parse_cargo_toml(filename):
     """
     global cargo_bin
     buildpattern.set_build_pattern("cargo", 1)
-    add_buildreq("cargo")
     add_buildreq("rustc")
     with open(filename, "r", encoding="latin-1") as ctoml:
         cargo = toml.loads(ctoml.read())
