@@ -96,7 +96,7 @@ def license_from_copying_hash(copying, srcdir):
         elif b'\xd2' in data and b'\xd3' in data:
             license_charset = 'mac_roman'
     if not license_charset:
-        """This is not a text file"""
+        # This is not a text file
         return
 
     data = data.decode(license_charset)
