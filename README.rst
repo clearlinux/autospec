@@ -333,6 +333,11 @@ build_pattern
 series
   This file contains a list of patches to apply during the build, using the
   ``%patch`` macro. As such it is affected by ``-p1`` style modifiers.
+  Arguments to patch can be added after the patch filename.  For example:
+  
+  ```
+  0001-my-awesome-patch.patch -d some/subdir -p1
+  ```
 
 golang_libpath
   When building go packages, the go import path will be guessed automatically
