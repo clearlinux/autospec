@@ -143,6 +143,18 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls(calls)
 
 
+    def test_push_file_custom_extras(self):
+        """
+        Test push_file to a custom extras package, this excludes the file
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.custom_extras = {'test-extras': {'files': ["test"]}}
+        self.fm.push_file('test')
+        calls = [call('test', 'test-extras'), call('%exclude test')]
+        self.fm.push_package_file.assert_has_calls(calls)
+
+
     def test_push_file_setuid(self):
         """
         Test push_file with fname in setuid list

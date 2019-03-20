@@ -367,6 +367,28 @@ dev_extras
   functionality to place files used only for development against this
   software that Autospec does not automatically detect.
 
+$custom_extras
+  A `toml <https://github.com/toml-lang/toml>`_ file with a required 'files'
+  keypair that has as its value a list of strings that are full paths that
+  will be put in the $custom-extras subpackage. It can also contain an
+  optional 'requires' keypair that has as its value a list of strings that
+  are subpackage names of other subpackages in the package. For example a
+  foo_extras file containing::
+
+    files = ['/usr/bin/foo', '/usr/lib64/libfoo.so']
+    requires = ['data']
+
+  will produce a spec file package section for example-foo-extras with the
+  following content::
+
+    %package foo-extras
+    Summary: foo-extras components for the example package.
+    Group: Default
+    Requires: example-data = %{version}-%{release}
+
+    %description foo-extras
+    foo-extras components for the example package.
+
 setuid
   Each line in this file should contain the full path to a binary in the
   resulting build that should have the ``setuid`` attribute set with the

@@ -39,6 +39,7 @@ class FileManager(object):
         self.files_blacklist = set()
         self.excludes = []
         self.extras = []
+        self.custom_extras = {}
         self.dev_extras = []
         self.setuid = []
         self.attrs = {}
@@ -178,6 +179,10 @@ class FileManager(object):
         if filename in self.dev_extras:
             self.push_package_file(filename, "dev")
             self.excludes.append(filename)
+        for k, v in self.custom_extras.items():
+            if filename in v['files']:
+                self.push_package_file(filename, k)
+                self.excludes.append(filename)
 
         if filename in self.setuid:
             newfn = "%attr(4755, root, root) " + filename
@@ -332,3 +337,4 @@ class FileManager(object):
         specfile.packages = self.packages
         specfile.excludes = self.excludes
         specfile.locales = self.locales
+        specfile.custom_extras = self.custom_extras

@@ -219,6 +219,29 @@ class TestSpecfileWrite(unittest.TestCase):
                   "\n"]
         self.assertEqual(expect, self.WRITES)
 
+    def test_write_files_header_custom_extra_requires(self):
+        """
+        test write_files_header with custom extras requires.
+        """
+        self.specfile.packages["data"] = ["file1"]
+        self.specfile.packages["test-extras"] = ["file2"]
+        self.specfile.custom_extras = { 'test-extras': { 'requires': ["data"] }}
+        self.specfile.write_files_header()
+        expect = ["\n%package data\n",
+                  "Summary: data components for the pkg package.\n",
+                  "Group: Data\n",
+                  "\n%description data\n",
+                  "data components for the pkg package.\n",
+                  "\n",
+                  "\n%package test-extras\n",
+                  "Summary: test-extras components for the pkg package.\n",
+                  "Group: Default\n",
+                  "Requires: pkg-data = %{version}-%{release}\n",
+                  "\n%description test-extras\n",
+                  "test-extras components for the pkg package.\n",
+                  "\n"]
+        self.assertEqual(expect, self.WRITES)
+
     def test_write_files_header_python_name(self):
         """
         test write_files_header with uppercase letter in Specfile.name, causing
@@ -235,6 +258,7 @@ class TestSpecfileWrite(unittest.TestCase):
                   "python components for the Pkg package.\n",
                   "\n"]
         self.assertEqual(expect, self.WRITES)
+
 
     def test_write_files_header_bare(self):
         """
