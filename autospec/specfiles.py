@@ -80,6 +80,7 @@ class Specfile(object):
         self.install_prepend = []
         self.install_append = []
         self.excludes = []
+        self.custom_extras = {}
         self.keyid = ""
         self.email = ""
         self.cargo_bin = False
@@ -181,6 +182,8 @@ class Specfile(object):
         for pkg in sorted(self.packages):
             if pkg == "autostart" and self.no_autostart:
                 continue
+            if pkg.endswith("-extras"):
+                continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
                        "lib32", "dev32", "legacypython", "doc", "abi"]:
                 continue
@@ -233,6 +236,9 @@ class Specfile(object):
         deps["python"] = ["python3"]
         if config.config_opts['dev_requires_extras']:
             deps["dev"].append("extras")
+        for k, v in self.custom_extras.items():
+            if "requires" in v:
+                deps[k] = v['requires']
 
         # migration workaround; if we have a python3 or legacypython package
         # we add an artificial python package

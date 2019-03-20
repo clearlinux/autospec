@@ -26,12 +26,14 @@ import subprocess
 import sys
 import textwrap
 
+import toml
+
 import buildpattern
 import buildreq
 import check
 import license
 import tarball
-from util import call, write_out
+from util import call, print_warning, write_out
 
 extra_configure = ""
 extra_configure32 = ""
@@ -400,6 +402,17 @@ def read_config_opts(path):
             transforms.pop(k)
 
 
+def read_extras_config(path):
+    """Return parsed extras configurations from path."""
+    if not os.path.exists(path):
+        return None
+    try:
+        return toml.load(path)
+    except Exception as excpt:
+        print_warning(excpt)
+    return None
+
+
 def rewrite_config_opts(path):
     """Rewrite options.conf file when an option has changed (verify_required for example)."""
     config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
@@ -700,6 +713,24 @@ def parse_config_files(path, bump, filemanager, version):
     for extra in content:
         print("extras for  : %s." % extra)
     filemanager.extras += content
+
+    for fname in os.listdir(path):
+        if not re.search('.+_extras$', fname) or fname == "dev_extras":
+            continue
+        content = read_extras_config(os.path.join(path, fname))
+        if not content:
+            print_warning(f"Error reading custom extras file: {fname}")
+            continue
+        name = fname[:-len("_extras")]
+        if "files" not in content or type(content['files']) is not list:
+            print_warning(f"Invalid custom extras file: {fname} invalid or missing files list")
+            continue
+        if "requires" in content:
+            if type(content['requires']) is not list:
+                print_warning(f"Invalid custom extras file: {fname} invalid requires list")
+                continue
+        print(f"{name}-extras for {content['files']}")
+        filemanager.custom_extras[f"{name}-extras"] = content
 
     content = read_conf_file(os.path.join(path, "dev_extras"))
     for extra in content:
