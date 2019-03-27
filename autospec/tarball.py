@@ -511,11 +511,12 @@ def prepare_and_extract(extract_cmd):
 
 
 def write_makefile(name, url, archives):
+    """Write the package makefile."""
     makefile_path = os.path.join(build.download_path, "Makefile")
     if not os.path.exists(makefile_path):
         write_out(makefile_path,
-                "PKG_NAME := %s\nURL = %s\nARCHIVES = %s\n\ninclude ../common/Makefile.common\n"
-                % (name, url, ' '.join(archives)))
+                  "PKG_NAME := %s\nURL = %s\nARCHIVES = %s\n\ninclude ../common/Makefile.common\n"
+                  % (name, url, ' '.join(archives)))
 
 
 def process_archives(archives):
