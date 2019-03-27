@@ -27,6 +27,8 @@
 #
 
 import os
+import re
+
 import config
 import license
 
@@ -240,7 +242,12 @@ def description_from_readme(readmefile):
 
 def scan_for_description(package, dirn):
     """Scan the project directory for things we can use to guess a description and summary."""
-    for dirpath, _, files in os.walk(dirn):
+    test_pat = re.compile(r"tests?")
+    dirpath_seen = ""
+    for dirpath, dirnames, files in os.walk(dirn):
+        if dirpath_seen != dirpath:
+            dirpath_seen = dirpath
+            dirnames[:] = [d for d in dirnames if not re.match(test_pat, d)]
         for name in files:
             if name.lower().endswith(".pdf"):
                 continue
