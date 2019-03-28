@@ -603,6 +603,10 @@ def parse_catkin_deps(cmakelists_file):
         extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
 
 
+def is_qmake_pro(f):
+    return f.endswith(".pro") and not f.startswith(".")
+
+
 def scan_for_configure(dirn):
     """Scan the package directory for build files to determine build pattern."""
     if buildpattern.default_pattern == "distutils":
@@ -648,7 +652,7 @@ def scan_for_configure(dirn):
 
         if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
             buildpattern.set_build_pattern("configure", default_score)
-        elif any(f.endswith(".pro") for f in files):
+        elif any(is_qmake_pro(f) for f in files):
             add_buildreq("buildreq-qmake")
             buildpattern.set_build_pattern("qmake", default_score)
 
