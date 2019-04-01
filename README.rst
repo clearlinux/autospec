@@ -363,14 +363,14 @@ extras
 
 dev_extras
   Same as "extras" above, but instead of the files being placed in an
-  ``-extras'' subpackage, they will be placed in the ``-dev'' one. Use this
+  ``-extras`` subpackage, they will be placed in the ``-dev`` one. Use this
   functionality to place files used only for development against this
   software that Autospec does not automatically detect.
 
-$custom_extras
+${custom}_extras
   A `toml <https://github.com/toml-lang/toml>`_ file with a required 'files'
   keypair that has as its value a list of strings that are full paths that
-  will be put in the $custom-extras subpackage. It can also contain an
+  will be put in the ``${custom}-extras`` subpackage. It can also contain an
   optional 'requires' keypair that has as its value a list of strings that
   are subpackage names of other subpackages in the package. For example a
   foo_extras file containing::
