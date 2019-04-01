@@ -31,14 +31,14 @@ def test_generator(url, name, version):
         tarball.giturl = ''
         tarball.url = url
         tarball.name_and_version('', '', FileManager())
-        self.assertEqual(name, tarball.name)
-        self.assertEqual(version, tarball.version)
+        self.assertEqual(name, tarball.name, "^ failure for package {}".format(name))
+        self.assertEqual(version, tarball.version, "^ failure for package {}".format(name))
         if re.match("https?://github.com", url) != None:
-            self.assertIsNotNone(tarball.giturl)
-            self.assertNotEqual('', tarball.giturl, "giturl should not be empty")
+            self.assertIsNotNone(tarball.giturl, "^ failure for package {}".format(name))
+            self.assertNotEqual('', tarball.giturl, "^ failure for package {}; giturl should not be empty".format(name))
             self.assertIsNotNone(
                     re.match("https://github.com/[^/]+/"+tarball.repo+".git",
-                    tarball.giturl), "%s looks incorrect" % tarball.giturl)
+                    tarball.giturl), "^ failure for package {}; {} looks incorrect".format(name, tarball.giturl))
 
     return test_packageurl
 
