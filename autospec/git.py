@@ -42,7 +42,7 @@ def commit_to_git(path):
             call("git remote add origin %s" % upstream_uri, cwd=path)
             push_uri = config.git_push_uri % {'NAME': tarball.name}
             if push_uri != upstream_uri:
-                call("git remote set-url origin --push %s" % upstream_uri, cwd=path)
+                call("git remote set-url origin --push %s" % push_uri, cwd=path)
 
     for config_file in config.config_files:
         call("git add %s" % config_file, cwd=path, check=False)

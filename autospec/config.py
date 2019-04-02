@@ -613,7 +613,7 @@ def parse_config_files(path, bump, filemanager, version):
     # Read values from options.conf (and deprecated files) and rewrite as necessary
     read_config_opts(path)
 
-    if not git_pull_uri:
+    if not git_push_uri:
         print("Warning: Set [autospec][git] upstream template for remote git URI configuration")
     if not license_fetch:
         print("Warning: Set [autospec][license_fetch] uri for license fetch support")
