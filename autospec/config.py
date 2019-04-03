@@ -715,6 +715,7 @@ def parse_config_files(path, bump, filemanager, version):
     for extra in content:
         print("extras for  : %s." % extra)
     filemanager.extras += content
+    filemanager.excludes += content
 
     for fname in os.listdir(path):
         if not re.search('.+_extras$', fname) or fname == "dev_extras":
@@ -733,16 +734,19 @@ def parse_config_files(path, bump, filemanager, version):
                 continue
         print(f"{name}-extras for {content['files']}")
         filemanager.custom_extras[f"{name}-extras"] = content
+        filemanager.excludes += content['files']
 
     content = read_conf_file(os.path.join(path, "dev_extras"))
     for extra in content:
         print("dev for     : %s." % extra)
     filemanager.dev_extras += content
+    filemanager.excludes += content
 
     content = read_conf_file(os.path.join(path, "setuid"))
     for suid in content:
         print("setuid for  : %s." % suid)
     filemanager.setuid += content
+    filemanager.excludes += content
 
     content = read_conf_file(os.path.join(path, "attrs"))
     for line in content:
@@ -751,6 +755,7 @@ def parse_config_files(path, bump, filemanager, version):
         filename = attr.pop()
         print("attr for: %s." % filename)
         filemanager.attrs[filename] = attr
+        filemanager.excludes.append(filename)
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
