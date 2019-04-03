@@ -166,34 +166,32 @@ class FileManager(object):
         if self.file_is_locale(filename):
             return
 
-        # autostart
-        part = re.compile(r"^/usr/lib/systemd/system/.+\.target\.wants/.+")
-        if part.search(filename) and 'update-triggers.target.wants' not in filename:
-            self.push_package_file(filename, "autostart")
-            self.excludes.append(filename)
-
         # extras
         if filename in self.extras:
             self.push_package_file(filename, "extras")
-            self.excludes.append(filename)
         if filename in self.dev_extras:
             self.push_package_file(filename, "dev")
-            self.excludes.append(filename)
         for k, v in self.custom_extras.items():
             if filename in v['files']:
                 self.push_package_file(filename, k)
-                self.excludes.append(filename)
 
         if filename in self.setuid:
             newfn = "%attr(4755, root, root) " + filename
             self.push_package_file(newfn, "setuid")
-            self.excludes.append(filename)
 
         if filename in self.attrs:
             newfn = "{0}({1}) {2}".format(self.attrs[filename][0],
                                           ','.join(self.attrs[filename][1:3]),
                                           filename)
             self.push_package_file(newfn, "attr")
+
+        # autostart
+        part = re.compile(r"^/usr/lib/systemd/system/.+\.target\.wants/.+")
+        if part.search(filename) and 'update-triggers.target.wants' not in filename:
+            if filename in self.excludes:
+                self.push_package_file("%exclude " + filename, "autostart")
+            else:
+                self.push_package_file(filename, "autostart")
             self.excludes.append(filename)
 
         if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
