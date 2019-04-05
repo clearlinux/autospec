@@ -185,7 +185,7 @@ class Specfile(object):
             if pkg.endswith("-extras"):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
-                       "lib32", "dev32", "legacypython", "doc", "abi"]:
+                       "lib32", "dev32", "legacypython", "doc", "abi", "staticdev"]:
                 continue
             # honor requires_ban for manual overrides
             if "{}-{}".format(self.name, pkg) in buildreq.banned_requires:
@@ -271,6 +271,12 @@ class Specfile(object):
             if pkg == "python":
                 if self.name != self.name.lower():
                     self._write("Provides: {}-python\n".format(self.name.lower()))
+
+            if pkg == "dev":
+                self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
+
+            if pkg == "staticdev":
+                self._write("Requires: {}-dev = %{{version}}-%{{release}}\n".format(self.name))
 
             if pkg == "python3":
                 self._write("Requires: python3-core\n")

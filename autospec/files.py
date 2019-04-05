@@ -207,7 +207,7 @@ class FileManager(object):
         patterns = [
             # Patterns for matching files, format is a tuple as follows:
             # (<raw pattern>, <package>, <optional replacement>, <optional prefix>)
-            # order matters!
+            # order matters, first match wins!
             (r"^/usr/share/package-licenses/.{1,}/.{1,}", "license"),
             (r"^/usr/share/man/man2", "dev"),
             (r"^/usr/share/man/man3", "dev"),
@@ -218,6 +218,7 @@ class FileManager(object):
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so\.", "lib"),
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.so\.", "lib32"),
             (r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so", "lib"),
+            (r"^/usr/lib64/libkdeinit5", "lib"),
             (r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so", "lib32"),
             (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.so\.", "lib"),
             (r"^/usr/lib64/gobject-introspection/", "lib"),
@@ -238,6 +239,9 @@ class FileManager(object):
             (r"^/usr/share/girepository-1\.0/.*\.typelib\$", "data", "/usr/share/girepository-1.0/*.typelib"),
             (r"^/usr/include/[a-zA-Z0-9._+-]*\.hxx", "dev", "/usr/include/*.hxx"),
             (r"^/usr/include/[a-zA-Z0-9._+-]*\.hpp", "dev", "/usr/include/*.hpp"),
+            (r"^/usr/include/[a-zA-Z0-9._+-]*\.hf77", "dev", "/usr/include/*.hf77"),
+            (r"^/usr/include/[a-zA-Z0-9._+-]*\.hf90", "dev", "/usr/include/*.hf90"),
+            (r"^/usr/include/[a-zA-Z0-9._+-]*\.hf", "dev", "/usr/include/*.hf"),
             (r"^/usr/include/[a-zA-Z0-9._+-]*\.h\+\+", "dev", "/usr/include/*.h++"),
             (r"^/usr/include/[a-zA-Z0-9._+-]*\.h", "dev", "/usr/include/*.h"),
             (r"^/usr/include/", "dev"),
@@ -259,12 +263,13 @@ class FileManager(object):
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.so$", so_dest + '32'),
             (r"^/usr/lib64/haswell/avx512_1/[a-zA-Z0-9._+-]*\.so$", so_dest),
             (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.so$", so_dest),
-            (r"^/usr/lib/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib/*.a"),
-            (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib64/*.a"),
-            (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.a$", "dev32", "/usr/lib32/*.a"),
-            (r"^/usr/lib/haswell/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib/haswell/*.a"),
-            (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.a$", "dev", "/usr/lib64/haswell/*.a"),
-            (r"^/usr/lib32/haswell/[a-zA-Z0-9._+-]*\.a$", "dev32", "/usr/lib32/haswell/*.a"),
+            (r"^/usr/lib64/haswell/avx512_1/[a-zA-Z0-9._+-]*\.so$", so_dest),
+            (r"^/usr/lib/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.a$", "staticdev32"),
+            (r"^/usr/lib/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib32/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev32"),
             (r"^/usr/lib/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib64/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib32/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev32"),
