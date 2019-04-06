@@ -604,6 +604,7 @@ def parse_catkin_deps(cmakelists_file):
 
 
 def is_qmake_pro(f):
+    """Test if file extension is pro and not hidden."""
     return f.endswith(".pro") and not f.startswith(".")
 
 
