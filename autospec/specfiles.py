@@ -396,18 +396,19 @@ class Specfile(object):
                                       self.tarball_prefix,
                                       destination))
         self.apply_patches()
-        if config.config_opts['32bit']:
-            self._write_strip("pushd ..")
-            self._write_strip("cp -a {} build32".format(self.tarball_prefix))
-            self._write_strip("popd")
-        if config.config_opts['use_avx2']:
-            self._write_strip("pushd ..")
-            self._write_strip("cp -a {} buildavx2".format(self.tarball_prefix))
-            self._write_strip("popd")
-        if config.config_opts['use_avx512']:
-            self._write_strip("pushd ..")
-            self._write_strip("cp -a {} buildavx512".format(self.tarball_prefix))
-            self._write_strip("popd")
+        if self.default_pattern != 'cmake':
+            if config.config_opts['32bit']:
+                self._write_strip("pushd ..")
+                self._write_strip("cp -a {} build32".format(self.tarball_prefix))
+                self._write_strip("popd")
+            if config.config_opts['use_avx2']:
+                self._write_strip("pushd ..")
+                self._write_strip("cp -a {} buildavx2".format(self.tarball_prefix))
+                self._write_strip("popd")
+            if config.config_opts['use_avx512']:
+                self._write_strip("pushd ..")
+                self._write_strip("cp -a {} buildavx512".format(self.tarball_prefix))
+                self._write_strip("popd")
         self._write_strip("\n")
 
     def write_32bit_exports(self):
