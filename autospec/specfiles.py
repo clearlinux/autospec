@@ -397,7 +397,7 @@ class Specfile(object):
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             self._write_strip("mkdir -p {}"
                               .format(destination))
-            self._write_strip("cp -r %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
+            self._write_strip("cp -rn %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
                               .format(self.archive_details[archive + "prefix"],
                                       self.tarball_prefix,
                                       destination))
