@@ -524,7 +524,7 @@ def process_archives(archives):
         call(extract_cmd)
         tar_path = os.path.join(build.base_path, source_tarball_prefix)
         tar_files = glob.glob("{}/*".format(tar_path))
-        move_cmd = "mv "
+        move_cmd = "mv -n "
         for tar_file in tar_files:
             move_cmd += '"{}"'.format(tar_file) + " "
         move_cmd += '"{0}/{1}"'.format(path, destination)
