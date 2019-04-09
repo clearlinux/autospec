@@ -202,6 +202,7 @@ class TestSpecfileWrite(unittest.TestCase):
                   "Group: Development\n",
                   "Requires: pkg-data = %{version}-%{release}\n",
                   "Provides: pkg-devel = %{version}-%{release}\n",
+                  "Requires: pkg = %{version}-%{release}\n",
                   "\n%description dev\n",
                   "dev components for the pkg package.\n",
                   "\n",
