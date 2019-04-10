@@ -632,6 +632,8 @@ def scan_for_configure(dirn):
         add_buildreq("buildreq-scons")
     elif buildpattern.default_pattern == "R":
         add_buildreq("buildreq-R")
+    elif buildpattern.default_pattern == "phpize":
+        add_buildreq("buildreq-php")
 
     count = 0
     for dirpath, _, files in os.walk(dirn):
@@ -680,6 +682,10 @@ def scan_for_configure(dirn):
         if "meson.build" in files:
             add_buildreq("buildreq-meson")
             buildpattern.set_build_pattern("meson", default_score)
+
+        if "config.m4" in files:
+            add_buildreq("buildreq-php")
+            buildpattern.set_build_pattern("phpize", 1)
 
         for name in files:
             if name.lower() == "cargo.toml" and dirpath == dirn:
