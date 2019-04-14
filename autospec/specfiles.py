@@ -234,6 +234,12 @@ class Specfile(object):
         deps["libexec"] = ["config", "license"]
         deps["lib32"] = ["data", "license"]
         deps["python"] = ["python3"]
+        for pkg, pkg_reqs in deps.items():
+            for pkg_req in pkg_reqs:
+                if "{}-{}".format(self.name, pkg_req) in buildreq.banned_requires:
+                    pkg_reqs.remove(pkg_req)
+                    continue
+
         if config.config_opts['dev_requires_extras']:
             deps["dev"].append("extras")
         for k, v in self.custom_extras.items():
