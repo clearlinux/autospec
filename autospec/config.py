@@ -759,7 +759,7 @@ def parse_config_files(path, bump, filemanager, version):
 
     patches += read_conf_file(os.path.join(path, "series"))
     pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in patches]
-    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(configure.ac|configure.in))\" %s" % " ".join(pfiles)  # noqa: W605
+    cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(aclocal.m4)|(configure.ac|configure.in))\" %s" % " ".join(pfiles)  # noqa: W605
     if patches and call(cmd,
                         check=False,
                         stdout=subprocess.DEVNULL,
