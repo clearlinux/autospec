@@ -76,6 +76,23 @@ def add_license(lic):
     return result
 
 
+def decode_license(license):
+    def try_with_charset(license, charset):
+        if not charset:
+            return
+
+        try:
+            return license.decode(charset)
+        except UnicodeDecodeError:
+            if charset in ('ISO-8859-1', 'ISO-8859-15'):
+                if b'\xff' in license:
+                    return try_with_charset(license, 'ISO-8859-13')
+                if b'\xd2' in license and b'\xd3' in license:
+                    return try_with_charset(license, 'mac_roman')
+
+    return try_with_charset(license, chardet.detect(license)['encoding'])
+
+
 def license_from_copying_hash(copying, srcdir):
     """Add licenses based on the hash of the copying file."""
     data = tarball.get_contents(copying)
@@ -83,23 +100,15 @@ def license_from_copying_hash(copying, srcdir):
         # Not a license if this is a script
         return
 
-    sh = hashlib.sha1()
-    sh.update(data)
-    hash_sum = sh.hexdigest()
+    raw_data = data
 
-    """ decode license text """
-    detected = chardet.detect(data)
-    license_charset = detected['encoding']
-    if license_charset == 'ISO-8859-1':
-        if b'\xff' in data:
-            license_charset = 'ISO-8859-13'
-        elif b'\xd2' in data and b'\xd3' in data:
-            license_charset = 'mac_roman'
-    if not license_charset:
-        # This is not a text file
+    data = decode_license(data)
+    if not data:
         return
 
-    data = data.decode(license_charset)
+    sh = hashlib.sha1()
+    sh.update(raw_data)
+    hash_sum = sh.hexdigest()
 
     if config.license_fetch:
         values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
