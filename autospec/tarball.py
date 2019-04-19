@@ -380,7 +380,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             m = re.search(pattern, url)
             if m:
                 repo = m.group(2).strip()
-                if repo not in name:
+                if not name or repo not in name:
                     # Only take the repo name as the package name if it's more descriptive
                     name = repo
                 elif name != repo:
