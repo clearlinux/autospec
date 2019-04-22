@@ -395,12 +395,16 @@ class Specfile(object):
                                               self.source_index[archive]))
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
-            self._write_strip("mkdir -p {}"
-                              .format(destination))
-            self._write_strip("cp -rn %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
-                              .format(self.archive_details[archive + "prefix"],
-                                      self.tarball_prefix,
-                                      destination))
+            if self.archive_details[archive + "prefix"] == self.tarball_prefix:
+                print("Archive {} already unpacked in {}; ignoring destination"
+                      .format(archive, self.tarball_prefix))
+            else:
+                self._write_strip("mkdir -p {}"
+                                  .format(destination))
+                self._write_strip("cp -r %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
+                                  .format(self.archive_details[archive + "prefix"],
+                                          self.tarball_prefix,
+                                          destination))
         self.apply_patches()
         if self.default_pattern != 'cmake':
             if config.config_opts['32bit']:
