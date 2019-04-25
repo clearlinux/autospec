@@ -119,6 +119,7 @@ def commit_to_git(path):
         "commitmsg",
         "results/",
         "rpms/",
+        "for-review.txt",
         ""
     ]
     write_out(os.path.join(path, '.gitignore'), '\n'.join(ignorelist))
