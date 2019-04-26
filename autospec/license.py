@@ -76,7 +76,7 @@ def add_license(lic):
     return result
 
 
-def license_from_copying_hash(copying, srcdir):
+def license_from_copying_hash(copying, srcdir, known_licenses=set()):
     """Add licenses based on the hash of the copying file."""
     data = tarball.get_contents(copying)
     if data.startswith(b'#!'):
@@ -86,6 +86,9 @@ def license_from_copying_hash(copying, srcdir):
     sh = hashlib.sha1()
     sh.update(data)
     hash_sum = sh.hexdigest()
+
+    if hash_sum in known_licenses:
+        return
 
     """ decode license text """
     detected = chardet.detect(data)
@@ -111,6 +114,7 @@ def license_from_copying_hash(copying, srcdir):
         page = response.decode('utf-8').strip()
         if page:
             print("License     : ", page, " (server) (", hash_sum, ")")
+            known_licenses.add(hash_sum)
             process_licenses(page)
 
             if page != "none":
