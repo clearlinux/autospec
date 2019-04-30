@@ -429,6 +429,13 @@ class Specfile(object):
         """Write variable exports to spec file."""
         flags = []
         arch = os.uname()[4]
+
+        # Clear ships with a patch in GCC that allows ignoring the -Werror
+        # compilation flag if this environment variable is set.  -Werror
+        # is a useful flag for the upstream package maintainers, but is
+        # a source of headaches for downstream users.
+        self._write_strip("export GCC_IGNORE_WERROR=1\n")
+
         if config.config_opts['use_clang']:
             self._write_strip("export CC=clang\n")
             self._write_strip("export CXX=clang++\n")
