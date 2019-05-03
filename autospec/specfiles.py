@@ -399,6 +399,8 @@ class Specfile(object):
                                               self.source_index[archive]))
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
+            if destination.startswith(':'):
+                continue
             if self.archive_details[archive + "prefix"] == self.tarball_prefix:
                 print("Archive {} already unpacked in {}; ignoring destination"
                       .format(archive, self.tarball_prefix))
