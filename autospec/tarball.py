@@ -513,6 +513,12 @@ def process_archives(archives):
     """Download and process archives."""
     for archive, destination in zip(archives[::2], archives[1::2]):
         source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
+        sha1 = get_sha1sum(source_tarball_path)
+        write_upstream(sha1, os.path.basename(archive), mode="a")
+
+        if destination.startswith(':'):
+            continue
+
         if source_tarball_path.lower().endswith('.zip'):
             extract_cmd, source_tarball_prefix = build_unzip(source_tarball_path)
         elif source_tarball_path.lower().endswith('.7z'):
@@ -538,9 +544,6 @@ def process_archives(archives):
             print("mkdir " + mkdir_cmd)
             call(mkdir_cmd)
             call(move_cmd)
-
-        sha1 = get_sha1sum(source_tarball_path)
-        write_upstream(sha1, os.path.basename(archive), mode="a")
 
 
 def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
