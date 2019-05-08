@@ -395,9 +395,18 @@ setuid
   ``%attr`` macro.
 
 attrs
-  Each line in this file should be a full ``%attr`` macro line that will be
-  included in the ``.spec`` to have fine-grained control over the permissions
-  and ownership of files in the package.
+  Each line in this file should specify mode, user, group and filename
+  (space separated) which is translated into a full ``%attr`` macro
+  line that will be included in the ``.spec`` to have fine-grained control
+  over the permissions and ownership of files in the package.
+
+  An example of a ``attrs`` file would contain::
+
+    4755 root messagebus /usr/libexec/dbus-daemon-launch-helper
+
+  which would translate to the following line in the resulting ``.spec`` file::
+
+    %attr(4755,root,messagebus) /usr/libexec/dbus-daemon-launch-helper
 
 
 Controlling test suites
