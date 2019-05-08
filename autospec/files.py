@@ -55,6 +55,12 @@ class FileManager(object):
         if package not in self.packages:
             self.packages[package] = set()
 
+        # prepend the %attr macro if file defined in 'attrs' control file
+        if filename in self.attrs:
+            mod = self.attrs[filename][0]
+            u = self.attrs[filename][1]
+            g = self.attrs[filename][2]
+            filename = "%attr({0},{1},{2}) {3}".format(mod, u, g, filename)
         self.packages[package].add(filename)
         build.must_restart += 1
         if not self.newfiles_printed:
@@ -178,12 +184,6 @@ class FileManager(object):
         if filename in self.setuid:
             newfn = "%attr(4755, root, root) " + filename
             self.push_package_file(newfn, "setuid")
-
-        if filename in self.attrs:
-            newfn = "{0}({1}) {2}".format(self.attrs[filename][0],
-                                          ','.join(self.attrs[filename][1:3]),
-                                          filename)
-            self.push_package_file(newfn, "attr")
 
         # autostart
         part = re.compile(r"^/usr/lib/systemd/system/.+\.target\.wants/.+")
