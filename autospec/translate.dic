@@ -57,6 +57,7 @@ pyaml-python=pyaml
 PyECLib-python=pyeclib
 pygments=Pygments
 Pygments-python=Pygments
+PyGObject=pygobject
 pylibmc-python=pylibmc
 PyOpenSSL=pyOpenSSL
 pyqt5=PyQt5
