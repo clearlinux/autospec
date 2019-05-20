@@ -261,6 +261,7 @@ failed_pats = [
     (r"ERROR: dependencies '([a-zA-Z0-9\-\.]*)'.* are not available for package '.*'", 0, 'R'),
     (r"ERROR: dependencies '.*', '([a-zA-Z0-9\-\.]*)',.* are not available for package '.*'", 0, 'R'),
     (r"ERROR: dependency '([a-zA-Z0-9\-\.]*)' is not available for package '.*'", 0, 'R'),
+    (r"Error: package '([a-zA-Z0-9\-\.]*)' required by", 0, 'R'),
     (r"Error: Unable to find (.*)", 0, None),
     (r"there is no package called '([a-zA-Z0-9\-\.]*)'", 0, 'R'),
     (r"you may need to install the ([a-zA-Z0-9\-:\.]*) module", 0, 'perl'),
