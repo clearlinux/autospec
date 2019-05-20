@@ -376,6 +376,11 @@ def read_config_opts(path):
     """Read config options from path/options.conf."""
     global config_opts
     global transforms
+    
+    # default lto to true for new things
+    config_opts['use_lto'] = True
+    
+    
     opts_path = os.path.join(path, 'options.conf')
     if not os.path.exists(opts_path):
         create_conf(path)
