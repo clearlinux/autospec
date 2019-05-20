@@ -486,20 +486,16 @@ class Specfile(object):
                 self._write_strip("export AR=gcc-ar\n")
                 self._write_strip("export RANLIB=gcc-ranlib\n")
                 self._write_strip("export NM=gcc-nm\n")
-            elif not config.config_opts['use_clang']:
-                # This works around an issue in GCC that prevents some programs
-                # from being linked: despite `use_lto` being false, `lto1` exits
-                # with an internal compiler error: "bytecode stream: expected tag
-                # identifier_node instead of LTO_UNKNOWN".
-                self._write('export LDFLAGS="${LDFLAGS} -fno-lto"\n')
+            else:
+                flags.extend(["-fno-lto"])
         if config.config_opts['fast-math']:
             flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
         if config.config_opts['pgo']:
-            flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
+            flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=/var/tmp/pgo", "-fprofile-correction"])
         if self.gcov_file:
             flags = list(filter(("-flto=4").__ne__, flags))
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
-        if flags:
+        if flags or config.config_opts['broken_c++']:
             flags = sorted(list(set(flags)))
             self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
             self._write_strip('export FCFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
@@ -514,8 +510,8 @@ class Specfile(object):
         if config.profile_payload and config.profile_payload[0] and not self.need_avx2_flags:
             genflags = []
             useflags = []
-            genflags.extend(["-fprofile-generate", "-fprofile-dir=pgo", "-fprofile-update=atomic"])
-            useflags.extend(["-fprofile-use", "-fprofile-dir=pgo", "-fprofile-correction"])
+            genflags.extend(["-fprofile-generate", "-fprofile-dir=/var/tmp/pgo", "-fprofile-update=atomic"])
+            useflags.extend(["-fprofile-use", "-fprofile-dir=/var/tmp/pgo", "-fprofile-correction"])
 
             self._write_strip('export CFLAGS_GENERATE="$CFLAGS {0} "\n'.format(" ".join(genflags)))
             self._write_strip('export FCFLAGS_GENERATE="$FCFLAGS {0} "\n'.format(" ".join(genflags)))
@@ -1330,6 +1326,8 @@ class Specfile(object):
             extra_qmake_args = "-spec linux-clang "
         if config.config_opts['use_lto']:
             extra_qmake_args += "-config ltcg "
+        else:
+            extra_qmake_args += "-fno-lto "
 
         self.write_prep()
         self._write_strip("%build")
