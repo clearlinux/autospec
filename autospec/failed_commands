@@ -1138,7 +1138,6 @@ xcursorgen, xcursorgen
 xdg-email, xdg-utils
 xdg-open, xdg-utils
 xdg-user-dirs-update, xdg-user-dirs
-xemacs, xemacs
 xf86.h, pkgconfig(xorg-server)
 xgettext, gettext
 xkbcommon, libxkbcommon-dev
