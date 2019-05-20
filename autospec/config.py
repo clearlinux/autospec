@@ -738,8 +738,8 @@ def parse_config_files(path, bump, filemanager, version):
             if type(content['requires']) is not list:
                 print_warning(f"Invalid custom extras file: {fname} invalid requires list")
                 continue
-        print(f"{name}-extras for {content['files']}")
-        filemanager.custom_extras[f"{name}-extras"] = content
+        print(f"extras-{name} for {content['files']}")
+        filemanager.custom_extras["extras-" + f"{name}"] = content
         filemanager.excludes += content['files']
 
     content = read_conf_file(os.path.join(path, "dev_extras"))

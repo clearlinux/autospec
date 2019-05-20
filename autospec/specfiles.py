@@ -182,7 +182,7 @@ class Specfile(object):
         for pkg in sorted(self.packages):
             if pkg == "autostart" and self.no_autostart:
                 continue
-            if pkg.endswith("-extras"):
+            if pkg.startswith("extras-"):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
                        "lib32", "dev32", "legacypython", "doc", "abi", "staticdev"]:
