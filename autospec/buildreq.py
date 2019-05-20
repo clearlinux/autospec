@@ -83,6 +83,19 @@ def add_requires(req, override=False):
         new = False
     if req in banned_requires:
         return False
+    req2 = req.replace("_", "-")
+    if req not in buildreqs and req2 in config.os_packages and req2 not in requires and req2 not in banned_requires:
+        buildreqs.add(req2)
+        requires.add(req2)
+        return True
+
+    if len(req) > 1:
+        req2 = req[0].upper() + req[1:]
+    if req not in buildreqs and req2 in config.os_packages and req2 not in requires and req2 not in banned_requires:
+        buildreqs.add(req2)
+        requires.add(req2)
+        return True
+
     if req not in buildreqs and req not in config.os_packages and not override:
         if req:
             print("requirement '{}' not found in buildreqs or os_packages, skipping".format(req))
