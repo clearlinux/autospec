@@ -1482,6 +1482,12 @@ class Specfile(object):
                                   config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
 
+        if config.config_opts['use_avx2']:
+            self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" meson --prefix /usr --libdir=/usr/lib64/haswell --buildtype=plain {0} {1} builddiravx2'
+                          .format(config.extra_configure,
+                                  config.extra_configure64))
+            self._write_strip('ninja -v -C builddiravx2')
+
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32")
             self.write_32bit_exports()
@@ -1511,6 +1517,9 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
+
+        if config.config_opts['use_avx2']:
+            self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx2 install')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         self.write_find_lang()
