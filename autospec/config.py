@@ -339,6 +339,9 @@ def create_conf(path):
         else:
             config_f['autospec'][fname] = 'false'
 
+    # default lto to true for new things
+    config_f['autospec']['use_lto'] = True
+
     # renamed options need special care
     if os.path.exists("skip_test_suite"):
         config_f['autospec']['skip_tests'] = 'true'
@@ -376,6 +379,7 @@ def read_config_opts(path):
     """Read config options from path/options.conf."""
     global config_opts
     global transforms
+
     opts_path = os.path.join(path, 'options.conf')
     if not os.path.exists(opts_path):
         create_conf(path)
