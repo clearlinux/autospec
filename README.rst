@@ -370,7 +370,7 @@ dev_extras
 ${custom}_extras
   A `toml <https://github.com/toml-lang/toml>`_ file with a required 'files'
   keypair that has as its value a list of strings that are full paths that
-  will be put in the ``${custom}-extras`` subpackage. It can also contain an
+  will be put in the ``extras-${custom}`` subpackage. It can also contain an
   optional 'requires' keypair that has as its value a list of strings that
   are subpackage names of other subpackages in the package. For example a
   foo_extras file containing::
@@ -381,13 +381,13 @@ ${custom}_extras
   will produce a spec file package section for example-foo-extras with the
   following content::
 
-    %package foo-extras
-    Summary: foo-extras components for the example package.
+    %package extras-foo
+    Summary: extras-foo components for the example package.
     Group: Default
     Requires: example-data = %{version}-%{release}
 
-    %description foo-extras
-    foo-extras components for the example package.
+    %description extras-foo
+    extras-foo components for the example package.
 
 setuid
   Each line in this file should contain the full path to a binary in the
