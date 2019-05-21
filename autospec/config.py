@@ -527,7 +527,7 @@ def parse_existing_spec(path, name):
             if key == "version":
                 old_version = value
             elif key.startswith("patch"):
-                old_patches.append(value)
+                old_patches.append(value.lower())
 
     # Ignore nopatch
     for patch in patches:
