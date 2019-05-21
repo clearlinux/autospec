@@ -77,6 +77,7 @@ def add_license(lic):
 
 
 def decode_license(license):
+    """Try and decode the license string."""
     def try_with_charset(license, charset):
         if not charset:
             return
