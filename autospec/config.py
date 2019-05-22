@@ -340,7 +340,7 @@ def create_conf(path):
             config_f['autospec'][fname] = 'false'
 
     # default lto to true for new things
-    config_f['autospec']['use_lto'] = True
+    config_f['autospec']['use_lto'] = 'true'
 
     # renamed options need special care
     if os.path.exists("skip_test_suite"):
