@@ -448,6 +448,10 @@ class Specfile(object):
             self._write_strip("export CC=clang\n")
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
+            lto = "-flto"
+        else:
+            lto = "-flto=4"
+
         if config.config_opts['optimize_size']:
             if config.config_opts['use_clang']:
                 flags.extend(["-Os", "-ffunction-sections", "-fdata-sections"])
@@ -482,10 +486,15 @@ class Specfile(object):
                 flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
         if self.default_pattern != 'qmake':
             if config.config_opts['use_lto']:
-                flags.extend(["-O3", "-flto=4", "-ffat-lto-objects"])
-                self._write_strip("export AR=gcc-ar\n")
-                self._write_strip("export RANLIB=gcc-ranlib\n")
-                self._write_strip("export NM=gcc-nm\n")
+                flags.extend(["-O3", lto, "-ffat-lto-objects"])
+                if config.config_opts['use_clang']:
+                    self._write_strip("export AR=llvm-ar\n")
+                    self._write_strip("export RANLIB=llvm-ranlib\n")
+                    self._write_strip("export NM=llvm-nm\n")
+                else:
+                    self._write_strip("export AR=gcc-ar\n")
+                    self._write_strip("export RANLIB=gcc-ranlib\n")
+                    self._write_strip("export NM=gcc-nm\n")
             else:
                 flags.extend(["-fno-lto"])
         if config.config_opts['fast-math']:
@@ -493,7 +502,7 @@ class Specfile(object):
         if config.config_opts['pgo']:
             flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=/var/tmp/pgo", "-fprofile-correction"])
         if self.gcov_file:
-            flags = list(filter(("-flto=4").__ne__, flags))
+            flags = list(filter((lto).__ne__, flags))
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
         if flags or config.config_opts['broken_c++']:
             flags = sorted(list(set(flags)))
