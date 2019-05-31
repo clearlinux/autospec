@@ -196,8 +196,7 @@ TAR_OUT = 'libjpeg-turbo-1.5.1/\n'                         \
           'libjpeg-turbo-1.5.1/turbojpeg-jni.c\n'
 
 
-UNZIP_OUT = 'Archive:  file.zip\n'                         \
-            'longhashstring\n'                             \
+UNZIP_OUT = 'longhashstring\n'                             \
             '  Length      Date    Time    Name\n'         \
             '---------  ---------- -----   ----\n'         \
             '        0  04-03-2017 06:27   prefix-dir/\n'  \
