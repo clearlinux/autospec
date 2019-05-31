@@ -102,9 +102,8 @@ def build_unzip(zip_path):
     This function will run the zip file through a content list, parsing that list to get the
     root folder name containing the zip file's contents.
 
-    The output of the unzip -l command has the following format:
+    The output of the unzip -q -l command has the following format:
     ***snip***
-    Archive:  file.zip
     (optional) hash
     Length      Date    Time    Name
     ---------  ---------- -----   ----
@@ -116,10 +115,10 @@ def build_unzip(zip_path):
     contents = subprocess.check_output(["unzip", "-q", "-l", zip_path], universal_newlines=True)
     lines = contents.splitlines() if contents else []
     # looking for directory prefix in unzip output as it may differ from default
-    if len(lines) > 3:
+    if len(lines) > 2:
         # In some cases there is a hash line so we detect this based on the header
         # separator character '-'
-        prefix_line = 4 if len(lines) > 4 and lines[3][0] == '-' else 3
+        prefix_line = 3 if len(lines) > 3 and lines[2][0] == '-' else 2
         prefix = lines[prefix_line].split("/")[0].split()[-1]
     else:
         print_fatal("Zip file doesn't appear to have any content")
