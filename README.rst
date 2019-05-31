@@ -368,18 +368,26 @@ dev_extras
   software that Autospec does not automatically detect.
 
 ${custom}_extras
-  A `toml <https://github.com/toml-lang/toml>`_ file with a required 'files'
-  keypair that has as its value a list of strings that are full paths that
-  will be put in the ``extras-${custom}`` subpackage. It can also contain an
-  optional 'requires' keypair that has as its value a list of strings that
-  are subpackage names of other subpackages in the package. For example a
-  foo_extras file containing::
+  Same as "extras" above, but instead of the files being placed in an
+  ``-extras`` subpackage, they will be placed in the ``extras-${custom}``
+  subpackage.
 
-    files = ['/usr/bin/foo', '/usr/lib64/libfoo.so']
-    requires = ['data']
+${custom}_extras_requires
+  Each line contains a subpackage names of other subpackages in the package.
+  This is used when the ``extras-${custom}`` subpackage has a runtime
+  requirement on a sibling subpackage.
 
-  will produce a spec file package section for example-foo-extras with the
-  following content::
+  An example of the ``${custom}_extras`` and ``${custom}_extras_requires``
+  being used together with::
+
+    /usr/bin/foo
+
+  in foo_extras and::
+
+    data
+
+  in foo_extras_requires will produce a spec file package
+  section for example-foo-extras with the following content::
 
     %package extras-foo
     Summary: extras-foo components for the example package.
