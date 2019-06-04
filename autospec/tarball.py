@@ -464,6 +464,13 @@ def name_and_version(name_arg, version_arg, filemanager):
             name = m.group(1).strip()
             version = convert_version(m.group(2))
 
+    if "git.sr.ht" in url:
+        # https://git.sr.ht/~sircmpwn/scdoc/archive/1.9.4.tar.gz
+        m = re.search(r"git\.sr\.ht/.*/(.*)/archive/(.*).tar.gz", url)
+        if m:
+            name = m.group(1).strip()
+            version = convert_version(m.group(2))
+
     # override name and version from commandline
     name = name_arg if name_arg else name
     version = version_arg if version_arg else version
