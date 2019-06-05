@@ -1495,8 +1495,8 @@ class Specfile(object):
 
         if config.config_opts['use_avx2']:
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
-                              'meson --prefix /usr --libdir=/usr/lib64/haswell --buildtype=plain'
-                              '{0} {1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
+                              'meson --prefix /usr --libdir=/usr/lib64/haswell --buildtype=plain {0} '
+                              '{1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
 
         if config.config_opts['32bit']:
