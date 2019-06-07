@@ -589,6 +589,27 @@ class Specfile(object):
 
         self.write_find_lang()
 
+    def write_mvnbin_install(self):
+        patterns = [
+            re.compile(r"^https://repo1.maven.org/maven2/([a-z\-]+)/([a-z\-]+)/([\d.]+)/[a-z-.\d]*\.[pom|jar]")]
+        mvn_sources = [self.url] + self.sources["archive"]
+        src_num = 0
+
+        for src in mvn_sources:
+            for pat in patterns:
+                m = pat.match(src)
+                if m:
+                    groupid = m.group(1)
+                    artifactid = m.group(2)
+                    version = m.group(3)
+                    src_dir = "{}/{}/{}".format(groupid, artifactid, version)
+
+                    self._write_strip("mkdir -p %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_dir))
+                    self._write_strip("cp %{{SOURCE{}}} %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_num, src_dir))
+                    self._write_strip("\n")
+                    src_num += 1
+                    break
+
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
         if self.prep_prepend:
@@ -1482,6 +1503,18 @@ class Specfile(object):
         self.write_install_prepend()
         self._write_strip("xmvn-install  -R .xmvn-reactor -n {} -d %{{buildroot}}"
                           .format(mvn))
+
+    def write_mvnbin_pattern(self):
+        """Write maven build pattern to spec file."""
+        self._write_strip("%prep")
+        self.write_prep_prepend()
+        self._write_strip("\n")
+        self._write_strip("%build")
+        self.write_build_prepend()
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self.write_install_prepend()
+        self.write_mvnbin_install()
 
     def write_meson_pattern(self):
         """Write meson build pattern to spec file."""

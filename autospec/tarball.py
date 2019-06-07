@@ -445,7 +445,7 @@ def name_and_version(name_arg, version_arg, filemanager):
 
     # maven
     if ".maven." in url:
-        m = re.search(r"/maven.*/org/.*/(.*?)/.*/.*[\-_]([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.jar", url)
+        m = re.search(r"maven.org/maven2/[a-z\-]+/([a-z\-])+/([\d.]+)/[a-z-.\d]*\.[pom|jar]", url)
         if m:
             name = m.group(1).strip()
             version = convert_version(m.group(2))
@@ -501,6 +501,8 @@ def find_extract(tar_path, tarfile):
         extract_cmd, tar_prefix = build_unzip(tar_path)
     elif tarfile.lower().endswith('.gem'):
         extract_cmd, tar_prefix = build_gem_unpack(tar_path)
+    elif tarfile.lower().endswith('.jar'):
+        extract_cmd, tar_prefix = build_unzip(tar_path)
     else:
         extract_cmd, tar_prefix = build_untar(tar_path)
 
