@@ -26,6 +26,7 @@ gopkg.in/check.v1=golang-github-go-check-check
 gopkg.in/yaml.v2=golang-github-go-yaml-yaml
 hacking-python=hacking
 httplib2-python=httplib2
+importlib_metadata=importlib-metadata
 ironicclient-python=python-ironicclient
 jinja2=Jinja2
 jinja2-python=Jinja2
