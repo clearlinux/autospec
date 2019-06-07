@@ -1359,7 +1359,7 @@ class Specfile(object):
         if config.config_opts['use_lto']:
             extra_qmake_args += "-config ltcg "
         else:
-            extra_qmake_args += "-fno-lto "
+            extra_qmake_args += "QMAKE_CFLAGS+=-fno-lto QMAKE_CXXFLAGS+=-fno-lto"
 
         self.write_prep()
         self._write_strip("%build")
