@@ -591,13 +591,15 @@ class Specfile(object):
 
     def write_mvnbin_install(self):
         patterns = [
-            re.compile(r"^https://repo1.maven.org/maven2/([a-z\-]+)/([a-z\-]+)/([\d.]+)/[a-z-.\d]*\.[pom|jar]")]
+            re.compile(r"maven.org/maven2/([a-z\-]+)/([a-z\-]+)/([a-z-\d.]+)/[a-z-\d.]*\.[pom|jar]"),
+            re.compile(r"maven.apache.org/maven2/([a-z\-]+)/([a-z\-]+)/([\d.]+)/[a-z-.\d]*\.[pom|jar]"),
+            re.compile(r"maven.org/maven2/([a-z-.\d/]+)/([a-z-.\d]*)/([a-z\d\.]+)/(?:[a-z-.\d]*)\.(?:pom|jar)")]
         mvn_sources = [self.url] + self.sources["archive"]
         src_num = 0
 
         for src in mvn_sources:
             for pat in patterns:
-                m = pat.match(src)
+                m = pat.search(src)
                 if m:
                     groupid = m.group(1)
                     artifactid = m.group(2)

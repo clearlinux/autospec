@@ -445,10 +445,15 @@ def name_and_version(name_arg, version_arg, filemanager):
 
     # maven
     if ".maven." in url:
-        m = re.search(r"maven.org/maven2/[a-z\-]+/([a-z\-])+/([\d.]+)/[a-z-.\d]*\.[pom|jar]", url)
-        if m:
-            name = m.group(1).strip()
-            version = convert_version(m.group(2))
+        maven_pats = [r"maven.org/maven2/[a-zA-Z\-]+/([a-zA-Z\-])+/([a-zA-Z-\d.]+)/[a-zA-Z-\d.]*\.(?:pom|jar)",
+                      r"maven.apache.org/maven2/[a-zA-Z\-]+/([a-zA-Z\-])+/([\d.]+)/[a-z-.\d]*\.(?:pom|jar)",
+                      r"maven.org/maven2/(?:[a-zA-Z-.\d/]+)/([a-zA-Z-.\d]*)/([a-zA-Z\d\.]+)/(?:[a-zA-Z-.\d]*)\.(?:pom|jar)"]
+        for pat in maven_pats:
+            m = re.search(pat, url)
+            if m:
+                name = m.group(1).strip()
+                version = convert_version(m.group(2))
+                break
 
     # rust crate
     if "crates.io" in url:
