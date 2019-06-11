@@ -248,6 +248,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     #
     filemanager = files.FileManager()
     tarball.process(url, name, args.version, args.target, archives, filemanager)
+    config.create_versions(build.download_path, tarball.multi_version)
     _dir = tarball.path
 
     if args.license_only:

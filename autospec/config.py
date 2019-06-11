@@ -369,6 +369,13 @@ def create_buildreq_cache(path, version):
     config_files.add('buildreq_cache')
 
 
+def create_versions(path, versions):
+    """Make versions file."""
+    with open(os.path.join(path, "versions"), 'w') as vfile:
+        vfile.write('\n'.join(sorted(versions, reverse=True)) + '\n')
+    config_files.add("versions")
+
+
 def write_config(config_f, path):
     """Write the config_f to configfile."""
     with open(os.path.join(path, 'options.conf'), 'w') as configfile:
@@ -434,9 +441,10 @@ def filter_blanks(lines):
 
 
 def read_conf_file(path, track=True):
-    """
-    Read configuration file at path. If the config file does not exist (or is
-    not expected to exist) in the package git repo, specify 'track=False'.
+    """Read configuration file at path.
+
+    If the config file does not exist (or is not expected to exist)
+    in the package git repo, specify 'track=False'.
     """
     try:
         with open(path, "r") as f:
@@ -532,6 +540,11 @@ def parse_existing_spec(path, name):
         patch = patch.lower()
         if patch not in old_patches and patch.endswith(".patch") and patch.startswith("cve-"):
             cves.append(patch.upper().split(".PATCH")[0])
+
+
+def parse_config_versions(path):
+    """Parse the versions configuration file."""
+    return set(read_conf_file(os.path.join(path, "versions")))
 
 
 def parse_config_files(path, bump, filemanager, version):

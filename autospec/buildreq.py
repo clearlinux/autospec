@@ -184,6 +184,50 @@ def is_version(num_str):
     return False
 
 
+def parse_go_mod(path):
+    """Parse go.mod file for build requirements.
+
+    File content looks as follows:
+
+    module example.com/foo/bar
+
+    require (
+        github.com/BurntSushi/toml v0.3.1
+        git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999
+        github.com/inconshreveable/mousetrap v1.0.0 // indirect
+        "github.com/spf13/cobra" v0.0.3
+        github.com/spf13/pflag v1.0.3 // indirect
+    )
+
+    Need to handle all require lines including //indirect.
+    Skip requires that use .git for now. May need to be handled
+    differently.
+    """
+    reqs = []
+    with open(path, "r") as gfile:
+        dep_start = False
+        for line in gfile.readlines():
+            # Ideally the mod file is generated and the format is
+            # always correct but add a few defenses just in case
+            line = line.strip()
+            if line.startswith("//"):
+                # Skip comments
+                continue
+            if dep_start:
+                # End of the require section
+                if line.startswith(")"):
+                    break
+                req = line.split()[:2]
+                req[0] = req[0].replace('"', '')
+                if req[0].endswith(".git"):
+                    continue
+                reqs.append(req)
+                continue
+            if line.startswith("require ("):
+                dep_start = True
+    return reqs
+
+
 def parse_modules_list(modules_string, is_cmake=False):
     """Parse the modules_string for the list of modules, stripping out the version requirements."""
     if is_cmake:
@@ -262,7 +306,8 @@ def parse_cargo_toml(filename):
 
 
 def _get_desc_field(field, desc):
-    """
+    """Get a given field in an R DESCRIPTION file.
+
     Internal helper to read the value for the given field in an R package
     DESCRIPTION file. Returns a list representing the value; if value contained
     commas, the string is split on the commas and surrounding whitespace to
@@ -738,8 +783,23 @@ def scan_for_configure(dirn):
         if any(f.endswith(".go") for f in files):
             add_buildreq("buildreq-golang")
             buildpattern.set_build_pattern("golang", default_score)
-            if "go.mod" in files:
-                config.set_gopath = False
+
+        if "go.mod" in files and dirpath == dirn:
+            if "Makefile" not in files:
+                # Go packages usually have make build systems so far
+                # so only use go directly if we can't find a Makefile
+                buildpattern.set_build_pattern("golang", default_score)
+            add_buildreq("buildreq-golang")
+            config.set_gopath = False
+            mod_path = os.path.join(dirpath, "go.mod")
+            reqs = parse_go_mod(mod_path)
+            for req in reqs:
+                # req[0] is a SCM url segment in the form, repo/XXX/dependency-name
+                # req[1] is the version of the dependency
+                pkg = "go-" + req[0].replace("/", "-")
+                add_buildreq(pkg)
+                if buildpattern.default_pattern == "godep":
+                    add_requires(pkg)
 
         if "CMakeLists.txt" in files and "configure.ac" not in files:
             add_buildreq("buildreq-cmake")

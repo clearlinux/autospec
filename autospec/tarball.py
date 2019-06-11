@@ -28,12 +28,14 @@ import subprocess
 import build
 import buildpattern
 import buildreq
+import config
 import download
 from util import call, print_fatal, write_out
 
 name = ""
 rawname = ""
 version = ""
+multi_version = set()
 release = "1"
 url = ""
 path = ""
@@ -41,6 +43,27 @@ tarball_prefix = ""
 gcov_file = ""
 archives = []
 giturl = ""
+
+
+def get_go_artifacts(url, target, ver):
+    """Get artifacts required to be a go proxy alternative."""
+    for name in [f"{ver}.{x}" for x in ["info", "mod", "zip"]]:
+        path = os.path.join(target, name)
+        if not os.path.exists(path):
+            download.do_curl(os.path.join(url, name),
+                             dest=path,
+                             is_fatal=True)
+        sha1 = get_sha1sum(path)
+        write_upstream(sha1, name, mode="a")
+
+
+def process_go_dependency(url, target):
+    """Handle go dependency files."""
+    base_url = os.path.dirname(url)
+    # Unlink the upstream file to avoid appending existing go artifacts
+    os.unlink(os.path.join(build.download_path, "upstream"))
+    for ver in multi_version:
+        get_go_artifacts(base_url, target, ver)
 
 
 def get_contents(filename):
@@ -60,8 +83,12 @@ def get_sha1sum(filename):
 def check_or_get_file(upstream_url, tarfile):
     """Download tarball from url unless it is present locally."""
     tarball_path = build.download_path + "/" + tarfile
-    if not os.path.isfile(tarball_path):
+    # check if url signifies a go dependency, which needs special handling
+    if tarfile == "list":
+        process_go_dependency(upstream_url, build.download_path)
+    elif not os.path.isfile(tarball_path):
         download.do_curl(upstream_url, dest=tarball_path, is_fatal=True)
+        write_upstream(get_sha1sum(tarball_path), tarfile)
     return tarball_path
 
 
@@ -211,6 +238,23 @@ def build_gem_unpack(tarball_path):
     return extract_cmd, tar_prefix
 
 
+def build_go_unzip(tarball_path):
+    """Create go unzip command(s)."""
+    base_path = os.path.dirname(tarball_path)
+    full_extract = []
+    prefix = ""
+    base_url = os.path.dirname(url)
+    for ver in multi_version:
+        source_info = os.path.join(base_url, f"{ver}.info")
+        source_mod = os.path.join(base_url, f"{ver}.mod")
+        source_zip = os.path.join(base_url, f"{ver}.zip")
+        extract_cmd, prefix = build_unzip(os.path.join(base_path, f"{ver}.zip"))
+        buildpattern.sources["godep"] += [source_info, source_mod, source_zip]
+        full_extract.append(extract_cmd)
+
+    return full_extract, prefix
+
+
 def print_header():
     """Print header for autospec run."""
     print("\n")
@@ -221,18 +265,19 @@ def print_header():
     print("Prefix      :", tarball_prefix)
 
 
-def download_tarball(target_dir):
-    """Download tarball at url (global) to target_dir.
+def create_download_path(target_dir):
+    """Create download path.
 
     priority for target directory:
     - target_dir set from args
     - current directory if options.conf['package'] exists and
       any of the options match what has been detected.
     - curdir/name
+
+    Also set giturl from the config (needs config refactor).
     """
     global giturl
 
-    tarfile = os.path.basename(url)
     target = os.path.join(os.getcwd(), name)
     if os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
         config_f = configparser.ConfigParser(interpolation=None)
@@ -248,12 +293,10 @@ def download_tarball(target_dir):
 
     build.download_path = target
     call("mkdir -p {}".format(build.download_path))
-
-    # locate the tarball locally or download
-    return check_or_get_file(url, tarfile)
+    return target
 
 
-def convert_version(ver_str):
+def convert_version(ver_str, name):
     """Remove disallowed characters from the version."""
     # banned substrings. It is better to remove these here instead of filtering
     # them out with expensive regular expressions
@@ -314,12 +357,34 @@ def detect_build_from_url(url):
     if "crates.io" in url:
         buildpattern.set_build_pattern("cargo", 10)
 
+    # go dependency
+    if "proxy.golang.org" in url:
+        buildpattern.set_build_pattern("godep", 10)
+
+
+def set_multi_version(ver):
+    """Add ver to multi_version set and return latest version."""
+    global multi_version
+
+    multi_version = config.parse_config_versions(build.download_path)
+
+    if ver:
+        # Some build patterns put multiple versions in the same package.
+        # For those patterns add to the multi_version list
+        if buildpattern.default_pattern in ["godep"]:
+            multi_version.add(ver)
+        else:
+            multi_version = set([ver])
+    elif not multi_version:
+        # Fall back to ensure a version is always set
+        # (otherwise the last known version will be used)
+        multi_version = set("1")
+    return sorted(multi_version)[-1]
+
 
 def name_and_version(name_arg, version_arg, filemanager):
     """Parse the url for the package name and version."""
-    global name
     global rawname
-    global version
     global url
     global giturl
     global repo
@@ -330,14 +395,19 @@ def name_and_version(name_arg, version_arg, filemanager):
     # and version variables to the overrides and bail. If only one override is
     # set, continue to auto detect both name and version since the URL parsing
     # handles both. In this case, wait until the end to perform the override of
-    # the one that was set.
+    # the one that was set. An extra conditional, that version_arg is a string
+    # is added to enable a package to have multiple versions at the same time
+    # for some language ecosystems.
     if name_arg and version_arg:
         # rawname == name in this case
         name = name_arg
-        rawname = name
-        version = version_arg
-        return
+        rawname = name_arg
+        version = set_multi_version(version_arg)
+        return name, rawname, convert_version(version, name)
 
+    name = name_arg
+    rawname = name_arg
+    version = ""
     # it is important for the more specific patterns to come first
     pattern_options = [
         # handle font packages with names ending in -nnndpi
@@ -348,10 +418,9 @@ def name_and_version(name_arg, version_arg, filemanager):
         m = re.search(pattern, tarfile)
         if m:
             name = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
             break
 
-    rawname = name
     # R package
     if "cran.r-project.org" in url or "cran.rstudio.com" in url:
         filemanager.want_dev_split = False
@@ -360,7 +429,7 @@ def name_and_version(name_arg, version_arg, filemanager):
         if m:
             name = "R-" + m.group(1).strip()
             rawname = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     if ".cpan.org/" in url or ".metacpan.org/" in url and name:
         name = "perl-" + name
@@ -389,7 +458,7 @@ def name_and_version(name_arg, version_arg, filemanager):
                 version = m.group(3).replace(name, '')
                 if "archive" not in pattern:
                     version = re.sub(r"^[-_.a-zA-Z]+", "", version)
-                version = convert_version(version)
+                version = convert_version(version, name)
                 giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
 
@@ -407,7 +476,7 @@ def name_and_version(name_arg, version_arg, filemanager):
         m = re.search(r".*/sourceware/(.*?)/releases/(.*?).tgz", url)
         if m:
             name = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     if "sourceforge.net" in url:
         scf_pats = [r"projects/.*/files/(.*?)/(.*?)/[^-]*(-src)?.tar.gz",
@@ -416,7 +485,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             m = re.search(pat, url)
             if m:
                 name = m.group(1).strip()
-                version = convert_version(m.group(2))
+                version = convert_version(m.group(2), name)
                 break
 
     if "bitbucket.org" in url:
@@ -427,7 +496,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             version = 1
             if m:
                 name = m.group(1).strip()
-                version = convert_version(m.group(2))
+                version = convert_version(m.group(2), name)
                 break
 
     # ruby
@@ -441,7 +510,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             if b > 0:
                 name = name[:b]
             rawname = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     # maven
     if ".maven." in url:
@@ -452,7 +521,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             m = re.search(pat, url)
             if m:
                 name = m.group(1).strip()
-                version = convert_version(m.group(2))
+                version = convert_version(m.group(2), name)
                 break
 
     # rust crate
@@ -460,29 +529,27 @@ def name_and_version(name_arg, version_arg, filemanager):
         m = re.search(r"/crates.io/api/v[0-9]+/crates/(.*)/(.*)/download.*\.crate", url)
         if m:
             name = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     if "gitlab.com" in url:
         # https://gitlab.com/leanlabsio/kanban/-/archive/1.7.1/kanban-1.7.1.tar.gz
         m = re.search(r"gitlab\.com/.*/(.*)/-/archive/(.*)/", url)
         if m:
             name = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     if "git.sr.ht" in url:
         # https://git.sr.ht/~sircmpwn/scdoc/archive/1.9.4.tar.gz
         m = re.search(r"git\.sr\.ht/.*/(.*)/archive/(.*).tar.gz", url)
         if m:
             name = m.group(1).strip()
-            version = convert_version(m.group(2))
+            version = convert_version(m.group(2), name)
 
     # override name and version from commandline
     name = name_arg if name_arg else name
     version = version_arg if version_arg else version
-
-    # sanity check to make sure we aren't using an empty version
-    if version == "":
-        version = "1"
+    version = set_multi_version(version)
+    return name, rawname, convert_version(version, name)
 
 
 def set_gcov():
@@ -508,6 +575,8 @@ def find_extract(tar_path, tarfile):
         extract_cmd, tar_prefix = build_gem_unpack(tar_path)
     elif tarfile.lower().endswith('.jar'):
         extract_cmd, tar_prefix = build_unzip(tar_path)
+    elif tarfile == "list":
+        extract_cmd, tar_prefix = build_go_unzip(tar_path)
     else:
         extract_cmd, tar_prefix = build_untar(tar_path)
 
@@ -520,7 +589,11 @@ def prepare_and_extract(extract_cmd):
     shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
     os.makedirs("{}".format(build.base_path), exist_ok=True)
     call("mkdir -p %s" % build.download_path)
-    call(extract_cmd)
+    if isinstance(extract_cmd, list) and buildpattern.default_pattern in ["godep"]:
+        for cmd in extract_cmd:
+            call(cmd)
+    else:
+        call(extract_cmd)
 
 
 def process_archives(archives):
@@ -573,18 +646,18 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     version = ver_arg
     archives = archives_arg
     tarfile = os.path.basename(url_arg)
-    # determine name and version of package
-    name_and_version(name_arg, ver_arg, filemanager)
     # determine build pattern and build requirements from url
     detect_build_from_url(url)
+    # Create the download path for content and set build.download_path
+    create_download_path(target)
+    # determine name and version of package
+    name, rawname, version = name_and_version(name_arg, ver_arg, filemanager)
     # set gcov file information, must be done after name is set since the gcov
     # name is created by adding ".gcov" to the package name (if a gcov file
     # exists)
     set_gcov()
     # download the tarball to tar_path
-    tar_path = download_tarball(target)
-    # write the sha of the upstream tarfile to the "upstream" file
-    write_upstream(get_sha1sum(tar_path), tarfile)
+    tar_path = check_or_get_file(url, tarfile)
     # determine extract command and tarball prefix for the tarfile
     extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
     # set global path with tarball_prefix

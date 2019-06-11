@@ -326,8 +326,9 @@ build_pattern
   * distutils3: Only build the Pythonic package with Python 3
   * distutils23: Build the Pythonic package using both Python 2 and Python 3
   * meson: Build package with Meson/Ninja
+  * golang: Build Go package
+  * godep: A go dependency-only package
   * \[WIP\] cargo: Build Rust package with Cargo
-  * \[WIP\] golang: Build Go package
   * \[WIP\] scons: Build package with Scons
 
 series
