@@ -21,7 +21,7 @@
 
 default_pattern = "make"
 pattern_strength = 0
-sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
+sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
 source_index = {}
 archive_details = {}
 

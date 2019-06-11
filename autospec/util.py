@@ -99,8 +99,9 @@ def write_out(filename, content, mode="w"):
 
 
 def open_auto(*args, **kwargs):
-    """
-    Open a file with UTF-8 encoding, and "surrogate" escape characters that are
+    """Open a file with UTF-8 encoding.
+
+    Open file with UTF-8 encoding and "surrogate" escape characters that are
     not valid UTF-8 to avoid data corruption.
     """
     # 'encoding' and 'errors' are fourth and fifth positional arguments, so

@@ -64,6 +64,5 @@ class TestUtil(unittest.TestCase):
             self.assertTrue(util.binary_in_path('testbin'))
             self.assertEqual(util.os_paths, [tmpd])
 
-
 if __name__ == '__main__':
     unittest.main(buffer=True)

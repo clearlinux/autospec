@@ -152,6 +152,37 @@ class TestBuildreq(unittest.TestCase):
                               'intltool',
                               'sed']))
 
+    def test_parse_go_mod(self):
+        """
+        Test parse_go_mod
+        """
+        open_name = 'buildreq.open'
+        content = """module example.com/foo/bar
+
+        require (
+        github.com/example/foo v1.0.0
+        git.apache.org/skip.git v0.0.0-20180101111111-barf0000000d
+        github.com/redirect/bar v2.0.0 // indirect
+        "github.com/quote/baz" v0.0.3
+        "github.com/qdirect/raz" v1.0.3 // indirect
+        )"""
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open, create=True):
+            result = buildreq.parse_go_mod('filename')
+        self.assertEqual(len(result), 4)
+        self.assertEqual(len(result[0]), 2)
+        self.assertEqual(result[0][0], "github.com/example/foo")
+        self.assertEqual(result[0][1], "v1.0.0")
+        self.assertEqual(len(result[1]), 2)
+        self.assertEqual(result[1][0], "github.com/redirect/bar")
+        self.assertEqual(result[1][1], "v2.0.0")
+        self.assertEqual(len(result[2]), 2)
+        self.assertEqual(result[2][0], "github.com/quote/baz")
+        self.assertEqual(result[2][1], "v0.0.3")
+        self.assertEqual(len(result[3]), 2)
+        self.assertEqual(result[3][0], "github.com/qdirect/raz")
+        self.assertEqual(result[3][1], "v1.0.3")
+
     def test_parse_cargo_toml(self):
         """
         Test parse_cargo_toml

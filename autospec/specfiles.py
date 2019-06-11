@@ -27,6 +27,7 @@ from collections import OrderedDict
 
 import buildreq
 import config
+import tarball
 from util import _file_write
 from util import open_auto
 
@@ -44,7 +45,7 @@ class Specfile(object):
         self.urlban = ""
         self.no_autostart = False
         self.specfile = None
-        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": []}
+        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
         self.default_sum = ""
         self.licenses = []
@@ -149,23 +150,25 @@ class Specfile(object):
         self._write("Version  : {}\n".format(self.version))
         self._write("Release  : {}\n".format(str(self.release)))
         self._write("URL      : {}\n".format(self.url))
-        self._write("Source0  : {}\n".format(self.url))
+        if not self.default_pattern == "godep":
+            self._write("Source0  : {}\n".format(self.url))
 
     def write_sources(self):
         """Append additional source files.
 
         Append systemd unit files, gcov, and additional source tarballs are the currently supported file types.
         """
-        for count, source in enumerate(
-                sorted(self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"])):
-            self.source_index[source] = count + 1
+        count = 0
+        for source in sorted(self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"] + self.sources["godep"]):
+            count += 1
+            self.source_index[source] = count
             if self.urlban:
                 source = re.sub(self.urlban, "localhost", source)
-            self._write("Source{0}  : {1}\n".format(count + 1, source))
+            self._write("Source{0}  : {1}\n".format(count, source))
 
         # if package is verified, include the signature in the source tarball
         if self.keyid and config.signature:
-            self._write_strip("Source99 : {}".format(config.signature))
+            self._write_strip(f"Source{count+1} : {config.signature}")
 
     def write_summary(self):
         """Write package summary to spec file."""
@@ -392,6 +395,9 @@ class Specfile(object):
         else:
             if self.default_pattern == 'R':
                 self._write_strip("%setup -q -c -n " + self.tarball_prefix)
+            elif self.default_pattern == "godep":
+                # No setup needed each source is installed as is
+                pass
             else:
                 self._write_strip("%setup -q -n " + self.tarball_prefix)
                 for archive in self.sources["archive"]:
@@ -455,6 +461,9 @@ class Specfile(object):
             lto = "-flto"
         else:
             lto = "-flto=4"
+
+        if not self.set_gopath:
+            self._write_strip("export GOPROXY=file:///usr/share/goproxy")
 
         if config.config_opts['optimize_size']:
             if config.config_opts['use_clang']:
@@ -592,6 +601,7 @@ class Specfile(object):
         self.write_find_lang()
 
     def write_mvnbin_install(self):
+        """Write out installation for mvnbin content."""
         patterns = [
             re.compile(r"maven.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
             re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar|xml|signature)"),
@@ -1492,7 +1502,11 @@ class Specfile(object):
         self._write_strip("export LANG=C.UTF-8")
         if self.set_gopath:
             self._write_strip("export GOPATH=\"$PWD\"")
-        self._write_strip("go build {}".format(self.extra_make))
+            self._write_strip("go build {}".format(self.extra_make))
+        else:
+            self._write_strip("export GOPROXY=file:///usr/share/goproxy")
+            self._write_strip("go mod vendor")
+            self._write_strip("go build -mod=vendor {}".format(self.extra_make))
         self._write_strip("\n")
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
@@ -1504,9 +1518,27 @@ class Specfile(object):
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
         self._write_strip("\n")
 
+    def write_godep_pattern(self):
+        """Write godep build pattern to spec file."""
+        self.write_prep()
+        self._write_strip("%install")
+        self.write_install_prepend()
+        self._write_strip("rm -fr %{buildroot}")
+        # Remove golang default proxy prefix and filename to get proxy path for the install
+        proxy_path = os.path.join("%{buildroot}/usr/share/goproxy",
+                                  os.path.dirname(self.url[len("https://proxy.golang.org/"):]))
+        self._write_strip(f"mkdir -p {proxy_path}")
+        list_file = os.path.join(proxy_path, "list")
+        self._write_strip("# Create list file using packaged versions")
+        for ver in tarball.multi_version:
+            self._write_strip(f"echo {ver} >> {list_file}")
+        for idx, source in enumerate(sorted(self.sources["godep"])):
+            file_path = os.path.join(proxy_path, os.path.basename(source))
+            self._write_strip(f"install -m 0644 %{{SOURCE{idx+1}}} {file_path}")
+        self._write_strip("\n")
+
     def write_maven_pattern(self):
         """Write maven build pattern to spec file."""
-
         self.write_prep()
         self._write_strip("%build")
         self.write_build_prepend()

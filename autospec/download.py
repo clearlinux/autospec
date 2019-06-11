@@ -17,9 +17,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from io import BytesIO
 import os
 import sys
+from io import BytesIO
 
 import pycurl
 from util import print_fatal
