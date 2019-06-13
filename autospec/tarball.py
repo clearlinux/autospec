@@ -445,9 +445,9 @@ def name_and_version(name_arg, version_arg, filemanager):
 
     # maven
     if ".maven." in url:
-        maven_pats = [r"maven.org/maven2/[a-zA-Z\-]+/([a-zA-Z\-])+/([a-zA-Z-\d.]+)/[a-zA-Z-\d.]*\.(?:pom|jar)",
-                      r"maven.apache.org/maven2/[a-zA-Z\-]+/([a-zA-Z\-])+/([\d.]+)/[a-z-.\d]*\.(?:pom|jar)",
-                      r"maven.org/maven2/(?:[a-zA-Z-.\d/]+)/([a-zA-Z-.\d]*)/([a-zA-Z\d\.]+)/(?:[a-zA-Z-.\d]*)\.(?:pom|jar)"]
+        maven_pats = [r"maven.org/maven2/[a-zA-Z\-\_]+/([a-zA-Z\-\_])+/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar)",
+                      r"maven.apache.org/maven2/[a-zA-Z\-\_]+/([a-zA-Z\-\_])+/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar)",
+                      r"maven.org/maven2/(?:[a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)"]
         for pat in maven_pats:
             m = re.search(pat, url)
             if m:
