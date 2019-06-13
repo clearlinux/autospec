@@ -591,9 +591,9 @@ class Specfile(object):
 
     def write_mvnbin_install(self):
         patterns = [
-            re.compile(r"maven.org/maven2/([a-z\-]+)/([a-z\-]+)/([a-z-\d.]+)/[a-z-\d.]*\.[pom|jar]"),
-            re.compile(r"maven.apache.org/maven2/([a-z\-]+)/([a-z\-]+)/([\d.]+)/[a-z-.\d]*\.[pom|jar]"),
-            re.compile(r"maven.org/maven2/([a-z-.\d/]+)/([a-z-.\d]*)/([a-z\d\.]+)/(?:[a-z-.\d]*)\.(?:pom|jar)")]
+            re.compile(r"maven.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_])+/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar)"),
+            re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_])+/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar)"),
+            re.compile(r"maven.org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)")]
         mvn_sources = [self.url] + self.sources["archive"]
         src_num = 0
 
