@@ -231,7 +231,10 @@ def parse_build_results(filename, returncode, filemanager):
         if "Installed (but unpackaged) file(s) found:" in line:
             infiles = 1
         elif infiles == 1 and "not matching the package arch" not in line:
-            filemanager.push_file(line.strip())
+            # exclude blank lines from consideration...
+            file = line.strip()
+            if file:
+                filemanager.push_file(file)
 
         if line.startswith("Sorry: TabError: inconsistent use of tabs and spaces in indentation"):
             print(line)
