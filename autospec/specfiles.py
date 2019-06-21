@@ -354,7 +354,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         if export_epoch:
             # time.time() returns a float, but we only need second-precision
             self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
@@ -538,7 +538,7 @@ class Specfile(object):
         """Write check section to spec file."""
         if self.tests_config and not config.config_opts['skip_tests']:
             self._write_strip("%check")
-            self._write_strip("export LANG=C")
+            self._write_strip("export LANG=C.UTF-8")
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
             self._write_strip("\n")
@@ -1188,7 +1188,7 @@ class Specfile(object):
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip('export FCFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip('export FFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
@@ -1248,7 +1248,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         self._write_strip("gem build {}.gemspec".format(self.name))
         self._write_strip("\n")
 
@@ -1367,7 +1367,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         self.write_variables()
 
         if self.subdir:
@@ -1422,7 +1422,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         self._write_strip("if test -f Makefile.PL; then")
         self._write_strip("%{__perl} Makefile.PL")
         self.write_make_line()
@@ -1457,7 +1457,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         self.write_variables()
         self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
         self._write_strip("\n")
@@ -1476,7 +1476,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("export LANG=C")
+        self._write_strip("export LANG=C.UTF-8")
         if self.set_gopath:
             self._write_strip("export GOPATH=\"$PWD\"")
         self._write_strip("go build {}".format(self.extra_make))
