@@ -591,10 +591,10 @@ class Specfile(object):
 
     def write_mvnbin_install(self):
         patterns = [
-            re.compile(r"maven.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_])+/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar)"),
-            re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_])+/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar)"),
-            re.compile(r"maven.org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)")]
-        mvn_sources = [self.url] + self.sources["archive"]
+            re.compile(r"maven.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
+            re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar|xml|signature)"),
+            re.compile(r"maven.org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar|xml|signature)")]
+        mvn_sources = [self.url] + sorted(self.sources["archive"])
         src_num = 0
 
         for src in mvn_sources:
@@ -609,8 +609,8 @@ class Specfile(object):
                     self._write_strip("mkdir -p %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_dir))
                     self._write_strip("cp %{{SOURCE{}}} %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_num, src_dir))
                     self._write_strip("\n")
-                    src_num += 1
                     break
+            src_num += 1
 
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
