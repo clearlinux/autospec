@@ -249,7 +249,7 @@ class TestBuildpattern(unittest.TestCase):
         call_backup = build.util.call
         build.util.call = mock_util_call
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = "line1\nDEBUG util.py:399:  No matching package to install: 'foobar'\nDEBUG util.py:399:  No matching package to install: 'foobarbaz'\nline 4"
         m_open = mock_open(read_data=content)
 
@@ -274,7 +274,7 @@ class TestBuildpattern(unittest.TestCase):
         call_backup = build.util.call
         build.util.call = mock_util_call
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = "line 1\nline 2\nline 3\nline 4"
         m_open = mock_open(read_data=content)
 
@@ -300,7 +300,7 @@ class TestBuildpattern(unittest.TestCase):
         call_backup = build.util.call
         build.util.call = mock_util_call
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = "line 1\nline 2\nline 3\nline 4"
         m_open = mock_open(read_data=content)
 
@@ -326,7 +326,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = 'line 1\nwhich: no qmake\nexiting'
         m_open = mock_open(read_data=content)
 
@@ -352,7 +352,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = 'line 1\nchecking for Apache test module support\nexiting'
         m_open = mock_open(read_data=content)
 
@@ -378,7 +378,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = 'line 1\nImportError: No module named testpkg\nexiting'
         m_open = mock_open(read_data=content)
 
@@ -402,7 +402,7 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = mock_util_call
         fm = files.FileManager()
 
-        open_name = 'build.open'
+        open_name = 'build.util.open_auto'
         content = 'line 1\n' \
                   'Installed (but unpackaged) file(s) found:\n' \
                   '/usr/testdir/file\n' \

@@ -18,7 +18,7 @@ class TestTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.open_name = 'check.open'
+        self.open_name = 'check.util.open_auto'
         check.config.config_opts['skip_tests'] = False
         check.config.config_opts['allow_test_failures'] = False
         check.config.config_opts['32bit'] = False
