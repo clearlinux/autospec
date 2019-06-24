@@ -432,11 +432,15 @@ def filter_blanks(lines):
     return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
 
 
-def read_conf_file(path):
-    """Read configuration file at path."""
+def read_conf_file(path, track=True):
+    """
+    Read configuration file at path. If the config file does not exist (or is
+    not expected to exist) in the package git repo, specify 'track=False'.
+    """
     try:
         with open(path, "r") as f:
-            config_files.add(os.path.basename(path))
+            if track:
+                config_files.add(os.path.basename(path))
             return filter_blanks(f.readlines())
     except EnvironmentError:
         return []
@@ -614,9 +618,9 @@ def parse_config_files(path, bump, filemanager, version):
         yum_conf = os.path.join(os.path.dirname(config_file), "image-creator/yum.conf")
 
     if packages_file:
-        os_packages = set(read_conf_file(packages_file))
+        os_packages = set(read_conf_file(packages_file, track=False))
     else:
-        os_packages = set(read_conf_file("~/packages"))
+        os_packages = set(read_conf_file("~/packages", track=False))
 
     wrapper = textwrap.TextWrapper()
     wrapper.initial_indent = "# "
