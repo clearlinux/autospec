@@ -31,6 +31,7 @@ import re
 
 import config
 import license
+import util
 
 default_description = "No detailed description available"
 default_description_score = 0
@@ -86,7 +87,7 @@ def assign_description(description, score):
 def description_from_spec(specfile):
     """Parse any existing RPM specfiles."""
     try:
-        with open(specfile, 'r', encoding="latin-1") as specfd:
+        with util.open_auto(specfile, 'r') as specfd:
             lines = specfd.readlines()
     except FileNotFoundError:
         return
@@ -130,7 +131,7 @@ def description_from_spec(specfile):
 def description_from_pkginfo(pkginfo):
     """Parse existing package info files."""
     try:
-        with open(pkginfo, 'r', encoding="latin-1") as pkgfd:
+        with util.open_auto(pkginfo, 'r') as pkgfd:
             lines = pkgfd.readlines()
     except FileNotFoundError:
         return
@@ -170,7 +171,7 @@ def description_from_pkginfo(pkginfo):
 def summary_from_pkgconfig(pkgfile, package):
     """Parse pkgconfig files for Description: lines."""
     try:
-        with open(pkgfile, "r", encoding="latin-1") as pkgfd:
+        with util.open_auto(pkgfile, "r") as pkgfd:
             lines = pkgfd.readlines()
     except FileNotFoundError:
         return
@@ -186,7 +187,7 @@ def summary_from_pkgconfig(pkgfile, package):
 def summary_from_R(pkgfile):
     """Parse DESCRIPTION file for Title: lines."""
     try:
-        with open(pkgfile, "r", encoding="latin-1") as pkgfd:
+        with util.open_auto(pkgfile, "r") as pkgfd:
             lines = pkgfd.readlines()
     except FileNotFoundError:
         return
@@ -216,7 +217,7 @@ def skipline(line):
 def description_from_readme(readmefile):
     """Try to pick the first paragraph or two from the readme file."""
     try:
-        with open(readmefile, "r", encoding="latin-1") as readmefd:
+        with util.open_auto(readmefile, "r") as readmefd:
             lines = readmefd.readlines()
     except FileNotFoundError:
         return

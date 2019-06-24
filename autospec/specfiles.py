@@ -28,6 +28,7 @@ from collections import OrderedDict
 import buildreq
 import config
 from util import _file_write
+from util import open_auto
 
 
 class Specfile(object):
@@ -87,8 +88,7 @@ class Specfile(object):
 
     def write_spec(self, path):
         """Write spec file."""
-        self.specfile = open("{}/{}.spec".format(path, self.name),
-                             "w", encoding="utf-8")
+        self.specfile = open_auto("{}/{}.spec".format(path, self.name), "w")
         self.specfile.write_strip = types.MethodType(_file_write, self.specfile)
 
         # spec file comment header

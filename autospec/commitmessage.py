@@ -104,7 +104,7 @@ def process_NEWS(newsfile):
         return commitmessage, cves
 
     try:
-        with open(os.path.join(build.download_path, newsfile), encoding="latin-1") as f:
+        with util.open_auto(os.path.join(build.download_path, newsfile)) as f:
             newslines = f.readlines()
     except EnvironmentError:
         return commitmessage, cves

@@ -223,7 +223,7 @@ def parse_configure_ac(filename):
     depth = 0
     # print("Configure parse: ", filename)
     buildpattern.set_build_pattern("configure_ac", 1)
-    f = open(filename, "r", encoding="latin-1")
+    f = util.open_auto(filename, "r")
     while 1:
         c = f.read(1)
         if not c:
@@ -250,7 +250,7 @@ def parse_cargo_toml(filename):
     global cargo_bin
     buildpattern.set_build_pattern("cargo", 1)
     add_buildreq("rustc")
-    with open(filename, "r", encoding="latin-1") as ctoml:
+    with util.open_auto(filename, "r") as ctoml:
         cargo = toml.loads(ctoml.read())
     if cargo.get("bin") or os.path.exists(os.path.join(os.path.dirname(filename), "src/main.rs")):
         cargo_bin = True
@@ -309,7 +309,7 @@ def set_build_req():
 
 def rakefile(filename):
     """Scan Rakefile for build requirements."""
-    with open(filename, "r", encoding="latin-1") as f:
+    with util.open_auto(filename, "r") as f:
         lines = f.readlines()
 
     pat = re.compile(r"^require '(.*)'$")
@@ -332,7 +332,7 @@ def parse_cmake(filename):
                             'NO_CMAKE_ENVIRONMENT_PATH', 'IMPORTED_TARGET'}
     extractword = re.compile(r'(?:"([^"]+)"|(\S+))(.*)')
 
-    with open(filename, "r", encoding="latin-1") as f:
+    with util.open_auto(filename, "r") as f:
         lines = f.readlines()
     for line in lines:
         match = findpackage.search(line)
@@ -365,7 +365,7 @@ def parse_cmake(filename):
 
 def qmake_profile(filename):
     """Scan .pro file for build requirements."""
-    with open(filename, "r", encoding="latin-1") as f:
+    with util.open_auto(filename, "r") as f:
         lines = f.readlines()
 
     pat = re.compile(r"(QT|QT_PRIVATE|QT_FOR_CONFIG).*=\s*(.*)\s*")
@@ -434,7 +434,7 @@ def grab_python_requirements(descfile):
     if "/tests/" in descfile:
         return
 
-    with open(descfile, "r", encoding="latin-1") as f:
+    with util.open_auto(descfile, "r") as f:
         lines = f.readlines()
 
     for line in lines:
@@ -479,7 +479,7 @@ def get_python_build_version_from_classifier(filename):
     Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
     setup.py file.  Defaults to distutils3 if no such classifiers are found.
     """
-    with open(filename) as setup_file:
+    with util.open_auto(filename) as setup_file:
         data = setup_file.read()
 
     if "Programming Language :: Python :: 3 :: Only" in data:
@@ -513,7 +513,7 @@ def add_setup_py_requires(filename):
     Does not evaluate variables for security purposes
     """
     multiline = False
-    with open(filename) as f:
+    with util.open_auto(filename) as f:
         lines = f.readlines()
 
     for line in lines:
@@ -595,7 +595,7 @@ def add_setup_py_requires(filename):
 
 def parse_catkin_deps(cmakelists_file):
     """Determine requirements for catkin packages."""
-    f = open(cmakelists_file, "r", encoding="latin-1")
+    f = util.open_auto(cmakelists_file, "r")
     lines = f.readlines()
     pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
     catkin = False

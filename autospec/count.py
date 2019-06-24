@@ -18,6 +18,7 @@
 
 import argparse
 import re
+import util
 
 testcount = {}
 testpass = {}
@@ -170,7 +171,7 @@ def parse_log(log, pkgname=''):
 
     name = pkgname
     incheck = False
-    with open(log, 'r') as logf:
+    with util.open_auto(log, 'r') as logf:
         lines = logf.readlines()
 
     zero_lines = ["Executing(%check)",
