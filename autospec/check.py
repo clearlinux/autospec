@@ -52,7 +52,7 @@ def check_regression(pkg_dir):
                     print("{}: {}".format(title[1], s_line[idx]))
                 res_str += "{} : {}\n".format(title[0], s_line[idx])
 
-    util.write_out(os.path.join(pkg_dir, "testresults"), res_str, encode="utf-8")
+    util.write_out(os.path.join(pkg_dir, "testresults"), res_str)
 
 
 def scan_for_tests(src_dir):
@@ -98,13 +98,13 @@ def scan_for_tests(src_dir):
         if not os.path.isfile(makefile_path):
             return
 
-        if "enable_testing" in open(makefile_path, encoding='latin-1').read():
+        if "enable_testing" in util.open_auto(makefile_path).read():
             tests_config = testsuites["cmake"]
 
     elif buildpattern.default_pattern in ["cpan", "configure", "configure_ac", "autogen"] and "Makefile.in" in files:
         makefile_path = os.path.join(src_dir, "Makefile.in")
         if os.path.isfile(makefile_path):
-            with open(makefile_path, 'r', encoding="latin-1") as make_fp:
+            with util.open_auto(makefile_path, 'r') as make_fp:
                 lines = make_fp.readlines()
             for line in lines:
                 if line.startswith("check:"):
@@ -121,9 +121,7 @@ def scan_for_tests(src_dir):
         tests_config = testsuites["perlcheck"]
 
     elif buildpattern.default_pattern in ["distutils3", "distutils23"] and "setup.py" in files:
-        with open(os.path.join(src_dir, "setup.py"), 'r',
-                  encoding="ascii",
-                  errors="surrogateescape") as setup_fp:
+        with util.open_auto(os.path.join(src_dir, "setup.py"), 'r') as setup_fp:
             setup_contents = setup_fp.read()
 
         if "test_suite" in setup_contents or "pbr=True" in setup_contents:

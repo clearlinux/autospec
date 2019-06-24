@@ -32,6 +32,7 @@ import check
 import license
 import tarball
 from util import call, print_warning, write_out
+from util import open_auto
 
 extra_configure = ""
 extra_configure32 = ""
@@ -505,7 +506,7 @@ def parse_existing_spec(path, name):
     if not os.path.exists(spec):
         return
 
-    with open(spec, "r", encoding="latin-1") as inp:
+    with open_auto(spec, "r") as inp:
         for line in inp.readlines():
             line = line.strip().replace("\r", "").replace("\n", "")
             if "Source0 file verified with key" in line:

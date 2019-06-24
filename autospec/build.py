@@ -166,7 +166,7 @@ def parse_buildroot_log(filename, returncode):
     must_restart = 0
     is_clean = True
     util.call("sync")
-    with open(filename, "r", encoding="latin-1") as rootlog:
+    with util.open_auto(filename, "r") as rootlog:
         loglines = rootlog.readlines()
 
     missing_pat = re.compile(r"^.*No matching package to install: '(.*)'$")
@@ -199,7 +199,7 @@ def parse_build_results(filename, returncode, filemanager):
 
     # Flush the build-log to disk, before reading it
     util.call("sync")
-    with open(filename, "r", encoding="latin-1") as buildlog:
+    with util.open_auto(filename, "r") as buildlog:
         loglines = buildlog.readlines()
 
     for line in loglines:

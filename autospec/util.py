@@ -92,9 +92,9 @@ def binary_in_path(binary):
     return False
 
 
-def write_out(filename, content, mode="w", encode=None):
+def write_out(filename, content, mode="w"):
     """File.write convenience wrapper."""
-    with open(filename, mode, encoding=encode) as require_f:
+    with open_auto(filename, mode) as require_f:
         require_f.write(content)
 
 

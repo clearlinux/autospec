@@ -197,7 +197,7 @@ def truncate_file(path):
     """Zero file content."""
     if not os.path.exists(path):
         return
-    with open(path, "r+", encoding="utf-8") as trunc:
+    with util.open_auto(path, "r+") as trunc:
         trunc.truncate()
 
 
@@ -297,7 +297,7 @@ def examine_abi_fallback(download_path, results_dir):
 
     if len(abi_report) > 0:
         # Finally, write the report
-        report = open(report_file, "w", encoding="utf-8")
+        report = util.open_auto(report_file, "w")
         for soname in sorted(abi_report.keys()):
             for symbol in sorted(abi_report[soname]):
                 report.write("{}:{}\n".format(soname, symbol))
@@ -310,7 +310,7 @@ def examine_abi_fallback(download_path, results_dir):
     lib_deps = get_all_dependencies(extract_dir)
     report_file = os.path.join(download_path, "used_libs")
     if len(lib_deps) > 0:
-        report = open(report_file, "w", encoding="utf-8")
+        report = util.open_auto(report_file, "w")
         for soname in sorted(lib_deps):
             report.write("{}\n".format(soname))
         report.close()
