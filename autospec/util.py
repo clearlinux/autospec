@@ -96,3 +96,16 @@ def write_out(filename, content, mode="w", encode=None):
     """File.write convenience wrapper."""
     with open(filename, mode, encoding=encode) as require_f:
         require_f.write(content)
+
+
+def open_auto(*args, **kwargs):
+    """
+    Open a file with UTF-8 encoding, and "surrogate" escape characters that are
+    not valid UTF-8 to avoid data corruption.
+    """
+    # 'encoding' and 'errors' are fourth and fifth positional arguments, so
+    # restrict the args tuple to (file, mode, buffering) at most
+    assert len(args) <= 3
+    assert 'encoding' not in kwargs
+    assert 'errors' not in kwargs
+    return open(*args, encoding="utf-8", errors="surrogateescape", **kwargs)
