@@ -7,7 +7,7 @@ class TestSpecdescription(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.open_name = 'specdescription.open'
+        self.open_name = 'specdescription.util.open_auto'
 
     def setUp(self):
         specdescription.default_description = "No detailed description available"

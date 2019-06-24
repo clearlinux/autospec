@@ -129,7 +129,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_configure_ac with changing () depths and package
         requirements
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = 'AC_CHECK_FUNC([tgetent])\n'                   \
                   'XDT_CHECK_PACKAGE(prefix, '                   \
                   '[module = 2 module2 > 9], '                   \
@@ -168,7 +168,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.os.path.exists = mock_exists
         buildreq.toml.loads = mock_loads
 
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = 'does not matter, let us mock'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
@@ -216,7 +216,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test rakefile parsing with both configured gems and unconfigured gems
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "line1\nrequire 'bundler/gem_tasks'\nline3\nrequire 'nope'"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
@@ -252,7 +252,7 @@ class TestBuildreq(unittest.TestCase):
         """
         # buildreqs must include the requires also
         buildreq.buildreqs = set(['req1', 'req2', 'req7'])
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = 'req1 <= 1.2.3\n' \
                   'req2 >= 1.55\n'  \
                   'req7 == 3.3.3\n'
@@ -268,7 +268,7 @@ class TestBuildreq(unittest.TestCase):
         """
         # buildreqs must include the requires also
         buildreq.buildreqs = set(['req1', 'req2', 'req7'])
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = '    req1 <= 1.2.3\n   ' \
                   'req2    >= 1.55   \n'   \
                   '   req7 == 3.3.3\n    '
@@ -283,7 +283,7 @@ class TestBuildreq(unittest.TestCase):
         Test add_setup_py_requires with a single item in install_requires and
         setup_requires
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=['req1']\n" \
                   "setup_requires=['req2']"
         m_open = mock_open(read_data=content)
@@ -297,7 +297,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test add_setup_py_requires with a multiline item in install_requires
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=['req1',\n" \
                   "'req2',\n"                   \
                   "'req3']\n"
@@ -313,7 +313,7 @@ class TestBuildreq(unittest.TestCase):
         Test add_setup_py_requires with a multiline item in install_requires
         with brackets on their own lines.
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=[\n "  \
                   "'req1',\n"              \
                   "'req2',\n"              \
@@ -331,7 +331,7 @@ class TestBuildreq(unittest.TestCase):
         Test add_setup_py_requires with multiline item in install_requires that
         contains a non-literal object.
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=[\n" \
                   "reqvar,\n"            \
                   "'req1',\n"            \
@@ -348,7 +348,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test add_setup_py_requires that contains a non-literal object.
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=[reqname, 'req1', 'req2']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
@@ -361,7 +361,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test add_setup_py_requires with a single non-literal object
         """
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = "install_requires=reqname"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
@@ -375,7 +375,7 @@ class TestBuildreq(unittest.TestCase):
         test detection of python version from setup.py classifier
         """
 
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = """classifiers = [
                     'Programming Language :: Python :: 3 :: Only',
                 ]"""
@@ -391,7 +391,7 @@ class TestBuildreq(unittest.TestCase):
         test detection of python version from setup.py classifier
         """
 
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = """classifiers = [
                     'Programming Language :: Python :: 2 :: Only',
                 ]"""
@@ -407,7 +407,7 @@ class TestBuildreq(unittest.TestCase):
         test detection of python version from setup.py classifier
         """
 
-        open_name = 'buildreq.open'
+        open_name = 'buildreq.util.open_auto'
         content = """classifiers = [
                     'Programming Language :: Python :: 3',
                 ]"""
