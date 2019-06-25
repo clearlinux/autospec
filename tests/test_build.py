@@ -214,26 +214,26 @@ class TestBuildpattern(unittest.TestCase):
     def test_failed_pattern_maven(self):
         """
         Test failed_pattern with buildtool set to maven, but no match in
-        config.maven_jars, it should just prepend 'jdk-' to the package name.
+        config.maven_jars, it should just prepend 'mvn-' to the package name.
         """
         build.failed_pattern('line to test for failure: testpkg',
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='maven')
-        self.assertIn('jdk-testpkg', build.buildreq.buildreqs)
+        self.assertIn('mvn-testpkg', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
     def test_failed_pattern_maven_match(self):
         """
         Test failed_pattern with buildtool set to maven with a match in
-        config.maven_jars. In the particular case of apache, the corresponding
-        maven jar is 'jdk-apache-parent'
+        config.maven_jars. In the particular case of aether, the corresponding
+        maven jar is 'mvn-aether-core'
         """
-        build.failed_pattern('line to test for failure: apache',
-                             r'(apache)',
+        build.failed_pattern('line to test for failure: aether',
+                             r'(aether)',
                              0,  # verbose=0
                              buildtool='maven')
-        self.assertIn('jdk-apache-parent', build.buildreq.buildreqs)
+        self.assertIn('mvn-aether-core', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
     def test_parse_buildroot_log_fail(self):

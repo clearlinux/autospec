@@ -147,7 +147,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             if s in config.maven_jars:
                 must_restart += buildreq.add_buildreq(config.maven_jars[s], cache=True)
             else:
-                must_restart += buildreq.add_buildreq('jdk-%s' % s, cache=True)
+                must_restart += buildreq.add_buildreq('mvn-%s' % s, cache=True)
         elif buildtool == 'catkin':
             must_restart += buildreq.add_pkgconfig_buildreq(s, cache=True)
             must_restart += buildreq.add_buildreq(s, cache=True)
