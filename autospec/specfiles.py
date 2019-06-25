@@ -1493,18 +1493,18 @@ class Specfile(object):
 
     def write_maven_pattern(self):
         """Write maven build pattern to spec file."""
-        mvn = self.extra_make_install if self.extra_make_install else self.tarball_prefix
 
         self.write_prep()
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("python3 /usr/share/java-utils/mvn_build.py " + self.extra_make)
+        self._write_strip("mkdir %{buildroot}")
+        self._write_strip("cp -r /usr/share/java/.m2 %{buildroot}/.m2")
+        self._write_strip("mvn --offline -Dmaven.repo.local=%{buildroot}/.m2/repository " + self.extra_make)
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
-        self._write_strip("xmvn-install  -R .xmvn-reactor -n {} -d %{{buildroot}}"
-                          .format(mvn))
+        self._write_strip("")
 
     def write_mvnbin_pattern(self):
         """Write maven build pattern to spec file."""
