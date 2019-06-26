@@ -199,6 +199,7 @@ class Verifier(object):
     def quit():
         """Stop verification."""
         print('Critical error quitting...')
+        print(SEPT)
         exit(1)
 
     @staticmethod
@@ -278,7 +279,7 @@ class ShaSumVerifier(Verifier):
 
     def verify_sum(self, shasum):
         """Verify sha sum."""
-        print("Verifying sha{}sum digest\n".format(self.shalen))
+        print_info("Verifying sha{}sum digest".format(self.shalen))
         if shasum is None:
             self.print_result(False, err_msg='Verification requires shasum')
             return None
@@ -311,7 +312,7 @@ class MD5Verifier(Verifier):
 
     def verify_md5(self):
         """Verify MD5."""
-        print("Verifying MD5 digest\n")
+        print_info("Verifying MD5 digest")
         if self.md5_digest is None:
             self.print_result(False, err_msg='Verification requires a md5_digest')
             return None
@@ -417,7 +418,7 @@ class PyPiVerifier(MD5Verifier):
     def verify(self):
         """Verify pypi file with MD5."""
         global EMAIL
-        print("Searching for package information in pypi")
+        print_info("Searching for package information in pypi")
         name, release = self.parse_name()
         info = PyPiVerifier.get_info(name)
         releases_info = info.get('releases', None)
@@ -472,7 +473,7 @@ class GPGVerifier(Verifier):
         """Verify file using gpg signature."""
         global KEYID
         global EMAIL
-        print("Verifying GPG signature\n")
+        print_info("Verifying GPG signature")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
             return None
@@ -496,7 +497,6 @@ class GPGVerifier(Verifier):
             if not self.interactive or recursion:
                 return None
             if attempt_key_import(keyid, self.pubkey_path.format(keyid)):
-                print(SEPT)
                 return self.verify(recursion=True)
             return None
         # public key exists or is imported, verify
@@ -518,7 +518,7 @@ class GPGVerifier(Verifier):
 
 def quit_verify():
     """Halt build due to verification being required."""
-    print_error("verification required for build (verify_required option set)")
+    print_error("Verification required for build (verify_required option set)")
     Verifier.quit()
 
 
@@ -553,7 +553,7 @@ class GEMShaVerifier(Verifier):
     def verify(self):
         """Verify ruby gem based on sha sum."""
         gemname = os.path.basename(self.package_path).replace('.gem', '')
-        print("Verifying SHA256 checksum\n")
+        print_info("Verifying SHA256 checksum")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, 'GEM was not found {}'.format(self.package_path))
             return
@@ -748,6 +748,7 @@ def attempt_verification_per_domain(package_path, url):
     }.get(domain, None)
 
     if verifier is None:
+        print_info('Skipping domain verification')
         return None
     else:
         print_info('Verification based on domain {}'.format(domain))
@@ -775,7 +776,7 @@ def check(url, download_path, interactive=True):
     except ValueError:
         interactive = False
     print(SEPT)
-    print('Performing package integrity verification\n')
+    print_info('Performing package integrity verification')
     verified = None
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, interactive=interactive)
@@ -788,14 +789,15 @@ def check(url, download_path, interactive=True):
         if signature_file is not None:
             verified = from_disk(url, package_path, signature_file, interactive=interactive)
             if verified is None:
-                print_info('Unable to find a signature, attempting domain verification')
+                print_info('Unable to find a signature')
                 verified = attempt_verification_per_domain(package_path, url)
         else:
-            print_info('Attempting domain verification')
             verified = attempt_verification_per_domain(package_path, url)
 
     if verified is None and config.config_opts['verify_required']:
         quit_verify()
+    elif verified is None:
+        print(SEPT)
     return verified
 
 
