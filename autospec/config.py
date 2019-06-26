@@ -187,9 +187,9 @@ simple_pats = [
 # failed_pattern patterns
 # contains patterns for parsing build.log for missing dependencies
 failed_pats = [
-    (r"Dependency (.*) found: NO \(tried pkgconfig and cmake\)", 0, 'pkgconfig'),
-    (r"Dependency (.*) found: NO \(tried pkgconfig\)", 0, 'pkgconfig'),
-    (r"Dependency (.*) found: NO", 0, None),
+    (r"[Dd]ependency (.*) found: NO \(tried pkgconfig and cmake\)", 0, 'pkgconfig'),
+    (r"[Dd]ependency (.*) found: NO \(tried pkgconfig\)", 0, 'pkgconfig'),
+    (r"[Dd]ependency (.*) found: NO", 0, None),
     (r"C library '(.*)' not found", 0, None),
     (r"Target '[a-zA-Z0-9\-]' can't be generated as '(.*)' could not be found", 0, None),
     (r"Program (.*) found: NO", 0, None),
