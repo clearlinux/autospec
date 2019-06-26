@@ -52,6 +52,13 @@ ENV = os.environ
 INPUT_GETTER_TIMEOUT = 60
 CHUNK_SIZE = 2056
 
+PYPI_DOMAINS = [
+    'files.pythonhosted.org',
+    'pypi.debian.net',
+    'pypi.python.org',
+    'pypi.io',
+]
+
 
 def update_gpg_conf(proxy_value):
     """Set GNUPGCONF with http_proxy value."""
@@ -225,11 +232,12 @@ class Verifier(object):
 def get_signature_file(package_url, package_path):
     """Attempt to build signature file URL and download it."""
     sign_urls = []
-    if 'samba.org' in package_url:
+    netloc = urlparse(package_url).netloc
+    if 'samba.org' in netloc:
         sign_urls.append(package_url + '.asc')
-    elif '://pypi.' in package_url[:13]:
+    elif any(loc in netloc for loc in PYPI_DOMAINS):
         sign_urls.append(package_url + '.asc')
-    elif 'mirrors.kernel.org' in package_url:
+    elif 'mirrors.kernel.org' in netloc:
         sign_urls.append(package_url + '.sig')
     else:
         iter = (package_url + "." + ext for ext in ("asc", "sig", "sign"))
@@ -737,7 +745,7 @@ def from_disk(url, package_path, package_check, interactive=True):
 def attempt_verification_per_domain(package_path, url):
     """Use url domain name to set verification type."""
     netloc = urlparse(url).netloc
-    if 'pypi' in netloc:
+    if any(loc in netloc for loc in PYPI_DOMAINS):
         domain = 'pypi'
     elif 'download.gnome.org' in netloc:
         domain = 'gnome.org'
