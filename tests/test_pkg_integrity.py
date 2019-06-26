@@ -22,6 +22,7 @@ NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
 PYPI_MD5_ONLY_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
 GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-3.24.0.tar.xz"
+QT_SHA256_PKG = "https://download.qt.io/official_releases/qt/5.12/5.12.4/submodules/qtspeech-everywhere-src-5.12.4.tar.xz"
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
 
 
@@ -117,6 +118,12 @@ class TestDomainBasedVerifiers(unittest.TestCase):
     @patch('pkg_integrity.GnomeOrgVerifier.fetch_shasum', _mock_fetch_shasum)
     def test_gnome_org(self):
         result = self.run_test_for_domain(pkg_integrity.GnomeOrgVerifier, GNOME_SHA256_PKG)
+        self.assertTrue(result)
+
+    @patch('pkg_integrity.QtIoVerifier.fetch_shasum')
+    def test_qt_io(self, test_fetch):
+        test_fetch.return_value = "2ff9660fb3f5663c9161f491d1a304db62691720136ae22c145ef6a1c94b90ec  qtspeech-everywhere-src-5.12.4.tar.xz\n"
+        result = self.run_test_for_domain(pkg_integrity.QtIoVerifier, QT_SHA256_PKG)
         self.assertTrue(result)
 
 

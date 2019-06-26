@@ -378,6 +378,50 @@ class GnomeOrgVerifier(ShaSumVerifier):
         return self.verify_sum(shasum)
 
 
+# download.qt.io Verifier
+class QtIoVerifier(ShaSumVerifier):
+    """Verify sha256 hashes for download.qt.io."""
+
+    def __init__(self, **kwargs):
+        """Initialize with package URL."""
+        kwargs.update({'shalen': 256})
+        self.package_url = kwargs.get('url', None)
+        ShaSumVerifier.__init__(self, **kwargs)
+
+    def fetch_shasum(self):
+        """Fetch sha256 file associated with the package URL."""
+        shasum_url = "{}.sha256".format(self.package_url)
+        data = download.do_curl(shasum_url)
+        if data:
+            return data.getvalue().decode('utf-8')
+        else:
+            return None
+
+    def parse_shasum(self, content):
+        """Parse sha256 file."""
+        basename = os.path.basename(self.package_url)
+        line = content.split('\n')[0]
+        match = re.match(r'([0-9a-f]{64})\s+' + basename, line)
+        if not match:
+            return None
+        return match.group(1)
+
+    def verify(self):
+        """Verify the source file's sha256 hash."""
+        if self.package_url is None:
+            self.print_result(False, err_msg='Package URL is empty')
+            return None
+        content = self.fetch_shasum()
+        if content is None:
+            self.print_result(False, err_msg='Unable to download sha256 for {}'.format(self.package_url))
+            return None
+        shasum = self.parse_shasum(content)
+        if shasum is None:
+            self.print_result(False, err_msg='Unable to parse sha256 for {}'.format(self.package_url))
+            return None
+        return self.verify_sum(shasum)
+
+
 # PyPi Verifier
 class PyPiVerifier(MD5Verifier):
     """Verify MD5 signature for pypi."""
@@ -740,11 +784,14 @@ def attempt_verification_per_domain(package_path, url):
         domain = 'pypi'
     elif 'download.gnome.org' in netloc:
         domain = 'gnome.org'
+    elif 'download.qt.io' in netloc:
+        domain = 'qt.io'
     else:
         domain = 'unknown'
     verifier = {
         'pypi': PyPiVerifier,
         'gnome.org': GnomeOrgVerifier,
+        'qt.io': QtIoVerifier,
     }.get(domain, None)
 
     if verifier is None:
