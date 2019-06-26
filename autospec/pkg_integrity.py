@@ -255,15 +255,6 @@ def get_signature_file(package_url, package_path):
     return None
 
 
-def get_hash_url(package_url):
-    """Get hash url based on package url."""
-    if 'download.gnome.org' in package_url:
-        return package_url.replace('.tar.xz', '.sha256sum')
-    if 'download.qt.io' in package_url:
-        return package_url + '.sha256'
-    return None
-
-
 def compare_keys(newkey, oldkey):
     """Key comparison to check against key tampering."""
     if newkey != oldkey:
@@ -799,9 +790,8 @@ def check(url, download_path, interactive=True):
             if verified is None:
                 print_info('Unable to find a signature, attempting domain verification')
                 verified = attempt_verification_per_domain(package_path, url)
-        elif get_hash_url(url) is not None:
-            hash_url = get_hash_url(url)
-            print_info('Attempting to download {} for domain verification'.format(hash_url))
+        else:
+            print_info('Attempting domain verification')
             verified = attempt_verification_per_domain(package_path, url)
 
     if verified is None and config.config_opts['verify_required']:
