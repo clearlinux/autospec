@@ -19,6 +19,7 @@ class TestSpecfileWrite(unittest.TestCase):
             self.WRITES.append(string)
 
         self.specfile._write = mock_write
+        self.specfile._write_strip = mock_write
         self.WRITES = []
 
     def test_write_nvr_no_urlban(self):
@@ -417,6 +418,25 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         self.specfile.write_lang_files()
         self.assertEqual([], self.WRITES)
+
+    def test_write_service_restart(self):
+        """
+        Validate that service_restart configuration is written to the spec file
+        correctly.
+        """
+        self.specfile.service_restart = [
+                "/usr/lib/systemd/system/foo.service",
+                "/usr/lib/systemd/system/bar.service",
+        ]
+        self.specfile.write_service_restart()
+        expect = [
+            "## service_restart content",
+            "mkdir -p %{buildroot}/usr/share/clr-service-restart",
+            "ln -s /usr/lib/systemd/system/foo.service %{buildroot}/usr/share/clr-service-restart/foo.service",
+            "ln -s /usr/lib/systemd/system/bar.service %{buildroot}/usr/share/clr-service-restart/bar.service",
+            "## service_restart end",
+        ]
+        self.assertEqual(expect, self.WRITES)
 
 
 if __name__ == '__main__':

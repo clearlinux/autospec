@@ -56,6 +56,7 @@ build_prepend = []
 make_prepend = []
 install_prepend = []
 install_append = []
+service_restart = []
 patches = []
 autoreconf = False
 custom_desc = ""
@@ -564,6 +565,7 @@ def parse_config_files(path, bump, filemanager, version):
     global make_prepend
     global install_prepend
     global install_append
+    global service_restart
     global patches
     global autoreconf
     global set_gopath
@@ -856,6 +858,7 @@ def parse_config_files(path, bump, filemanager, version):
     if os.path.isfile(os.path.join(path, "make_install_append")):
         os.rename(os.path.join(path, "make_install_append"), os.path.join(path, "install_append"))
     install_append = read_conf_file(os.path.join(path, "install_append"))
+    service_restart = read_conf_file(os.path.join(path, "service_restart"))
 
     profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
 
@@ -881,6 +884,7 @@ def load_specfile(specfile):
     specfile.make_prepend = make_prepend
     specfile.install_prepend = install_prepend
     specfile.install_append = install_append
+    specfile.service_restart = service_restart
     specfile.patches = patches
     specfile.autoreconf = autoreconf
     specfile.set_gopath = set_gopath

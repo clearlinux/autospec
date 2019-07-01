@@ -347,6 +347,12 @@ golang_libpath
   This could be easily fixed by placing ``gopkg.in/yaml.v`` in this file,
   changing where the go bits will be placed.
 
+service_restart
+  Each line in the file specifies the full path to a systemd unit file
+  installed by this package that should be restarted by clr-service-restart_.
+
+.. _clr-service-restart: https://github.com/clearlinux/clr-service-restart
+
 Controlling files and subpackages
 ---------------------------------
 
