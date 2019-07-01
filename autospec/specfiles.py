@@ -80,6 +80,7 @@ class Specfile(object):
         self.make_prepend = []
         self.install_prepend = []
         self.install_append = []
+        self.service_restart = []
         self.excludes = []
         self.custom_extras = {}
         self.keyid = ""
@@ -303,6 +304,7 @@ class Specfile(object):
             pattern_method()
 
         self.write_source_installs()
+        self.write_service_restart()
         self.write_install_append()
         # self.write_systemd_units()
 
@@ -643,6 +645,17 @@ class Specfile(object):
             for line in self.install_append:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## install_append end")
+
+    def write_service_restart(self):
+        """Enable configured units to be restarted with clr-service-restart."""
+        if self.service_restart:
+            self._write_strip("## service_restart content")
+            installdir = "%{buildroot}/usr/share/clr-service-restart"
+            self._write_strip("mkdir -p {}".format(installdir))
+            for unit in self.service_restart:
+                basename = os.path.basename(unit)
+                self._write_strip("ln -s {} {}".format(unit, os.path.join(installdir, basename)))
+            self._write_strip("## service_restart end")
 
     def write_source_installs(self):
         """Write out installs from SourceX lines."""
