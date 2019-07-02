@@ -261,6 +261,44 @@ def parse_cargo_toml(filename):
             add_requires(cdep)
 
 
+def _get_desc_field(field, desc):
+    """
+    Internal helper to read the value for the given field in an R package
+    DESCRIPTION file. Returns a list representing the value; if value contained
+    commas, the string is split on the commas and surrounding whitespace to
+    create the list.
+    """
+    val = []
+    # Values may span multiple lines...
+    pat = re.compile(r"^" + field + r": *(.*?)(?=\n\w+:)", re.MULTILINE | re.DOTALL)
+    match = pat.search(desc)
+    if match:
+        joined = match.group(1).replace("\n", " ")
+        val = re.split(r"\s*,\s*", joined)
+        # Also omit any version constraints
+        # For example, translate "stringr (>= 1.2.0)" -> "stringr"
+        val = [v.split()[0] for v in val]
+    return val
+
+
+def parse_r_description(filename):
+    """Update build/runtime requirements according to the R package description."""
+    deps = []
+    with util.open_auto(filename, "r") as desc:
+        content = desc.read()
+        deps = _get_desc_field("Depends", content)
+        deps.extend(_get_desc_field("Imports", content))
+    for dep in deps:
+        if dep == 'R':
+            continue
+        pkg = 'R-' + dep
+        if pkg in config.os_packages:
+            add_buildreq(pkg)
+            add_requires(pkg)
+        else:
+            print("CRAN package '{}' not found in os_packages, skipping".format(pkg))
+
+
 def set_build_req():
     """Add build requirements based on the buildpattern pattern."""
     if buildpattern.default_pattern == "maven":
@@ -648,6 +686,7 @@ def scan_for_configure(dirn):
         add_buildreq("buildreq-scons")
     elif buildpattern.default_pattern == "R":
         add_buildreq("buildreq-R")
+        parse_r_description(os.path.join(dirn, "DESCRIPTION"))
     elif buildpattern.default_pattern == "phpize":
         add_buildreq("buildreq-php")
 
