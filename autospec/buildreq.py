@@ -277,7 +277,7 @@ def _get_desc_field(field, desc):
         val = re.split(r"\s*,\s*", joined)
         # Also omit any version constraints
         # For example, translate "stringr (>= 1.2.0)" -> "stringr"
-        val = [v.split()[0] for v in val]
+        val = [re.split(r'\s*\(', v)[0] for v in val]
     return val
 
 
