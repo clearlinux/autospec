@@ -281,6 +281,44 @@ def _get_desc_field(field, desc):
     return val
 
 
+# FIXME: this list should be autodetected
+def _get_r_provides():
+    """Set of packages provided by R, serving as blacklist for CRAN deps."""
+    provides = [
+        "KernSmooth",
+        "MASS",
+        "Matrix",
+        "base",
+        "boot",
+        "class",
+        "cluster",
+        "codetools",
+        "compiler",
+        "datasets",
+        "foreign",
+        "grDevices",
+        "graphics",
+        "grid",
+        "lattice",
+        "methods",
+        "mgcv",
+        "nlme",
+        "nnet",
+        "parallel",
+        "rpart",
+        "spatial",
+        "splines",
+        "stats",
+        "stats4",
+        "survival",
+        "tcltk",
+        "tools",
+        "translations",
+        "utils",
+    ]
+    return set(provides)
+
+
 def parse_r_description(filename):
     """Update build/runtime requirements according to the R package description."""
     deps = []
@@ -288,8 +326,11 @@ def parse_r_description(filename):
         content = desc.read()
         deps = _get_desc_field("Depends", content)
         deps.extend(_get_desc_field("Imports", content))
+    r_provides = _get_r_provides()
     for dep in deps:
         if dep == 'R':
+            continue
+        if dep in r_provides:
             continue
         pkg = 'R-' + dep
         if pkg in config.os_packages:
