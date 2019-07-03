@@ -292,7 +292,9 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
     """Run main package build routine."""
     global round
     global uniqueext
+    global success
     round = round + 1
+    success = 0
     mock_cmd = get_mock_cmd()
     print("Building package " + tarball.name + " round", round)
 
