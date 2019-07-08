@@ -111,21 +111,26 @@ def process_NEWS(newsfile):
 
     newslines = [news.rstrip('\n') for news in newslines]
 
+    # escape some values for use in regular expressions below
+    escaped_curver = re.escape(tarball.version)
+    escaped_oldver = re.escape(config.old_version)
+    escaped_tarname = re.escape(tarball.name)
+
     # these are patterns that define the beginning of a block of information
     # regarding the current version.
-    news_start = [r'Version.*{}'.format(tarball.version),
-                  r'(v|- )?{}:?'.format(tarball.version),
-                  r'{}-{}:?'.format(tarball.name, tarball.version),
-                  r'{} 20'.format(tarball.version)]
+    news_start = [r'Version.*{}'.format(escaped_curver),
+                  r'(v|- )?{}:?'.format(escaped_curver),
+                  r'{}-{}:?'.format(escaped_tarname, escaped_curver),
+                  r'{} 20'.format(escaped_curver)]
 
     # these are patterns that define the end of a block of information
     # regarding the current version.
-    news_end = [r'\*\*\* Changes in.*{}'.format(config.old_version),
-                r'{}.*201'.format(config.old_version),
-                r'Version.*{}'.format(config.old_version),
-                r'^Overview of changes leading to {}'.format(config.old_version),
-                r'^{}(-| ){}:?'.format(tarball.name, config.old_version),
-                r'v?{}:?'.format(config.old_version)]
+    news_end = [r'\*\*\* Changes in.*{}'.format(escaped_oldver),
+                r'{}.*201'.format(escaped_oldver),
+                r'Version.*{}'.format(escaped_oldver),
+                r'^Overview of changes leading to {}'.format(escaped_oldver),
+                r'^{}(-| ){}:?'.format(escaped_tarname, escaped_oldver),
+                r'v?{}:?'.format(escaped_oldver)]
 
     for idx, news in enumerate(newslines):
         # only check headers for begin and end patterns
