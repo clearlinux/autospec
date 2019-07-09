@@ -34,12 +34,15 @@ def commit_to_git(path):
     call("git init", stdout=subprocess.DEVNULL, cwd=path)
 
     # This config is used for setting the remote URI, so it is optional.
-    if config.git_uri:
+    if config.git_pull_uri:
         try:
             call("git config --get remote.origin.url", cwd=path)
         except subprocess.CalledProcessError:
-            upstream_uri = config.git_uri % {'NAME': tarball.name}
+            upstream_uri = config.git_pull_uri % {'NAME': tarball.name}
             call("git remote add origin %s" % upstream_uri, cwd=path)
+            push_uri = config.git_push_uri % {'NAME': tarball.name}
+            if push_uri != upstream_uri:
+                call("git remote set-url origin --push %s" % push_uri, cwd=path)
 
     for config_file in config.config_files:
         call("git add %s" % config_file, cwd=path, check=False)

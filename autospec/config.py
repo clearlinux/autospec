@@ -64,7 +64,8 @@ set_gopath = True
 
 license_fetch = None
 license_show = None
-git_uri = None
+git_pull_uri = None
+git_push_uri = None
 os_packages = set()
 config_file = None
 old_version = None
@@ -545,7 +546,8 @@ def parse_config_files(path, bump, filemanager, version):
     global parallel_build
     global license_fetch
     global license_show
-    global git_uri
+    global git_pull_uri
+    global git_push_uri
     global os_packages
     global urlban
     global config_file
@@ -584,7 +586,8 @@ def parse_config_files(path, bump, filemanager, version):
             print("Missing autospec section..")
             sys.exit(1)
 
-        git_uri = config['autospec'].get('git', None)
+        git_push_uri = config['autospec'].get('git', None)
+        git_pull_uri = config['autospec'].get('git_pull', git_push_uri)
         license_fetch = config['autospec'].get('license_fetch', None)
         license_show = config['autospec'].get('license_show', None)
         packages_file = config['autospec'].get('packages_file', None)
@@ -609,7 +612,7 @@ def parse_config_files(path, bump, filemanager, version):
     # Read values from options.conf (and deprecated files) and rewrite as necessary
     read_config_opts(path)
 
-    if not git_uri:
+    if not git_push_uri:
         print("Warning: Set [autospec][git] upstream template for remote git URI configuration")
     if not license_fetch:
         print("Warning: Set [autospec][license_fetch] uri for license fetch support")

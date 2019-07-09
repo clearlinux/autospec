@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
+import os
 import subprocess
 
 import config
 import util
 
 
-def get_whatrequires(pkg):
+def get_whatrequires(pkg, download_path):
     """
     Write list of packages.
 
@@ -47,5 +48,5 @@ def get_whatrequires(pkg):
         util.print_warning("dnf repoquery whatrequires for {} failed with: {}".format(pkg, err))
         return
 
-    util.write_out('whatrequires', '# This file contains recursive sources that '
+    util.write_out(os.path.join(download_path, 'whatrequires'), '# This file contains recursive sources that '
                    'require this package\n' + out)

@@ -379,7 +379,7 @@ def name_and_version(name_arg, version_arg, filemanager):
             m = re.search(pattern, url)
             if m:
                 repo = m.group(2).strip()
-                if repo not in name:
+                if not name or repo not in name:
                     # Only take the repo name as the package name if it's more descriptive
                     name = repo
                 elif name != repo:
@@ -523,6 +523,15 @@ def prepare_and_extract(extract_cmd):
     call(extract_cmd)
 
 
+def write_makefile(name, url, archives):
+    """Write the package makefile."""
+    makefile_path = os.path.join(build.download_path, "Makefile")
+    if not os.path.exists(makefile_path):
+        write_out(makefile_path,
+                  "PKG_NAME := %s\nURL = %s\nARCHIVES = %s\n\ninclude ../common/Makefile.common\n"
+                  % (name, url, ' '.join(archives)))
+
+
 def process_archives(archives):
     """Download and process archives."""
     for archive, destination in zip(archives[::2], archives[1::2]):
@@ -560,7 +569,7 @@ def process_archives(archives):
             call(move_cmd)
 
 
-def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
+def process(url_arg, name_arg, ver_arg, target, package_dir, archives_arg, filemanager):
     """Download and process the tarball at url_arg."""
     global url
     global name
@@ -581,6 +590,11 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # name is created by adding ".gcov" to the package name (if a gcov file
     # exists)
     set_gcov()
+    # build the target path, if necessary
+    if not target and package_dir:
+        target = os.path.join(package_dir, name)
+    # create the path, by cloning existing repo or manually, as necessary
+    call("make clone_%s" % name, check=False, stderr=subprocess.DEVNULL)
     # download the tarball to tar_path
     tar_path = download_tarball(target)
     # write the sha of the upstream tarfile to the "upstream" file
@@ -592,6 +606,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # Now that the metadata has been collected print the header
     print_header()
     # write out the Makefile with the name, url, and archives we found
+    write_makefile(name, url, archives)
     # prepare directory and extract tarball
     prepare_and_extract(extract_cmd)
     # locate or download archives and move them into the right spot

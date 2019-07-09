@@ -176,6 +176,9 @@ def main():
     parser.add_argument("-t", "--target", dest="target", action="store",
                         default=None,
                         help="Target location to create or reuse")
+    parser.add_argument("-P", "--package-dir", dest="package_dir", action="store",
+                        default=None,
+                        help="Location under which to create/clone a package")
     parser.add_argument("-i", "--integrity", action="store_true",
                         default=False,
                         help="Search for package signature from source URL and "
@@ -247,7 +250,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # of static analysis on the content of the tarball.
     #
     filemanager = files.FileManager()
-    tarball.process(url, name, args.version, args.target, archives, filemanager)
+    tarball.process(url, name, args.version, args.target, args.package_dir, archives, filemanager)
     _dir = tarball.path
 
     if args.license_only:
@@ -341,7 +344,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     examine_abi(build.download_path)
     if os.path.exists("/var/lib/rpm"):
-        pkg_scan.get_whatrequires(tarball.name)
+        pkg_scan.get_whatrequires(tarball.name, build.download_path)
 
     write_out(build.download_path + "/release", tarball.release + "\n")
 
