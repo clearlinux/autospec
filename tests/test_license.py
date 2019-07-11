@@ -121,6 +121,10 @@ class TestLicense(unittest.TestCase):
             POSTFIELDS = None
             FOLLOWLOCATION = 0
             FAILONERROR = False
+            CONNECTTIMEOUT = 0
+            TIMEOUT = 0
+            LOW_SPEED_LIMIT = 0
+            LOW_SPEED_TIME = 0
             def setopt(_, __, ___):
                 pass
 
@@ -176,6 +180,10 @@ class TestLicense(unittest.TestCase):
             POSTFIELDS = None
             FOLLOWLOCATION = 0
             FAILONERROR = False
+            CONNECTTIMEOUT = 0
+            TIMEOUT = 0
+            LOW_SPEED_LIMIT = 0
+            LOW_SPEED_TIME = 0
             def setopt(_, __, ___):
                 pass
 
