@@ -13,6 +13,10 @@ class MockOpts(Enum):
     POSTFIELDS = auto()
     FOLLOWLOCATION = auto()
     FAILONERROR = auto()
+    CONNECTTIMEOUT = auto()
+    TIMEOUT = auto()
+    LOW_SPEED_LIMIT = auto()
+    LOW_SPEED_TIME = auto()
 
 
 def init_curl_instance(mock_curl):
