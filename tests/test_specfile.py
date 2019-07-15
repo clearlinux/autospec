@@ -440,6 +440,22 @@ class TestSpecfileWrite(unittest.TestCase):
         ]
         self.assertEqual(expect, self.WRITES)
 
+    def test_write_exclude_deletes(self):
+        """
+        Validate that excludes configuration is written to the spec file correctly.
+        """
+        self.specfile.excludes = [
+                "/usr/bin/bar",
+                "/usr/bin/foo",
+        ]
+        self.specfile.write_exclude_deletes()
+        expect = [
+            "## Remove excluded files",
+            "rm -f %{buildroot}/usr/bin/bar",
+            "rm -f %{buildroot}/usr/bin/foo",
+        ]
+        self.assertEqual(expect, self.WRITES)
+
 
 if __name__ == '__main__':
     unittest.main()
