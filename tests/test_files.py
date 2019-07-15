@@ -78,7 +78,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.excludes.append('test-fn')
         self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main'))
-        self.fm.push_package_file.assert_called_with('%exclude test-fn', 'main')
+        self.fm.push_package_file.assert_not_called()
 
     def test_file_pat_match_replacement(self):
         """
@@ -133,27 +133,25 @@ class TestFiles(unittest.TestCase):
 
     def test_push_file_extras(self):
         """
-        Test push_file to extras package, this excludes the file
+        Test push_file to extras package
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.extras.append('test')
-        self.fm.excludes.append("test")
         self.fm.push_file('test')
-        calls = [call('test', 'extras'), call('%exclude test')]
+        calls = [call('test', 'extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
 
     def test_push_file_custom_extras(self):
         """
-        Test push_file to a custom extras package, this excludes the file
+        Test push_file to a custom extras package
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.custom_extras = {'test-extras': {'files': ["test"]}}
-        self.fm.excludes.append("test")
         self.fm.push_file('test')
-        calls = [call('test', 'test-extras'), call('%exclude test')]
+        calls = [call('test', 'test-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
 
@@ -164,9 +162,8 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.setuid.append('test')
-        self.fm.excludes.append("test")
         self.fm.push_file('test')
-        calls = [call('%attr(4755, root, root) test', 'setuid'), call('%exclude test')]
+        calls = [call('%attr(4755, root, root) test', 'setuid')]
         self.fm.push_package_file.assert_has_calls(calls)
 
 

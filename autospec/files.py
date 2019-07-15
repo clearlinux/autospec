@@ -78,7 +78,8 @@ class FileManager(object):
             re.compile(r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\."),
             re.compile(r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so"),
             re.compile(r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so"),
-            re.compile(r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so\.")]
+            re.compile(r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so\."),
+            re.compile(r"^/usr/share/package-licenses/")]
 
         exclude = True
         for pat in patterns:
@@ -101,8 +102,9 @@ class FileManager(object):
         pat = re.compile(pattern)
         match = pat.search(filename)
         if match:
-            if filename in self.excludes or self.compat_exclude(filename):
-                self.push_package_file("%exclude " + filename, package)
+            if self.compat_exclude(filename):
+                self.excludes.append(filename)
+            if filename in self.excludes:
                 return True
 
             self.push_package_file(replacement, package)
@@ -175,24 +177,27 @@ class FileManager(object):
         # extras
         if filename in self.extras:
             self.push_package_file(filename, "extras")
+            return
         if filename in self.dev_extras:
             self.push_package_file(filename, "dev")
+            return
         for k, v in self.custom_extras.items():
             if filename in v['files']:
                 self.push_package_file(filename, k)
+                return
 
         if filename in self.setuid:
             newfn = "%attr(4755, root, root) " + filename
             self.push_package_file(newfn, "setuid")
+            return
 
         # autostart
         part = re.compile(r"^/usr/lib/systemd/system/.+\.target\.wants/.+")
         if part.search(filename) and 'update-triggers.target.wants' not in filename:
-            if filename in self.excludes:
-                self.push_package_file("%exclude " + filename, "autostart")
-            else:
+            if filename not in self.excludes:
                 self.push_package_file(filename, "autostart")
-            self.excludes.append(filename)
+                self.push_package_file("%exclude " + filename, "services")
+                return
 
         if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
             return
@@ -313,7 +318,6 @@ class FileManager(object):
                 return
 
         if filename in self.excludes:
-            self.push_package_file("%exclude " + filename)
             return
 
         self.push_package_file(filename)

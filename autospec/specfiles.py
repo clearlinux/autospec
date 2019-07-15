@@ -305,6 +305,7 @@ class Specfile(object):
 
         self.write_source_installs()
         self.write_service_restart()
+        self.write_exclude_deletes()
         self.write_install_append()
         # self.write_systemd_units()
 
@@ -645,6 +646,13 @@ class Specfile(object):
             for line in self.install_append:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## install_append end")
+
+    def write_exclude_deletes(self):
+        """Write out deletes for excluded files."""
+        if self.excludes:
+            self._write_strip("## Remove excluded files")
+        for exclude in self.excludes:
+            self._write_strip(f"rm -f %{{buildroot}}{exclude}")
 
     def write_service_restart(self):
         """Enable configured units to be restarted with clr-service-restart."""
