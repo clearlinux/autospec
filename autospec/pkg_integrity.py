@@ -690,6 +690,7 @@ def attempt_key_import(keyid, key_fullpath):
         err, key_content = ctx.export_key(keyid)
         if err is not None:
             print_error(err.strerror)
+            return False
         util.write_out(key_fullpath, key_content)
         print('\n')
         print_success('Public key id: {} was imported'.format(keyid))
