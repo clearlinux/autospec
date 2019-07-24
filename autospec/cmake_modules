@@ -37,9 +37,9 @@ ICU, icu4c-dev
 Iconv, glibc-dev
 Inotify, extra-cmake-modules
 Intl, glibc-dev
-JNI, openjdk9-dev
+JNI, openjdk11-dev
 JPEG, libjpeg-turbo-dev
-Java, openjdk9
+Java, openjdk11
 #KF5, extra-cmake-modules # parsed by Autospec
 LATEX, texlive
 LibArchive, libarchive-dev
