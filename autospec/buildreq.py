@@ -843,6 +843,11 @@ def scan_for_configure(dirn):
             add_buildreq("buildreq-php")
             buildpattern.set_build_pattern("phpize", 1)
 
+        if "build.xml" in files:
+            add_buildreq("apache-ant")
+            add_buildreq("buildreq-mvn")
+            buildpattern.set_build_pattern("ant", default_score)
+
         for name in files:
             if name.lower() == "cargo.toml" and dirpath == dirn:
                 parse_cargo_toml(os.path.join(dirpath, name))

@@ -330,6 +330,7 @@ build_pattern
   * godep: A go dependency-only package
   * \[WIP\] cargo: Build Rust package with Cargo
   * \[WIP\] scons: Build package with Scons
+  * \[WIP\] ant: Build package with Apache Ant
 
 series
   This file contains a list of patches to apply during the build, using the
