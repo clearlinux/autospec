@@ -61,7 +61,10 @@ def process_go_dependency(url, target):
     """Handle go dependency files."""
     base_url = os.path.dirname(url)
     # Unlink the upstream file to avoid appending existing go artifacts
-    os.unlink(os.path.join(build.download_path, "upstream"))
+    try:
+        os.unlink(os.path.join(build.download_path, "upstream"))
+    except FileNotFoundError:
+        pass
     for ver in multi_version:
         get_go_artifacts(base_url, target, ver)
 
