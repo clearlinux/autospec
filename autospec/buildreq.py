@@ -784,7 +784,7 @@ def scan_for_configure(dirn):
             add_buildreq("buildreq-golang")
             buildpattern.set_build_pattern("golang", default_score)
 
-        if "go.mod" in files and dirpath == dirn:
+        if "go.mod" in files:
             if "Makefile" not in files:
                 # Go packages usually have make build systems so far
                 # so only use go directly if we can't find a Makefile
