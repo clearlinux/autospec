@@ -604,9 +604,9 @@ class Specfile(object):
     def write_mvnbin_install(self):
         """Write out installation for mvnbin content."""
         patterns = [
-            re.compile(r"maven.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
+            re.compile(r"maven.*org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
             re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar|xml|signature)"),
-            re.compile(r"maven.org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar|xml|signature)")]
+            re.compile(r"maven.*org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar|xml|signature)")]
         mvn_sources = [self.url] + sorted(self.sources["archive"])
         src_num = 0
 
@@ -618,9 +618,12 @@ class Specfile(object):
                     artifactid = m.group(2)
                     version = m.group(3)
                     src_dir = "{}/{}/{}".format(groupid, artifactid, version)
+                    src_file = os.path.basename(src)
+                    if src_file.endswith(".xml"):
+                        src_file = "maven-metadata-central.xml"
 
                     self._write_strip("mkdir -p %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_dir))
-                    self._write_strip("cp %{{SOURCE{}}} %{{buildroot}}/usr/share/java/.m2/repository/{}".format(src_num, src_dir))
+                    self._write_strip("cp %{{SOURCE{}}} %{{buildroot}}/usr/share/java/.m2/repository/{}/{}".format(src_num, src_dir, src_file))
                     self._write_strip("\n")
                     break
             src_num += 1
