@@ -83,7 +83,7 @@ def get_sha1sum(filename):
     return sh.hexdigest()
 
 
-def check_or_get_file(upstream_url, tarfile):
+def check_or_get_file(upstream_url, tarfile, mode="w"):
     """Download tarball from url unless it is present locally."""
     tarball_path = build.download_path + "/" + tarfile
     # check if url signifies a go dependency, which needs special handling
@@ -91,7 +91,9 @@ def check_or_get_file(upstream_url, tarfile):
         process_go_dependency(upstream_url, build.download_path)
     elif not os.path.isfile(tarball_path):
         download.do_curl(upstream_url, dest=tarball_path, is_fatal=True)
-        write_upstream(get_sha1sum(tarball_path), tarfile)
+        write_upstream(get_sha1sum(tarball_path), tarfile, mode)
+    else:
+        write_upstream(get_sha1sum(tarball_path), tarfile, mode)
     return tarball_path
 
 
@@ -602,9 +604,7 @@ def prepare_and_extract(extract_cmd):
 def process_archives(archives):
     """Download and process archives."""
     for archive, destination in zip(archives[::2], archives[1::2]):
-        source_tarball_path = check_or_get_file(archive, os.path.basename(archive))
-        sha1 = get_sha1sum(source_tarball_path)
-        write_upstream(sha1, os.path.basename(archive), mode="a")
+        source_tarball_path = check_or_get_file(archive, os.path.basename(archive), mode="a")
 
         if destination.startswith(':'):
             continue
