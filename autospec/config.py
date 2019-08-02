@@ -60,6 +60,7 @@ service_restart = []
 patches = []
 autoreconf = False
 custom_desc = ""
+custom_summ = ""
 set_gopath = True
 
 license_fetch = None
@@ -584,6 +585,7 @@ def parse_config_files(path, bump, filemanager, version):
     global set_gopath
     global yum_conf
     global custom_desc
+    global custom_summ
     global failed_pattern_dir
 
     packages_file = None
@@ -872,6 +874,7 @@ def parse_config_files(path, bump, filemanager, version):
     profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
 
     custom_desc = read_conf_file(os.path.join(path, "description"))
+    custom_summ = read_conf_file(os.path.join(path, "summary"))
 
 
 def load_specfile(specfile):

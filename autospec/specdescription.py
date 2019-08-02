@@ -274,8 +274,11 @@ def scan_for_description(package, dirn):
 
 def load_specfile(specfile):
     """Load specfile with parse results."""
-    specfile.default_sum = default_summary
     if config.custom_desc:
         specfile.default_desc = "\n".join(config.custom_desc)
     else:
         specfile.default_desc = default_description
+    if config.custom_summ:
+        specfile.default_sum = config.custom_summ[0]
+    else:
+        specfile.default_sum = default_summary
