@@ -444,6 +444,11 @@ description
   for the description, if one wants to customize the content for better
   presentation, etc.
 
+summary
+
+  Provides the main Summary: value of the package, overriding any automatically
+  found values. Only the first line is used.
+
 Controlling flags and optimization
 ----------------------------------
 Further control of the build can be achieved through the use of the
