@@ -1594,14 +1594,14 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --prefix /usr --buildtype=plain {0} {1} builddir'
+        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
                           .format(config.extra_configure,
                                   config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
 
         if config.config_opts['use_avx2']:
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
-                              'meson --prefix /usr --libdir=/usr/lib64/haswell --buildtype=plain {0} '
+                              'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
 
@@ -1609,7 +1609,7 @@ class Specfile(object):
             self._write_strip("pushd ../build32")
             self.write_32bit_exports()
             self._write_strip('meson '
-                              '--libdir=/usr/lib32 --prefix /usr --buildtype=plain {0} {1} builddir'
+                              '--libdir=lib32 --prefix=/usr --buildtype=plain {0} {1} builddir'
                               .format(config.extra_configure,
                                       config.extra_configure32))
             self._write_strip('ninja -v -C builddir')
