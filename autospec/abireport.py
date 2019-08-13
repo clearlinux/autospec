@@ -27,6 +27,7 @@ import shutil
 import subprocess
 import sys
 
+import tarball
 import util
 
 valid_dirs = ["/usr/lib", "/usr/lib64"]
@@ -219,8 +220,20 @@ def examine_abi(download_path):
 
 def examine_abi_host(download_path, results_dir):
     """Make use of the hostside abireport tool."""
+    rpms = set()
+    for item in os.listdir(results_dir):
+        namelen = len(tarball.name)
+        if item.find("-extras-", namelen) >= namelen:
+            continue
+        if item.endswith(".rpm") and not item.endswith(".src.rpm"):
+            rpms.add("{}/{}".format(results_dir, item))
+
+    if len(rpms) == 0:
+        util.print_fatal("No usable rpms found, aborting")
+        sys.exit(1)
+
     try:
-        util.call("abireport scan-packages \"{}\"".format(results_dir),
+        util.call("abireport scan-packages {}".format(" ".join(rpms)),
                   cwd=download_path)
     except Exception as e:
         util.print_fatal("Error invoking abireport: {}".format(e))
@@ -232,6 +245,9 @@ def examine_abi_fallback(download_path, results_dir):
 
     rpms = set()
     for item in os.listdir(results_dir):
+        namelen = len(tarball.name)
+        if item.find("-extras-", namelen) >= namelen:
+            continue
         if item.endswith(".rpm") and not item.endswith(".src.rpm"):
             rpms.add(os.path.basename(item))
 
