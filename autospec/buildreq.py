@@ -847,6 +847,13 @@ def scan_for_configure(dirn):
             add_buildreq("apache-ant")
             add_buildreq("buildreq-mvn")
             buildpattern.set_build_pattern("ant", default_score)
+            # But wait, this might use maven!
+            for f in files:
+                if f.endswith('/build.xml'):
+                    for line in open(f):
+                        if "<artifact:mvn>" in line:
+                            buildpattern.set_build_pattern("maven", default_score)
+                            break
 
         for name in files:
             if name.lower() == "cargo.toml" and dirpath == dirn:

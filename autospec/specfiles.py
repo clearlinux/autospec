@@ -1555,7 +1555,7 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
-        self._write_strip("ant dist")
+        self._write_strip("ant -d -v {}".format(self.extra_make))
         self._write_strip("%install")
         self.write_install_prepend()
         jar_dir = os.path.join("%{buildroot}/usr/share/jar", self.name)
