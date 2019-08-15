@@ -154,7 +154,7 @@ def scan_for_licenses(srcdir):
                "about_bsd.txt"]
     # look for files that start with copying or licen[cs]e (but are
     # not likely scripts) or end with licen[cs]e
-    target_pat = re.compile(r"^((copying)|(licen[cs]e))|(licen[cs]e)(\.[^\.]+)?$")
+    target_pat = re.compile(r"^((copying)|(licen[cs]e))|(licen[cs]e)(\.(txt|xml))?$")
     for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
