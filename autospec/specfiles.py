@@ -1558,7 +1558,6 @@ class Specfile(object):
         self._write_strip("ant -d -v " + self.extra_make)
         self._write_strip("%install")
         self.write_install_prepend()
-        jar_dir = os.path.join("%{buildroot}/usr/share/jar", self.name)
         self._write_strip("")
 
     def write_maven_pattern(self):
