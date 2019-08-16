@@ -18,7 +18,6 @@
 #
 
 import configparser
-import errno
 import glob
 import hashlib
 import os
@@ -127,25 +126,6 @@ def build_untar(tarball_path):
         exit(1)
 
     return extract_cmd, tar_prefix
-
-
-def build_unjar(jar_path):
-    """Return correct unjar command and the prefix folder name of the contents of zip file.
-
-    JAR files should just be copied to the requested destination, not actually unpacked
-    """
-    (root, ext) = os.path.splitext(jar_path)
-    prefix = root
-    newdir = os.path.normpath(os.path.join(build.base_path, root))
-    try:
-        os.mkdir(newdir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
-        pass
-
-    extract_cmd = "cp -p -t {} {}".format(newdir, jar_path)
-    return extract_cmd, prefix
 
 
 def build_unzip(zip_path):
@@ -633,24 +613,17 @@ def process_archives(archives):
             extract_cmd, source_tarball_prefix = build_unzip(source_tarball_path)
         elif source_tarball_path.lower().endswith('.7z'):
             extract_cmd, source_tarball_prefix = build_un7z(source_tarball_path)
-        elif source_tarball_path.lower().endswith('.jar'):
-            extract_cmd, source_tarball_prefix = build_unjar(source_tarball_path)
         else:
             extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
         buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
-        print("BTW: extract_cmd: {}".format(extract_cmd))
-        call('pwd')
         call(extract_cmd)
         tar_path = os.path.join(build.base_path, source_tarball_prefix)
-        print("BTW: tar_path: {}".format(tar_path))
-        call("ls -l {}".format(tar_path))
         tar_files = glob.glob("{}/*".format(tar_path))
-        print("BTW: tar_files: {}".format(tar_files))
         if tar_path == path:
             print("Archive {} already unpacked in main path {}; ignoring destination"
                   .format(archive, path))
         else:
-            move_cmd = "cp "
+            move_cmd = "mv "
             for tar_file in tar_files:
                 move_cmd += '"{}"'.format(tar_file) + " "
             move_cmd += '"{0}/{1}"'.format(path, destination)
@@ -660,7 +633,6 @@ def process_archives(archives):
 
             print("mkdir " + mkdir_cmd)
             call(mkdir_cmd)
-            print("BTW: move_cmd: {}".format(move_cmd))
             call(move_cmd)
 
 
