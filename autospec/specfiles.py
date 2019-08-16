@@ -1555,12 +1555,10 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
-        self._write_strip("ant -d -v {}".format(self.extra_make))
+        self._write_strip("ant -d -v " + self.extra_make)
         self._write_strip("%install")
         self.write_install_prepend()
         jar_dir = os.path.join("%{buildroot}/usr/share/jar", self.name)
-        self._write_strip(f"mkdir -p {jar_dir}")
-        self._write_strip(f"install -m 0644 dist/*.jar {jar_dir}")
         self._write_strip("")
 
     def write_maven_pattern(self):
