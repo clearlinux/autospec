@@ -184,6 +184,7 @@ simple_pats = [
     (r"configure: error: glib2", "glib-dev"),
     (r"C library 'efivar' not found", "efivar-dev"),
     (r"Has header \"efi.h\": NO", "gnu-efi-dev"),
+    (r"ERROR: Could not execute Vala compiler", "vala"),
     (r".*: error: HAVE_INTROSPECTION does not appear in AM_CONDITIONAL", 'gobject-introspection-dev')]
 
 # failed_pattern patterns
