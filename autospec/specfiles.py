@@ -557,6 +557,14 @@ class Specfile(object):
             self._write_strip(self.tests_config)
             self._write_strip("\n")
 
+    def write_license_files(self):
+        """Install all license files for this package."""
+        if len(self.license_files) > 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
+            for file in self.license_files:
+                file2 = file.replace("/", "_")
+                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+
     def write_make_install(self):
         """Write install section to spec file for make builds."""
         self._write_strip("%install")
@@ -565,11 +573,7 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         if config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.subdir)
@@ -605,11 +609,7 @@ class Specfile(object):
 
     def write_mvnbin_install(self):
         """Write out installation for mvnbin content."""
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         patterns = [
             re.compile(r"maven.*org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
@@ -705,11 +705,7 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -1094,11 +1090,7 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -1129,11 +1121,8 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
+
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
@@ -1166,11 +1155,7 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -1204,11 +1189,7 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
 
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -1477,11 +1458,7 @@ class Specfile(object):
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
         self._write_strip("if test -f Makefile.PL; then")
         self._write_strip("make pure_install PERL_INSTALL_ROOT=%{buildroot} INSTALLDIRS=vendor")
         self._write_strip("else")
@@ -1506,11 +1483,7 @@ class Specfile(object):
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("scons install " + self.extra_make_install)
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
 
     def write_golang_pattern(self):
         """Write build pattern for go packages."""
@@ -1530,11 +1503,7 @@ class Specfile(object):
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
         self._write_strip("\n")
 
     def write_godep_pattern(self):
@@ -1622,11 +1591,7 @@ class Specfile(object):
         self.write_check()
         self._write_strip("%install")
         self.write_install_prepend()
-        if len(self.license_files) > 0:
-            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+        self.write_license_files()
         if config.config_opts['32bit']:
             self._write_strip('pushd ../build32')
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddir install')
