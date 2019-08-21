@@ -399,6 +399,8 @@ class Specfile(object):
             elif self.default_pattern == "godep":
                 # No setup needed each source is installed as is
                 pass
+            elif self.default_pattern == "mvnbin":
+                self._write_strip("%setup -q -n " + self.tarball_prefix)
             else:
                 self._write_strip("%setup -q -n " + self.tarball_prefix)
                 for archive in self.sources["archive"]:
@@ -603,6 +605,12 @@ class Specfile(object):
 
     def write_mvnbin_install(self):
         """Write out installation for mvnbin content."""
+        if len(self.license_files) > 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
+            for file in self.license_files:
+                file2 = file.replace("/", "_")
+                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+
         patterns = [
             re.compile(r"maven.*org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
             re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar|xml|signature)"),
@@ -1576,9 +1584,7 @@ class Specfile(object):
 
     def write_mvnbin_pattern(self):
         """Write maven build pattern to spec file."""
-        self._write_strip("%prep")
-        self.write_prep_prepend()
-        self._write_strip("\n")
+        self.write_prep()
         self._write_strip("%build")
         self.write_build_prepend()
         self._write_strip("\n")
