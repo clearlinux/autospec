@@ -637,6 +637,29 @@ class Specfile(object):
                     break
             src_num += 1
 
+    def write_maven_install(self):
+        self.write_license_files()
+
+        """Figure out the artifact details and path components."""
+        self._write_strip("export GROUP_PATH=$(xml sel -t -v '/_:project/_:groupId' pom.xml | sed 's#\\.#/#g')")
+        self._write_strip("export ARTIFACT_ID=$(xml sel -t -v '/_:project/_:artifactId' pom.xml)")
+        self._write_strip("export VERSION=$(xml sel -t -v '/_:project/_:version' pom.xml)")
+
+        """Create the installation path."""
+        self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
+        self._write_strip("mkdir -p ${DEPLOY_PATH}")
+
+        """Copy all the jar files."""
+        self._write_strip("cp -p target/${ARTIFACT_ID}*.jar ${DEPLOY_PATH}/")
+        """Except this one -- it's redundant with the source tarball"""
+        self._write_strip("rm ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
+
+        """Install the POM file."""
+        self._write_strip("cp -p pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+
+        """Continue with user-provided installation steps."""
+        self.write_install_append()
+
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
         if self.prep_prepend:
@@ -1545,12 +1568,14 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("mkdir %{buildroot}")
-        self._write_strip("cp -r /usr/share/java/.m2 %{buildroot}/.m2")
-        self._write_strip("mvn --offline -Dmaven.repo.local=%{buildroot}/.m2/repository " + self.extra_make)
+        """ It's ok if this doesn't exist """
+        self._write_strip("cp -r /usr/share/java/.m2 ~/.m2 || :")
+        self._write_strip("mvn --offline package " + self.extra_make)
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("")
+        self.write_maven_install()
 
     def write_mvnbin_pattern(self):
         """Write maven build pattern to spec file."""
