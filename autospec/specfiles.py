@@ -614,7 +614,8 @@ class Specfile(object):
         patterns = [
             re.compile(r"maven.*org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
             re.compile(r"maven.apache.org/maven2/([a-zA-Z\-\_]+)/([a-zA-Z\-\_]+)/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar|xml|signature)"),
-            re.compile(r"maven.*org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar|xml|signature)")]
+            re.compile(r"maven.*org/maven2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar|xml|signature)"),
+            re.compile(r"repository.mapr.com/maven/([a-zA-Z\-\_/]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)")]
         mvn_sources = [self.url] + sorted(self.sources["archive"])
         src_num = 0
 
