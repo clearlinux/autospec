@@ -844,7 +844,7 @@ def scan_for_configure(dirn):
             buildpattern.set_build_pattern("phpize", 1)
 
         if "pom.xml" in files:
-            """ Pretty straightforward maven source package """
+            # Pretty straightforward maven source package
             add_buildreq("apache-maven")
             add_buildreq("buildreq-mvn")
             buildpattern.set_build_pattern("maven", default_score)
