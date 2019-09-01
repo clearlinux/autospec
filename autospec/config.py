@@ -845,7 +845,8 @@ def parse_config_files(path, bump, filemanager, version):
         words = content[0].split()
         for word in words:
             if word.find(":") < 0:
-                license.add_license(word)
+                if not license.add_license(word):
+                    print_warning("{}: blacklisted license {} ignored.".format(tarball.name + ".license", word))
 
     content = read_conf_file(os.path.join(path, "golang_libpath"))
     if content and content[0]:
