@@ -67,8 +67,10 @@ def add_license(lic):
     real_lic_str = config.license_translations.get(lic, lic)
     real_lics = real_lic_str.split()
     for real_lic in real_lics:
-        if real_lic in licenses or real_lic in config.license_blacklist:
+        if real_lic in config.license_blacklist:
             continue
+        elif real_lic in licenses:
+            result = True
         else:
             result = True
             licenses.append(real_lic)
@@ -161,7 +163,7 @@ def scan_for_licenses(srcdir):
                 license_from_copying_hash(os.path.join(dirpath, name), srcdir)
 
     if not licenses:
-        print_fatal(" Cannot find any license or {}.license file!\n".format(tarball.name))
+        print_fatal(" Cannot find any license or a valid {}.license file!\n".format(tarball.name))
         sys.exit(1)
 
     print("Licenses    : ", " ".join(sorted(licenses)))

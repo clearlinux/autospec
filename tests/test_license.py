@@ -32,11 +32,11 @@ class TestLicense(unittest.TestCase):
     def test_add_license_present(self):
         """
         Test add_license from valid string, but license is already present in
-        the licenses list. Should return False and should not modify the
+        the licenses list. Should return True and should not modify the
         licenses list. GPL-3 translates to GPL-3.0.
         """
         license.licenses.append('GPL-3.0')
-        self.assertFalse(license.add_license('GPL-3'))
+        self.assertTrue(license.add_license('GPL-3'))
         self.assertEqual(['GPL-3.0'], license.licenses)
 
     def test_add_license_blacklisted(self):
