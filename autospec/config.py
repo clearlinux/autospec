@@ -297,7 +297,7 @@ failed_pats = [
     (r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:\/]+)", 0, 'ruby table'),
     (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)", 0, 'ruby table'),
     (r".*\.go:.*cannot find package \"(.*)\" in any of:", 0, 'go'),
-    (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
+    (r"\[ERROR\] .* Cannot access \S+ \(.*\) in offline mode and the artifact "
      r"(.+:.+:(?:pom|jar|signature)(?::.+)?):(.*) has not been downloaded from it before.*", 0, 'maven'),
     (r"\[WARNING\] The POM for (.+:.+:(?:jar|pom)(?::.+)?):(.*) is missing, no dependency information "
      r"available", 0, 'maven'),
