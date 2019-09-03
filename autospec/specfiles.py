@@ -641,22 +641,40 @@ class Specfile(object):
         """Write installation steps to specfile for maven source packages."""
         self.write_license_files()
 
+        # Iterate over all target subdirs
+        self._write_strip("for targetdir in $(find . -type d -name target); do")
+        self._write_strip("pushd $targetdir")
+
         # Figure out the artifact details and path components
-        self._write_strip("export GROUP_PATH=$(xml sel -t -v '/_:project/_:groupId' pom.xml | sed 's#\\.#/#g')")
-        self._write_strip("export ARTIFACT_ID=$(xml sel -t -v '/_:project/_:artifactId' pom.xml)")
-        self._write_strip("export VERSION=$(xml sel -t -v '/_:project/_:version' pom.xml)")
+        # Find group ID; inherit from parent if necessary
+        self._write_strip("export GROUP_PATH=$(xml sel -t -v '/_:project/_:groupId' -v '/_:project/_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g' | head -1)")
+        # Find artifact name -- this should not be inherited
+        self._write_strip("export ARTIFACT_ID=$(xml sel -t -v '/_:project/_:artifactId' ../pom.xml | head -1)")
+        # Find version -- this *might* be inherited from parent
+        self._write_strip("export VERSION=$(xml sel -t -v '/_:project/_:version' -v '/_:project/_:parent/_:version' ../pom.xml | head -1)")
 
         # Create the installation path
         self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
         self._write_strip("mkdir -p ${DEPLOY_PATH}")
 
+        # We're going to be globbing for things that may not exist
+        self._write_strip("shopt -s nullglob")
+
         # Copy all the jar files
-        self._write_strip("cp -p target/${ARTIFACT_ID}*.jar ${DEPLOY_PATH}/")
+        self._write_strip("for jarfile in ${ARTIFACT_ID}*.jar; do")
+        self._write_strip('cp -p "${jarfile}" ${DEPLOY_PATH}/')
+        self._write_strip('done')
         # Except this one -- it's redundant with the source tarball
-        self._write_strip("rm ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
+        self._write_strip("rm -f ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
 
         # Install the POM file
-        self._write_strip("cp -p pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+        self._write_strip("cp -p ../pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+
+        # Next
+        self._write_strip("popd")
+
+        # All done
+        self._write_strip("done")
 
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
@@ -1565,7 +1583,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("mkdir %{buildroot}")
+        self._write_strip("mkdir -p %{buildroot}")
         # It's ok if this doesn't exist
         self._write_strip("cp -r /usr/share/java/.m2 ~/.m2 || :")
         self._write_strip("mvn --offline package " + self.extra_make)
