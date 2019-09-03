@@ -144,9 +144,19 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             else:
                 print("Unknown ruby gem match", s)
         elif buildtool == 'maven':
-            if s in config.maven_jars:
+            group_count = len(match.groups())
+            if group_count == 2:
+                # Add fully qualified versioned mvn() dependency
+                name = match.group(1)
+                # Hyphens are disallowed for version strings, so use dots instead
+                ver = match.group(2).replace('-', '.')
+                mvn_provide = f'mvn({name}) = {ver}'
+                must_restart += buildreq.add_buildreq(mvn_provide, cache=True)
+            elif s in config.maven_jars:
+                # Overrides for dependencies with custom grouping
                 must_restart += buildreq.add_buildreq(config.maven_jars[s], cache=True)
             else:
+                # Fallback to mvn-ARTIFACTID package name
                 must_restart += buildreq.add_buildreq('mvn-%s' % s, cache=True)
         elif buildtool == 'catkin':
             must_restart += buildreq.add_pkgconfig_buildreq(s, cache=True)

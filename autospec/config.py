@@ -298,10 +298,8 @@ failed_pats = [
     (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)", 0, 'ruby table'),
     (r".*\.go:.*cannot find package \"(.*)\" in any of:", 0, 'go'),
     (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
-     r".*:(.*):[pom|jar]+:.* has not been downloaded from it before. .*", 0, 'maven'),
-    (r"\[ERROR\] .* Cannot access central \(.*\) in offline mode and the artifact "
-     r".*:(.*):[jar|pom]+:.* has not been downloaded from it before.*", 0, 'maven'),
-    (r"\[WARNING\] The POM for .*:(.*):[jar|pom]+:.* is missing, no dependency information "
+     r"(.+:.+:(?:pom|jar|signature)(?::.+)?):(.*) has not been downloaded from it before.*", 0, 'maven'),
+    (r"\[WARNING\] The POM for (.+:.+:(?:jar|pom)(?::.+)?):(.*) is missing, no dependency information "
      r"available", 0, 'maven'),
     (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
     (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
