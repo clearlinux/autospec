@@ -658,9 +658,6 @@ class Specfile(object):
         # Install the POM file
         self._write_strip("cp -p pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
 
-        # Continue with user-provided installation steps
-        self.write_install_append()
-
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
         if self.prep_prepend:
