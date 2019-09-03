@@ -442,9 +442,9 @@ class Specfile(object):
         """Write 32bit only env exports."""
         self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig"')
         self._write_strip('export ASFLAGS="${ASFLAGS}${ASFLAGS:+ }--32"')
-        self._write_strip('export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32"')
-        self._write_strip('export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32"')
-        self._write_strip('export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32"')
+        self._write_strip('export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32 -mstackrealign"')
+        self._write_strip('export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32 -mstackrealign"')
+        self._write_strip('export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32 -mstackrealign"')
 
     def write_variables(self):
         """Write variable exports to spec file."""
