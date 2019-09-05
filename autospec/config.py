@@ -130,7 +130,8 @@ config_options = {
     "autoupdate": "this package is trusted enough to automatically update "
                   "(used by other tools)",
     "compat": "this package is a library compatability package and only "
-              "ships versioned library files"}
+              "ships versioned library files",
+    "nodebug": "do not generate debuginfo for this package"}
 
 # simple_pattern_pkgconfig patterns
 # contains patterns for parsing build.log for missing dependencies

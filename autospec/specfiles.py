@@ -108,6 +108,7 @@ class Specfile(object):
         self.write_main_subpackage_requires()
         self.write_buildreq()
         self.write_strip_command()
+        self.write_debug_command()
         self.write_patch_header()
 
         # main package extra content
@@ -210,6 +211,12 @@ class Specfile(object):
         if config.config_opts['nostrip']:
             self._write("# Suppress stripping binaries\n")
             self._write("%define __strip /bin/true\n%define debug_package %{nil}\n")
+
+    def write_debug_command(self):
+        """Write commands to prevent debug info generation if requested."""
+        if config.config_opts['nodebug']:
+            self._write("# Suppress generation of debuginfo\n")
+            self._write("%global debug_package %{nil}\n")
 
     def write_patch_header(self):
         """Write patch list header."""
