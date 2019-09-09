@@ -99,11 +99,14 @@ class FileManager(object):
         if not replacement:
             replacement = prefix + filename
 
+        # compat files should always be excluded
+        if self.compat_exclude(filename):
+            self.excludes.append(filename)
+            return True
+
         pat = re.compile(pattern)
         match = pat.search(filename)
         if match:
-            if self.compat_exclude(filename):
-                self.excludes.append(filename)
             if filename in self.excludes:
                 return True
 
