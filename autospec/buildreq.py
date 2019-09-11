@@ -861,6 +861,11 @@ def scan_for_configure(dirn):
                             buildpattern.set_build_pattern("maven", default_score)
                             break
 
+        if "build.gradle" in files:
+            add_buildreq("gradle")
+            add_buildreq("buildreq-mvn")
+            buildpattern.set_build_pattern("gradle", default_score)
+
         for name in files:
             if name.lower() == "cargo.toml" and dirpath == dirn:
                 parse_cargo_toml(os.path.join(dirpath, name))
