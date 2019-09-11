@@ -601,6 +601,9 @@ class Specfile(object):
             use_subdir = False
             init = f"{self.get_profile_generate_flags()}"
             post = f"{self.get_profile_use_flags()}"
+        elif pattern == "make":
+            init = f"{self.get_profile_generate_flags()}"
+            post = f"{self.get_profile_use_flags()}"
         if use_subdir and self.subdir:
             self._write_strip("pushd " + self.subdir)
         if init:
@@ -1026,7 +1029,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        self.write_profile_payload()
+        self.write_profile_payload("make")
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self.write_make_line()
