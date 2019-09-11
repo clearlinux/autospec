@@ -572,6 +572,48 @@ class Specfile(object):
                 file2 = file.replace("/", "_")
                 self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
+    def write_profile_payload(self, pattern=None):
+        """Write the profile_payload specified for this package."""
+        if not config.profile_payload:
+            return
+        use_subdir = True
+        init = ""
+        post = ""
+        if pattern == "configure":
+            init = f"{self.get_profile_generate_flags()}" \
+                   f"%configure " \
+                   f"{self.disable_static} " \
+                   f"{config.extra_configure} " \
+                   f"{config.extra_configure64}"
+        elif pattern == "configure_ac":
+            init = f"{self.get_profile_generate_flags()}" \
+                   f"%reconfigure " \
+                   f"{self.disable_static} " \
+                   f"{config.extra_configure} " \
+                   f"{config.extra_configure64}"
+        elif pattern == "autogen":
+            init = f"{self.get_profile_generate_flags()}" \
+                   f"%autogen " \
+                   f"{self.disable_static} " \
+                   f"{config.extra_configure} " \
+                   f"{config.extra_configure64}"
+        elif pattern == "cmake":
+            use_subdir = False
+            init = f"{self.get_profile_generate_flags()}"
+            post = f"{self.get_profile_use_flags()}"
+        if use_subdir and self.subdir:
+            self._write_strip("pushd " + self.subdir)
+        if init:
+            self._write_strip(init)
+        self.write_make_line()
+        if use_subdir and self.subdir:
+            self._write_strip("popd")
+        self._write_strip("\n")
+        self._write_strip("\n".join(config.profile_payload))
+        self._write_strip("\nmake clean\n")
+        if post:
+            self._write_strip(post)
+
     def write_make_install(self):
         """Write install section to spec file for make builds."""
         self._write_strip("%install")
@@ -858,24 +900,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-
-        # Prep it for PGO
-        if config.profile_payload and config.profile_payload[0]:
-            if self.subdir:
-                self._write_strip("pushd " + self.subdir)
-            self._write_strip("{0}%configure {1} {2} {3}"
-                              .format(self.get_profile_generate_flags(),
-                                      self.disable_static,
-                                      config.extra_configure,
-                                      config.extra_configure64))
-            self.write_make_line()
-            if self.subdir:
-                self._write_strip("popd")
-            self._write_strip("\n")
-
-            self._write_strip("\n".join(config.profile_payload))
-            self._write_strip("\nmake clean\n")
-
+        self.write_profile_payload("configure")
         if self.subdir:
             self._write_strip("pushd {}".format(self.subdir))
         self._write_strip("{0}%configure {1} {2} {3}"
@@ -938,23 +963,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        # Prep it for PGO
-        if config.profile_payload and config.profile_payload[0]:
-            if self.subdir:
-                self._write_strip("pushd " + self.subdir)
-            self._write_strip("{0}%reconfigure {1} {2} {3}"
-                              .format(self.get_profile_generate_flags(),
-                                      self.disable_static,
-                                      config.extra_configure,
-                                      config.extra_configure64))
-            self.write_make_line()
-            if self.subdir:
-                self._write_strip("popd")
-            self._write_strip("\n")
-
-            self._write_strip("\n".join(config.profile_payload))
-            self._write_strip("\nmake clean\n")
-
+        self.write_profile_payload("configure_ac")
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("{0}%reconfigure {1} {2} {3}"
@@ -1017,6 +1026,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        self.write_profile_payload()
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self.write_make_line()
@@ -1054,18 +1064,7 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        if config.profile_payload and config.profile_payload[0]:
-            self._write_strip("{0}%autogen {1} {2} {3}"
-                              .format(self.get_profile_generate_flags(),
-                                      self.disable_static,
-                                      config.extra_configure,
-                                      config.extra_configure64))
-            self.write_make_line()
-            self._write_strip("\n")
-
-            self._write_strip("\n".join(config.profile_payload))
-            self._write_strip("\nmake clean\n")
-
+        self.write_profile_payload("autogen")
         self._write_strip("{0}%autogen {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.disable_static,
@@ -1364,13 +1363,7 @@ class Specfile(object):
         self.write_variables()
         self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
 
-        # Prep it for PGO
-        if config.profile_payload and config.profile_payload[0]:
-            self._write_strip("{0}".format(self.get_profile_generate_flags()))
-            self.write_make_line()
-            self._write_strip("\n".join(config.profile_payload))
-            self._write_strip("\nmake clean\n")
-            self._write_strip("{0}".format(self.get_profile_use_flags()))
+        self.write_profile_payload("cmake")
 
         self.write_make_line()
         self._write_strip("popd")
