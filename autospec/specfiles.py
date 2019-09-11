@@ -1582,6 +1582,19 @@ class Specfile(object):
         self.write_install_prepend()
         self._write_strip("")
 
+    def write_gradle_pattern(self):
+        self.write_prep()
+        self._write_strip("%build")
+        self.write_build_prepend()
+        self.write_proxy_exports()
+        self._write_strip("mkdir -p /builddir/.m2")
+        self._write_strip("cp -r /usr/share/java/.m2/* /builddir/.m2/")
+        self._write_strip("gradle --offline " + self.extra_make)
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self.write_install_prepend()
+        self.write_license_files()
+
     def write_maven_pattern(self):
         """Write maven build pattern to spec file."""
         self.write_prep()

@@ -307,7 +307,10 @@ failed_pats = [
     (r"Add the installation prefix of \"(.*)\" to CMAKE_PREFIX_PATH", 0, None),
     (r"^.*\"(.*)\" with any of the following names.*$", 0, None),
     (r"module not found: .*#(.*);(?:.*)", 0, 'maven'),
-    (r"-- artifact (?:.*)#(?:.*);(?:.*)!(.*).jar", 0, 'maven')]
+    (r"-- artifact (?:.*)#(?:.*);(?:.*)!(.*).jar", 0, 'maven'),
+    (r"\[WARNING\] Unable to get resource '(?:.*):(.*):[jar|pom]*:(?:.*)' from repository", 0, 'maven'),
+    (r"\> Could not find (?:.*):(.*):(?:.*)\.$", 0, 'maven'),
+    (r"\> Could not resolve (?:.*):(.*):(?:.*)\.$", 0, 'maven')]
 
 
 def get_metadata_conf():

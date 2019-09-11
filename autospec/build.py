@@ -143,7 +143,7 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
                 must_restart += buildreq.add_buildreq(config.gems[s], cache=True)
             else:
                 print("Unknown ruby gem match", s)
-        elif buildtool == 'maven':
+        elif buildtool == 'maven' or buildtool == 'gradle':
             group_count = len(match.groups())
             if group_count == 2:
                 # Add fully qualified versioned mvn() dependency
