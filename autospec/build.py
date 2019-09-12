@@ -155,6 +155,12 @@ def failed_pattern(line, pattern, verbose, buildtool=None):
             elif s in config.maven_jars:
                 # Overrides for dependencies with custom grouping
                 must_restart += buildreq.add_buildreq(config.maven_jars[s], cache=True)
+            elif group_count == 3:
+                org = match.group(1)
+                name = match.group(2)
+                ver = match.group(3).replace('-', '.')
+                mvn_provide = f'mvn({org}:{name}:jar) = {ver}'
+                must_restart += buildreq.add_buildreq(mvn_provide, cache=True)
             else:
                 # Fallback to mvn-ARTIFACTID package name
                 must_restart += buildreq.add_buildreq('mvn-%s' % s, cache=True)

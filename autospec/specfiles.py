@@ -731,6 +731,54 @@ class Specfile(object):
         # All done
         self._write_strip("done")
 
+    def write_gradle_install(self):
+        """Write installation steps to specfile for maven source packages."""
+        self.write_license_files()
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
+        # The install goal copies all the pieces to the build/install subdir
+        self._write_strip("gradle --offline install -d " + self.extra_make_install)
+
+        # Enter the installation subdir, so we can touch up what gets installed
+        self._write_strip("pushd build/install")
+
+        # Handle jarfiles in lib dir
+        # The install goal results in packaging not only the jars that were
+        # built, but also runtime deps that came from other packages. For every
+        # jar we find in the installed directory, we'll check whether there's a
+        # matching jar in the M2 repository provided by installed build deps.
+        # If so, we'll replace this copy with a symlink.
+        # TODO: call add_requires() with an appropriately-derived value so the
+        # symlink will be resolved at chroot creation.
+        self._write_strip("shopt -s nullglob")
+        self._write_strip("for lib_dir in */lib; do")
+        self._write_strip("pushd ${lib_dir}")
+        self._write_strip("for jarfile in *.jar; do")
+        self._write_strip("JARNAME=$(basename ${jarfile})")
+        self._write_strip('REALJAR=$(find /usr/share/java/.m2/repository -type f -name "${JARNAME}")')
+        self._write_strip("if ! [[ -z ${REALJAR} ]]; then")
+        self._write_strip(r'ln -sf ${REALJAR/#\/usr\/share\/java/..\/..}')
+        self._write_strip("fi")
+        self._write_strip("done")
+        self._write_strip("popd")
+        self._write_strip("done")
+
+        # The install goal may write wrapper scripts to launch the application.
+        # Remove any batch files
+        self._write_strip("find . -type f -name '*.bat' -exec rm -f {} +")
+
+        # Install the contents under main java path
+        self._write_strip("mkdir -p %{buildroot}/usr/share/java/" + self.name)
+        self._write_strip("cp -r * %{buildroot}/usr/share/java/" + self.name)
+
+        # Leave the build subdir
+        self._write_strip("popd")
+
+        if self.subdir:
+            self._write_strip("popd")
+
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
         if self.prep_prepend:
@@ -1584,17 +1632,38 @@ class Specfile(object):
         self._write_strip("")
 
     def write_gradle_pattern(self):
+        """Write gradle build pattern to spec file."""
         self.write_prep()
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("mkdir -p /builddir/.m2")
-        self._write_strip("cp -r /usr/share/java/.m2/* /builddir/.m2/")
-        self._write_strip("gradle --offline " + self.extra_make)
+        self._write_strip("mkdir -p %{buildroot}")
+
+        # Copy M2 repo contents from buildreqs to Maven's default location.
+        # It's ok if this doesn't exist.
+        self._write_strip("cp -r /usr/share/java/.m2 ~/.m2 || :")
+
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
+
+        # Point to our local maven repo, first
+        # style check does not like the escapes here
+        self._write_strip(r"sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' build.gradle")
+
+        # Opportunistically report detected dependencies
+        self._write_strip("gradle --offline dependencies || :")
+
+        # Execute the build goal
+        self._write_strip("gradle --offline build " + self.extra_make)
+
+        if self.subdir:
+            self._write_strip("popd")
+
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
-        self.write_license_files()
+        self._write_strip("")
+        self.write_gradle_install()
 
     def write_maven_pattern(self):
         """Write maven build pattern to spec file."""
