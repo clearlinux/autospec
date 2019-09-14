@@ -473,6 +473,15 @@ def name_and_version(name_arg, version_arg, filemanager):
     if "kde.org" in url or "https://github.com/KDE" in url:
         buildreq.add_buildreq("buildreq-kde")
 
+    # SQLite tarballs use 7 digit versions, e.g 3290000 = 3.29.0, 3081002 = 3.8.10.2
+    if "sqlite.org" in url:
+        major = version[0]
+        minor = version[1:3].lstrip("0").zfill(1)
+        patch = version[3:5].lstrip("0").zfill(1)
+        build = version[5:7].lstrip("0")
+        version = major + "." + minor + "." + patch + "." + build
+        version = version.strip(".")
+
     # construct github giturl from gnome projects
     if not giturl and "download.gnome.org" in url:
         giturl = "https://github.com/GNOME/{}.git".format(name)
