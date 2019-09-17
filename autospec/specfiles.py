@@ -388,9 +388,9 @@ class Specfile(object):
                 self._write_strip("{}\n".format(line))
             self._write_strip("## make_prepend end")
         if build32:
-            self._write_strip("make {}{}{}".format(config.parallel_build, self.extra_make, self.extra32_make))
+            self._write_strip("make {} {} {}".format(config.parallel_build, self.extra_make, self.extra32_make))
         else:
-            self._write_strip("make {}{}".format(config.parallel_build, self.extra_make))
+            self._write_strip("make {} {}".format(config.parallel_build, self.extra_make))
 
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file."""
@@ -1442,7 +1442,7 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
 
-        self._write_strip("%qmake {}{}".format(extra_qmake_args, config.extra_configure))
+        self._write_strip("%qmake {} {}".format(extra_qmake_args, config.extra_configure))
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
 
@@ -1454,7 +1454,7 @@ class Specfile(object):
             self.write_build_prepend()
             self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
             self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
-            self._write("    QMAKE_LFLAGS+=-march=haswell {}{}\n".format(extra_qmake_args, config.extra_configure))
+            self._write("    QMAKE_LFLAGS+=-march=haswell {} {}\n".format(extra_qmake_args, config.extra_configure))
             self.write_make_line()
             self._write_strip("popd")
 
