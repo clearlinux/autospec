@@ -1658,7 +1658,8 @@ http://www.spice-space.org/download/releases/spice-protocol-0.12.13.tar.bz2,spic
 http://pypi.debian.net/SQLAlchemy/SQLAlchemy-1.0.16.tar.gz,SQLAlchemy,1.0.16
 http://pypi.debian.net/sqlalchemy-migrate/sqlalchemy-migrate-0.10.0.tar.gz,sqlalchemy-migrate,0.10.0
 http://pypi.debian.net/SQLAlchemy-Utils/SQLAlchemy-Utils-0.32.9.tar.gz,SQLAlchemy-Utils,0.32.9
-http://sqlite.org/2017/sqlite-autoconf-3200100.tar.gz,sqlite-autoconf,3200100
+https://sqlite.org/2017/sqlite-autoconf-3200100.tar.gz,sqlite-autoconf,3.20.1
+https://sqlite.org/2015/sqlite-autoconf-3081002.tar.gz,sqlite-autoconf,3.8.10.2
 http://pypi.debian.net/sqlparse/sqlparse-0.2.4.tar.gz,sqlparse,0.2.4
 https://github.com/libfuse/sshfs/archive/sshfs-3.3.0.tar.gz,sshfs,3.3.0
 https://github.com/commercialhaskell/stack/releases/download/v1.5.0/stack-1.5.0-linux-x86_64.tar.gz,stack,1.5.0
