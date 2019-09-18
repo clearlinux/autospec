@@ -464,7 +464,8 @@ def name_and_version(name_arg, version_arg, filemanager):
                 if "archive" not in pattern:
                     version = re.sub(r"^[-_.a-zA-Z]+", "", version)
                 version = convert_version(version, name)
-                giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
+                if not giturl:
+                    giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
                 break
 
     if "gnome.org" in url:
