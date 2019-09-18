@@ -1654,7 +1654,7 @@ class Specfile(object):
 
         # Point to our local maven repo, first
         # style check does not like the escapes here
-        self._write_strip(r"sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' build.gradle")
+        self._write_strip(r"find . -type f '(' -name '*.gradle' -o -name '*.gradle.kts' ')' -exec sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' {} +")
 
         # Opportunistically report detected dependencies
         self._write_strip("gradle --offline dependencies || :")
