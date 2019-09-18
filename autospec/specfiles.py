@@ -738,8 +738,11 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
 
-        # The install goal copies all the pieces to the build/install subdir
-        self._write_strip("gradle --offline install -d " + self.extra_make_install)
+        # User must provide the install goal in make_install_args
+        self._write_strip("gradle --offline " + self.extra_make_install)
+
+        # Install from a build/install directory, if it was created
+        self._write_strip("if [[ -d build/install ]]; then")
 
         # Enter the installation subdir, so we can touch up what gets installed
         self._write_strip("pushd build/install")
@@ -775,6 +778,9 @@ class Specfile(object):
 
         # Leave the build subdir
         self._write_strip("popd")
+
+        # Done processing build/install directory
+        self._write_strip("fi")
 
         if self.subdir:
             self._write_strip("popd")
@@ -1653,8 +1659,8 @@ class Specfile(object):
         # Opportunistically report detected dependencies
         self._write_strip("gradle --offline dependencies || :")
 
-        # Execute the build goal
-        self._write_strip("gradle --offline build " + self.extra_make)
+        # Execute the build goal -- but user must provide it in make_args
+        self._write_strip("gradle --offline " + self.extra_make)
 
         if self.subdir:
             self._write_strip("popd")
