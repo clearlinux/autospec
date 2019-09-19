@@ -1647,7 +1647,8 @@ class Specfile(object):
 
         # Copy M2 repo contents from buildreqs to Maven's default location.
         # It's ok if this doesn't exist.
-        self._write_strip("cp -r /usr/share/java/.m2 ~/.m2 || :")
+        self._write_strip("mkdir -p ~/.m2")
+        self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
 
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
@@ -1679,7 +1680,8 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("mkdir -p %{buildroot}")
         # It's ok if this doesn't exist
-        self._write_strip("cp -r /usr/share/java/.m2 ~/.m2 || :")
+        self._write_strip("mkdir -p ~/.m2")
+        self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
         self._write_strip("mvn --offline package " + self.extra_make)
         self._write_strip("\n")
         self._write_strip("%install")
