@@ -310,7 +310,7 @@ failed_pats = [
     (r"-- artifact (?:.*)#(?:.*);(?:.*)!(.*).jar", 0, 'maven'),
     (r"\[WARNING\] Unable to get resource '(?:.*):(.*):[jar|pom]*:(?:.*)' from repository", 0, 'maven'),
     (r"\> Could not find (?:.*):(.*):(?:.*)\.$", 0, 'maven'),
-    (r"Could not resolve ([^:]+):([^:]+):([^:]+)\.", 0, 'maven'),
+    (r"Could not resolve ([^:\s]+):([^:\s]+):([^:\s]+)\.", 0, 'maven'),
     (r"No cached version of ([^:]+):([^:]+):([^:]+) available for offline mode\.", 0, 'maven'),
     (r"--- ([^:]+):([^:]+):([^:]+)\s+FAILED", 0, 'maven'),
 ]
