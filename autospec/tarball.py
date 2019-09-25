@@ -144,24 +144,55 @@ def build_unzip(zip_path):
     ***snip***
     and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
     """
-    prefix = ""
+    prefix = None
     contents = subprocess.check_output(["unzip", "-q", "-l", zip_path], universal_newlines=True)
     lines = contents.splitlines() if contents else []
     # looking for directory prefix in unzip output as it may differ from default
-    if len(lines) > 2:
-        # In some cases there is a hash line so we detect this based on the header
-        # separator character '-'
-        prefix_line = 3 if len(lines) > 3 and lines[2][0] == '-' else 2
-        prefix = lines[prefix_line].split("/")[0].split()[-1]
-    else:
+
+    # First, find the end of the info header
+    # It starts with -----
+    while len(lines):
+        line = lines.pop(0)
+        if line[0] == '-':
+            break
+
+    # Similarly, strip the footer
+    while len(lines):
+        line = lines.pop()
+        if line[0] == '-':
+            break
+
+    # Are there any files left?
+    if len(lines) < 1:
         print_fatal("Zip file doesn't appear to have any content")
         exit(1)
 
-    if not prefix:
-        print_fatal("Malformed zipfile, unable to determine zipfile prefix")
-        exit(1)
+    # Look for a common directory prefix
+    for line in lines:
+        if line[0] == '-':
+            break;
+        fields = re.split(r'\s+', line, maxsplit=4)
+        filename = fields.pop()
+        if prefix is None:
+            prefix = filename
+        common = list()
+        for pair in zip(re.split(r'/', prefix), re.split(r'/', filename)):
+            if pair[0] == pair[1]:
+                common.append(pair[0])
+            else:
+                break;
+        prefix = '/'.join(common)
 
-    extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
+    # If we didn't find a common prefix, make one, based on the zip filename
+    if not prefix:
+        zipfile = os.path.basename(zip_path)
+        prefix = os.path.splitext(zipfile)[0]
+        print("BTW: Faking prefix dir {}".format(prefix))
+        extract_cmd = "unzip -qq -d {0} {1}".format(
+                os.path.join(build.base_path, subdir), zip_path)
+    else:
+        extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
+
     return extract_cmd, prefix
 
 
