@@ -315,7 +315,7 @@ def _get_desc_field(field, desc):
     """
     val = []
     # Values may span multiple lines...
-    pat = re.compile(r"^" + field + r": *(.*?)(?=\n\w+:)", re.MULTILINE | re.DOTALL)
+    pat = re.compile(r"^" + field + r":\s*(.*?)(?=\n\w+:)", re.MULTILINE | re.DOTALL)
     match = pat.search(desc)
     if match:
         joined = match.group(1).replace("\n", " ")
