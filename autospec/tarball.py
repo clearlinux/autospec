@@ -717,6 +717,16 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     prepare_and_extract(extract_cmd)
     # locate or download archives and move them into the right spot
     process_archives(archives_arg)
+    # process any additional versions
+    versions_content = config.read_conf_file(os.path.join(path, "versions"))
+    for line in versions_content:
+        entry = line.split()
+        url = entry.pop()
+        version = entry.pop()
+        name, rawname, version = name_and_version(name_arg, version, filemanager)
+        tar_path = check_or_get_file(url, tarfile)
+        extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
+        prepare_and_extract(extract_cmd)
 
 
 def load_specfile(specfile):
