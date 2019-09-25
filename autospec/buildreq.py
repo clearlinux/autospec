@@ -775,6 +775,8 @@ def scan_for_configure(dirn):
         parse_r_description(os.path.join(dirn, "DESCRIPTION"))
     elif buildpattern.default_pattern == "phpize":
         add_buildreq("buildreq-php")
+    elif buildpattern.default_pattern == "nginx":
+        add_buildreq("buildreq-nginx")
 
     count = 0
     for dirpath, _, files in os.walk(dirn):
