@@ -1762,6 +1762,20 @@ class Specfile(object):
         self._write_strip("%make_install")
         self._write_strip("\n")
 
+    def write_nginx_pattern(self):
+        """Write nginx build pattern to spec file."""
+        self.write_prep()
+        self._write_strip("%build")
+        self.write_build_prepend()
+        self.write_proxy_exports()
+        self._write_strip("nginx-module configure")
+        self._write_strip("nginx-module build")
+        self._write_strip("\n")
+        self._write_strip("%install")
+        self.write_install_prepend()
+        self._write_strip("nginx-module install %{buildroot}")
+        self._write_strip("\n")
+
     def write_find_lang(self):
         """Write %find_lang macro to spec file."""
         for lang in self.locales:
