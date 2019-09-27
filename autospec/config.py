@@ -127,6 +127,7 @@ config_options = {
     "security_sensitive": "set flags for security-sensitive builds",
     "so_to_lib": "add .so files to the lib package instead of dev",
     "dev_requires_extras": "dev package requires the extras to be installed",
+    "dev_requires_staticdev": "dev package requires the staticdev to be installed",
     "autoupdate": "this package is trusted enough to automatically update "
                   "(used by other tools)",
     "compat": "this package is a library compatability package and only "

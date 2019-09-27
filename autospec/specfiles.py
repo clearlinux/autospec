@@ -248,6 +248,8 @@ class Specfile(object):
         deps["python"] = ["python3"]
         if config.config_opts['dev_requires_extras']:
             deps["dev"].append("extras")
+        if config.config_opts['dev_requires_staticdev']:
+            deps["dev"].append("staticdev")
         for k, v in self.custom_extras.items():
             if "requires" in v:
                 deps[k] = v['requires']

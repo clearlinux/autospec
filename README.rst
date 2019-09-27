@@ -538,6 +538,10 @@ so_to_lib
   This option causes package ``.so`` files to be added to the ``lib`` subpackage
   instead of the ``dev`` subpackage.
 
+dev_requires_staticdev
+  If this option is set, the ``-staticdev`` package is required by the ``-dev``
+  package.
+
 autoupdate
   This option indicates that the package is trusted enough to be automatically
   update to its newest available version when set to ``true``. This flag is
