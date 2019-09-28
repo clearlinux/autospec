@@ -78,6 +78,7 @@ class Specfile(object):
         self.cmake_srcdir = ".."
         self.prep_prepend = []
         self.build_prepend = []
+        self.build_append = []
         self.make_prepend = []
         self.install_prepend = []
         self.install_append = []
@@ -801,6 +802,14 @@ class Specfile(object):
                 self._write_strip("{}\n".format(line))
             self._write_strip("## build_prepend end")
 
+    def write_build_append(self):
+        """Write out any custom supplied commands at the end of the %build section."""
+        if self.build_append:
+            self._write_strip("## build_append content")
+            for line in self.build_append:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## build_append end")
+
     def write_install_prepend(self):
         """Write out any custom supplied commands at the start of the %install section."""
         if self.install_prepend:
@@ -849,6 +858,7 @@ class Specfile(object):
 
     def write_cmake_install(self):
         """Write install section to spec file for cmake builds."""
+        self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
@@ -1191,6 +1201,7 @@ class Specfile(object):
             self._write_strip(self.tests_config)
         if self.subdir:
             self._write_strip("popd")
+        self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
@@ -1222,6 +1233,7 @@ class Specfile(object):
             self._write_strip(self.tests_config)
         if self.subdir:
             self._write_strip("popd")
+        self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
@@ -1256,6 +1268,7 @@ class Specfile(object):
             self._write_strip(self.tests_config)
         if self.subdir:
             self._write_strip("popd")
+        self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
@@ -1290,6 +1303,7 @@ class Specfile(object):
             self._write_strip(self.tests_config)
         if self.subdir:
             self._write_strip("popd")
+        self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
@@ -1378,7 +1392,9 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
+        self.write_make_prepend()
         self._write_strip("gem build {}.gemspec".format(self.name))
+        self.write_build_append()
         self._write_strip("\n")
 
         self._write_strip("%install")
@@ -1505,13 +1521,13 @@ class Specfile(object):
 
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.subdir)
-            self.write_build_prepend()
             self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
             self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
             self._write("    QMAKE_LFLAGS+=-march=haswell {} {}\n".format(extra_qmake_args, config.extra_configure))
             self.write_make_line()
             self._write_strip("popd")
 
+        self.write_build_append()
         self._write_strip("\n")
         self.write_make_install()
 
@@ -1529,7 +1545,9 @@ class Specfile(object):
         self._write_strip("export http_proxy=http://127.0.0.1:9/")
         self._write_strip("export https_proxy=http://127.0.0.1:9/")
         self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
+        self.write_make_prepend()
         self._write_strip("cargo build --release")
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1553,6 +1571,7 @@ class Specfile(object):
         self._write_strip("%{__perl} Build.PL")
         self._write_strip("./Build")
         self._write_strip("fi")
+        self.write_build_append()
         self._write_strip("\n")
         self.write_check()
         self._write_strip("%install")
@@ -1578,7 +1597,9 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
         self.write_variables()
+        self.write_make_prepend()
         self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1594,11 +1615,14 @@ class Specfile(object):
         self._write_strip("export LANG=C.UTF-8")
         if self.set_gopath:
             self._write_strip("export GOPATH=\"$PWD\"")
+            self.write_make_prepend()
             self._write_strip("go build {}".format(self.extra_make))
         else:
             self._write_strip("export GOPROXY=file:///usr/share/goproxy")
+            self.write_make_prepend()
             self._write_strip("go mod vendor")
             self._write_strip("go build -mod=vendor {}".format(self.extra_make))
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self._write_strip("rm -rf %{buildroot}")
@@ -1633,6 +1657,8 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
         self._write_strip("ant -d -v " + self.extra_make)
+        self.write_build_append()
+        self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
         self._write_strip("")
@@ -1666,6 +1692,7 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("popd")
 
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1683,6 +1710,7 @@ class Specfile(object):
         self._write_strip("mkdir -p ~/.m2")
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
         self._write_strip("mvn --offline package " + self.extra_make)
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1694,6 +1722,7 @@ class Specfile(object):
         self.write_prep()
         self._write_strip("%build")
         self.write_build_prepend()
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1713,6 +1742,7 @@ class Specfile(object):
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
                               'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
+            self.write_make_prepend()
             self._write_strip('ninja -v -C builddiravx2')
 
         if config.config_opts['32bit']:
@@ -1722,9 +1752,11 @@ class Specfile(object):
                               '--libdir=lib32 --prefix=/usr --buildtype=plain {0} {1} builddir'
                               .format(config.extra_configure,
                                       config.extra_configure32))
+            self.write_make_prepend()
             self._write_strip('ninja -v -C builddir')
             self._write_strip('popd')
 
+        self.write_build_append()
         self._write_strip("\n")
         self.write_check()
         self._write_strip("%install")
@@ -1746,6 +1778,7 @@ class Specfile(object):
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         self.write_find_lang()
+        self.write_install_append()
 
     def write_phpize_pattern(self):
         """Write phpize build pattern to spec file."""
@@ -1756,6 +1789,7 @@ class Specfile(object):
         self._write_strip("phpize")
         self._write_strip("%configure")
         self.write_make_line()
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1770,6 +1804,7 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("nginx-module configure")
         self._write_strip("nginx-module build")
+        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
