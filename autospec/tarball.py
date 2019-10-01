@@ -183,11 +183,10 @@ def build_unzip(zip_path):
                 break;
         prefix = '/'.join(common)
 
-    # If we didn't find a common prefix, make one, based on the zip filename
+    # If we didn't find a common prefix, make a dir, based on the zip filename
     if not prefix:
         zipfile = os.path.basename(zip_path)
-        prefix = os.path.splitext(zipfile)[0]
-        print("BTW: Faking prefix dir {}".format(prefix))
+        subdir = os.path.splitext(zipfile)[0]
         extract_cmd = "unzip -qq -d {0} {1}".format(
                 os.path.join(build.base_path, subdir), zip_path)
     else:
