@@ -1392,7 +1392,6 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
-        self.write_make_prepend()
         self._write_strip("gem build {}.gemspec".format(self.name))
         self.write_build_append()
         self._write_strip("\n")
@@ -1545,7 +1544,6 @@ class Specfile(object):
         self._write_strip("export http_proxy=http://127.0.0.1:9/")
         self._write_strip("export https_proxy=http://127.0.0.1:9/")
         self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
-        self.write_make_prepend()
         self._write_strip("cargo build --release")
         self.write_build_append()
         self._write_strip("\n")
@@ -1597,7 +1595,6 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
         self.write_variables()
-        self.write_make_prepend()
         self._write_strip("scons{} {}".format(config.parallel_build, config.extra_configure))
         self.write_build_append()
         self._write_strip("\n")
@@ -1615,11 +1612,9 @@ class Specfile(object):
         self._write_strip("export LANG=C.UTF-8")
         if self.set_gopath:
             self._write_strip("export GOPATH=\"$PWD\"")
-            self.write_make_prepend()
             self._write_strip("go build {}".format(self.extra_make))
         else:
             self._write_strip("export GOPROXY=file:///usr/share/goproxy")
-            self.write_make_prepend()
             self._write_strip("go mod vendor")
             self._write_strip("go build -mod=vendor {}".format(self.extra_make))
         self.write_build_append()
@@ -1742,7 +1737,6 @@ class Specfile(object):
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
                               'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
-            self.write_make_prepend()
             self._write_strip('ninja -v -C builddiravx2')
 
         if config.config_opts['32bit']:
@@ -1752,7 +1746,6 @@ class Specfile(object):
                               '--libdir=lib32 --prefix=/usr --buildtype=plain {0} {1} builddir'
                               .format(config.extra_configure,
                                       config.extra_configure32))
-            self.write_make_prepend()
             self._write_strip('ninja -v -C builddir')
             self._write_strip('popd')
 
