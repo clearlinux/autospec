@@ -25,6 +25,7 @@ import re
 import subprocess
 import sys
 import textwrap
+from collections import OrderedDict
 
 import buildpattern
 import buildreq
@@ -33,7 +34,6 @@ import license
 import tarball
 from util import call, print_warning, write_out
 from util import open_auto
-from collections import OrderedDict
 
 extra_configure = ""
 extra_configure32 = ""
@@ -387,7 +387,7 @@ def create_versions(path, versions):
         for version in versions:
             vfile.write(version)
             if versions[version]:
-                vfile.write('\t'+versions[version])
+                vfile.write('\t' + versions[version])
             vfile.write('\n')
     config_files.add("versions")
 
