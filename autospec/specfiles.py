@@ -161,7 +161,7 @@ class Specfile(object):
         Append systemd unit files, gcov, and additional source tarballs are the currently supported file types.
         """
         count = 0
-        for source in sorted(self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"] + self.sources["godep"]):
+        for source in sorted(self.sources["version"] + self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"] + self.sources["godep"]):
             count += 1
             self.source_index[source] = count
             if self.urlban:
@@ -423,7 +423,7 @@ class Specfile(object):
                         continue
                     self._write_strip("cd ..")
                     self._write_strip("%setup -q -T -D -n {0} -b {1}"
-                                      .format(self.prefix,
+                                      .format(prefix,
                                               self.source_index[archive]))
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):

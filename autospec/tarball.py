@@ -729,6 +729,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
         if not extraurl:
             # Nothing to do here
             continue
+        buildpattern.sources["version"].append(extraurl)
         name, rawname, extraver = name_and_version(name_arg, extraver, filemanager)
         # Make sure we don't stick to a single version
         set_multi_version(None)
