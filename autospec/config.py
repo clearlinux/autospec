@@ -130,7 +130,7 @@ config_options = {
     "dev_requires_extras": "dev package requires the extras to be installed",
     "autoupdate": "this package is trusted enough to automatically update "
                   "(used by other tools)",
-    "compat": "this package is a library compatability package and only "
+    "compat": "this package is a library compatibility package and only "
               "ships versioned library files",
     "nodebug": "do not generate debuginfo for this package"}
 
