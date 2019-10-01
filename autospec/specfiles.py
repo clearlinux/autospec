@@ -411,18 +411,19 @@ class Specfile(object):
                 self._write_strip("%setup -q -n " + self.tarball_prefix)
             else:
                 if self.tarball_prefix:
+                    prefix = self.tarball_prefix
                     self._write_strip("%setup -q -n " + self.tarball_prefix)
                 else:
                     # Have to make up a path and create it
-                    self.tarball_prefix = '-'.join([self.name, self.version])
-                    self._write_strip("%setup -q -c " + self.tarball_prefix)
+                    prefix = os.path.splitext(os.path.basename(self.url))[0]
+                    self._write_strip("%setup -q -c " + prefix)
                 for archive in self.sources["archive"]:
                     # Skip POM files - they don't need to be extracted
                     if archive.endswith('.pom'):
                         continue
                     self._write_strip("cd ..")
                     self._write_strip("%setup -q -T -D -n {0} -b {1}"
-                                      .format(self.tarball_prefix,
+                                      .format(self.prefix,
                                               self.source_index[archive]))
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
