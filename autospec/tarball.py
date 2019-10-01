@@ -419,7 +419,7 @@ def set_multi_version(ver):
         # (otherwise the last known version will be used)
         multi_version[1] = ""
     latest = sorted(multi_version.keys())[-1]
-    return multi_version[latest]
+    return latest
 
 
 def name_and_version(name_arg, version_arg, filemanager):
@@ -719,16 +719,19 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     process_archives(archives_arg)
     # process any additional versions
     urls = config.parse_config_versions(build.download_path)
-    for version in urls:
-        verurl = urls[version]
-        if not verurl:
+    if len(urls) <= 1:
+        # This is a single version package
+        return
+    for extraver in urls:
+        extraurl = urls[extraver]
+        if not extraurl:
             # Nothing to do here
             continue
-        name, rawname, version = name_and_version(name_arg, version, filemanager)
+        name, rawname, extraver = name_and_version(name_arg, extraver, filemanager)
         # Make sure we don't stick to a single version
         set_multi_version(None)
-        tarfile = os.path.basename(verurl)
-        tar_path = check_or_get_file(verurl, tarfile)
+        tarfile = os.path.basename(extraurl)
+        tar_path = check_or_get_file(extraurl, tarfile)
         extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
         prepare_and_extract(extract_cmd)
 
