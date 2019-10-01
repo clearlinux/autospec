@@ -734,7 +734,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
         # Make sure we don't stick to a single version
         set_multi_version(None)
         tarfile = os.path.basename(extraurl)
-        tar_path = check_or_get_file(extraurl, tarfile)
+        tar_path = check_or_get_file(extraurl, tarfile, mode="a")
         extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
         prepare_and_extract(extract_cmd)
 
