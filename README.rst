@@ -490,6 +490,9 @@ use_lto
 use_avx2
   If this option is set, a second set of libraries, for AVX2, is built.
 
+use_avx512
+  If this option is set, an additional set of libraries, for AVX512, is built.
+
 fast-math
   If this option is set, -ffast-math is passed to the compiler.
 
@@ -510,6 +513,9 @@ no_autostart
 
 conservative_flags
   If this option is set autospec will set conservative build flags
+
+broken_parallel_build
+  If this option is set, the parallelization is disabled during build.
 
 use_clang
   If this option is set autospec will utilize clang. This unsets the
@@ -538,10 +544,21 @@ so_to_lib
   This option causes package ``.so`` files to be added to the ``lib`` subpackage
   instead of the ``dev`` subpackage.
 
+dev_requires_extras
+  If this option is set, the ``extras`` subpackage is marked as a dependency of
+  the ``dev`` package.
+
 autoupdate
   This option indicates that the package is trusted enough to be automatically
   update to its newest available version when set to ``true``. This flag is
   intended to be used by tools running autospec automatically.
+
+compat
+  This option indicates the package is a library compatibility package and only
+  provides versioned library files.
+
+nodebug
+  If this option is set, ``debuginfo`` is not created for this package.
 
 Name and version resolution
 ===========================
