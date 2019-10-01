@@ -31,11 +31,12 @@ import buildreq
 import config
 import download
 from util import call, print_fatal, write_out
+from collections import OrderedDict
 
 name = ""
 rawname = ""
 version = ""
-multi_version = set()
+multi_version = OrderedDict()
 release = "1"
 url = ""
 path = ""
@@ -156,11 +157,12 @@ def build_unzip(zip_path):
         if line[0] == '-':
             break
 
-    # Similarly, strip the footer
-    while len(lines):
-        line = lines.pop()
-        if line[0] == '-':
-            break
+    # Similarly, strip the footer, if it exists
+    if any(line.startswith('-') for line in lines):
+        while len(lines):
+            line = lines.pop()
+            if line[0] == '-':
+                break
 
     # Are there any files left?
     if len(lines) < 1:
@@ -280,7 +282,7 @@ def build_go_unzip(tarball_path):
     full_extract = []
     prefix = ""
     base_url = os.path.dirname(url)
-    for ver in list(multi_version.keys()):
+    for ver in multi_version:
         source_info = os.path.join(base_url, f"{ver}.info")
         source_mod = os.path.join(base_url, f"{ver}.mod")
         source_zip = os.path.join(base_url, f"{ver}.zip")
