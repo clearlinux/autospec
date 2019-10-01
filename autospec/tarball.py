@@ -24,6 +24,7 @@ import os
 import re
 import shutil
 import subprocess
+from collections import OrderedDict
 
 import build
 import buildpattern
@@ -31,7 +32,6 @@ import buildreq
 import config
 import download
 from util import call, print_fatal, write_out
-from collections import OrderedDict
 
 name = ""
 rawname = ""
@@ -172,7 +172,7 @@ def build_unzip(zip_path):
     # Look for a common directory prefix
     for line in lines:
         if line[0] == '-':
-            break;
+            break
         fields = re.split(r'\s+', line, maxsplit=4)
         filename = fields.pop()
         if prefix is None:
@@ -182,7 +182,7 @@ def build_unzip(zip_path):
             if pair[0] == pair[1]:
                 common.append(pair[0])
             else:
-                break;
+                break
         prefix = '/'.join(common)
 
     # If we didn't find a common prefix, make a dir, based on the zip filename
@@ -190,7 +190,7 @@ def build_unzip(zip_path):
         zipfile = os.path.basename(zip_path)
         subdir = os.path.splitext(zipfile)[0]
         extract_cmd = "unzip -qq -d {0} {1}".format(
-                os.path.join(build.base_path, subdir), zip_path)
+            os.path.join(build.base_path, subdir), zip_path)
     else:
         extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
 
@@ -415,7 +415,7 @@ def set_multi_version(ver):
         if buildpattern.default_pattern in ["godep"]:
             multi_version[ver] = ""
         else:
-            multi_version = {ver:""}
+            multi_version = {ver: ""}
     elif not multi_version:
         # Fall back to ensure a version is always set
         # (otherwise the last known version will be used)
