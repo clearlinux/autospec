@@ -33,6 +33,7 @@ import license
 import tarball
 from util import call, print_warning, write_out
 from util import open_auto
+from collections import OrderedDict
 
 extra_configure = ""
 extra_configure32 = ""
@@ -383,7 +384,11 @@ def create_buildreq_cache(path, version):
 def create_versions(path, versions):
     """Make versions file."""
     with open(os.path.join(path, "versions"), 'w') as vfile:
-        vfile.write('\n'.join(sorted(versions, reverse=True)) + '\n')
+        for version in versions:
+            vfile.write(version)
+            if versions[version]:
+                vfile.write('\t'+versions[version])
+            vfile.write('\n')
     config_files.add("versions")
 
 
@@ -555,7 +560,17 @@ def parse_existing_spec(path, name):
 
 def parse_config_versions(path):
     """Parse the versions configuration file."""
-    return set(read_conf_file(os.path.join(path, "versions")))
+    versions = OrderedDict()
+    for line in read_conf_file(os.path.join(path, "versions")):
+        fields = line.split()
+        version = fields.pop(0)
+        if len(fields):
+            url = fields.pop(0)
+        else:
+            url = ""
+        versions[version] = url
+
+    return versions
 
 
 def parse_config_files(path, bump, filemanager, version):

@@ -1646,7 +1646,7 @@ class Specfile(object):
         self._write_strip(f"mkdir -p {proxy_path}")
         list_file = os.path.join(proxy_path, "list")
         self._write_strip("# Create list file using packaged versions")
-        for ver in tarball.multi_version:
+        for ver in list(tarball.multi_version.keys()):
             self._write_strip(f"echo {ver} >> {list_file}")
         for idx, source in enumerate(sorted(self.sources["godep"])):
             file_path = os.path.join(proxy_path, os.path.basename(source))

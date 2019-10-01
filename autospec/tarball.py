@@ -66,7 +66,7 @@ def process_go_dependency(url, target):
         os.unlink(os.path.join(build.download_path, "upstream"))
     except FileNotFoundError:
         pass
-    for ver in multi_version:
+    for ver in list(multi_version.keys()):
         get_go_artifacts(base_url, target, ver)
 
 
@@ -280,7 +280,7 @@ def build_go_unzip(tarball_path):
     full_extract = []
     prefix = ""
     base_url = os.path.dirname(url)
-    for ver in multi_version:
+    for ver in list(multi_version.keys()):
         source_info = os.path.join(base_url, f"{ver}.info")
         source_mod = os.path.join(base_url, f"{ver}.mod")
         source_zip = os.path.join(base_url, f"{ver}.zip")
@@ -411,14 +411,15 @@ def set_multi_version(ver):
         # Some build patterns put multiple versions in the same package.
         # For those patterns add to the multi_version list
         if buildpattern.default_pattern in ["godep"]:
-            multi_version.add(ver)
+            multi_version[ver] = ""
         else:
-            multi_version = set([ver])
+            multi_version = {ver:""}
     elif not multi_version:
         # Fall back to ensure a version is always set
         # (otherwise the last known version will be used)
-        multi_version = set("1")
-    return sorted(multi_version)[-1]
+        multi_version[1] = ""
+    latest = sorted(multi_version.keys())[-1]
+    return multi_version[latest]
 
 
 def name_and_version(name_arg, version_arg, filemanager):
@@ -717,13 +718,17 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # locate or download archives and move them into the right spot
     process_archives(archives_arg)
     # process any additional versions
-    versions_content = config.read_conf_file(os.path.join(path, "versions"))
-    for line in versions_content:
-        entry = line.split()
-        url = entry.pop()
-        version = entry.pop()
+    urls = config.parse_config_versions(build.download_path)
+    for version in urls:
+        verurl = urls[version]
+        if not verurl:
+            # Nothing to do here
+            continue
         name, rawname, version = name_and_version(name_arg, version, filemanager)
-        tar_path = check_or_get_file(url, tarfile)
+        # Make sure we don't stick to a single version
+        set_multi_version(None)
+        tarfile = os.path.basename(verurl)
+        tar_path = check_or_get_file(verurl, tarfile)
         extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
         prepare_and_extract(extract_cmd)
 
