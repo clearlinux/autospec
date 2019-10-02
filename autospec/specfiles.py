@@ -64,6 +64,7 @@ class Specfile(object):
         self.extra_make_install = ""
         self.extra_make32_install = ""
         self.tarball_prefix = ""
+        self.prefixes = dict()
         self.gcov_file = ""
         self.rawname = ""
         self.golibpath = ""
@@ -410,13 +411,13 @@ class Specfile(object):
             elif self.default_pattern == "mvnbin":
                 self._write_strip("%setup -q -n " + self.tarball_prefix)
             else:
-                if self.tarball_prefix:
-                    prefix = self.tarball_prefix
-                    self._write_strip("%setup -q -n " + self.tarball_prefix)
+                if self.prefixes[self.url]:
+                    prefix = self.prefixes[self.url]
+                    self._write_strip("%setup -q -n " + prefix)
                 else:
                     # Have to make up a path and create it
                     prefix = os.path.splitext(os.path.basename(self.url))[0]
-                    self._write_strip("%setup -q -c " + prefix)
+                    self._write_strip("%setup -q -c -n " + prefix)
                 for archive in self.sources["archive"]:
                     # Skip POM files - they don't need to be extracted
                     if archive.endswith('.pom'):
@@ -425,6 +426,21 @@ class Specfile(object):
                     self._write_strip("%setup -q -T -D -n {0} -b {1}"
                                       .format(prefix,
                                               self.source_index[archive]))
+                # Now handle extra versions, indexed by SOURCE
+                for url in self.sources["version"]:
+                    if self.prefixes[url]:
+                        prefix = self.prefixes[url]
+                        self._write_strip("cd ..")
+                        self._write_strip("%setup -q -T -n {0} -b {1}"
+                                          .format(prefix,
+                                                  self.source_index[url]))
+                    else:
+                        # Have to make up a path and create it
+                        prefix = os.path.splitext(os.path.basename(url))[0]
+                        self._write_strip("cd ..")
+                        self._write_strip("%setup -q -T -c -n {0} -b {1}"
+                                          .format(prefix,
+                                                  self.source_index[url]))
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             if destination.startswith(':'):
