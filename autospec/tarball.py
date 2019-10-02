@@ -45,6 +45,7 @@ gcov_file = ""
 archives = []
 giturl = ""
 domain = ""
+prefixes = dict()
 
 
 def get_go_artifacts(url, target, ver):
@@ -146,6 +147,7 @@ def build_unzip(zip_path):
     and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
     """
     prefix = None
+    zipfile = os.path.basename(zip_path)
     contents = subprocess.check_output(["unzip", "-q", "-l", zip_path], universal_newlines=True)
     lines = contents.splitlines() if contents else []
     # looking for directory prefix in unzip output as it may differ from default
@@ -187,7 +189,6 @@ def build_unzip(zip_path):
 
     # If we didn't find a common prefix, make a dir, based on the zip filename
     if not prefix:
-        zipfile = os.path.basename(zip_path)
         subdir = os.path.splitext(zipfile)[0]
         extract_cmd = "unzip -qq -d {0} {1}".format(
             os.path.join(build.base_path, subdir), zip_path)
@@ -691,6 +692,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     global path
     global tarball_prefix
     global archives
+    global prefixes
     url = url_arg
     name = name_arg
     version = ver_arg
@@ -710,6 +712,8 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     tar_path = check_or_get_file(url, tarfile)
     # determine extract command and tarball prefix for the tarfile
     extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
+    # Store the detected prefix associated with this file
+    prefixes[url] = tarball_prefix
     # set global path with tarball_prefix
     path = os.path.join(build.base_path, tarball_prefix)
     # Now that the metadata has been collected print the header
@@ -729,6 +733,9 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
         if not extraurl:
             # Nothing to do here
             continue
+        if extraurl == url:
+            # This is the same as the SOURCE0 package, which we already handled
+            continue
         buildpattern.sources["version"].append(extraurl)
         name, rawname, extraver = name_and_version(name_arg, extraver, filemanager)
         # Make sure we don't stick to a single version
@@ -736,11 +743,13 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
         tarfile = os.path.basename(extraurl)
         tar_path = check_or_get_file(extraurl, tarfile, mode="a")
         extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
+        prefixes[extraurl] = tarball_prefix
         prepare_and_extract(extract_cmd)
 
 
 def load_specfile(specfile):
     """Load the specfile object with the tarball_prefix, gcov_file, and rawname."""
     specfile.tarball_prefix = tarball_prefix
+    specfile.prefixes = prefixes
     specfile.gcov_file = gcov_file
     specfile.rawname = rawname
