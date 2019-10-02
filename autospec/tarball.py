@@ -43,6 +43,7 @@ tarball_prefix = ""
 gcov_file = ""
 archives = []
 giturl = ""
+domain = ""
 
 
 def get_go_artifacts(url, target, ver):
@@ -282,6 +283,7 @@ def create_download_path(target_dir):
     Also set giturl from the config (needs config refactor).
     """
     global giturl
+    global domain
 
     target = os.path.join(os.getcwd(), name)
     if os.path.exists(os.path.join(os.getcwd(), 'options.conf')):
@@ -292,6 +294,8 @@ def create_download_path(target_dir):
                 target = os.getcwd()
             if "giturl" in config_f["package"]:
                 giturl = config_f["package"].get("giturl")
+            if "domain" in config_f["package"]:
+                domain = config_f["package"].get("domain")
 
     if target_dir:
         target = target_dir

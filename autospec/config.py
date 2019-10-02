@@ -329,6 +329,7 @@ def get_metadata_conf():
         metadata['archives'] = " ".join(tarball.archives)
 
     metadata['giturl'] = tarball.giturl
+    metadata['domain'] = tarball.domain
     return metadata
 
 
