@@ -568,7 +568,17 @@ def parse_config_versions(path):
             url = fields.pop(0)
         else:
             url = ""
-        versions[version] = url
+        if version in versions and url != versions[version]:
+            print_warning("Already have a URL defined for {}: {}"
+                          .format(version, versions[version]))
+            print_warning("Dropping {}, but you should check my work"
+                          .format(url))
+        else:
+            versions[version] = url
+        if len(fields):
+            print_warning("Extra fields detected in `versions` file entry:\n{}"
+                          .format(line))
+            print_warning("I'll delete them, but you should check my work")
 
     return versions
 
