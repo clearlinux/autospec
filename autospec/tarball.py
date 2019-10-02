@@ -173,12 +173,10 @@ def build_unzip(zip_path):
 
     # Look for a common directory prefix
     for line in lines:
-        if line[0] == '-':
-            break
         fields = re.split(r'\s+', line, maxsplit=4)
         filename = fields.pop()
         if prefix is None:
-            prefix = filename
+            prefix = os.path.dirname(filename)
         common = list()
         for pair in zip(re.split(r'/', prefix), re.split(r'/', filename)):
             if pair[0] == pair[1]:
