@@ -702,6 +702,8 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     create_download_path(target)
     # determine name and version of package
     name, rawname, version = name_and_version(name_arg, ver_arg, filemanager)
+    # Store the top-level version
+    config.versions[version] = url
     # set gcov file information, must be done after name is set since the gcov
     # name is created by adding ".gcov" to the package name (if a gcov file
     # exists)
