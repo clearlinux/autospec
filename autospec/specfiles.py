@@ -703,11 +703,11 @@ class Specfile(object):
 
         # Figure out the artifact details and path components
         # Find group ID; inherit from parent if necessary
-        self._write_strip("export GROUP_PATH=$(xml sel -t -v '/_:project/_:groupId' -v '/_:project/_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g' | head -1)")
+        self._write_strip("export GROUP_PATH=$(xml sel -T -t -m '//_:project' --if 'boolean(_:groupId)' -v '_:groupId' --else -v '_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g')")
         # Find artifact name -- this should not be inherited
-        self._write_strip("export ARTIFACT_ID=$(xml sel -t -v '/_:project/_:artifactId' ../pom.xml | head -1)")
+        self._write_strip("export ARTIFACT_ID=$(xml sel -T -t -m '//_:project' -v '_:artifactId' ../pom.xml)")
         # Find version -- this *might* be inherited from parent
-        self._write_strip("export VERSION=$(xml sel -t -v '/_:project/_:version' -v '/_:project/_:parent/_:version' ../pom.xml | head -1)")
+        self._write_strip("export VERSION=$(xml sel -T -t -m '//_:project' --if 'boolean(_:version)' -v '_:version' --else -v '_:parent/_:version' ../pom.xml)")
 
         # Create the installation path
         self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
