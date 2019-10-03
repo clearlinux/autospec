@@ -90,6 +90,11 @@ cmake_modules = {}
 
 cves = []
 
+# Keep track of the package versions
+versions = OrderedDict()
+# Only parse the versions file once, and save the result for later
+parsed_versions = OrderedDict()
+
 # defines which files to rename and copy to autospec directory,
 # used in commitmessage.py
 transforms = {
@@ -560,25 +565,38 @@ def parse_existing_spec(path, name):
 
 def parse_config_versions(path):
     """Parse the versions configuration file."""
-    versions = OrderedDict()
-    for line in read_conf_file(os.path.join(path, "versions")):
-        fields = line.split()
-        version = fields.pop(0)
-        if len(fields):
-            url = fields.pop(0)
-        else:
-            url = ""
-        if version in versions and url != versions[version]:
-            print_warning("Already have a URL defined for {}: {}"
-                          .format(version, versions[version]))
-            print_warning("Dropping {}, but you should check my work"
-                          .format(url))
-        else:
-            versions[version] = url
-        if len(fields):
-            print_warning("Extra fields detected in `versions` file entry:\n{}"
-                          .format(line))
-            print_warning("I'll delete them, but you should check my work")
+    global versions
+    global parsed_versions
+
+    # Only actually parse it the first time around
+    if not parsed_versions:
+        for line in read_conf_file(os.path.join(path, "versions")):
+            # Simply whitespace-separated fields
+            fields = line.split()
+            version = fields.pop(0)
+            if len(fields):
+                url = fields.pop(0)
+            else:
+                url = ""
+            # Catch and report duplicate URLs in the versions file. Don't stop,
+            # but assume only the first one is valid and drop the rest.
+            if version in parsed_versions and url != parsed_versions[version]:
+                print_warning("Already have a URL defined for {}: {}"
+                              .format(version, parsed_versions[version]))
+                print_warning("Dropping {}, but you should check my work"
+                              .format(url))
+            else:
+                parsed_versions[version] = url
+            if len(fields):
+                print_warning("Extra fields detected in `versions` file entry:\n{}"
+                              .format(line))
+                print_warning("I'll delete them, but you should check my work")
+
+    # We'll combine what we just parsed from the versions file with any other
+    # versions that have already been defined, most likely the version actually
+    # provided in the Makefile's URL variable, so we don't drop any.
+    for version in parsed_versions:
+        versions[version] = parsed_versions[version]
 
     return versions
 
@@ -623,6 +641,7 @@ def parse_config_files(path, bump, filemanager, version):
     global custom_desc
     global custom_summ
     global failed_pattern_dir
+    global versions
 
     packages_file = None
 
