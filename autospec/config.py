@@ -60,6 +60,7 @@ install_prepend = []
 install_append = []
 service_restart = []
 patches = []
+verpatches = OrderedDict()
 autoreconf = False
 custom_desc = ""
 custom_summ = ""
@@ -827,6 +828,11 @@ def parse_config_files(path, bump, filemanager, version):
                         stderr=subprocess.DEVNULL) == 0:
         autoreconf = True
 
+    # Parse the version-specific patch lists
+    for version in versions:
+        verpatches[version] = read_conf_file(os.path.join(path, '.'.join(['series', version])))
+
+    # TODO - scan version-specific patches for CVEs
     if any(p.lower().startswith('cve-') for p in patches):
         config_opts['security_sensitive'] = True
         rewrite_config_opts(path)
@@ -956,5 +962,6 @@ def load_specfile(specfile):
     specfile.install_append = install_append
     specfile.service_restart = service_restart
     specfile.patches = patches
+    specfile.verpatches = verpatches
     specfile.autoreconf = autoreconf
     specfile.set_gopath = set_gopath

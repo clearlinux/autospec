@@ -54,6 +54,7 @@ class Specfile(object):
         self.requires = set()
         self.buildreqs = []
         self.patches = []
+        self.verpatches = OrderedDict()
         self.default_desc = ""
         self.locales = []
         self.default_pattern = ""
@@ -222,8 +223,16 @@ class Specfile(object):
 
     def write_patch_header(self):
         """Write patch list header."""
+        # First loop will set this to 0 when we start. Second loop adds one
+        # and picks up from where first loop left off.
+        count = -1
+        # Write the patches for the primary version as given in Makefile
         for count, patch in enumerate(self.patches):
             self._write("Patch{0}: {1}\n".format(count + 1, patch.split()[0]))
+        # Write the version-specific patches
+        for version in config.verpatches:
+            for count, patch in enumerate(config.verpatches[version], start=count + 1):
+                self._write("Patch{0}: {1}\n".format(count + 1, patch.split()[0]))
 
     def write_description(self):
         """Write package description."""
@@ -418,6 +427,8 @@ class Specfile(object):
                     # Have to make up a path and create it
                     prefix = os.path.splitext(os.path.basename(self.url))[0]
                     self._write_strip("%setup -q -c -n " + prefix)
+                    # Store this prefix for later reference
+                    self.prefixes[self.url] = prefix
                 for archive in self.sources["archive"]:
                     # Skip POM files - they don't need to be extracted
                     if archive.endswith('.pom'):
@@ -441,6 +452,8 @@ class Specfile(object):
                         self._write_strip("%setup -q -T -c -n {0} -b {1}"
                                           .format(prefix,
                                                   self.source_index[url]))
+                        # Store this prefix for later reference
+                        self.prefixes[url] = prefix
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             if destination.startswith(':'):
@@ -1836,6 +1849,7 @@ class Specfile(object):
 
     def apply_patches(self):
         """Write patch list to spec file."""
+        global prefixes
         counter = 1
         for p in self.patches:
             name = p.split(None, 1)[0]
@@ -1846,6 +1860,20 @@ class Specfile(object):
             if not p.split()[0].endswith(".nopatch"):
                 self._write("%patch{} {}\n".format(counter, options))
             counter = counter + 1
+
+        # Write version-specific patch commands
+        for version in self.verpatches:
+            if self.verpatches[version]:
+                self._write("cd ../{}\n".format(self.prefixes[config.versions[version]]))
+            for p in self.verpatches[version]:
+                name = p.split(None, 1)[0]
+                if name == p:
+                    options = "-p1"
+                else:
+                    options = p.split(None, 1)[1]
+                if not p.split()[0].endswith(".nopatch"):
+                    self._write("%patch{} {}\n".format(counter, options))
+                counter = counter + 1
 
     def _write(self, string):
         self.specfile.write(string)
