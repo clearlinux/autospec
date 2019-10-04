@@ -1689,7 +1689,9 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
-        self._write_strip("ant -d -v " + self.extra_make)
+        for prefix in self.prefixes.values():
+            self._write_strip("cd ../{}\n".format(prefix))
+            self._write_strip("ant -d -v " + self.extra_make)
         self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
@@ -1709,21 +1711,24 @@ class Specfile(object):
         self._write_strip("mkdir -p ~/.m2")
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        for prefix in self.prefixes.values():
+            self._write_strip("cd ../{}\n".format(prefix))
 
-        # Point to our local maven repo, first
-        # style check does not like the escapes here
-        self._write_strip(r"find . -type f '(' -name '*.gradle' -o -name '*.gradle.kts' ')' -exec sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' {} +")
+            if self.subdir:
+                self._write_strip("pushd " + self.subdir)
 
-        # Opportunistically report detected dependencies
-        self._write_strip("gradle --offline dependencies || :")
+            # Point to our local maven repo, first
+            # style check does not like the escapes here
+            self._write_strip(r"find . -type f '(' -name '*.gradle' -o -name '*.gradle.kts' ')' -exec sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' {} +")
 
-        # Execute the build goal -- but user must provide it in make_args
-        self._write_strip("gradle --offline " + self.extra_make)
+            # Opportunistically report detected dependencies
+            self._write_strip("gradle --offline dependencies || :")
 
-        if self.subdir:
-            self._write_strip("popd")
+            # Execute the build goal -- but user must provide it in make_args
+            self._write_strip("gradle --offline " + self.extra_make)
+
+            if self.subdir:
+                self._write_strip("popd")
 
         self.write_build_append()
         self._write_strip("\n")
@@ -1742,7 +1747,9 @@ class Specfile(object):
         # It's ok if this doesn't exist
         self._write_strip("mkdir -p ~/.m2")
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
-        self._write_strip("mvn --offline package " + self.extra_make)
+        for prefix in self.prefixes.values():
+            self._write_strip("cd ../{}\n".format(prefix))
+            self._write_strip("mvn --offline package " + self.extra_make)
         self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
