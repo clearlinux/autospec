@@ -807,13 +807,9 @@ class Specfile(object):
         self._write_strip("popd")
         self._write_strip("done")
 
-        # The install goal may write wrapper scripts to launch the application.
-        # Remove any batch files
-        self._write_strip("find . -type f -name '*.bat' -exec rm -f {} +")
-
         # Install the contents under main java path
         self._write_strip("mkdir -p %{buildroot}/usr/share/java/" + self.name)
-        self._write_strip("cp -r * %{buildroot}/usr/share/java/" + self.name)
+        self._write_strip("cp -r lib %{buildroot}/usr/share/java/" + self.name)
 
         # Leave the build subdir
         self._write_strip("popd")
