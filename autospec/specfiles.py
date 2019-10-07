@@ -735,90 +735,98 @@ class Specfile(object):
         """Write installation steps to specfile for maven source packages."""
         self.write_license_files()
 
-        # Iterate over all target subdirs
-        self._write_strip("for targetdir in $(find . -type d -name target); do")
-        self._write_strip("pushd $targetdir")
+        # Iterate over all built versions
+        for prefix in self.prefixes.values():
+            self._write_strip("cd ../{}\n".format(prefix))
 
-        # Figure out the artifact details and path components
-        # Find group ID; inherit from parent if necessary
-        self._write_strip("export GROUP_PATH=$(xml sel -T -t -m '//_:project' --if 'boolean(_:groupId)' -v '_:groupId' --else -v '_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g')")
-        # Find artifact name -- this should not be inherited
-        self._write_strip("export ARTIFACT_ID=$(xml sel -T -t -m '//_:project' -v '_:artifactId' ../pom.xml)")
-        # Find version -- this *might* be inherited from parent
-        self._write_strip("export VERSION=$(xml sel -T -t -m '//_:project' --if 'boolean(_:version)' -v '_:version' --else -v '_:parent/_:version' ../pom.xml)")
+            # Iterate over all target subdirs
+            self._write_strip("for targetdir in $(find . -type d -name target); do")
+            self._write_strip("pushd $targetdir")
 
-        # Create the installation path
-        self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
-        self._write_strip("mkdir -p ${DEPLOY_PATH}")
+            # Figure out the artifact details and path components
+            # Find group ID; inherit from parent if necessary
+            self._write_strip("export GROUP_PATH=$(xml sel -T -t -m '//_:project' --if 'boolean(_:groupId)' -v '_:groupId' --else -v '_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g')")
+            # Find artifact name -- this should not be inherited
+            self._write_strip("export ARTIFACT_ID=$(xml sel -T -t -m '//_:project' -v '_:artifactId' ../pom.xml)")
+            # Find version -- this *might* be inherited from parent
+            self._write_strip("export VERSION=$(xml sel -T -t -m '//_:project' --if 'boolean(_:version)' -v '_:version' --else -v '_:parent/_:version' ../pom.xml)")
 
-        # We're going to be globbing for things that may not exist
-        self._write_strip("shopt -s nullglob")
+            # Create the installation path
+            self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
+            self._write_strip("mkdir -p ${DEPLOY_PATH}")
 
-        # Copy all the jar files
-        self._write_strip("for jarfile in ${ARTIFACT_ID}*.jar; do")
-        self._write_strip('cp -p "${jarfile}" ${DEPLOY_PATH}/')
-        self._write_strip('done')
-        # Except this one -- it's redundant with the source tarball
-        self._write_strip("rm -f ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
+            # We're going to be globbing for things that may not exist
+            self._write_strip("shopt -s nullglob")
 
-        # Install the POM file
-        self._write_strip("cp -p ../pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+            # Copy all the jar files
+            self._write_strip("for jarfile in ${ARTIFACT_ID}*.jar; do")
+            self._write_strip('cp -p "${jarfile}" ${DEPLOY_PATH}/')
+            self._write_strip('done')
+            # Except this one -- it's redundant with the source tarball
+            self._write_strip("rm -f ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
 
-        # Next
-        self._write_strip("popd")
+            # Install the POM file
+            self._write_strip("cp -p ../pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
 
-        # All done
-        self._write_strip("done")
+            # Next
+            self._write_strip("popd")
+
+            # All done
+            self._write_strip("done")
 
     def write_gradle_install(self):
-        """Write installation steps to specfile for maven source packages."""
+        """Write installation steps to specfile for gradle source packages."""
         self.write_license_files()
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        # Iterate over all built versions
+        for prefix in self.prefixes.values():
+            self._write_strip("cd ../{}\n".format(prefix))
 
-        # User must provide the install goal in make_install_args
-        self._write_strip("gradle --offline " + self.extra_make_install)
+            if self.subdir:
+                self._write_strip("pushd " + self.subdir)
 
-        # Install from a build/install directory, if it was created
-        self._write_strip("if [[ -d build/install ]]; then")
+            # User must provide the install goal in make_install_args
+            self._write_strip("gradle --offline " + self.extra_make_install)
 
-        # Enter the installation subdir, so we can touch up what gets installed
-        self._write_strip("pushd build/install")
+            # Install from a build/install directory, if it was created
+            self._write_strip("if [[ -d build/install ]]; then")
 
-        # Handle jarfiles in lib dir
-        # The install goal results in packaging not only the jars that were
-        # built, but also runtime deps that came from other packages. For every
-        # jar we find in the installed directory, we'll check whether there's a
-        # matching jar in the M2 repository provided by installed build deps.
-        # If so, we'll replace this copy with a symlink.
-        # TODO: call add_requires() with an appropriately-derived value so the
-        # symlink will be resolved at chroot creation.
-        self._write_strip("shopt -s nullglob")
-        self._write_strip("for lib_dir in */lib; do")
-        self._write_strip("pushd ${lib_dir}")
-        self._write_strip("for jarfile in *.jar; do")
-        self._write_strip("JARNAME=$(basename ${jarfile})")
-        self._write_strip('REALJAR=$(find /usr/share/java/.m2/repository -type f -name "${JARNAME}")')
-        self._write_strip("if ! [[ -z ${REALJAR} ]]; then")
-        self._write_strip(r'ln -sf ${REALJAR/#\/usr\/share\/java/..\/..}')
-        self._write_strip("fi")
-        self._write_strip("done")
-        self._write_strip("popd")
-        self._write_strip("done")
+            # Enter the installation subdir, so we can touch up what gets installed
+            self._write_strip("pushd build/install")
 
-        # Install the contents under main java path
-        self._write_strip("mkdir -p %{buildroot}/usr/share/java/" + self.name)
-        self._write_strip("cp -r lib %{buildroot}/usr/share/java/" + self.name)
-
-        # Leave the build subdir
-        self._write_strip("popd")
-
-        # Done processing build/install directory
-        self._write_strip("fi")
-
-        if self.subdir:
+            # Handle jarfiles in lib dir
+            # The install goal results in packaging not only the jars that were
+            # built, but also runtime deps that came from other packages. For every
+            # jar we find in the installed directory, we'll check whether there's a
+            # matching jar in the M2 repository provided by installed build deps.
+            # If so, we'll replace this copy with a symlink.
+            # TODO: call add_requires() with an appropriately-derived value so the
+            # symlink will be resolved at chroot creation.
+            self._write_strip("shopt -s nullglob")
+            self._write_strip("for lib_dir in */lib; do")
+            self._write_strip("pushd ${lib_dir}")
+            self._write_strip("for jarfile in *.jar; do")
+            self._write_strip("JARNAME=$(basename ${jarfile})")
+            self._write_strip('REALJAR=$(find /usr/share/java/.m2/repository -type f -name "${JARNAME}")')
+            self._write_strip("if ! [[ -z ${REALJAR} ]]; then")
+            self._write_strip(r'ln -sf ${REALJAR/#\/usr\/share\/java/..\/..}')
+            self._write_strip("fi")
+            self._write_strip("done")
             self._write_strip("popd")
+            self._write_strip("done")
+
+            # Install the contents under main java path
+            self._write_strip("mkdir -p %{buildroot}/usr/share/java/" + self.name)
+            self._write_strip("cp -r lib %{buildroot}/usr/share/java/" + self.name)
+
+            # Leave the build subdir
+            self._write_strip("popd")
+
+            # Done processing build/install directory
+            self._write_strip("fi")
+
+            if self.subdir:
+                self._write_strip("popd")
 
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
