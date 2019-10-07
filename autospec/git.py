@@ -19,6 +19,7 @@
 # Commit to git
 #
 
+import glob
 import os
 import subprocess
 
@@ -55,6 +56,13 @@ def commit_to_git(path):
     call("git add install_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add series", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    # Add/remove version specific patch lists
+    for filename in glob.glob('series.*'):
+        base, version = filename.split('.', 1)
+        if version in config.versions:
+            call("git add {}".format(filename), check=False, stderr=subprocess.DEVNULL, cwd=path)
+        else:
+            call("git rm {}".format(filename), check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.asc'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.sig'", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("bash -c 'shopt -s failglob; git add -f *.sha256'", check=False, stderr=subprocess.DEVNULL, cwd=path)
