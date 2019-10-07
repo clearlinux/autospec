@@ -1690,13 +1690,13 @@ class Specfile(object):
         """Write ant build pattern to spec file."""
         self.write_prep()
         self._write_strip("%build")
-        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
         for prefix in self.prefixes.values():
             self._write_strip("cd ../{}\n".format(prefix))
+            self.write_build_prepend()
             self._write_strip("ant -d -v " + self.extra_make)
-        self.write_build_append()
+            self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1706,7 +1706,6 @@ class Specfile(object):
         """Write gradle build pattern to spec file."""
         self.write_prep()
         self._write_strip("%build")
-        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("mkdir -p %{buildroot}")
 
@@ -1721,6 +1720,8 @@ class Specfile(object):
             if self.subdir:
                 self._write_strip("pushd " + self.subdir)
 
+            self.write_build_prepend()
+
             # Point to our local maven repo, first
             # style check does not like the escapes here
             self._write_strip(r"find . -type f '(' -name '*.gradle' -o -name '*.gradle.kts' ')' -exec sed -i 's|\(repositories\s*{\)|\1\n    mavenLocal()|' {} +")
@@ -1731,10 +1732,11 @@ class Specfile(object):
             # Execute the build goal -- but user must provide it in make_args
             self._write_strip("gradle --offline " + self.extra_make)
 
+            self.write_build_append()
+
             if self.subdir:
                 self._write_strip("popd")
 
-        self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
@@ -1745,7 +1747,6 @@ class Specfile(object):
         """Write maven build pattern to spec file."""
         self.write_prep()
         self._write_strip("%build")
-        self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("mkdir -p %{buildroot}")
         # It's ok if this doesn't exist
@@ -1753,8 +1754,9 @@ class Specfile(object):
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
         for prefix in self.prefixes.values():
             self._write_strip("cd ../{}\n".format(prefix))
+            self.write_build_prepend()
             self._write_strip("mvn --offline package " + self.extra_make)
-        self.write_build_append()
+            self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
