@@ -39,6 +39,7 @@ default_license = "TO BE DETERMINED"
 
 licenses = []
 license_files = []
+hashes = dict()
 
 
 def process_licenses(lics):
@@ -131,7 +132,9 @@ def license_from_copying_hash(copying, srcdir):
                 # Strip any leading slashes
                 while lic_path.startswith('/'):
                     lic_path = lic_path[1:]
-                license_files.append(shlex.quote(lic_path))
+                lic_path = shlex.quote(lic_path)
+                license_files.append(lic_path)
+                hashes[lic_path] = hash_sum
 
             return
 
@@ -177,5 +180,7 @@ def load_specfile(specfile):
     """Get licenses from the specfile content."""
     global licenses
     global license_files
+    global hashes
     specfile.licenses = licenses if licenses else [default_license]
     specfile.license_files = sorted(license_files)
+    specfile.hashes = hashes
