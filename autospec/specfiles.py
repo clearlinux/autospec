@@ -48,6 +48,7 @@ class Specfile(object):
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
         self.default_sum = ""
+        self.hashes = dict()
         self.licenses = []
         self.license_files = []
         self.packages = OrderedDict()
@@ -613,7 +614,7 @@ class Specfile(object):
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
             for file in self.license_files:
-                file2 = file.replace("/", "_")
+                file2 = self.hashes[file]
                 # Use the absolute path to the source license file b/c we don't know for sure where we are
                 self._write_strip("cp " + "%{_builddir}/" + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
