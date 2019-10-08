@@ -614,7 +614,8 @@ class Specfile(object):
             self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
             for file in self.license_files:
                 file2 = file.replace("/", "_")
-                self._write_strip("cp " + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+                # Use the absolute path to the source license file b/c we don't know for sure where we are
+                self._write_strip("cp " + "%{_builddir}/" + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
     def write_profile_payload(self, pattern=None):
         """Write the profile_payload specified for this package."""
