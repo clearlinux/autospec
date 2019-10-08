@@ -126,7 +126,11 @@ def license_from_copying_hash(copying, srcdir):
             process_licenses(page)
 
             if page != "none":
-                lic_path = copying[len(srcdir) + 1:]
+                # Strip the build source directory off the front
+                lic_path = copying[len(srcdir):]
+                # Strip any leading slashes
+                while lic_path.startswith('/'):
+                    lic_path = lic_path[1:]
                 license_files.append(shlex.quote(lic_path))
 
             return
