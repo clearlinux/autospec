@@ -65,7 +65,8 @@ class Specfile(object):
         self.extra_make_install = ""
         self.extra_make32_install = ""
         self.tarball_prefix = ""
-        self.prefixes = dict()
+        self.prefixes = dict()    # Detected prefixes, indexed by source URL
+        self.build_dirs = dict()  # Build directories, indexed by source URL
         self.gcov_file = ""
         self.rawname = ""
         self.golibpath = ""
@@ -417,30 +418,34 @@ class Specfile(object):
             elif self.default_pattern == "godep":
                 # No setup needed each source is installed as is
                 pass
-            elif self.default_pattern == "mvnbin":
-                self._write_strip("%setup -q -n " + self.tarball_prefix)
             else:
-                if self.prefixes[self.url]:
-                    prefix = self.prefixes[self.url]
+                prefix = self.prefixes[self.url]
+                if prefix:
                     self._write_strip("%setup -q -n " + prefix)
                 else:
                     # Have to make up a path and create it
                     prefix = os.path.splitext(os.path.basename(self.url))[0]
                     self._write_strip("%setup -q -c -n " + prefix)
-                    # Store this prefix for later reference
-                    self.prefixes[self.url] = prefix
+
+                # Keep track of this build dir
+                self.build_dirs[self.url] = prefix
+
                 for archive in self.sources["archive"]:
                     # Skip POM files - they don't need to be extracted
                     if archive.endswith('.pom'):
+                        continue
+                    # Also JAR files
+                    if archive.endswith('.jar'):
                         continue
                     self._write_strip("cd ..")
                     self._write_strip("%setup -q -T -D -n {0} -b {1}"
                                       .format(prefix,
                                               self.source_index[archive]))
+
                 # Now handle extra versions, indexed by SOURCE
                 for url in self.sources["version"]:
-                    if self.prefixes[url]:
-                        prefix = self.prefixes[url]
+                    prefix = self.prefixes[url]
+                    if prefix:
                         self._write_strip("cd ..")
                         self._write_strip("%setup -q -T -n {0} -b {1}"
                                           .format(prefix,
@@ -452,8 +457,8 @@ class Specfile(object):
                         self._write_strip("%setup -q -T -c -n {0} -b {1}"
                                           .format(prefix,
                                                   self.source_index[url]))
-                        # Store this prefix for later reference
-                        self.prefixes[url] = prefix
+                    # Keep track of this build dir
+                    self.build_dirs[url] = prefix
 
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             if destination.startswith(':'):
@@ -736,7 +741,7 @@ class Specfile(object):
         self.write_license_files()
 
         # Iterate over all built versions
-        for prefix in self.prefixes.values():
+        for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
             # Iterate over all target subdirs
@@ -779,7 +784,7 @@ class Specfile(object):
         self.write_license_files()
 
         # Iterate over all built versions
-        for prefix in self.prefixes.values():
+        for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
             if self.subdir:
@@ -1692,7 +1697,7 @@ class Specfile(object):
         self._write_strip("%build")
         self.write_proxy_exports()
         self._write_strip("export ANT_HOME=/usr/share/ant")
-        for prefix in self.prefixes.values():
+        for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
             self.write_build_prepend()
             self._write_strip("ant -d -v " + self.extra_make)
@@ -1714,7 +1719,7 @@ class Specfile(object):
         self._write_strip("mkdir -p ~/.m2")
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
 
-        for prefix in self.prefixes.values():
+        for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
             if self.subdir:
@@ -1752,7 +1757,7 @@ class Specfile(object):
         # It's ok if this doesn't exist
         self._write_strip("mkdir -p ~/.m2")
         self._write_strip("cp -r /usr/share/java/.m2/* ~/.m2/ || :")
-        for prefix in self.prefixes.values():
+        for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
             self.write_build_prepend()
             self._write_strip("mvn --offline package " + self.extra_make)
@@ -1877,7 +1882,7 @@ class Specfile(object):
         # Write version-specific patch commands
         for version in self.verpatches:
             if self.verpatches[version]:
-                self._write("cd ../{}\n".format(self.prefixes[config.versions[version]]))
+                self._write("cd ../{}\n".format(self.build_dirs[config.versions[version]]))
             for p in self.verpatches[version]:
                 name = p.split(None, 1)[0]
                 if name == p:
