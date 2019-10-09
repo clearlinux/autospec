@@ -568,7 +568,7 @@ class Specfile(object):
         if config.config_opts['fast-math']:
             flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
         if config.config_opts['pgo']:
-            flags.extend(["-O3", "-fprofile-use", "-fprofile-dir=/var/tmp/pgo", "-fprofile-correction"])
+            flags.extend(["-O3"])
         if self.gcov_file:
             flags = list(filter((lto).__ne__, flags))
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
@@ -594,11 +594,13 @@ class Specfile(object):
             self._write_strip('export FCFLAGS_GENERATE="$FCFLAGS {0} "\n'.format(" ".join(genflags)))
             self._write_strip('export FFLAGS_GENERATE="$FFLAGS {0} "\n'.format(" ".join(genflags)))
             self._write_strip('export CXXFLAGS_GENERATE="$CXXFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export LDFLAGS_GENERATE="$LDFLAGS {0} "\n'.format(" ".join(genflags)))
 
             self._write_strip('export CFLAGS_USE="$CFLAGS {0} "\n'.format(" ".join(useflags)))
             self._write_strip('export FCFLAGS_USE="$FCFLAGS {0} "\n'.format(" ".join(useflags)))
             self._write_strip('export FFLAGS_USE="$FFLAGS {0} "\n'.format(" ".join(useflags)))
             self._write_strip('export CXXFLAGS_USE="$CXXFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export LDFLAGS_USE="$LDFLAGS {0} "\n'.format(" ".join(useflags)))
 
     def write_check(self):
         """Write check section to spec file."""
@@ -958,6 +960,7 @@ class Specfile(object):
                 'CXXFLAGS="${CXXFLAGS_GENERATE}" '
                 'FFLAGS="${FFLAGS_GENERATE}" '
                 'FCFLAGS="${FCFLAGS_GENERATE}" '
+                'LDFLAGS="${LDFLAGS_GENERATE}" '
 
         otherwise an empty string is returned.
         """
@@ -965,7 +968,8 @@ class Specfile(object):
             return 'CFLAGS="${CFLAGS_GENERATE}" '     \
                    'CXXFLAGS="${CXXFLAGS_GENERATE}" ' \
                    'FFLAGS="${FFLAGS_GENERATE}" '     \
-                   'FCFLAGS="${FCFLAGS_GENERATE}" '
+                   'FCFLAGS="${FCFLAGS_GENERATE}" '   \
+                   'LDFLAGS="${LDFLAGS_GENERATE}" '
         return ""
 
     @staticmethod
@@ -977,6 +981,7 @@ class Specfile(object):
                 'CXXFLAGS="${CXXFLAGS_USE}" '
                 'FFLAGS="${FFLAGS_USE}" '
                 'FCFLAGS="${FCFLAGS_USE}" '
+                'LDFLAGS="${LDFLAGS_USE}" '
 
         otherwise an empty string is returned.
         """
@@ -984,7 +989,8 @@ class Specfile(object):
             return 'CFLAGS="${CFLAGS_USE}" '     \
                    'CXXFLAGS="${CXXFLAGS_USE}" ' \
                    'FFLAGS="${FFLAGS_USE}" '     \
-                   'FCFLAGS="${FCFLAGS_USE}" '
+                   'FCFLAGS="${FCFLAGS_USE}" '   \
+                   'LDFLAGS="${LDFLAGS_USE}" '
         return ""
 
     def get_systemd_units(self):
