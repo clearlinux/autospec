@@ -829,13 +829,16 @@ def parse_config_files(path, bump, filemanager, version):
         autoreconf = True
 
     # Parse the version-specific patch lists
+    update_security_sensitive = False
     for version in versions:
         verpatches[version] = read_conf_file(os.path.join(path, '.'.join(['series', version])))
         if any(p.lower().startswith('cve-') for p in verpatches[version]):
-            config_opts['security_sensitive'] = True
-            rewrite_config_opts(path)
+            update_security_sensitive = True
 
     if any(p.lower().startswith('cve-') for p in patches):
+        update_security_sensitive = True
+
+    if update_security_sensitive:
         config_opts['security_sensitive'] = True
         rewrite_config_opts(path)
 
