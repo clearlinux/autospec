@@ -346,19 +346,24 @@ class GnomeOrgVerifier(ShaSumVerifier):
     @staticmethod
     def get_shasum(package_url):
         """Try and get sha url based on package url."""
-        for shasum_url in (package_url.replace(".tar.xz", ".sha256sum"),
-                           "{}.sha256sum".format(package_url)):
-            shasum = GnomeOrgVerifier.fetch_shasum(shasum_url)
-            if shasum:
-                return shasum
+        ext_pos = package_url.find(".tar.")
+        if ext_pos < 0:
+            shasum_url = "{}.sha256sum".format(package_url)
+        else:
+            shasum_url = package_url[:ext_pos] + ".sha256sum"
+        shasum = GnomeOrgVerifier.fetch_shasum(shasum_url)
+        if shasum:
+            return shasum
         return None
 
     @staticmethod
-    def parse_shasum(shasum_text):
+    def parse_shasum(package_url, shasum_text):
         """Parse shasum from sha url file content."""
         for line in shasum_text.split('\n'):
-            sha, file = [col for col in line.split(' ') if col != '']
-            if ".tar.xz" in file:
+            if not line.strip():
+                continue
+            sha, file = [col for col in line.split() if col != '']
+            if os.path.basename(package_url) == file:
                 return sha
         return None
 
@@ -371,7 +376,7 @@ class GnomeOrgVerifier(ShaSumVerifier):
         if shasum is None:
             self.print_result(False, err_msg='Unable to find shasum URL for {}'.format(self.package_url))
             return None
-        shasum = self.parse_shasum(shasum)
+        shasum = self.parse_shasum(self.package_url, shasum)
         if shasum is None:
             self.print_result(False, err_msg='Unable to parse shasum {}'.format(shasum))
             return None
