@@ -250,7 +250,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     tarball.process(url, name, args.version, args.target, archives, filemanager)
     config.create_versions(build.download_path, tarball.multi_version)
     # Search up one level from here to capture multiple versions
-    _dir = os.path.dirname(tarball.path)
+    _dir = tarball.path
 
     if args.license_only:
         try:
@@ -261,7 +261,8 @@ def package(args, url, name, archives, workingdir, infile_dict):
                         license.add_license(word)
         except Exception:
             pass
-        license.scan_for_licenses(_dir)
+        # Start one directory higher so we scan *all* versions for licenses
+        license.scan_for_licenses(os.path.dirname(_dir))
         exit(0)
 
     config.setup_patterns()
@@ -277,7 +278,8 @@ def package(args, url, name, archives, workingdir, infile_dict):
     buildreq.set_build_req()
     buildreq.scan_for_configure(_dir)
     specdescription.scan_for_description(tarball.name, _dir)
-    license.scan_for_licenses(_dir)
+    # Start one directory higher so we scan *all* versions for licenses
+    license.scan_for_licenses(os.path.dirname(_dir))
     commitmessage.scan_for_changes(build.download_path, _dir)
     add_sources(build.download_path, archives)
     check.scan_for_tests(_dir)
