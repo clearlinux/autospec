@@ -748,17 +748,17 @@ class Specfile(object):
         for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
-            # Iterate over all target subdirs
-            self._write_strip("for targetdir in $(find . -type d -name target); do")
-            self._write_strip("pushd $targetdir")
+            # Iterate over all directories with pom files
+            self._write_strip("for pomfile in $(find . -name pom.xml); do")
+            self._write_strip("pushd $(dirname ${pomfile})")
 
-            # Figure out the artifact details and path components
-            # Find group ID; inherit from parent if necessary
-            self._write_strip("export GROUP_PATH=$(xml sel -T -t -m '//_:project' --if 'boolean(_:groupId)' -v '_:groupId' --else -v '_:parent/_:groupId' ../pom.xml | sed 's#\\.#/#g')")
-            # Find artifact name -- this should not be inherited
-            self._write_strip("export ARTIFACT_ID=$(xml sel -T -t -m '//_:project' -v '_:artifactId' ../pom.xml)")
-            # Find version -- this *might* be inherited from parent
-            self._write_strip("export VERSION=$(xml sel -T -t -m '//_:project' --if 'boolean(_:version)' -v '_:version' --else -v '_:parent/_:version' ../pom.xml)")
+            # Evaluate pom files to find artifact details and path components
+            # Find group ID
+            self._write_strip("export GROUP_PATH=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.groupId -q -DforceStdout | sed 's#\\.#/#g')")
+            # Find artifact name
+            self._write_strip("export ARTIFACT_ID=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.artifactId -q -DforceStdout)")
+            # Find version
+            self._write_strip("export VERSION=$(mvn org.apache.maven.plugins:maven-help-plugin:3.2.0:evaluate -Dexpression=project.version -q -DforceStdout)")
 
             # Create the installation path
             self._write_strip("export DEPLOY_PATH=%{buildroot}/usr/share/java/.m2/repository/${GROUP_PATH}/${ARTIFACT_ID}/${VERSION}")
@@ -767,15 +767,19 @@ class Specfile(object):
             # We're going to be globbing for things that may not exist
             self._write_strip("shopt -s nullglob")
 
+            # Install the POM file
+            self._write_strip("cp -p pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+
+            # If target dir exists, install jars
+            self._write_strip('if [ -d "target" ]; then')
+
             # Copy all the jar files
-            self._write_strip("for jarfile in ${ARTIFACT_ID}*.jar; do")
+            self._write_strip("for jarfile in ./target/${ARTIFACT_ID}*.jar; do")
             self._write_strip('cp -p "${jarfile}" ${DEPLOY_PATH}/')
             self._write_strip('done')
             # Except this one -- it's redundant with the source tarball
             self._write_strip("rm -f ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}-sources.jar")
-
-            # Install the POM file
-            self._write_strip("cp -p ../pom.xml ${DEPLOY_PATH}/${ARTIFACT_ID}-${VERSION}.pom")
+            self._write_strip('fi')
 
             # Next
             self._write_strip("popd")
