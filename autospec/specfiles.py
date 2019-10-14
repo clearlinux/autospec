@@ -151,7 +151,10 @@ class Specfile(object):
     def write_nvr(self):
         """Write name, version, and release information."""
         if self.urlban:
-            self.url = re.sub(self.urlban, "localhost", self.url)
+            clean_url = re.sub(self.urlban, "localhost", self.url)
+            # Duplicate prefixes entry before we change the url
+            self.prefixes[clean_url] = self.prefixes.get(self.url)
+            self.url = clean_url
         self._write("Name     : {}\n".format(self.name))
         self._write("Version  : {}\n".format(self.version))
         self._write("Release  : {}\n".format(str(self.release)))
@@ -1875,7 +1878,6 @@ class Specfile(object):
 
     def apply_patches(self):
         """Write patch list to spec file."""
-        global prefixes
         counter = 1
         for p in self.patches:
             name = p.split(None, 1)[0]
