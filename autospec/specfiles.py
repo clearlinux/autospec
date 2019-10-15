@@ -1838,7 +1838,6 @@ class Specfile(object):
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         self.write_find_lang()
-        self.write_install_append()
 
     def write_phpize_pattern(self):
         """Write phpize build pattern to spec file."""
