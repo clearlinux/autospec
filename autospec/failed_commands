@@ -394,6 +394,7 @@ LIBRSVG, librsvg-dev
 LIBTASN1, libtasn1-dev
 LIBUSB, libusb-dev
 LIBUSB1, libusb-dev
+LIBUV, libuv-dev
 LIBXML, libxml2-dev
 LMDB, lmdb-dev
 LUA, lua-dev
