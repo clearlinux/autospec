@@ -354,3 +354,6 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
     is_clean = parse_buildroot_log(download_path + "/results/root.log", returncode)
     if is_clean:
         parse_build_results(download_path + "/results/build.log", returncode, filemanager)
+        if filemanager.has_banned:
+            util.print_fatal("Content in banned paths found, aborting build")
+            exit(1)
