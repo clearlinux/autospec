@@ -22,6 +22,19 @@ class TestFiles(unittest.TestCase):
     def setUp(self):
         self.fm = FileManager()
 
+    def test_banned_path(self):
+        """
+        Test banned paths are detected
+        """
+        bad_paths = ["/etc/one",
+                     "/opt/two",
+                     "/usr/etc/three",
+                     "/usr/local/four",
+                     "/usr/src/five",
+                     "/var/six"]
+        for path in bad_paths:
+            self.assertTrue(FileManager.banned_path(path))
+
     def test_push_package_file(self):
         """
         Test push_package_file with no package name specified (package name
@@ -31,6 +44,15 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file('test-fn')
         self.assertEqual(self.fm.packages['main'], set(['test-fn']))
         self.assertTrue(self.fm.newfiles_printed)
+
+    def test_push_package_file_banned(self):
+        """
+        Test push_package_file with banned filename'
+        """
+        self.assertFalse(self.fm.newfiles_printed)
+        self.fm.push_package_file('/etc/test-fn')
+        self.assertTrue(self.fm.has_banned)
+        self.assertFalse(self.fm.newfiles_printed)
 
     def test_push_package_file_dev(self):
         """

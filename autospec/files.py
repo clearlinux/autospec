@@ -49,11 +49,31 @@ class FileManager(object):
         # /usr/include?  Yes in the general case, but for example for R
         # packages, the answer is No.
         self.want_dev_split = True
+        self.has_banned = False
+
+    @staticmethod
+    def banned_path(path):
+        """Check if the path is either banned or in a banned subdirectory."""
+        banned_paths = ["/etc",
+                        "/opt",
+                        "/usr/local",
+                        "/usr/etc",
+                        "/usr/src",
+                        "/var"]
+        for bpath in banned_paths:
+            if path.startswith(bpath):
+                return True
+        return False
 
     def push_package_file(self, filename, package="main"):
         """Add found %file and indicate to build module that we must restart the build."""
         if package not in self.packages:
             self.packages[package] = set()
+
+        if FileManager.banned_path(filename):
+            util.print_warning(f"  Content {filename} found in banned path, skipping")
+            self.has_banned = True
+            return
 
         # prepend the %attr macro if file defined in 'attrs' control file
         if filename in self.attrs:
@@ -287,10 +307,7 @@ class FileManager(object):
             (r"^/usr/share/gtk-doc/html", "doc"),
             (r"^/usr/share/help", "doc"),
             (r"^/usr/share/info/", "doc", "%doc /usr/share/info/*"),
-            (r"^/etc/systemd/system/.*\.wants/", "active-units"),
             # now a set of catch-all rules
-            (r"^/etc/", "config", "", "%config "),
-            (r"^/usr/etc/", "config", "", "%config "),
             (r"^/lib/systemd/system/", "services"),
             (r"^/lib/systemd/user/", "services"),
             (r"^/usr/lib/systemd/system/", "services"),

@@ -424,6 +424,39 @@ class TestBuildpattern(unittest.TestCase):
         # one for each file added
         self.assertEqual(build.must_restart, 3)
 
+    def test_parse_build_results_banned_files(self):
+        """
+        Test parse_build_results with a test log indicating banned files are missing
+        """
+        def mock_util_call(cmd):
+            del cmd
+
+        build.config.setup_patterns()
+        call_backup = build.util.call
+        build.util.call = mock_util_call
+        fm = files.FileManager()
+
+        open_name = 'build.util.open_auto'
+        content = 'line 1\n' \
+                  'Installed (but unpackaged) file(s) found:\n' \
+                  '/opt/file\n' \
+                  '/usr/etc/file\n' \
+                  '/usr/local/file\n' \
+                  '/usr/src/file\n' \
+                  '/var/file\n' \
+                  'RPM build errors\n' \
+                  'errors here\n'
+        m_open = mock_open(read_data=content)
+
+        with patch(open_name, m_open, create=True):
+            build.parse_build_results('testname', 0, fm)
+
+        build.util.call = call_backup
+
+        self.assertEqual(fm.has_banned, True)
+        # check no files were added
+        self.assertEqual(build.must_restart, 0)
+
     def test_get_mock_cmd_without_consolehelper(self):
         """
         Test get_mock_cmd when /usr/bin/mock doesn't point to consolehelper
