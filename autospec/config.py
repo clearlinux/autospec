@@ -280,6 +280,7 @@ failed_pats = [
     (r"Warning: prerequisite ([a-zA-Z:]+) [0-9\.]+ not found.", 0, 'perl'),
     (r"Can't locate [a-zA-Z\/\.]+ in @INC "
      r"\(you may need to install the ([a-zA-Z:]+) module\)", 0, 'perl'),
+    (r"checking for perl module ([a-zA-Z:]+) [0-9\.]+... no", 0, 'perl'),
     (r"Download error on https://pypi.python.org/simple/([a-zA-Z0-9\-\._:]+)/", 0, 'pypi'),
     (r"No matching distribution found for ([a-zA-Z0-9\-\._]+)", 0, 'pypi'),
     (r"ImportError:..*: No module named ([a-zA-Z0-9\-\._]+)", 0, 'pypi'),
