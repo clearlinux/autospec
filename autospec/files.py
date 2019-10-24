@@ -318,7 +318,7 @@ class FileManager(object):
             (r"^/usr/lib/sysusers.d", "config"),
             (r"^/usr/lib/sysctl.d", "config"),
             (r"^/usr/share/", "data"),
-            (r"^/usr/lib/perl5/", "data"),
+            (r"^/usr/lib/perl5/", "perl"),
             # finally move any dynamically loadable plugins (not
             # perl/python/ruby/etc.. extensions) into lib package
             (r"^/usr/lib/.*/[a-zA-Z0-9._+-]*\.so", "lib"),

@@ -315,6 +315,9 @@ class Specfile(object):
             if pkg == "legacypython":
                 self._write("Requires: python-core\n")
 
+            if pkg == "perl":
+                self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
+
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))
             self._write("\n")
