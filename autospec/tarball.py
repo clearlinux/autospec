@@ -664,6 +664,11 @@ def process_archives(archives):
         buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
         call(extract_cmd)
         tar_path = os.path.join(build.base_path, source_tarball_prefix)
+        if source_tarball_prefix:
+            prefixes[archive] = source_tarball_prefix
+        else:
+            fake_prefix = os.path.splitext(os.path.basename(source_tarball_path))[0]
+            tar_path = os.path.join(build.base_path, fake_prefix)
         tar_files = glob.glob("{}/*".format(tar_path))
         if tar_path == path:
             print("Archive {} already unpacked in main path {}; ignoring destination"
@@ -677,7 +682,6 @@ def process_archives(archives):
             mkdir_cmd = "mkdir -p "
             mkdir_cmd += '"{0}/{1}"'.format(path, destination)
 
-            print("mkdir " + mkdir_cmd)
             call(mkdir_cmd)
             call(move_cmd)
 
