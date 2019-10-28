@@ -444,10 +444,24 @@ class Specfile(object):
                     # Also JAR files
                     if archive.endswith('.jar'):
                         continue
-                    self._write_strip("cd ..")
-                    self._write_strip("%setup -q -T -D -n {0} -b {1}"
-                                      .format(prefix,
-                                              self.source_index[archive]))
+                    # Handle various archive types
+                    extract_cmd = 'tar xf {}'
+                    if archive.endswith('.zip'):
+                        extract_cmd = 'unzip -q {}'
+                    self._write_strip('cd %{_builddir}')
+                    archive_file = os.path.basename(archive)
+                    if self.archive_details[archive + "prefix"]:
+                        self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
+                    else:
+                        # The archive doesn't have a prefix inside, so we have
+                        # to create it, then extract the archive under the
+                        # created directory, itself beneath BUILD
+                        fake_prefix = os.path.splitext(os.path.basename(archive))[0]
+                        self._write_strip("mkdir -p {}".format(fake_prefix))
+                        self._write_strip("cd {}".format(fake_prefix))
+                        self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
+
+                self._write_strip('cd %{_builddir}/' + prefix)
 
                 # Now handle extra versions, indexed by SOURCE
                 for url in self.sources["version"]:
@@ -476,8 +490,16 @@ class Specfile(object):
             else:
                 self._write_strip("mkdir -p {}"
                                   .format(destination))
-                self._write_strip("cp -r %{{_topdir}}/BUILD/{0}/* %{{_topdir}}/BUILD/{1}/{2}"
-                                  .format(self.archive_details[archive + "prefix"],
+
+                # Here again, if the archive file has a top-level prefix
+                # directory, we simply use it. If not, we have to figure
+                # out where we extracted the files instead.
+                archive_prefix = self.archive_details[archive + "prefix"]
+                if not archive_prefix:
+                    # Make it up
+                    archive_prefix = os.path.splitext(os.path.basename(archive))[0]
+                self._write_strip("cp -r %{{_builddir}}/{0}/* %{{_builddir}}/{1}/{2}"
+                                  .format(archive_prefix,
                                           self.tarball_prefix,
                                           destination))
         self.apply_patches()
