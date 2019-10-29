@@ -372,6 +372,7 @@ def parse_r_description(filename):
         content = desc.read()
         deps = _get_desc_field("Depends", content)
         deps.extend(_get_desc_field("Imports", content))
+        deps.extend(_get_desc_field("LinkingTo", content))
     r_provides = _get_r_provides()
     for dep in deps:
         if dep == 'R':
