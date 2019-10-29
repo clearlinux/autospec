@@ -315,14 +315,15 @@ def _get_desc_field(field, desc):
     """
     val = []
     # Values may span multiple lines...
-    pat = re.compile(r"^" + field + r": *(.*?)(?=\n\w+:)", re.MULTILINE | re.DOTALL)
+    pat = re.compile(r"^" + field + r":(.*?)(?=\n\S+:)", re.MULTILINE | re.DOTALL)
     match = pat.search(desc)
     if match:
-        joined = match.group(1).replace("\n", " ")
-        val = re.split(r"\s*,\s*", joined)
-        # Also omit any version constraints
-        # For example, translate "stringr (>= 1.2.0)" -> "stringr"
-        val = [re.split(r'\s*\(', v)[0] for v in val]
+        joined = match.group(1).replace("\n", " ").strip(' ,')
+        if joined:
+            val = re.split(r"\s*,\s*", joined)
+            # Also omit any version constraints
+            # For example, translate "stringr (>= 1.2.0)" -> "stringr"
+            val = [re.split(r'\s*\(', v)[0] for v in val]
     return val
 
 
