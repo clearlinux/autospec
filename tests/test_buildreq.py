@@ -550,5 +550,185 @@ find_package(different_name)
         self.assertEqual(buildreq.buildreqs,
                          set(['valid', 'another_name']))
 
+    def test_r_desc_field_begin(self):
+        """Test parsing of the first R description field."""
+        lines = [
+            "Field1: foo",
+            "Field2: bar",
+            "Field3: baz",
+        ]
+        result = buildreq._get_desc_field("Field1", "\n".join(lines))
+        self.assertEqual(result, ["foo"])
+
+    def test_r_desc_field_middle(self):
+        """Test parsing of an R description field with surrounding fields."""
+        lines = [
+            "Field1: foo",
+            "Field2: bar",
+            "Field3: baz",
+        ]
+        result = buildreq._get_desc_field("Field2", "\n".join(lines))
+        self.assertEqual(result, ["bar"])
+
+    def test_r_desc_field_end(self):
+        """Test parsing of the last R description field."""
+        lines = [
+            "Field1: foo",
+            "Field2: bar",
+            "Field3: baz",
+        ]
+        result = buildreq._get_desc_field("Field3", "\n".join(lines))
+        self.assertEqual(result, ["baz"])
+
+    def test_r_desc_field_middle_multiple_lines(self):
+        """Test parsing of a multi-line R description field, with surrounding fields."""
+        lines = [
+            "Field1: foo",
+            "Field2: bar1, bar2,",
+            "  bar3, bar4",
+            "Field3: baz",
+        ]
+        result = buildreq._get_desc_field("Field2", "\n".join(lines))
+        self.assertEqual(result, ["bar1", "bar2", "bar3", "bar4"])
+
+    def test_r_desc_field_end_multiple_lines(self):
+        """Test parsing of the last R description field, consisting of multiple lines."""
+        lines = [
+            "Field1: foo",
+            "Field2: bar",
+            "Field3: baz1,",
+            "        baz2",
+        ]
+        result = buildreq._get_desc_field("Field3", "\n".join(lines))
+        self.assertEqual(result, ["baz1", "baz2"])
+
+    def test_r_desc_field_middle_one_per_line(self):
+        """Test parsing of an R description field with one entry per line."""
+        lines = [
+            "Field1: foo",
+            "Field2:",
+            "bar1,",
+            "bar2",
+            "Field3: baz",
+        ]
+        result = buildreq._get_desc_field("Field2", "\n".join(lines))
+        self.assertEqual(result, ["bar1", "bar2"])
+
+    def test_r_desc_field_trailing_whitespace(self):
+        """Test parsing of an R description field with trailing whitespace."""
+        lines = [
+            "Field1: foo1, foo2    ",
+        ]
+        result = buildreq._get_desc_field("Field1", "\n".join(lines))
+        self.assertEqual(result, ["foo1", "foo2"])
+
+    def test_r_desc_field_trailing_comma(self):
+        """Test parsing of an R description field with trailing comma."""
+        lines = [
+            "Field1: foo1, foo2,",
+        ]
+        result = buildreq._get_desc_field("Field1", "\n".join(lines))
+        self.assertEqual(result, ["foo1", "foo2"])
+
+    def test_r_desc_field_empty(self):
+        """Test parsing of an R description field with an empty value."""
+        lines = [
+            "Field1:",
+        ]
+        result = buildreq._get_desc_field("Field1", "\n".join(lines))
+        self.assertEqual(result, [])
+
+    def test_r_desc_field_missing(self):
+        """Test parsing of an R description field that is missing."""
+        lines = [
+            "Field1: foo, bar",
+        ]
+        result = buildreq._get_desc_field("Field2", "\n".join(lines))
+        self.assertEqual(result, [])
+
+    @patch('buildreq.config.os_packages')
+    def test_parse_r_desc_depends(self, os_pkgs):
+        """Test parsing of R description Depends field."""
+        pkgs = ['R-pkg1']
+        os_pkgs.__contains__.side_effect = lambda val: val in pkgs
+        open_name = 'buildreq.util.open_auto'
+        content = 'Depends: pkg1'
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open):
+            buildreq.parse_r_description('filename')
+        self.assertTrue('R-pkg1' in buildreq.buildreqs)
+
+    @patch('buildreq.config.os_packages')
+    def test_parse_r_desc_imports(self, os_pkgs):
+        """Test parsing of an R description Imports field."""
+        pkgs = ['R-pkg2']
+        os_pkgs.__contains__.side_effect = lambda val: val in pkgs
+        open_name = 'buildreq.util.open_auto'
+        content = 'Imports: pkg2'
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open):
+            buildreq.parse_r_description('filename')
+        self.assertTrue('R-pkg2' in buildreq.buildreqs)
+
+    @patch('buildreq.config.os_packages')
+    def test_parse_r_desc_linkingto(self, os_pkgs):
+        """Test parsing of an R description LinkingTo field."""
+        pkgs = ['R-pkg3']
+        os_pkgs.__contains__.side_effect = lambda val: val in pkgs
+        open_name = 'buildreq.util.open_auto'
+        content = 'LinkingTo: pkg3'
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open):
+            buildreq.parse_r_description('filename')
+        self.assertTrue('R-pkg3' in buildreq.buildreqs)
+
+    @patch('buildreq.config.os_packages')
+    def test_parse_r_desc_multiple(self, os_pkgs):
+        """Test parsing of an R description file that captures multiple fields."""
+        pkgs = [
+            'R-pkg1',
+            'R-pkg2',
+            'R-pkg3',
+            'R-pkg4',
+        ]
+        os_pkgs.__contains__.side_effect = lambda val: val in pkgs
+        open_name = 'buildreq.util.open_auto'
+        content = [
+            'Field1: foo',
+            'Imports: pkg1, pkg2,',
+            '            pkg3   ',
+            'LinkingTo: pkg4',
+            'FieldFoo: bar',
+        ]
+        m_open = mock_open(read_data='\n'.join(content))
+        with patch(open_name, m_open):
+            buildreq.parse_r_description('filename')
+        self.assertFalse('R-foo' in buildreq.buildreqs)
+        self.assertFalse('R-bar' in buildreq.buildreqs)
+        self.assertTrue('R-pkg1' in buildreq.buildreqs)
+        self.assertTrue('R-pkg2' in buildreq.buildreqs)
+        self.assertTrue('R-pkg3' in buildreq.buildreqs)
+        self.assertTrue('R-pkg4' in buildreq.buildreqs)
+
+    @patch('buildreq.config.os_packages')
+    def test_parse_r_desc_not_in_os(self, os_pkgs):
+        """Test parsing of an R description file with some non-OS packages."""
+        pkgs = [
+            'R-pkg1',
+        ]
+        os_pkgs.__contains__.side_effect = lambda val: val in pkgs
+        open_name = 'buildreq.util.open_auto'
+        content = [
+            'Imports: pkg1, pkg2',
+            'Depends: pkg3',
+        ]
+        m_open = mock_open(read_data='\n'.join(content))
+        with patch(open_name, m_open):
+            buildreq.parse_r_description('filename')
+        self.assertTrue('R-pkg1' in buildreq.buildreqs)
+        self.assertFalse('R-pkg2' in buildreq.buildreqs)
+        self.assertFalse('R-pkg3' in buildreq.buildreqs)
+
+
 if __name__ == '__main__':
     unittest.main(buffer=True)
