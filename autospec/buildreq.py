@@ -306,12 +306,39 @@ def parse_cargo_toml(filename):
 
 
 def _get_desc_field(field, desc):
-    """Get a given field in an R DESCRIPTION file.
+    """Get a field value from an R package DESCRIPTION file.
 
     Internal helper to read the value for the given field in an R package
-    DESCRIPTION file. Returns a list representing the value; if value contained
-    commas, the string is split on the commas and surrounding whitespace to
-    create the list.
+    DESCRIPTION file. Returns a list representing the value: one or more
+    package names.
+
+    The value is a comma-separated list of package names and, optionally, their
+    version constraints. The entire value is split on the commas and
+    surrounding whitespace to convert it to a list of package names, also
+    skipping any declared version constraints.
+
+    Consider a field with a value consisting of four package names, one with a
+    version constraint, and three without. The field and value may take one of
+    the following forms, or variants thereof:
+
+      (a) all on a single line:
+
+          FIELD: PKG1, PKG2 (VERSION CONSTRAINT), PKG3, PKG4
+
+      (b) split across multiple lines with field name and some package names
+          declared on the first line:
+
+          FIELD: PKG1, PKG2 (VERSION CONSTRAINT),
+                PKG3, PKG4
+
+      (c) split across multiple lines, with the field name on the first
+          line, and one package name per line on the remaining lines:
+
+          FIELD:
+              PKG1,
+              PKG2 (VERSION CONSTRAINT),
+              PKG3,
+              PKG4
     """
     val = []
     # Note that fields may appear on any line, and values may span multiple
