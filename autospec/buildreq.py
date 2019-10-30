@@ -314,8 +314,10 @@ def _get_desc_field(field, desc):
     create the list.
     """
     val = []
-    # Values may span multiple lines...
-    pat = re.compile(r"^" + field + r":(.*?)(?=\n\S+:)", re.MULTILINE | re.DOTALL)
+    # Note that fields may appear on any line, and values may span multiple
+    # lines. The end of the match is captured by either a lookahead assertion
+    # for the "next" field in the file, or \Z, which matches EOF in this case.
+    pat = re.compile(r"^" + field + r":(.*?)((?=\n\S+:)|\Z)", re.MULTILINE | re.DOTALL)
     match = pat.search(desc)
     if match:
         joined = match.group(1).replace("\n", " ").strip(' ,')
