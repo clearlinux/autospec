@@ -45,7 +45,7 @@ def do_curl(url, dest=None, post=None, is_fatal=False):
     c.setopt(c.FOLLOWLOCATION, True)
     c.setopt(c.FAILONERROR, True)
     c.setopt(c.CONNECTTIMEOUT, 10)
-    c.setopt(c.TIMEOUT, 30)
+    c.setopt(c.TIMEOUT, 600)
     c.setopt(c.LOW_SPEED_LIMIT, 1)
     c.setopt(c.LOW_SPEED_TIME, 10)
     buf = BytesIO()
