@@ -225,6 +225,7 @@ GL/gl.h, mesa-dev
 GL/glu.h, glu-dev
 GL/glut.h, freeglut-dev
 GL/glx.h, pkgconfig(gl)
+GLEW, glew-dev
 GLIB, glib-dev
 GLIB2, glib-dev
 GLUT library, freeglut-dev
