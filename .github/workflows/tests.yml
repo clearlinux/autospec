@@ -1,0 +1,21 @@
+name: Autospec Tests
+
+on: [push, pull_request]
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    name: Autospec Tests
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Create Docker Image
+        uses: ./.github/actions/clearlinux-latest-action
+      - name: Run flake8
+        uses: ./.github/actions/clearlinux-latest-action
+        with:
+          testfunc: run_flake8
+      - name: Run unit tests
+        uses: ./.github/actions/clearlinux-latest-action
+        with:
+          testfunc: run_unittests
