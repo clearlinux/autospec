@@ -66,7 +66,7 @@ def scan_for_tests(src_dir):
     make_check = "make VERBOSE=1 V=1 {}check".format(makeflags)
     cmake_check = "make test"
     perl_check = "make TEST_VERBOSE=1 test"
-    setup_check = "PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages python3 setup.py test"
+    setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
     if config.config_opts['allow_test_failures']:
         make_check += " || :"
         cmake_check += " || :"
