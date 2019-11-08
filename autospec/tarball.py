@@ -418,7 +418,7 @@ def set_multi_version(ver):
     elif not multi_version:
         # Fall back to ensure a version is always set
         # (otherwise the last known version will be used)
-        multi_version[1] = ""
+        multi_version["1"] = ""
     latest = sorted(multi_version.keys())[-1]
     return latest
 
