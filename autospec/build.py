@@ -331,29 +331,49 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
         shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
         os.makedirs('{}/results'.format(download_path))
 
-    util.call("{} -r {} --buildsrpm --sources=./ --spec={}.spec "
-              "--uniqueext={} --result=results/ {} {}"
-              .format(mock_cmd, mockconfig, tarball.name, uniqueext, cleanup_flag,
-                      mockopts),
-              logfile="%s/results/mock_srpm.log" % download_path, cwd=download_path)
+    cmd_args = [
+        mock_cmd,
+        f"--root={mockconfig}",
+        "--buildsrpm",
+        "--sources=./",
+        f"--spec={tarball.name}.spec",
+        f"--uniqueext={uniqueext}",
+        "--result=results/",
+        cleanup_flag,
+        mockopts,
+    ]
+    util.call(" ".join(cmd_args),
+              logfile=f"{download_path}/results/mock_srpm.log",
+              cwd=download_path)
 
     # back up srpm mock logs
     util.call("mv results/root.log results/srpm-root.log", cwd=download_path)
     util.call("mv results/build.log results/srpm-build.log", cwd=download_path)
 
-    srcrpm = "results/%s-%s-%s.src.rpm" % (tarball.name, tarball.version, tarball.release)
-    returncode = util.call("{} -r {} --result=results/ {} "
-                           "--enable-plugin=ccache  --uniqueext={} {}"
-                           .format(mock_cmd, mockconfig, srcrpm, uniqueext, cleanup_flag),
-                           logfile="%s/results/mock_build.log" % download_path, check=False, cwd=download_path)
+    srcrpm = f"results/{tarball.name}-{tarball.version}-{tarball.release}.src.rpm"
+
+    cmd_args = [
+        mock_cmd,
+        f"--root={mockconfig}",
+        "--result=results/",
+        srcrpm,
+        "--enable-plugin=ccache",
+        f"--uniqueext={uniqueext}",
+        cleanup_flag,
+    ]
+    ret = util.call(" ".join(cmd_args),
+                    logfile=f"{download_path}/results/mock_build.log",
+                    check=False,
+                    cwd=download_path)
+
     # sanity check the build log
     if not os.path.exists(download_path + "/results/build.log"):
         util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
         exit(1)
 
-    is_clean = parse_buildroot_log(download_path + "/results/root.log", returncode)
+    is_clean = parse_buildroot_log(download_path + "/results/root.log", ret)
     if is_clean:
-        parse_build_results(download_path + "/results/build.log", returncode, filemanager)
+        parse_build_results(download_path + "/results/build.log", ret, filemanager)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
             exit(1)
