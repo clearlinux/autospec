@@ -165,8 +165,8 @@ class TestTest(unittest.TestCase):
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
         self.assertEqual(check.tests_config,
-                         'PYTHONPATH=%{buildroot}/usr/lib/python3.7/site-packages '
-                         'python3 setup.py test')
+                         'PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") '
+                         'python setup.py test')
 
     def test_scan_for_tests_cmake(self):
         """
