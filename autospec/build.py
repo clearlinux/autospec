@@ -360,6 +360,7 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
         "--enable-plugin=ccache",
         f"--uniqueext={uniqueext}",
         cleanup_flag,
+        mockopts,
     ]
     ret = util.call(" ".join(cmd_args),
                     logfile=f"{download_path}/results/mock_build.log",
