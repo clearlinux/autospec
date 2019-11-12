@@ -24,6 +24,7 @@ import os
 import re
 import shutil
 import subprocess
+import zipfile
 from collections import OrderedDict
 
 import build
@@ -136,58 +137,25 @@ def build_unzip(zip_path):
 
     This function will run the zip file through a content list, parsing that list to get the
     root folder name containing the zip file's contents.
-
-    The output of the unzip -q -l command has the following format:
-    ***snip***
-    (optional) hash
-    Length      Date    Time    Name
-    ---------  ---------- -----   ----
-            0  01-01-2000 00:00   prefix-dir/sub_dir1/subdir2
-    ***snip***
-    and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
     """
     prefix = None
-    zipfile = os.path.basename(zip_path)
-    contents = subprocess.check_output(["unzip", "-q", "-l", zip_path], universal_newlines=True)
-    lines = contents.splitlines() if contents else []
-    # looking for directory prefix in unzip output as it may differ from default
 
-    # First, find the end of the info header
-    # It starts with -----
-    while len(lines):
-        line = lines.pop(0)
-        if line[0] == '-':
-            break
-
-    # Similarly, strip the footer, if it exists
-    if any(line.startswith('-') for line in lines):
-        while len(lines):
-            line = lines.pop()
-            if line[0] == '-':
-                break
-
-    # Are there any files left?
-    if len(lines) < 1:
-        print_fatal("Zip file doesn't appear to have any content")
-        exit(1)
-
-    # Look for a common directory prefix
-    for line in lines:
-        fields = re.split(r'\s+', line, maxsplit=4)
-        filename = fields.pop()
-        if prefix is None:
-            prefix = os.path.dirname(filename)
-        common = list()
-        for pair in zip(re.split(r'/', prefix), re.split(r'/', filename)):
-            if pair[0] == pair[1]:
-                common.append(pair[0])
+    if zipfile.is_zipfile(zip_path):
+        with zipfile.ZipFile(zip_path, 'r') as content:
+            lines = content.namelist()
+            # When zipfile is not empty
+            if len(lines) > 0:
+                prefix = os.path.commonpath(lines)
             else:
-                break
-        prefix = '/'.join(common)
+                print_fatal("Zip file doesn't appear to have any content")
+                exit(1)
+    else:
+        print_fatal("Not a valid zip file.")
+        exit(1)
 
     # If we didn't find a common prefix, make a dir, based on the zip filename
     if not prefix:
-        subdir = os.path.splitext(zipfile)[0]
+        subdir = os.path.splitext(os.path.basename(zip_path))[0]
         extract_cmd = "unzip -qq -d {0} {1}".format(
             os.path.join(build.base_path, subdir), zip_path)
     else:

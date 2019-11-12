@@ -110,31 +110,48 @@ class TestTarballVersionName(unittest.TestCase):
                          ('tar --directory=. -xf tarball/path',
                           'libjpeg-turbo-1.5.1'))
 
-    def test_build_unzip_hash(self):
+    def test_build_unzip(self):
         """
-        Test build_unzip with hash in output
+        Test build_unzip using an array to test multiple cases.
+        Case 1: Existent zip, with content and common dir.
+        Case 2: Non existen zip.
+        Case 3: Existent zip, but empty.
+        Case 4: Existent zip, with content and non common dir.
         """
-        check_output_backup = subprocess.check_output
-        tarball.subprocess.check_output = mock_gen(rv=UNZIP_OUT)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_unzip('zip/path'),
-                         ('unzip -qq -d . zip/path', 'prefix-dir'))
 
-    def test_build_unzip_nohash(self):
-        """
-        Test build_unzip with no hash in output
-        """
-        check_output_backup = subprocess.check_output
-        unzip_nohash = ''
-        for line in UNZIP_OUT.splitlines():
-            if 'longhashstring' in line:
-                continue
-            unzip_nohash += line + '\n'
+        class MockZipFile:
+            def __init__(self, path, mode):
+                self.name = path
+                self.mode = mode
+                self.content = zip_content
 
-        tarball.subprocess.check_output = mock_gen(rv=unzip_nohash)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_unzip('zip/path'),
-                         ('unzip -qq -d . zip/path', 'prefix-dir'))
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc_val, traceback):
+                return False
+
+            def namelist(self):
+                return self.content
+
+        tests = (
+                ({'is_zip':True, 'content':['dir/','dir/file1']}, ('unzip -qq -d . path/zip_file-v1.zip', 'dir')),
+                ({'is_zip':False, 'content':[]}, (False, False)),
+                ({'is_zip':True, 'content':[]}, (False, False)),
+                ({'is_zip':True, 'content':['dir/','dir1/file1', ]}, ('unzip -qq -d ./zip_file-v1 path/zip_file-v1.zip', '')),
+                )
+
+        for input, expected in tests:
+            try:
+                tarball.print_fatal = mock_gen(rv=None)
+                tarball.zipfile.is_zipfile = mock_gen(rv=input['is_zip'])
+                zip_content = input['content']
+                tarball.zipfile.ZipFile = MockZipFile
+                actual = tarball.build_unzip('path/zip_file-v1.zip')
+            except:
+                actual = (False, False)
+            finally:
+                self.assertEqual(actual, expected)
 
     def test_build_go_unzip(self):
         """
