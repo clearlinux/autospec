@@ -84,7 +84,6 @@
 -lpcre, pcre-dev
 -lpopt, popt-dev
 -lproxy, pacrunner-dev
--lpython2.7, python-dev
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
 -lssh, libssh-dev
@@ -1008,10 +1007,6 @@ python lxml, lxml
 python, python3-dev
 python-config, python3-dev
 python-subunit, python-subunit
-python2, python-core
-python2.5, python
-python2.7, python-core
-python2.7/Python.h, python-dev
 pytz, pytz
 pyyaml, PyYAML
 qcollectiongenerator, qttools-dev

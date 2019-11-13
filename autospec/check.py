@@ -120,7 +120,7 @@ def scan_for_tests(src_dir):
     elif buildpattern.default_pattern in ["cpan"] and "Makefile.PL" in files:
         tests_config = testsuites["perlcheck"]
 
-    elif buildpattern.default_pattern in ["distutils3", "distutils23"] and "setup.py" in files:
+    elif buildpattern.default_pattern == "distutils3" and "setup.py" in files:
         with util.open_auto(os.path.join(src_dir, "setup.py"), 'r') as setup_fp:
             setup_contents = setup_fp.read()
 

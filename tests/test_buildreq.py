@@ -417,38 +417,6 @@ class TestBuildreq(unittest.TestCase):
 
         self.assertEqual(build_pattern, "distutils3")
 
-    def test_setup_py2_version_classifier(self):
-        """
-        test detection of python version from setup.py classifier
-        """
-
-        open_name = 'buildreq.util.open_auto'
-        content = """classifiers = [
-                    'Programming Language :: Python :: 2 :: Only',
-                ]"""
-
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            build_pattern = buildreq.get_python_build_version_from_classifier("filename")
-
-        self.assertEqual(build_pattern, "distutils2")
-
-    def test_setup_py23_version_classifier(self):
-        """
-        test detection of python version from setup.py classifier
-        """
-
-        open_name = 'buildreq.util.open_auto'
-        content = """classifiers = [
-                    'Programming Language :: Python :: 3',
-                ]"""
-
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            build_pattern = buildreq.get_python_build_version_from_classifier("filename")
-
-        self.assertEqual(build_pattern, "distutils3")
-
     def test_scan_for_configure(self):
         """
         Test scan_for_configure with a mocked package structure. There is so

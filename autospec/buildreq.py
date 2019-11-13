@@ -622,7 +622,7 @@ def grab_pip_requirements(pkgname):
 
 
 def get_python_build_version_from_classifier(filename):
-    """Detect if setup should use distutils2 or distutils3 only.
+    """Detect if setup should use distutils3 only.
 
     Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
     setup.py file.  Defaults to distutils3 if no such classifiers are found.
@@ -632,9 +632,6 @@ def get_python_build_version_from_classifier(filename):
 
     if "Programming Language :: Python :: 3 :: Only" in data:
         return "distutils3"
-
-    elif "Programming Language :: Python :: 2 :: Only" in data:
-        return "distutils2"
 
     return "distutils3"
 
@@ -781,12 +778,8 @@ def is_qmake_pro(f):
 
 def scan_for_configure(dirn):
     """Scan the package directory for build files to determine build pattern."""
-    if buildpattern.default_pattern == "distutils":
-        add_buildreq("buildreq-distutils")
-    elif buildpattern.default_pattern == "distutils36":
+    if buildpattern.default_pattern == "distutils36":
         add_buildreq("buildreq-distutils36")
-    elif buildpattern.default_pattern == "distutils23":
-        add_buildreq("buildreq-distutils23")
     elif buildpattern.default_pattern == "distutils3":
         add_buildreq("buildreq-distutils3")
     elif buildpattern.default_pattern == "golang":

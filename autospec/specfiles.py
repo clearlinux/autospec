@@ -198,7 +198,7 @@ class Specfile(object):
             if pkg.startswith("extras-"):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
-                       "lib32", "dev32", "legacypython", "doc", "abi", "staticdev",
+                       "lib32", "dev32", "doc", "abi", "staticdev",
                        "staticdev32"]:
                 continue
             # honor requires_ban for manual overrides
@@ -268,10 +268,10 @@ class Specfile(object):
             if "requires" in v:
                 deps[k] = v['requires']
 
-        # migration workaround; if we have a python3 or legacypython package
+        # migration workaround; if we have a python3 package
         # we add an artificial python package
 
-        if ("python3" in self.packages or "legacypython" in self.packages) and ("python" not in self.packages):
+        if ("python3" in self.packages) and ("python" not in self.packages):
             self.packages["python"] = set()
 
         provides = {}
@@ -311,9 +311,6 @@ class Specfile(object):
 
             if pkg == "python3":
                 self._write("Requires: python3-core\n")
-
-            if pkg == "legacypython":
-                self._write("Requires: python-core\n")
 
             if pkg == "perl":
                 self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
@@ -1267,38 +1264,6 @@ class Specfile(object):
         self.write_check()
         self.write_make_install()
 
-    def write_distutils_pattern(self):
-        """Write build pattern for python packages using distutils."""
-        self.write_prep()
-        self.write_lang_c(export_epoch=True)
-        self.write_variables()
-        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
-        self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
-        self._write_strip("\n")
-        if self.tests_config and not config.config_opts['skip_tests']:
-            self._write_strip("%check")
-            # Prevent setuptools from hitting the internet
-            self.write_proxy_exports()
-            self._write_strip(self.tests_config)
-        if self.subdir:
-            self._write_strip("popd")
-        self.write_build_append()
-        self._write_strip("%install")
-        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
-        self._write_strip("rm -rf %{buildroot}")
-        self.write_install_prepend()
-
-        self.write_license_files()
-
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
-        self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot}")
-        if self.subdir:
-            self._write_strip("popd")
-        self.write_find_lang()
-
     def write_distutils3_pattern(self):
         """Write build pattern for python packages using distutils3."""
         self.write_prep()
@@ -1327,42 +1292,6 @@ class Specfile(object):
         if self.subdir:
             self._write_strip("pushd " + self.subdir)
         self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
-        if self.subdir:
-            self._write_strip("popd")
-        self._write_strip("echo ----[ mark ]----")
-        self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
-        self._write_strip("echo ----[ mark ]----")
-        self.write_find_lang()
-
-    def write_distutils23_pattern(self):
-        """Write build pattern for python packages using distutils2 and 32 and 3."""
-        self.write_prep()
-        self.write_lang_c(export_epoch=True)
-        self.write_variables()
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
-        self._write_strip("python2 setup.py build -b py2 " + config.extra_configure)
-        self._write_strip("python3 setup.py build -b py3 " + config.extra_configure)
-        self._write_strip("\n")
-        if self.tests_config and not config.config_opts['skip_tests']:
-            self._write_strip("%check")
-            # Prevent setuptools from hitting the internet
-            self.write_proxy_exports()
-            self._write_strip(self.tests_config)
-        if self.subdir:
-            self._write_strip("popd")
-        self.write_build_append()
-        self._write_strip("%install")
-        self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
-        self._write_strip("rm -rf %{buildroot}")
-        self.write_install_prepend()
-
-        self.write_license_files()
-
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
-        self._write_strip("python2 -tt setup.py build -b py2 install --root=%{buildroot} --force")
-        self._write_strip("python3 -tt setup.py build -b py3 install --root=%{buildroot} --force")
         if self.subdir:
             self._write_strip("popd")
         self._write_strip("echo ----[ mark ]----")
