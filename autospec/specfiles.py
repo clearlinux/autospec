@@ -441,6 +441,9 @@ class Specfile(object):
                     # Also JAR files
                     if archive.endswith('.jar'):
                         continue
+                    # Patch files
+                    if archive.endswith('.patch'):
+                        continue
                     # Handle various archive types
                     extract_cmd = 'tar xf {}'
                     if archive.endswith('.zip'):
