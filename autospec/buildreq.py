@@ -29,7 +29,8 @@ import config
 import toml
 import util
 
-banned_requires = set(["futures"])
+banned_requires = set(["futures",
+                       "configparser"])
 buildreqs = set()
 buildreqs_cache = set()
 requires = set()
@@ -44,7 +45,8 @@ banned_buildreqs = set(["llvm-devel",
                         "pkgconfig(parallels-sdk)",
                         "oslo-python",
                         "libxml2No-python",
-                        "futures"])
+                        "futures",
+                        "configparser"])
 autoreconf_reqs = ["gettext-bin",
                    "automake-dev",
                    "automake",
