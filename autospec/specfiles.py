@@ -255,7 +255,7 @@ class Specfile(object):
 
         deps = {}
         deps["dev"] = ["lib", "bin", "data"]
-        deps["doc"] = ["man"]
+        deps["doc"] = ["man", "info"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
         deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "services"]
         deps["lib"] = ["data", "libexec", "license"]
@@ -363,7 +363,7 @@ class Specfile(object):
                 continue
 
             self._write("\n%files {}\n".format(pkg))
-            if pkg in ["doc", "license", "man"]:
+            if pkg in ["doc", "license", "man", "info"]:
                 self._write("%defattr(0644,root,root,0755)\n")
             else:
                 self._write("%defattr(-,root,root,-)\n")
