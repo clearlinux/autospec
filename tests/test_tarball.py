@@ -6,8 +6,26 @@ import tarball
 import re
 
 
+src_content = None
+
 class FileManager():
     want_dev_split = False
+
+
+class MockSrcFile:
+    def __init__(self, path, mode):
+        self.name = path
+        self.mode = mode
+        self.content = src_content
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, traceback):
+        return False
+
+    def getnames(self):
+        return self.content
 
 
 def mock_gen(rv=None):
@@ -73,42 +91,38 @@ class TestTarballVersionName(unittest.TestCase):
 
     def test_build_untar(self):
         """
-        Test build_untar with common tar -tf output
+        Test build_untar using an array to test multiple cases.
+        Case 1: Existent tar, with content and common dir.
+        Case 2: Non existent tar.
+        Case 3: Existent tar, but empty.
+        Case 4: Existent tar, with content and non common dir.
+        Case 5: Existent tar, with content, common dir with leading dot (./)
+        Case 6: Existent tar, with content, one element only with (./)
+        Case 7: Existent tar, with one single file
         """
-        check_output_backup = subprocess.check_output
-        tarball.subprocess.check_output = mock_gen(rv=TAR_OUT)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_untar('tarballpath'),
-                         ('tar --directory=. -xf tarballpath',
-                          'libjpeg-turbo-1.5.1'))
 
-    def test_build_untar_leading_dot(self):
-        """
-        Test build_untar with leading dot to tar -tf output
-        """
-        check_output_backup = subprocess.check_output
-        tar_dotted = ''
-        for line in TAR_OUT.split():
-            tar_dotted += './{}\n'.format(line)
-        tarball.subprocess.check_output = mock_gen(rv=tar_dotted)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_untar('tarball/path'),
-                         ('tar --directory=. -xf tarball/path',
-                          'libjpeg-turbo-1.5.1'))
+        tests = (
+                ({'is_tar': True, 'content':['dir/','dir/file1']}, ('tar --directory=. -xf path/tar_file-v1.tar', 'dir')),
+                ({'is_tar': False, 'content':[]}, (False, False)),
+                ({'is_tar': True, 'content':[]}, (False, False)),
+                ({'is_tar': True, 'content':['dir/','dir1/file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', '')),
+                ({'is_tar': True, 'content':['./dir/','./dir/file1']}, ('tar --directory=. -xf path/tar_file-v1.tar', 'dir')),
+                ({'is_tar': True, 'content':['./','./dir/','./dir1/file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', '')),
+                ({'is_tar': True, 'content':['file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', None)),
+                )
+        global src_content
 
-    def test_build_untar_leading_dot_line(self):
-        """
-        Test build_untar with leading dot and leading ./ line to tar -tf output
-        """
-        check_output_backup = subprocess.check_output
-        tar_dotted = './\n'
-        for line in TAR_OUT.splitlines():
-            tar_dotted += './{}\n'.format(line)
-        tarball.subprocess.check_output = mock_gen(rv=tar_dotted)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_untar('tarball/path'),
-                         ('tar --directory=. -xf tarball/path',
-                          'libjpeg-turbo-1.5.1'))
+        for input, expected in tests:
+            try:
+                tarball.print_fatal = mock_gen(rv=None)
+                tarball.tarfile.is_tarfile = mock_gen(rv=input['is_tar'])
+                src_content = input['content']
+                tarball.tarfile.open = MockSrcFile
+                actual = tarball.build_untar('path/tar_file-v1.tar')
+            except:
+                actual = (False, False)
+            finally:
+                self.assertEqual(actual, expected)
 
     def test_build_unzip(self):
         """

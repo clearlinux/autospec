@@ -24,6 +24,7 @@ import os
 import re
 import shutil
 import subprocess
+import tarfile
 import zipfile
 from collections import OrderedDict
 
@@ -103,33 +104,27 @@ def check_or_get_file(upstream_url, tarfile, mode="w"):
 
 def build_untar(tarball_path):
     """Determine extract command and tarball prefix from tar -tf output."""
-    tar_prefix = ""
-    try:
-        tarball_contents = subprocess.check_output(
-            ["tar", "-tf", tarball_path], universal_newlines=True).split("\n")
-    except subprocess.CalledProcessError as cpe:
-        file_type = subprocess.check_output(["file", tarball_path]).decode("utf-8").strip()
-        print_fatal("tarball inspection failed, unable to determine tarball contents:\n"
-                    "{}\n{}\n".format(file_type, cpe))
+    prefix = None
+    if tarfile.is_tarfile(tarball_path):
+        with tarfile.open(tarball_path, 'r') as content:
+            lines = content.getnames()
+            # When tarball is not empty
+            if len(lines) == 0:
+                print_fatal("Tar file doesn't appear to have any content")
+                exit(1)
+            elif len(lines) > 1:
+                prefix = os.path.commonpath(lines)
+    else:
+        print_fatal("Not a valid tar file.")
         exit(1)
 
-    extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
-    for line in tarball_contents:
-        # sometimes a leading ./ is prepended to the line, this is not the prefix
-        line = line.lstrip("./")
-        # skip this line, it does not contain the prefix or is not a directory
-        if not line or "/" not in line:
-            continue
-
-        tar_prefix = line.split("/")[0]
-        if tar_prefix:
-            break
-
-    if not tar_prefix:
-        print_fatal("malformed tarball, unable to determine tarball prefix")
-        exit(1)
-
-    return extract_cmd, tar_prefix
+    # If we didn't find a common prefix, make a dir, based on the tar filename
+    if not prefix:
+        subdir = os.path.splitext(os.path.basename(tarball_path))[0]
+        extract_cmd = "tar --directory={0} --one-top-level={1} -xf {2}".format(build.base_path, subdir, tarball_path)
+    else:
+        extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
+    return extract_cmd, prefix
 
 
 def build_unzip(zip_path):
