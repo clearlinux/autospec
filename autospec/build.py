@@ -22,7 +22,6 @@
 import os
 import re
 import shutil
-import subprocess
 
 import buildreq
 import config
@@ -269,35 +268,6 @@ def parse_build_results(filename, returncode, filemanager):
             success = 1
 
 
-def reserve_path(path):
-    """Try to pre-populate directory at path."""
-    try:
-        subprocess.check_output(['sudo', 'mkdir', path], stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError as err:
-        out = err.output.decode('utf-8')
-        return "File exists" not in out
-
-    return True
-
-
-def get_uniqueext(dirn, dist, name):
-    """Find a unique name to create mock chroot without reusing an old one."""
-    # Default to tarball name
-    resultsdir = os.path.join(dirn, "{}-{}".format(dist, name))
-    if reserve_path(resultsdir):
-        return name
-
-    # Find a unique extension by checking if it exists in /var/lib/mock
-    # Increment the pathname until an unused path is found
-    resultsdir += "-1"
-    seq = 1
-    while not reserve_path(resultsdir):
-        seq += 1
-        resultsdir = resultsdir.replace("-{}".format(seq - 1), "-{}".format(seq))
-
-    return "{}-{}".format(name, seq)
-
-
 def get_mock_cmd():
     """Set mock command to use sudo as needed."""
     # Some distributions (e.g. Fedora) use consolehelper to run mock,
@@ -317,12 +287,11 @@ def package(filemanager, mockconfig, mockopts, cleanup=False):
     mock_cmd = get_mock_cmd()
     print("Building package " + tarball.name + " round", round)
 
-    # determine uniqueext only once
+    uniqueext = tarball.name
+
     if cleanup:
-        uniqueext = uniqueext or get_uniqueext("/var/lib/mock", "clear", tarball.name)
         cleanup_flag = "--cleanup-after"
     else:
-        uniqueext = tarball.name
         cleanup_flag = "--no-cleanup-after"
 
     print("{} mock chroot at /var/lib/mock/clear-{}".format(tarball.name, uniqueext))

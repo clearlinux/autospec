@@ -491,31 +491,6 @@ class TestBuildpattern(unittest.TestCase):
 
         self.assertEqual(mock_cmd, '/usr/bin/mock')
 
-    def test_get_uniqueext_first(self):
-        """
-        Test get_uniqueext() with no collisions
-        """
-        with tempfile.TemporaryDirectory() as tmpd:
-            self.assertEqual(build.get_uniqueext(tmpd, "test", "pkg"), "pkg")
-
-    def test_get_uniqueext_second(self):
-        """
-        Test get_uniqueext() with one collision
-        """
-        with tempfile.TemporaryDirectory() as tmpd:
-            os.mkdir(os.path.join(tmpd, "test-pkg"))
-            self.assertEqual(build.get_uniqueext(tmpd, "test", "pkg"), "pkg-1")
-
-    def test_get_uniqueext_third(self):
-        """
-        Test get_uniqueext() with two collisions
-        """
-        with tempfile.TemporaryDirectory() as tmpd:
-            os.mkdir(os.path.join(tmpd, "test-pkg"))
-            os.mkdir(os.path.join(tmpd, "test-pkg-1"))
-            self.assertEqual(build.get_uniqueext(tmpd, "test", "pkg"), "pkg-2")
-
-
 
 if __name__ == '__main__':
     unittest.main(buffer=True)
