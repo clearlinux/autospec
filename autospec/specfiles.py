@@ -541,8 +541,8 @@ class Specfile(object):
             self._write_strip("export CC=clang\n")
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
-            self._write_strip("CFLAGS=${CFLAGS/ -Wa,/ -fno-integrated-as -Wa,/}")
-            self._write_strip("CXXFLAGS=${CXXFLAGS/ -Wa,/ -fno-integrated-as -Wa,/}")
+            self._write_strip("CFLAGS=${CFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
+            self._write_strip("CXXFLAGS=${CXXFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
             lto = "-flto"
         else:
             lto = "-flto=4"
