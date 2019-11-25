@@ -450,7 +450,7 @@ class Specfile(object):
                         extract_cmd = 'unzip -q {}'
                     self._write_strip('cd %{_builddir}')
                     archive_file = os.path.basename(archive)
-                    if self.archive_details[archive + "prefix"]:
+                    if self.archive_details.get(archive + "prefix"):
                         self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
                     else:
                         # The archive doesn't have a prefix inside, so we have
