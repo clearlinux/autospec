@@ -649,7 +649,7 @@ def parse_log(log, pkgname=''):
 
         match = re.search(r"^not ok [0-9]+ \-", line)
         if match and incheck:
-            if re.search(r"# TODO known breakage", line):
+            if re.search(r"# TODO\b", line):
                 counted_xfail += 1
             else:
                 counted_fail += 1
