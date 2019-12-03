@@ -61,6 +61,7 @@ install_append = []
 service_restart = []
 patches = []
 verpatches = OrderedDict()
+extra_sources = []
 autoreconf = False
 custom_desc = ""
 custom_summ = ""
@@ -611,6 +612,7 @@ def parse_config_files(path, bump, filemanager, version):
     global extra_configure_avx2
     global extra_configure_avx512
     global config_files
+    global extra_sources
     global parallel_build
     global license_fetch
     global license_show
@@ -738,6 +740,13 @@ def parse_config_files(path, bump, filemanager, version):
             r += 1
         tarball.release = str(r)
         print("Release     :", tarball.release)
+
+    content = read_conf_file(os.path.join(path, "extra_sources"))
+    for source in content:
+        fields = source.split(maxsplit=1)
+        print("Adding additional source file: %s" % fields[0])
+        config_files.add(os.path.basename(fields[0]))
+        extra_sources.append(fields)
 
     content = read_conf_file(os.path.join(path, "buildreq_ban"))
     for banned in content:
@@ -967,6 +976,7 @@ def load_specfile(specfile):
     specfile.install_prepend = install_prepend
     specfile.install_append = install_append
     specfile.service_restart = service_restart
+    specfile.extra_sources = extra_sources
     specfile.patches = patches
     specfile.verpatches = verpatches
     specfile.autoreconf = autoreconf
