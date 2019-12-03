@@ -471,7 +471,8 @@ def name_and_version(name_arg, version_arg, filemanager):
         buildreq.add_buildreq("buildreq-gnome")
 
     if "kde.org" in url or "https://github.com/KDE" in url:
-        buildreq.add_buildreq("buildreq-kde")
+        if "kxmlgui" not in url:
+            buildreq.add_buildreq("buildreq-kde")
 
     # SQLite tarballs use 7 digit versions, e.g 3290000 = 3.29.0, 3081002 = 3.8.10.2
     if "sqlite.org" in url:
