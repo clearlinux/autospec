@@ -458,9 +458,19 @@ def rewrite_config_opts(path):
     write_config(config_f, path)
 
 
-def filter_blanks(lines):
-    """Filter out blank lines from the line list."""
-    return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
+def read_file(path, track=True):
+    """Read full file at path.
+
+    If the file does not exist (or is not expected to exist)
+    in the package git repo, specify 'track=False'.
+    """
+    try:
+        with open(path, "r") as f:
+            if track:
+                config_files.add(os.path.basename(path))
+            return f.readlines()
+    except EnvironmentError:
+        return []
 
 
 def read_conf_file(path, track=True):
@@ -469,13 +479,22 @@ def read_conf_file(path, track=True):
     If the config file does not exist (or is not expected to exist)
     in the package git repo, specify 'track=False'.
     """
-    try:
-        with open(path, "r") as f:
-            if track:
-                config_files.add(os.path.basename(path))
-            return filter_blanks(f.readlines())
-    except EnvironmentError:
-        return []
+    lines = read_file(path, track=track)
+    return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
+
+
+def read_script_file(path, track=True):
+    """Read RPM script snippet file at path.
+
+    Returns verbatim, except for possibly the first line.
+
+    If the config file does not exist (or is not expected to exist)
+    in the package git repo, specify 'track=False'.
+    """
+    lines = read_file(path, track=track)
+    if len(lines) > 0 and (lines[0].startswith('#!') or lines[0].startswith('# -*- ')):
+        lines = lines[1:]
+    return lines
 
 
 def read_pattern_conf(filename, dest, list_format=False, path=None):
@@ -900,7 +919,7 @@ def parse_config_files(path, bump, filemanager, version):
         buildpattern.set_build_pattern(content[0], 20)
         autoreconf = False
 
-    content = read_conf_file(os.path.join(path, "make_check_command"))
+    content = read_script_file(os.path.join(path, "make_check_command"))
     if content:
         check.tests_config = '\n'.join(content)
 
@@ -928,19 +947,19 @@ def parse_config_files(path, bump, filemanager, version):
         buildreq.add_buildreq("gcc-libgcc32")
         buildreq.add_buildreq("gcc-libstdc++32")
 
-    prep_prepend = read_conf_file(os.path.join(path, "prep_prepend"))
+    prep_prepend = read_script_file(os.path.join(path, "prep_prepend"))
     if os.path.isfile(os.path.join(path, "prep_append")):
         os.rename(os.path.join(path, "prep_append"), os.path.join(path, "build_prepend"))
-    make_prepend = read_conf_file(os.path.join(path, "make_prepend"))
-    build_prepend = read_conf_file(os.path.join(path, "build_prepend"))
-    build_append = read_conf_file(os.path.join(path, "build_append"))
-    install_prepend = read_conf_file(os.path.join(path, "install_prepend"))
+    make_prepend = read_script_file(os.path.join(path, "make_prepend"))
+    build_prepend = read_script_file(os.path.join(path, "build_prepend"))
+    build_append = read_script_file(os.path.join(path, "build_append"))
+    install_prepend = read_script_file(os.path.join(path, "install_prepend"))
     if os.path.isfile(os.path.join(path, "make_install_append")):
         os.rename(os.path.join(path, "make_install_append"), os.path.join(path, "install_append"))
-    install_append = read_conf_file(os.path.join(path, "install_append"))
+    install_append = read_script_file(os.path.join(path, "install_append"))
     service_restart = read_conf_file(os.path.join(path, "service_restart"))
 
-    profile_payload = read_conf_file(os.path.join(path, "profile_payload"))
+    profile_payload = read_script_file(os.path.join(path, "profile_payload"))
 
     custom_desc = read_conf_file(os.path.join(path, "description"))
     custom_summ = read_conf_file(os.path.join(path, "summary"))
