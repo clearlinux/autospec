@@ -219,6 +219,16 @@ requires_ban
 Controlling the build process
 ------------------------------
 
+extra_sources
+  This file contains a list of extra files to be added to the ``.spec`` and
+  optionally installed as well. Each non-blank and non-comment line should start
+  with the file name as found in the Git directory, followed by arguments to be
+  passed to the /usr/bin/install(3) command, with at least one argument starting
+  with a slash, denoting the destination directory (there's no need for
+  ``%{buildroot}``). If the install arguments are missing, Autospec will not
+  generate an installation command and the package should specify how to install
+  in the install_append file (see below).
+
 configure
   This file contains configuration flags to pass to the ``%configure`` macro for
   autotools based tarballs. As an example, adding ``--disable-static`` to

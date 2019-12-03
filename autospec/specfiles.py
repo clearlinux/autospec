@@ -54,6 +54,7 @@ class Specfile(object):
         self.packages = OrderedDict()
         self.requires = set()
         self.buildreqs = []
+        self.extra_sources = []
         self.patches = []
         self.verpatches = OrderedDict()
         self.default_desc = ""
@@ -177,7 +178,12 @@ class Specfile(object):
 
         # if package is verified, include the signature in the source tarball
         if self.keyid and config.signature:
-            self._write_strip(f"Source{count+1} : {config.signature}")
+            count += 1
+            self._write_strip(f"Source{count}  : {config.signature}")
+
+        for source in self.extra_sources:
+            count += 1
+            self._write("Source{0}  : {1}\n".format(count, source[0]))
 
     def write_summary(self):
         """Write package summary to spec file."""
@@ -936,6 +942,22 @@ class Specfile(object):
             self._write_strip("mkdir -p %{buildroot}/usr/lib/tmpfiles.d")
             self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/tmpfiles.d/{1}.conf"
                               .format(self.source_index[self.sources["tmpfile"][0]], self.name))
+
+        for source in self.extra_sources:
+            if len(source) == 1:
+                # Don't automatically install if we don't have install arguments
+                continue
+            actual_source = "%{_sourcedir}/" + source[0]
+            dest = None
+            install_args = []
+            for arg in source[1].split():
+                if dest is None and arg.startswith('/'):
+                    dest = arg
+                else:
+                    install_args.append(arg)
+            self._write_strip("mkdir -p %{{buildroot}}{0}".format(os.path.dirname(dest)))
+            self._write_strip("install {0} {1} %{{buildroot}}{2}"
+                              .format(" ".join(install_args), actual_source, dest))
 
     def write_cmake_install(self):
         """Write install section to spec file for cmake builds."""
