@@ -762,17 +762,22 @@ def parse_config_files(path, bump, filemanager, version):
     for banned in content:
         print("Banning build requirement: %s." % banned)
         buildreq.banned_buildreqs.add(banned)
+        buildreq.buildreqs.discard(banned)
+        buildreq.buildreqs_cache.discard(banned)
 
     content = read_conf_file(os.path.join(path, "pkgconfig_ban"))
     for banned in content:
         banned = "pkgconfig(%s)" % banned
         print("Banning build requirement: %s." % banned)
         buildreq.banned_buildreqs.add(banned)
+        buildreq.buildreqs.discard(banned)
+        buildreq.buildreqs_cache.discard(banned)
 
     content = read_conf_file(os.path.join(path, "requires_ban"))
     for banned in content:
         print("Banning runtime requirement: %s." % banned)
         buildreq.banned_requires.add(banned)
+        buildreq.requires.discard(banned)
 
     content = read_conf_file(os.path.join(path, "buildreq_add"))
     for extra in content:
