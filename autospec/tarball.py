@@ -33,7 +33,7 @@ import buildpattern
 import buildreq
 import config
 import download
-from util import call, print_fatal, write_out
+from util import call, print_fatal, write_out, do_regex
 
 name = ""
 rawname = ""
@@ -418,22 +418,16 @@ def name_and_version(name_arg, version_arg, filemanager):
         r"(.*-[0-9]+dpi)[-_]([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.(tgz|tar|zip)",
         r"(.*?)[-_][vs]?([0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.(tgz|tar|zip)",
     ]
-    for pattern in pattern_options:
-        m = re.search(pattern, tarfile)
-        if m:
-            name = m.group(1).strip()
-            version = convert_version(m.group(2), name)
-            break
+    match = do_regex(pattern_options, tarfile)
+    if match:
+        name = match.group(1).strip()
+        version = convert_version(match.group(2), name)
 
     # R package
-    if "cran.r-project.org" in url or "cran.rstudio.com" in url:
+    if "cran.r-project.org" in url or "cran.rstudio.com" in url and name:
         filemanager.want_dev_split = False
-        m = re.search(r"([A-Za-z0-9.]+)_(v*[0-9]+[a-zA-Z0-9\+_\.\~\-]*)\.tar\.gz",
-                      tarfile)
-        if m:
-            name = "R-" + m.group(1).strip()
-            rawname = m.group(1).strip()
-            version = convert_version(m.group(2), name)
+        rawname = name
+        name = "R-" + name
 
     if ".cpan.org/" in url or ".metacpan.org/" in url and name:
         name = "perl-" + name
@@ -448,24 +442,22 @@ def name_and_version(name_arg, version_arg, filemanager):
                            r"https?://github.com/(.*)/(.*?)/releases/download/(.*)/",
                            r"https?://github.com/(.*)/(.*?)/files/.*?/(.*).tar"]
 
-        for pattern in github_patterns:
-            m = re.search(pattern, url)
-            if m:
-                repo = m.group(2).strip()
-                if repo not in name:
-                    # Only take the repo name as the package name if it's more descriptive
-                    name = repo
-                elif name != repo:
-                    name = re.sub(r"release-", '', name)
-                    name = re.sub(r"\d*$", '', name)
-                rawname = name
-                version = m.group(3).replace(name, '')
-                if "archive" not in pattern:
-                    version = re.sub(r"^[-_.a-zA-Z]+", "", version)
-                version = convert_version(version, name)
-                if not giturl:
-                    giturl = "https://github.com/" + m.group(1).strip() + "/" + repo + ".git"
-                break
+        match = do_regex(github_patterns, url)
+        if match:
+            repo = match.group(2).strip()
+            if repo not in name:
+                # Only take the repo name as the package name if it's more descriptive
+                name = repo
+            elif name != repo:
+                name = re.sub(r"release-", '', name)
+                name = re.sub(r"\d*$", '', name)
+            rawname = name
+            version = match.group(3).replace(name, '')
+            if "archive" not in url:
+                version = re.sub(r"^[-_.a-zA-Z]+", "", version)
+            version = convert_version(version, name)
+            if not giturl:
+                giturl = "https://github.com/" + match.group(1).strip() + "/" + repo + ".git"
 
     if "gnome.org" in url:
         buildreq.add_buildreq("buildreq-gnome")
@@ -495,23 +487,19 @@ def name_and_version(name_arg, version_arg, filemanager):
     if "sourceforge.net" in url:
         scf_pats = [r"projects/.*/files/(.*?)/(.*?)/[^-]*(-src)?.tar.gz",
                     r"downloads.sourceforge.net/.*/([a-zA-Z]+)([-0-9\.]*)(-src)?.tar.gz"]
-        for pat in scf_pats:
-            m = re.search(pat, url)
-            if m:
-                name = m.group(1).strip()
-                version = convert_version(m.group(2), name)
-                break
+        match = do_regex(scf_pats, url)
+        if match:
+            name = match.group(1).strip()
+            version = convert_version(match.group(2), name)
 
     if "bitbucket.org" in url:
         bitbucket_pats = [r"/.*/(.*?)/.*/.*v([-\.0-9a-zA-Z_]*?).(tar|zip)",
                           r"/.*/(.*?)/.*/([-\.0-9a-zA-Z_]*?).(tar|zip)"]
-        for pat in bitbucket_pats:
-            m = re.search(pat, url)
-            version = 1
-            if m:
-                name = m.group(1).strip()
-                version = convert_version(m.group(2), name)
-                break
+
+        match = do_regex(bitbucket_pats, url)
+        if match:
+            name = match.group(1).strip()
+            version = convert_version(match.group(2), name)
 
     # ruby
     if "rubygems.org/" in url:
@@ -525,18 +513,6 @@ def name_and_version(name_arg, version_arg, filemanager):
                 name = name[:b]
             rawname = m.group(1).strip()
             version = convert_version(m.group(2), name)
-
-    # maven
-    if ".maven." in url:
-        maven_pats = [r"maven.org/maven2/[a-zA-Z\-\_]+/([a-zA-Z\-\_])+/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar)",
-                      r"maven.apache.org/maven2/[a-zA-Z\-\_]+/([a-zA-Z\-\_])+/([\d.]+)/[a-z-\_.\d]*\.(?:pom|jar)",
-                      r"maven.org/maven2/(?:[a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)"]
-        for pat in maven_pats:
-            m = re.search(pat, url)
-            if m:
-                name = m.group(1).strip()
-                version = convert_version(m.group(2), name)
-                break
 
     # rust crate
     if "crates.io" in url:
