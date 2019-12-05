@@ -18,6 +18,7 @@
 #
 
 import os
+import re
 import shlex
 import subprocess
 
@@ -63,6 +64,14 @@ def translate(package):
         if item.startswith(package + "="):
             return item.split("=")[1]
     return package
+
+
+def do_regex(patterns, re_str):
+    """Find a match in multiple patterns."""
+    for p in patterns:
+        match = re.search(p, re_str)
+        if match:
+            return match
 
 
 def print_fatal(message):
