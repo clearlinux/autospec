@@ -495,7 +495,9 @@ def read_script_file(path, track=True):
     lines = read_file(path, track=track)
     if len(lines) > 0 and (lines[0].startswith('#!') or lines[0].startswith('# -*- ')):
         lines = lines[1:]
-    return lines
+    # Remove any trailing whitespace and newlines. The newlines are later
+    # restored by writer functions.
+    return [line.rstrip() for line in lines]
 
 
 def read_pattern_conf(filename, dest, list_format=False, path=None):
