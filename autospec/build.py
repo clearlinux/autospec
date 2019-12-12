@@ -251,7 +251,7 @@ def parse_build_results(filename, returncode, filemanager):
         elif infiles == 1 and "not matching the package arch" not in line:
             # exclude blank lines from consideration...
             file = line.strip()
-            if file:
+            if file and file[0] == "/":
                 filemanager.push_file(file)
 
         if line.startswith("Sorry: TabError: inconsistent use of tabs and spaces in indentation"):
