@@ -19,7 +19,6 @@
 
 import configparser
 import glob
-import hashlib
 import os
 import re
 import shutil
@@ -33,7 +32,7 @@ import buildpattern
 import buildreq
 import config
 import download
-from util import call, print_fatal, write_out, do_regex
+from util import call, do_regex, get_sha1sum, print_fatal, write_out
 
 name = ""
 rawname = ""
@@ -72,20 +71,6 @@ def process_go_dependency(url, target):
         pass
     for ver in list(multi_version.keys()):
         get_go_artifacts(base_url, target, ver)
-
-
-def get_contents(filename):
-    """Get contents of filename (tar file)."""
-    with open(filename, "rb") as f:
-        return f.read()
-    return None
-
-
-def get_sha1sum(filename):
-    """Get sha1 sum of filename (tar file)."""
-    sh = hashlib.sha1()
-    sh.update(get_contents(filename))
-    return sh.hexdigest()
 
 
 def check_or_get_file(upstream_url, tarfile, mode="w"):
