@@ -276,7 +276,7 @@ KF5Baloo, baloo-dev
 KF5BalooWidgets, baloo-widgets-dev
 KF5BluezQt, bluez-qt-dev
 KF5Bookmarks, kbookmarks-dev
-KF5CalendarCore, kcalcore-dev
+KF5CalendarCore, kcalendarcore-dev
 KF5CalendarSupport, calendarsupport-dev
 KF5CalendarUtils, kcalutils-dev
 KF5CalendarUtilsConfig, kcalutils-dev
