@@ -21,7 +21,6 @@
 # exact matches on hashes of the COPYING file
 #
 
-import hashlib
 import os
 import re
 import shlex
@@ -33,7 +32,7 @@ import config
 import download
 
 import tarball
-from util import print_fatal, print_warning
+from util import get_contents, get_sha1sum, print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
 
@@ -99,20 +98,17 @@ def decode_license(license):
 
 def license_from_copying_hash(copying, srcdir):
     """Add licenses based on the hash of the copying file."""
-    data = tarball.get_contents(copying)
+    data = get_contents(copying)
+
     if data.startswith(b'#!'):
         # Not a license if this is a script
         return
-
-    raw_data = data
 
     data = decode_license(data)
     if not data:
         return
 
-    sh = hashlib.sha1()
-    sh.update(raw_data)
-    hash_sum = sh.hexdigest()
+    hash_sum = get_sha1sum(copying)
 
     if config.license_fetch:
         values = {'hash': hash_sum, 'text': data, 'package': tarball.name}

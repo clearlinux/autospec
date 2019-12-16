@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import hashlib
 import os
 import re
 import shlex
@@ -72,6 +73,20 @@ def do_regex(patterns, re_str):
         match = re.search(p, re_str)
         if match:
             return match
+
+
+def get_contents(filename):
+    """Get contents of filename."""
+    with open(filename, "rb") as f:
+        return f.read()
+    return None
+
+
+def get_sha1sum(filename):
+    """Get sha1 sum of filename."""
+    sh = hashlib.sha1()
+    sh.update(get_contents(filename))
+    return sh.hexdigest()
 
 
 def print_fatal(message):

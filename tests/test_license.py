@@ -9,6 +9,7 @@ import pycurl
 
 import download
 import license
+import util
 
 
 class TestLicense(unittest.TestCase):
@@ -55,17 +56,7 @@ class TestLicense(unittest.TestCase):
         """
         Test license_from_copying_hash with valid license file
         """
-        # Calls out to tarball.get_sha1sum to get the hash of the license
-        # we might as well test that is returning what it should because it
-        # doesn't call any external resources, it just calculates the hash.
-        open_name = 'tarball.open'
-        with open('tests/COPYING_TEST', 'rb') as copyingf:
-            content = copyingf.read()
-
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_copying_hash('copying.txt', '')
-
+        license.license_from_copying_hash('tests/COPYING_TEST', '')
         self.assertIn('GPL-3.0', license.licenses)
 
     def test_license_from_copying_hash_no_license_show(self):
@@ -73,39 +64,25 @@ class TestLicense(unittest.TestCase):
         Test license_from_copying_hash with invalid hash and no license_show
         set
         """
-        # Calls out to tarball.get_sha1sum to get the hash of the license
-        # we might as well test that is returning what it should because it
-        # doesn't call any external resources, it just calculates the hash.
-        open_name = 'tarball.open'
-        with open('tests/COPYING_TEST', 'rb') as copyingf:
-            content = copyingf.read()
-
-        bkup_hash = license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')]
+        bkup_hash = license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')]
         # remove the hash from license_hashes
-        del(license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')])
+        del(license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
         license.config.license_show = "license.show.url"
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            license.license_from_copying_hash('copying.txt', '')
+        license.license_from_copying_hash('tests/COPYING_TEST', '')
 
         # restore the hash
-        license.config.license_hashes[license.tarball.get_sha1sum('tests/COPYING_TEST')] = bkup_hash
+        license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')] = bkup_hash
         self.assertEquals(license.licenses, [])
 
     def test_license_from_copying_hash_bad_license(self):
         """
         Test license_from_copying_hash with invalid license file
         """
-        # Calls out to tarball.get_sha1sum to get the hash of the license
-        # we might as well test that is returning what it should because it
-        # doesn't call any external resources, it just calculates the hash.
-        open_name = 'tarball.open'
-        with open('tests/COPYING_TEST', 'rb') as copyingf:
-            # note the replace corrupting the file contents
-            content = copyingf.read().replace(b"GNU", b"SNU")
+        content = util.get_contents("tests/COPYING_TEST").replace(b"GNU", b"SNU")
+        m_open = MagicMock()
+        m_open.__str__.return_value = content
 
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
+        with patch('license.get_contents', m_open, create=True):
             license.license_from_copying_hash('copying.txt', '')
 
         self.assertEquals(license.licenses, [])
@@ -138,21 +115,12 @@ class TestLicense(unittest.TestCase):
         download.pycurl.Curl = MockCurl
 
         license.config.license_fetch = 'license.server.url'
-        with open('tests/COPYING_TEST', 'rb') as copyingf:
-            content = copyingf.read()
 
-        # Calls out to tarball.get_sha1sum to get the hash of the license
-        # we might as well test that is returning what it should because it
-        # doesn't call any external resources, it just calculates the hash.
-        # Also patch the open in license.py
-        m_open = mock_open(read_data=content)
-        with patch('tarball.open', m_open, create=True):
-            with patch('license.open', m_open, create=True):
-                # let's check that the proper thing is being printed as well
-                out = StringIO()
-                with redirect_stdout(out):
-                    with self.assertRaises(SystemExit):
-                        license.license_from_copying_hash('copying.txt', '')
+        # let's check that the proper thing is being printed as well
+        out = StringIO()
+        with redirect_stdout(out):
+            with self.assertRaises(SystemExit):
+                license.license_from_copying_hash('tests/COPYING_TEST', '')
 
         self.assertIn('Unable to fetch license.server.url: Test Exception', out.getvalue())
 
@@ -200,20 +168,11 @@ class TestLicense(unittest.TestCase):
         download.pycurl.Curl = MockCurl
 
         license.config.license_fetch = 'license.server.url'
-        with open('tests/COPYING_TEST', 'rb') as copyingf:
-            content = copyingf.read()
 
-        # Calls out to tarball.get_sha1sum to get the hash of the license
-        # we might as well test that is returning what it should because it
-        # doesn't call any external resources, it just calculates the hash.
-        # Also patch the open in license.py
-        m_open = mock_open(read_data=content)
-        with patch('tarball.open', m_open, create=True):
-            with patch('license.open', m_open, create=True):
-                # let's check that the proper thing is being printed as well
-                out = StringIO()
-                with redirect_stdout(out):
-                    license.license_from_copying_hash('copying.txt', '')
+        # let's check that the proper thing is being printed as well
+        out = StringIO()
+        with redirect_stdout(out):
+            license.license_from_copying_hash('tests/COPYING_TEST', '')
 
         self.assertIn('GPL-3.0', license.licenses)
         self.assertIn('License     :  GPL-3.0  (server)', out.getvalue())
