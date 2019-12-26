@@ -1118,8 +1118,8 @@ class Specfile(object):
 
         if config.config_opts['use_avx512']:
             self._write_strip("unset PKG_CONFIG_PATH")
-            self.write_build_prepend()
             self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
