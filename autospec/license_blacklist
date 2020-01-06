@@ -4,6 +4,7 @@
 # Lines beginning with '#' are ignored.
 %license
 (LGPL)
+(new)
 (specified
 +
 -
@@ -28,6 +29,7 @@ BSD
 BSD(3
 BSD-like
 BSD-style
+BSDL
 BSD_3_clause
 BSDish
 BSL
@@ -58,6 +60,7 @@ LGPL/MIT
 LICENCE
 Licences
 License
+License(2.0)
 License(==-2.0)
 License,
 License-2.0
@@ -68,21 +71,27 @@ MPL
 Modified
 Mozilla
 Muddy-MIT
+N/A
 New
 OFL
+OR
+Open
 PIL
 PSF-2+
 PUBLIC
 Public
+Revised
 SIL
 See
 Software
+Source
 Standard
 The
 Two-clause
 UN
 UNKNOWN
 Unknown
+Unkown
 Unlimited
 Version
 Version-2.0
@@ -109,12 +118,14 @@ new
 none
 on
 open_source
+option
 option)
 or
 or(at
 others
 public
 style
+the
 under?
 unknown
 unrestricted

@@ -37,6 +37,7 @@
 -laspell, aspell-dev
 -lassuan, libassuan-dev
 -lattr, attr-dev
+-laudit, audit-dev
 -lblkid, util-linux-dev
 -lbz2, bzip2-dev
 -lc, glibc-staticdev
@@ -48,7 +49,9 @@
 -lcunit, CUnit-dev
 -lcups, cups-dev
 -lcurl, curl-dev
+-lcurses, ncurses-dev
 -lelf, elfutils-dev
+-lev, libev-dev
 -lexpat, expat-dev
 -lfontconfig, fontconfig-dev
 -lgcrypt, libgcrypt-dev
@@ -64,6 +67,7 @@
 -ljemalloc, jemalloc-dev
 -ljpeg, libjpeg-turbo-dev
 -ljpeg-mmx, libjpeg-turbo-dev
+-ljson-c, json-c-dev
 -lkeyutils, keyutils-dev
 -lkrb5, krb5-dev
 -lldap, openldap-dev
@@ -77,20 +81,26 @@
 -lnfsidmap, libnfsidmap-dev
 -lnghttp2, nghttp2-dev
 -lnl, libnl-dev
+-lnuma, numactl-dev
 -lodbc, unixODBC-dev
 -lopenblas, openblas
 -lpam, Linux-PAM-dev
+-lparted, parted-dev
 -lpcap, libpcap-dev
 -lpcre, pcre-dev
 -lpopt, popt-dev
 -lproxy, pacrunner-dev
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
+-lsensors, lm-sensors-dev
 -lssh, libssh-dev
 -lssl, openssl-dev
+-ltermcap, ncurses-dev
 -ltirpc, libtirpc-dev
 -luuid, util-linux-dev
 -lvorbisidec, libvorbis-dev
+-lvulkan, Vulkan-Loader-dev
+-lwebp, libwebp-dev
 -lxml2, libxml2-dev
 -lz, zlib-dev
 -lzstd, zstd-dev
@@ -102,6 +112,7 @@ ACL_TYPE_EXTENDED, acl-dev
 ALSA, alsa-lib-dev
 APR, apr-dev
 APR-util, apr-util-dev
+ASSIMP, assimp-dev
 Analitza, analitza-dev
 Analitza5, analitza-dev
 BABL, babl-dev
@@ -115,12 +126,15 @@ Boost, boost-dev
 Breeze, breeze-dev
 CAIRO, cairo-dev
 CARES, c-ares-dev
+CGAL, CGAL-dev
 CHECK, check
 CLUTTER, clutter-dev
 COLORD, colord-dev
 CUNIT, CUnit-dev
 CURL, curl-dev
 CU_initialize_registry in -lcunit, CUnit-dev
+CUnit/CUnit.h, CUnit-dev
+Canberra, libcanberra-dev
 CommonMark, commonmark
 Curses, ncurses-dev
 D-Bus .pc file, dbus-dev
@@ -146,9 +160,11 @@ EXIV2, exiv2-dev
 EXPAT, expat-dev
 Eet.h, eet-dev
 Eigen/Core, eigen-dev
+Eigen/Dense, eigen-dev
 Eigen3, eigen-dev
 Exiv2, exiv2-dev
 Expat 1.95.x, expat-dev
+Expat XML Parser, expat-dev
 Expat, expat-dev
 ExtUtils::Depends, perl(ExtUtils::Depends)
 ExtUtils::PkgConfig, perl(ExtUtils::PkgConfig)
@@ -157,6 +173,9 @@ FcInit in -lfontconfig, pkgconfig(fontconfig)
 FcPatternCreate in -lfontconfig, pkgconfig(fontconfig)
 FindAkonadi, akonadi-dev
 FindAnalitza, analitza-dev
+FindAnalitza5, analitza-dev
+FindBreeze, breeze-dev
+FindCGAL, CGAL-dev
 FindCUPS, cups-dev
 FindDolphinVcs, dolphin-dev
 FindEigen3, eigen-dev
@@ -170,6 +189,7 @@ FindKDecoration2, kdecoration-dev
 FindKF5Archive, karchive-dev
 FindKF5Attica, attica-dev
 FindKF5Baloo, baloo-dev
+FindKF5BluezQt, bluez-qt-dev
 FindKF5Bookmarks, kbookmarks-dev
 FindKF5Codecs, kcodecs-dev
 FindKF5Contacts, kcontacts-dev
@@ -179,9 +199,11 @@ FindKF5Emoticons, kemoticons-dev
 FindKF5GlobalAccel, kglobalaccel-dev
 FindKF5GuiAddons, kguiaddons-dev
 FindKF5I18n, ki18n-dev
+FindKF5IdleTime, kidletime-dev
 FindKF5Init, kinit-dev
 FindKF5ItemViews, kitemviews-dev
 FindKF5JS, kjs-dev
+FindKF5KDEGames, libkdegames-dev
 FindKF5KDEGames, libkkdegames-dev
 FindKF5KIO, kio-dev
 FindKF5Kirigami2, kirigami2-dev
@@ -191,6 +213,8 @@ FindKF5Package, kpackage-dev
 FindKF5Parts, kparts-dev
 FindKF5PimCommon, pimcommon-dev
 FindKF5Plasma, plasma-framework-dev
+FindKF5Plotting, kplotting-dev
+FindKF5Prison, prison-dev
 FindKF5Pty, kpty-dev
 FindKF5Runner, krunner-dev
 FindKF5Screen, libkscreen-dev
@@ -200,6 +224,7 @@ FindKF5Sonnet, sonnet-dev
 FindKF5SysGuard, libksysguard-dev
 FindKF5Wallet, kwallet-dev
 FindKF5XmlGui, kxmlgui-dev
+FindKTp, ktp-common-internals-dev
 FindNepomukCore, nepomuk-core-dev
 FindNepomukWidgets, nepomuk-widgets-dev
 FindOpenCV, opencv-dev
@@ -209,6 +234,7 @@ FindQt4, qt-everywhere-opensource-src-dev
 FindQt5X11Extras, qtx11extras-dev
 FindStrigi, strigi-dev
 FindTaglib, kdelibs4support-dev
+FindTelepathyQt5, telepathy-qt-dev
 Findexpat, expat-dev
 Flask, Flask
 Fontconfig, pkgconfig(fontconfig)
@@ -219,6 +245,7 @@ GD, gd-dev
 GDBM, gdbm-dev
 GDM_PAM_EXTENSIONS, gdm-dev
 GEGL, gegl-dev
+GEOCLUE, geoclue-dev
 GIF, giflib-dev
 GL/gl.h, mesa-dev
 GL/glu.h, glu-dev
@@ -227,32 +254,43 @@ GL/glx.h, pkgconfig(gl)
 GLEW, glew-dev
 GLIB, glib-dev
 GLIB2, glib-dev
+GLM, glm-dev
 GLUT library, freeglut-dev
+GLUT, freeglut-dev
 GMP, gmp-dev
 GNU MP, gmp-dev
 GNU libidn, libidn-dev
 GNUTLS, gnutls-dev
 GPGME, gpgme-dev
+GRAPHENE, graphene-dev
 GSTREAMER, gstreamer-dev
 GSettingSchemas, gsettings-desktop-schemas
+GSettingSchemas, gsettings-desktop-schemas-dev
 GTK, gtk+-dev
 GnuTLS, gnutls-dev
+GooglePerftools, gperftools-dev
 Gperf, gperf
 Gpgmepp, gpgme-dev
 Gphoto2, libgphoto2-dev
 Grantlee5, grantlee-dev
+Gtk+ 3.0 library, gtk3-dev
 HSPELL, hunspell-dev
 ICU, icu4c-dev
 IDN, libidn-dev
+IMAGEMAGICK, ImageMagick-dev
+IPython, ipython
+IT_PROG_INTLTOOL, intltool-dev
 IVORBIS, libvorbis-dev
 IceConnectionNumber in -lICE, pkgconfig(ice)
 IceConnectionNumber, pkgconfig(ice)
 IceOpenConnection in -lICE, pkgconfig(ice)
+ImageMagick, ImageMagick
 ImathInt64.h, pkgconfig(IlmBase)
 Intltool, intltool-dev
 JASPER, jasper-dev
 JPEG, libjpeg-turbo-dev
 JSON, json-dev
+JSONC, json-c-dev
 Jasper, jasper-dev
 Judy, Judy-dev
 KDBusService, kdbusaddons-dev
@@ -282,6 +320,7 @@ KF5CalendarUtils, kcalutils-dev
 KF5CalendarUtilsConfig, kcalutils-dev
 KF5Cddb, libkcddb-dev
 KF5Codecs, kcodecs-dev
+KF5CompactDisc, libkcompactdisc-dev
 KF5Completion, kcompletion-dev
 KF5Config, kconfig-dev
 KF5ConfigWidgets, kconfigwidgets-dev
@@ -316,6 +355,7 @@ KF5JsEmbed, kjsembed-dev
 KF5KCMUtils, kcmutils-dev
 KF5KDEGames, libkdegames-dev
 KF5KDELibs4Support, kdelibs4support-dev
+KF5KDcraw, libkdcraw-dev
 KF5KHtml, khtml-dev
 KF5KIO, kio-dev
 KF5KMahjongglib, libkmahjongg-dev
@@ -352,7 +392,9 @@ KF5Plasma, plasma-framework-dev
 KF5Plotting, kplotting-dev
 KF5Prison, prison-dev
 KF5Pty, kpty-dev
+KF5Purpose, purpose-dev
 KF5Runner, krunner-dev
+KF5Sane, libksane-dev
 KF5Screen, libkscreen-dev
 KF5Service, kservice-dev
 KF5Solid, solid-dev
@@ -382,6 +424,7 @@ KPimSMTPConfig, ksmtp-dev
 KScreenLocker, kscreenlocker-dev
 KTP, ktp-common-internals-dev
 KdepimLibs, kdepimlibs-dev
+Kerberos 5, krb5-dev
 LEX, flex bison
 LIBCAP_NG_PATH, libcap-ng-dev
 LIBEXIF, libexif-dev
@@ -390,12 +433,17 @@ LIBGD, libgd-dev
 LIBICAL, libical-dev
 LIBKONQ, kde-baseapps-dev
 LIBLZMA, xz-dev
+LIBNOTIFY, libnotify-dev
+LIBPCREVERSION, pcre-dev
 LIBRSVG, librsvg-dev
+LIBSYSTEMD, systemd-dev
 LIBTASN1, libtasn1-dev
 LIBUSB, libusb-dev
 LIBUSB1, libusb-dev
 LIBUV, libuv-dev
+LIBV4L2, v4l-utils-dev
 LIBXML, libxml2-dev
+LLVM, llvm-dev
 LMDB, lmdb-dev
 LUA, lua-dev
 LensFun, lensfun-dev
@@ -406,10 +454,13 @@ LibKEduVocDocument, libkeduvocdocument-dev
 LibKWorkspace, plasma-workspace-dev
 LibKrb5, krb5-dev
 LibLZMA, xz-dev
+LibR, R-dev
 LibSSH, libssh-dev
 LibXml2, libxml2-dev
 LibXslt, libxslt-bin
 Libcap, libcap-dev
+Lua51, lua-dev
+LuaJIT, LuaJIT-dev
 MDDS, mdds-dev
 MPFR, mpfr-dev
 MediaPlayerInfo, media-player-info
@@ -420,15 +471,20 @@ Nepomuk, nepomuk-core-dev
 NetworkManager, NetworkManager-dev
 NumPy, numpy
 Numa, numactl-dev
+OPENEXR, openexr-dev
+Octave, octave-dev
 Ogg, libogg-dev
 OpenAL/al.h, openal-soft-dev
+OpenCL, ocl-icd-dev
 OpenCV, opencv-dev
 OpenGL X11, mesa-dev
 OpenGL library, mesa-dev
 OpenGL, mesa-dev
 OpenGL/gl.h, mesa-dev
 OpenGL/glu.h, glu-dev
+OpenSSL library, openssl-dev
 OpenSSL, openssl-dev
+PAM headers and library, Linux-PAM-dev
 PAM, Linux-PAM-dev
 PCAP, libpcap-dev
 PCIUTILS, pciutils-dev
@@ -439,17 +495,22 @@ POSIX ACL, acl-dev
 PULSEAUDIO, pulseaudio-dev
 Phonon, phonon-dev
 Phonon4Qt5, phonon-dev
+PolkitQt5-1, polkit-qt-dev
 Poppler, poppler-dev
 PopplerQt4, poppler-dev
 PrettyTable, prettytable
 PulseAudio, pulseaudio-dev
+PyEnchant, pyenchant
 PyJWT, PyJWT
+PyQt5, PyQt5
+PyYAML, PyYAML
 Python, python3-dev
 Python.h, python3-dev
 PythonLibs, python3-dev
 PythonLibsUnix, python3-dev
 QGpgme, gpgme-dev
 QImageBlitz, qimageblitz-dev
+QREncode, qrencode-dev
 QRencode, qrencode-dev
 QT, buildreq-kde
 Qalculate, libqalculate-dev
@@ -457,19 +518,33 @@ Qca-qt5, qca-qt5-dev
 Qt4, qt-everywhere-opensource-src-dev
 Qt5Core, qtbase-dev
 Qt5Declarative, qtdeclarative-dev
+Qt5Help, qttools-dev
+Qt5LinguistTools, qttools-dev
+Qt5Network, qtbase-dev
+Qt5Script, qtscript-dev
+Qt5SerialPort, qt5serialport-dev
+Qt5Svg, qtsvg-dev
 Qt5WebEngine, qtwebengine-dev
 Qt5WebEngineWidgets, qtwebengine-dev
 Qt5X11Extras, qtx11extras-dev
+Qt5Xdg, libqtxdg-dev
+Qt5XdgIconLoader, libqtxdg-dev
+Qt5XmlPatterns, qtxmlpatterns-dev
 R, R
+READLINE, readline-dev
+RSVG, librsvg-dev
 Routes, Routes
 SDL, pkgconfig(sdl)
 SDL2/SDL.h, SDL2-dev
+SFML, SFML-dev
 SLANG, slang-dev
 SNDFILE, libsndfile-dev
 SQLAlchemy, SQLAlchemy
 SVG, librsvg-dev
+SYSTEMD, systemd-dev
 Samplerate, libsamplerate-dev
 Sasl2, cyrus-sasl-dev
+Sass, sassc
 SharedDesktopOntologies, shared-desktop-ontologies-dev
 SharedMimeInfo, shared-mime-info
 Snappy, snappy-dev
@@ -481,7 +556,6 @@ Startup notification library, libnotify-dev
 TBB, tbb-dev
 TIFF, tiff-dev
 TLS_method in -lssl, openssl-dev
-Taglib, taglib-dev
 Taglib, taglib-dev
 Tcl configuration, tcl
 TelepathyQt5, telepathy-qt-dev
@@ -515,6 +589,7 @@ X11/extensions/XIproto.h, pkgconfig(xi)
 X11/extensions/XKBrules.h, libxkbfile-dev
 X11/extensions/XResproto.h, pkgconfig(resourceproto)
 X11/extensions/XShm.h, pkgconfig(xext)
+X11/extensions/XTest.h, libXtst-dev
 X11/extensions/Xcomposite.h, libXcomposite-dev
 X11/extensions/Xdamage.h, libXdamage-dev
 X11/extensions/Xfixes.h, libXfixes-dev
@@ -538,10 +613,13 @@ XML, libxml2-dev
 XML::Parser, perl(XML::Parser)
 XML::Simple, perl(XML::Simple)
 XMLTO, xmlto
+XML_StopParser, expat-dev
 XOpenDisplay, pkgconfig(xext)
 XTest extension, libXtst-dev
 Xapian, xapian-core-dev
 Xcursor, pkgconfig(xcursor)
+XdgUserDirs, xdg-user-dirs
+Xerces C++ Parser, xerces-c-dev
 Xerces-C, xerces-c-dev
 Xinerama on XFree86, libXinerama-dev
 Xinerama, libXinerama-dev
@@ -559,6 +637,7 @@ a french Unicode locale, glibc-locale
 a traditional french locale, glibc-locale
 a traditional japanese locale, glibc-locale
 a transitional chinese locale, glibc-locale
+accountsservice, accountsservice-dev
 acl/libacl.h, acl-dev
 acl_copy_ext_native, acl-dev
 acl_create_entry_np, acl-dev
@@ -570,8 +649,10 @@ acl_get_fd, acl-dev
 acl_get_file in -lacl, acl-dev
 acl_init, acl-dev
 acl_to_short_text, acl-dev
+aio_fork in dynamic library aio, libaio-dev
 aiohttp, aiohttp
 akonadi/private/imapparser_p.h, akonadi-dev
+alsa >= 1.0.18, alsa-dev
 alsa, pkgconfig(alsa)
 alsa/asoundlib.h, alsa-lib-dev
 amtk-5, amtk-dev
@@ -586,9 +667,11 @@ ares.h, c-ares-dev
 asciidoc, asciidoc
 asn1Parser, libtasn1-dev
 aspell headers and libraries, aspell-dev
+aspell, aspell-dev
 aspell.h, aspell-dev
 astral, astral
 atomic_ops.h, libatomic_ops-dev
+atspi-2, at-spi2-core-dev
 attr/libattr.h, attr-dev
 attr/xattr.h, attr-dev
 autoconf, autoconf
@@ -613,10 +696,13 @@ boost/intrusive_ptr.hpp, boost-dev
 boost/spirit/include/qi.hpp, boost-dev
 boost/unordered_map.hpp, boost-dev
 bs4, beautifulsoup4
+building gtk3 engine, gtk3-dev
 byacc, bison
 bzlib.h, bzip2-dev
 cURL, curl-dev
+cairo, cairo-dev
 cairo/cairo-xcb.h, cairo-dev
+canberra-gtk.h, libcanberra-dev
 cap-ng.h, libcap-ng-dev
 cap_init in -lcap, libcap-dev
 cap_init, libcap-dev
@@ -631,10 +717,15 @@ cliff, cliff
 cmake, cmake
 cmdtest, cmdtest
 cmp, diffutils
+col, util-linux
+colamd.h, SuiteSparse-dev
+colord >= 0.1.27, colord-dev
+colord, colord-dev
 compress2 in -lz, zlib-dev
 convert, ImageMagick
 cppcheck, cppcheck
 crack.h, cracklib-dev
+ctags, ctags
 cups-config, cups-dev
 cups/cups.h, cups-dev
 cups/ppd.h, cups-dev
@@ -642,6 +733,7 @@ curl, curl-dev
 curl-config, curl-dev
 curl.h, curl-dev
 curl/curl.h, curl-dev
+curl_easy_init in -lcurl, curl-dev
 curses.h, pkgconfig(ncurses)
 cython, Cython
 cython.py, Cython-dev
@@ -651,10 +743,12 @@ dbus-1, dbus-dev
 dbus-broker-launch, dbus-broker
 dbus/dbus.h, dbus-dev
 dbusmenu, libdbusmenu-dev
+dbusmenu-qt5, libdbusmenu-qt-dev
 dconf, dconf-dev
 ddt, ddt
 debtcollector, debtcollector
 decorator, decorator
+deflate, zlib-dev
 deflateBound in -lz, zlib-dev
 designer, qttools-dev
 desktop-file-install, desktop-file-utils
@@ -662,14 +756,18 @@ desktop-file-validate, desktop-file-utils
 dialog, dialog
 diff, diffutils
 django, Django
+dm-tool, lightdm
 dnsmasq, dnsmasq
 docbook manpages stylesheet, docbook-xml
+docbook2html, docbook-utils
 docbook2man, docbook-utils
+docutils, docutils
 dot, graphviz
 doxygen, doxygen
 dummy main to link with Fortran 77 libraries, gfortran
 dvipdf, texlive
 efi.h, gnu-efi
+eigen3, eigen-dev
 elfutils-dev, elfutils-dev
 emacs, emacs
 enlightenment_start, pkgconfig(enlightenment)
@@ -678,9 +776,12 @@ erl, otp
 et/com_err.h, e2fsprogs-dev
 eu-readelf, elfutils
 eventlet, eventlet
+evince-document-3.0, evince-dev
 exempi-2.0, exempi-dev
+exiv2, exiv2-dev
 exo-1, pkgconfig(exo-1)
 expat, expat-dev
+expat-config, expat-dev
 expat.h, expat-dev
 extras, extras
 ez_setup, setuptools
@@ -688,16 +789,23 @@ ffi.h, libffi-dev
 ffi_call, libffi-dev
 fftw3.h, fftw-dev
 find_packages, setuptools
+flatbuffers/flatbuffers.h, FlatBuffers-dev
+flatpak, flatpak-dev
 flex, flex
 fltk-config, fltk-dev
+fm-qt, libfm-qt-dev
 folks, folks-dev
 fontconfig, pkgconfig(fontconfig)
 fontconfig.h, fontconfig-dev
 fontconfig/fontconfig.h, fontconfig-dev
+freerdp2, freerdp-dev
 freetype-config, freetype-dev
+fuse (via pkg-config), compat-fuse-soname2-dev fuse-dev
 fuse, fuse-dev
+fuse.h, fuse-dev
 fuse3, fuse-dev
 future, python-future
+futurist, futurist
 g-ir-scanner, gobject-introspection
 gabbi, gabbi
 gawk, gawk
@@ -705,11 +813,16 @@ gc/gc.h, gc-dev
 gcj, gcj
 gconftool-2, GConf-dev
 gcrypt.h, libgcrypt-dev
+gdal-config, gdal-dev
 gdbm.h, gdbm-dev
+gdesktop-enums.h, gsettings-desktop-schemas-dev
+gdk-pixbuf-xlib-2.0, gdk-pixbuf-dev
+gdm, gdm-dev
 gee-0.8, libgee-dev
 gem, ruby
 geoclue-2.0, geoclue-dev
 geocode-glib-1.0, geocode-glib-dev
+geos-config, geos-dev
 get_mempolicy, numactl-dev
 getopt, util-linux
 gevent, gevent
@@ -717,15 +830,22 @@ gflags, gflags-dev
 gfortran, gfortran
 gi, pygobject
 gif_lib.h, giflib-dev
+gio-2.0, glib-dev
+giomm-2.4, glibmm-dev
+gjs-1.0, gjs-dev
 glib-2.0, glib-dev
 glib-compile-schemas, glib-bin
 glib-gettext.m4, glib-dev
+glib.h, glib-dev
 glm/glm.hp, glm-dev
 glm/glm.hpp, glm-dev
 glog, glog-dev
 gmp.h, gmp-dev
 gmsgfmt, gettext
+gnome-desktop-3.0, gnome-desktop-dev
+gnome-doc-utils >= 0.3.2, gnome-doc-utils
 gnome-session, gnome-session
+gnome-settings-daemon, gnome-settings-daemon-dev
 gnuplot, gnuplot
 gnutls, gnutls-dev
 gnutls/gnutls.h, gnutls-dev
@@ -744,28 +864,39 @@ gpgme, gpgme-dev
 gpgme.h, gpgme-dev
 gphoto2-config, libgphoto2-dev
 gphoto2-port.h, libgphoto2-dev
+gpm, gpm-dev
+gpm.h, gpm-dev
 grilo-plugins-0.3, grilo-plugins-dev
 groff, groff
 gs, ghostscript
 gsapi_new_instance in -lgs, ghostscript-dev
 gsapi_new_instance, ghostscript
+gsettings-desktop-schemas, gsettings-desktop-schemas
 gsl_rng_uniform_int in -lgsl, gsl-dev
+gsound, gsound-dev
+gspell-1, gspell-dev
 gssapi/gssapi.h, krb5-dev
 gst/gst.h, gstreamer-dev
 gstreamer-1.0, gstreamer-dev
 gstreamer-audio-1.0, pkgconfig(gstreamer-audio-1.0)
 gstreamer-plugins-base-1.0, gst-plugins-base-dev
+gtest/gtest.h, googletest-dev
 gtk+-2.0, gtk+-dev
 gtk-config, pkgconfig(gtk+-2.0)
 gtk-doc documentation, gtk-doc
 gtk-doc, gtk-doc-dev
 gtk-update-icon-cache, pkgconfig(gtk+-3.0)
 gtkdoc-scan, gtk-doc
+gtkmm-3.0, gtkmm3-dev
+gtksourceview-4, gtksourceview-dev
+gudev-1.0, libgudev-dev
 gweather-3.0, libgweather-dev
 hacking, hacking
 hdf5.h, hdf5-dev
+header readline/readline.h, readline-dev
 help2man, help2man
 hypothesis, hypothesis
+ibus-1.0, ibus-dev
 ibverbs, libibverbs-dev
 ice, libICE-dev
 iceauth, iceauth-bin
@@ -780,8 +911,10 @@ intltool-merge, intltool
 intltool-update, intltool
 intltool.m4, intltool-dev
 ipython, ipython
+iso-codes, pkgconfig(iso-codes)
 itstool, itstool
 jade, openjade-dev
+jags, JAGS-dev
 jansson.h, jansson-dev
 java, openjdk
 jpeg_read_scanlines in -ljpeg, libjpeg-turbo-dev
@@ -790,9 +923,12 @@ jpeg_set_defaults in -ljpeg-mmx, libjpeg-turbo-dev
 jpeglib.h, libjpeg-turbo-dev
 jquery_ui, XStatic-jquery-ui
 json-glib-1.0, json-glib-dev
+json/json.h, jsoncpp-dev
+jsonpatch, jsonpatch
+jsonpointer, jsonpointer
+jsonrpc-glib-1.0, jsonrpc-glib-dev
 jsonschema, jsonschema
 kde4-config, kdelibs-dev
-key_serial_t, keyutils-dev
 key_serial_t, keyutils-dev
 keyctl_read in -lkeyutils, keyutils-dev
 keystoneauth, keystoneauth1
@@ -805,6 +941,7 @@ krb5-config, krb5-dev
 krb5.h, krb5-dev
 krb5/krb.h, krb5-dev
 krb5/krb5.h, krb5-dev
+krb5_get_err_text in -lkrb5, krb5-dev
 ksba-config, libksba-dev
 lber.h, openldap-dev
 lcms2, lcms2-dev
@@ -826,44 +963,67 @@ libarchive, libarchive-dev
 libassuan, libassuan-dev
 libassuan-config, libassuan-dev
 libcanberra-gtk, libcanberra-dev
+libcanberra-gtk3, libcanberra-dev
 libcap, libcap-dev
+libcurl is usable, curl-dev
+libcurl, curl-dev
 libdazzle-1.0, libdazzle-dev
 libdb, db
+libdevhelp-3.0, devhelp-dev
+libdrm_freedreno, libdrm-dev
+libecal-1.2, evolution-dev
 libelf.h, elfutils-dev
 libexpat, expat-dev
 libgcrypt, libgcrypt-dev
 libgcrypt-config, libgcrypt-dev
 libgeoclue-2.0, geoclue-dev
+libgit2, libgit2-dev
+libgit2-glib-1.0, libgit2-glib-dev
 libgnutls, gnutls-dev
 libgnutls-config, gnutls-dev
 libgpg-error, libgpg-error-dev
 libgtop, libgtop-dev
+libhandy-0.0, libhandy-dev
 libiberty.h, binutils-dev
 libkmod.h, kmod-dev
 libksba, libksba-dev
 liblzma, xz-dev
 libmnl/libmnl.h, libmnl-dev
 libmpfr, mpfr-dev
+libmspack >= 0.0.20040308alpha (via pkg-config), libmspack-dev
 libnautilus-extension, nautilus-dev
 libnettle, nettle-dev nettle-lib
+libnftnl, libnftnl-dev
 libnl-1, libnl-dev
 libnotify, libnotify-dev
+libpeas-1.0, libpeas-dev
+libpipewire-0.2, pipewire-dev
 libpng, pkgconfig(libpng)
 libpng-config, pkgconfig(libpng)
 libpng/png.h, pkgconfig(libpng)
 libproxy-1.0 pkg-config data, pacrunner-dev
+libproxy-1.0, pacrunner-dev
+libpsl, libpsl-dev
+libqhull/libqhull.h, qhull-dev
 library ldap, openldap-dev
+librdkafka/rdkafka.h, librdkafka-dev
 librsvg-2.0, librsvg-dev
 libseccomp, libseccomp-dev
 libsecret-1, libsecret-dev
+libsecret-1, pkgconfig(libsecret-1)
+libsecret-unstable, libsecret-dev
 libsoup-2.4, libsoup-dev
 libssh, libssh-dev
+libssh2.h, libssh2-dev
 libsystemd, pkgconfig(systemd)
+libtirpc (via pkg-config), pkgconfig(libtirpc)
 libudev.h, systemd-dev
 libusb-1.0, libusb-dev
 libusb-1.0/libusb.h, libusb-dev
 libv4l2, pkgconfig(libv4l2)
 libva, libva-dev
+libwacom, libwacom-dev
+libwebp, libwebp-dev
 libxml library, libxml2-dev
 libxml/SAX2.h, libxml2-dev
 libxml/xmlversion.h, libxml2-dev
@@ -879,7 +1039,11 @@ lrelease, qttools-dev
 ltdl.h, libtool-dev
 lua, lua-dev
 lupdate, qttools-dev
+lvm2app.h, LVM2-dev
 lxml, lxml
+lxqt, liblxqt-dev
+lxqt-build-tools, lxqt-build-tools
+lxqt-globalkeys, lxqt-globalkeys-dev
 lzma, xz-dev
 lzma.h, xz-dev
 lzo/lzoconf.h, lzo-dev
@@ -888,6 +1052,7 @@ magic_file in -lmagic, file-dev
 main in -lX11, libX11-dev
 makedepend, makedepend
 makeinfo, texinfo
+markdown, Markdown
 mate-autogen, mate-common-dev
 mate-common.m4, mate-common-dev
 mate-compiler-flags.m4, mate-common-dev
@@ -905,12 +1070,14 @@ mpg123.h, mpg123-dev
 msgfmt, gettext
 msgmerge, gettext
 msgpack, msgpack-python
+mutter-clutter-4, mutter-dev
 mysql_config, mariadb-dev
 nasm, nasm-bin
 nasmw, nasm
 nc, netcat
 ncurses.h, ncurses-dev
 ncurses.h, pkgconfig(ncursesw)
+ncurses/curses.h, ncurses-dev
 ncurses/term.h, ncurses-dev
 ncursesw, ncurses-dev
 ncursesw.h, ncurses-dev
@@ -922,6 +1089,7 @@ new_aspell_speller in -laspell, aspell-dev
 nfsidmap.h, libnfsidmap-dev
 nghttp, nghttp2-dev
 nl_handle_alloc, libnl-dev
+node, nodejs
 nose, nose
 nosexcover, nosexcover
 notmuch.h, notmuch-dev
@@ -931,6 +1099,7 @@ nsupdate, bind-utils
 numa.h, numactl-dev
 numpy, numpy
 oauth, liboauth-dev
+olsotest, oslotest
 oniguruma.h, onig-dev
 opencsg.h, OpenCSG-dev
 openssl, openssl-dev
@@ -939,8 +1108,10 @@ openssl/evp.h, openssl-dev
 openssl/hmac.h, openssl-dev
 openssl/opensslconf.h, openssl-dev
 openssl/opensslv.h, openssl-dev
+openssl/sha.h, openssl-dev
 openssl/ssl.h, openssl-dev
 openvswitch/json.h, openvswitch-dev
+opus, opus-dev
 oslo.config, oslo.config
 oslo_concurrency, oslo.concurrency
 oslo_config, oslo.config
@@ -959,6 +1130,7 @@ osprofiler, osprofiler
 ovs, ovs
 pam/pam_modules.h, Linux-PAM-dev
 pam_authenticate, Linux-PAM-dev
+pandoc, pandoc
 pango/pangocairo.h, pkgconfig(pangocairo)
 paramiko, paramiko
 parted, parted-dev
@@ -966,16 +1138,20 @@ patch, patch
 pbr, pbr
 pcap-config, libpcap-dev
 pcap.h, libpcap-dev
+pcap_compile in -lpcap, libpcap-dev
 pcap_dump, libpcap-dev
 pci/pci.h, pkgconfig(libpci)
 pcre-config, pcre-dev
 pcre.h, pcre-dev
+pcre2.h, pcre2-dev
 pcre_exec, pcre-dev
 pecan, pecan
 pep8, pep8
 perl module URI::URL, URI
+perl, perl
 perl5, perl
 pexpect, pexpect
+pg_config, postgresql-dev
 php, php
 php-config7, php
 pip, pip
@@ -986,15 +1162,19 @@ pkg.m4, pkg-config-dev
 pkg_resources, setuptools
 pkill, psmisc
 png_read_info in -lpng, pkgconfig(libpng)
+polkit-gobject-1, polkit-dev
 popt.h, popt-dev
 poptConfigFileToString in -lpopt, popt-dev
-poptConfigFileToString in -lpopt, popt-dev
 poptStrippedArgv, popt-dev
+potrace, potrace
+prefix by checking for jags, JAGS-dev
 prettytable, prettytable
+proj_api.h, proj-dev
 protoc, protobuf-dev
 ps, procps-ng
 pth-config, pth-dev
 pulse/pulseaudio.h, pulseaudio-dev
+pwquality, libpwquality-dev
 py.test, pytest
 pyasn1, pyasn1
 pyasn1_modules, pyasn1-modules
@@ -1003,9 +1183,12 @@ pycrypto, pycrypto
 pycurl, pycurl
 pylint, pylint
 pyperclip, pyperclip
+pytest, pytest
+pytest-cov, pytest-cov
 python lxml, lxml
 python, python3-dev
 python-config, python3-dev
+python-pcre, python-pcre
 python-subunit, python-subunit
 pytz, pytz
 pyyaml, PyYAML
@@ -1014,6 +1197,7 @@ qdbuscpp2xml, qtbase-dev
 qdbusxml2cpp, qtbase-dev
 qhelpconverter, qttools-dev
 qhelpgenerator, qttools-dev
+qhull/libqhull.h, qhull-dev
 qjson/parser.h, qjson-dev
 qlalr, qtbase-dev
 qmake, qtbase-dev
@@ -1025,6 +1209,7 @@ qmlmin, qtdeclarative-dev
 qmlplugindump, qtdeclarative-dev
 qmltestrunner, qtdeclarative-dev
 qscxmlc, qtscxml-dev
+qt5, buildreq-kde
 qtattributionsscanner, qttools-dev
 qtplugininfo, qttools-dev
 qtwaylandscanner, qtwayland-dev
@@ -1046,8 +1231,10 @@ rst2man, docutils
 rsvg-convert, librsvg
 ruby, ruby
 runtest, dejagnu
+samplerate, libsamplerate-dev
 samplerate.h, libsamplerate-dev
 sasl/sasl.h, cyrus-sasl-dev
+sassc, sassc
 sbc, sbc-dev
 scrollkeeper-config, rarian
 scrollkeeper-preinstall, rarian
@@ -1055,17 +1242,20 @@ sdl2, SDL2-dev
 security/pam_appl.h, Linux-PAM-dev
 selenium, selenium
 setcap, libcap-dev
+setterm, util-linux
 setup, setuptools
 setuptools, setuptools
+sfcgal-config, SFCGAL-dev
 sgemm_ in -lopenblas, openblas
 shared-mime-info, shared-mime-info-dev
+sipconfig, sip-dev
 six, six
 sm, libSM-dev
+sndfile, libsndfile-dev
 sndfile.h, libsndfile-dev
 sox.h, sox-dev
 sphinx, Sphinx
 sphinx-build, Sphinx
-sqlalchemy, SQLAlchemy
 sqlalchemy, SQLAlchemy
 sqlext.h usability, unixODBC-dev
 sqlext.h, unixODBC-dev
@@ -1075,6 +1265,7 @@ sqlite3.h, sqlite-autoconf-dev
 stestr, stestr
 stevedore, stevedore
 subunit, python-subunit
+suitable libmagic, file-dev
 suitesparse/ccolamd.h, SuiteSparse-dev
 svn_client.h, subversion-dev
 swig, swig
@@ -1088,8 +1279,10 @@ taskflow, taskflow
 tcl.h, tcl-dev
 tclConfig.sh, tcl-dev
 tclsh, tcl
+template-glib-1.0, template-glib-dev
 term.h, ncurses-dev
 testrepository, testrepository
+tests, testscenarios
 testscenarios, testscenarios
 testtools, testtools
 tgetent, ncurses-dev
@@ -1105,6 +1298,7 @@ tooz, tooz
 tox, tox
 udev_new in -ludev, systemd-dev
 udisks2, udisks2-dev
+udunits2.h, udunits-dev
 uic, qtbase-dev
 ukpostcodeparser, UkPostcodeParser
 unittest, unittest2
@@ -1112,18 +1306,33 @@ unittest2, unittest2
 unzip, unzip
 update-desktop-database, desktop-file-utils
 update-mime-database, shared-mime-info
+upower-glib, upower-dev
+uuid.h, util-linux-dev
 uuid/uuid.h, pkgconfig(uuid)
 uuid/uuid.h, util-linux-dev
 uuid_generate, util-linux-dev
+v8.h, nodejs-dev
+vala, vala
+valac, vala
+valac, vala-dev vala
 valgrind, valgrind
+valgrind/memcheck.h, valgrind-dev
 valgrind/valgrind.h, valgrind
 vapigen, vala
+vdpau, libvdpau-dev
 vim, vim
 voluptuous, voluptuous
+vorbis/codec.h, libvorbis-dev
+vorbis/vorbisenc.h, libvorbis-dev
+vorbis/vorbisfile.h, libvorbis-dev
+vte-2.91, vte-dev
+vulkan/vulkan.h, Vulkan-Headers-dev
 webkit2gtk-4.0, webkitgtk-dev
 webob, WebOb
 webp/decode.h, libwebp-dev
 wheel, wheel
+wheter libtiff works, tiff-dev
+whether your system's regexp library is broken, readline-dev
 which, which
 with Java, openjdk-dev
 wpa_supplicant, wpa_supplicant
@@ -1141,23 +1350,27 @@ xkbcommon, libxkbcommon-dev
 xkbcomp, xkbcomp-bin
 xml2-config path, libxml2-dev
 xml2-config, libxml2-dev
+xml2poNo-python, pkgconfig(xml2po)
 xmlcatalog, libxml2-dev
 xmllint, libxml2-dev
 xmlto, xmlto
 xorg-launch-helper, xorg-launch-helper
 xrandr, pkgconfig(xrandr)
+xset, xset
 xslt-config, libxslt-dev
-xsltproc, libxslt-bin
 xsltproc, libxslt-bin
 xtrans, xtrans-dev
 xvfb-run, xvfb-run
 yacc, bison
+yajl/yajl_tree.h, yajl-dev
 yaml, PyYAML
 yaml-0.1, yaml-dev
+yarg, yarg
 yasm, yasm
 yytext is a pointer, flex
 zenity, zenity
 zip, zip
 zlib, zlib-dev
 zlib.h, pkgconfig(zlib)
+zmq.h, libzmq-dev
 zstd.h, zstd-dev

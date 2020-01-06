@@ -32,6 +32,8 @@ ARM NEON in current arch/CFLAGS
 Avahi
 AvailabilityMacros.h
 BeOS
+C compiler accepts -Wcomma
+C compiler accepts -Werror=unknown-warning-option
 C compiler accepts -Winitializer-overrides
 C compiler handles -Werror -Wunknown-warning-option
 C symbols are prefixed with underscore at the linker level
@@ -59,6 +61,7 @@ OS.h
 QNX
 Qt5WebKitWidgets
 SELINUX
+Solaris 11.4 locale system
 Solaris ACL
 Ubuntu
 Unknown pattern match:
@@ -134,6 +137,7 @@ ceil
 chsize
 clang option to accept ISO C89
 clock_gettime
+closedir returns void
 closefrom
 compiler driver understands Ada
 compilers -Wno-format-truncation
@@ -150,6 +154,7 @@ cygwin
 declaration of PTHREAD_MUTEX_ROBUST
 default print group
 default print user
+dependency style of gcc
 desired default level of POSIX conformance
 directio
 dirfd is a macro
@@ -196,6 +201,7 @@ gcc
 gcc accepts -g
 gcc is Clang
 gcc needs -traditional
+gcc option to accept ANSI C
 gcc option to accept ISO C89
 gcc option to accept ISO C99
 gcc option to enable C11 features
@@ -226,6 +232,7 @@ getmntent
 getmntinfo
 getnameinfo
 getpeereid
+getpeerucred
 getppriv
 getprogname
 getpseudotty
@@ -245,18 +252,21 @@ how to run the C preprocessor
 hstrerror
 hurd.h
 hypot
+icc
 iconv_open
 ieeefp.h
 if -lm is required for maths functions
 if : is a manifest tool
 if X11 header
 if X11 header files implicitly declare return values
+if building for some Win32 platform
 if building the Windows installer
 if character set is EBCDIC
 if compiler needs -Werror to reject unknown flags
 if compiling for Mac OS X
 if compiling for Win32
 if compiling with clang
+if debug is enabled
 if g++ static flag -static works
 if gcc static flag -static works
 if gcc supports -fno-rtti -fno-exceptions
@@ -265,10 +275,13 @@ if gccs -Werror=unused-command-line-argument
 if gccs -fno-rtti -fno-exceptions
 if internal cryptsetup PBKDF2 is compiled-in
 if more special flags are required for pthreads
+if zts is enabled
+included gettext is requested
 inet_ntop
 inet_ntop... (cach
 inet_pton
 install_name_tool
+integer division by zero raises SIGFPE
 io.h
 ioctl with POSIX signature
 is_selinux_enabled in -lselinux
@@ -323,6 +336,7 @@ minor_t
 mntctl function and struct vmount
 mode_to_security_class
 more special flags are required for pthreads
+more warnings
 mt
 multithread API to use
 mxml.h
@@ -369,6 +383,7 @@ pthreads work with -Kthread
 pthreads work with -kthread
 pthreads work without any flags
 putmsg in -lstr
+py.test-2.7
 pyinotify
 python2.6
 ranlib
@@ -433,6 +448,7 @@ struct fsstat.f_fstypename
 struct sockaddr.sa_len
 struct sockaddr_in.sin_len
 struct sockaddr_in6.sin6_len
+struct sockaddr_storage.__ss_family
 struct stat
 struct stat.st_atimensec
 struct stat.st_author
@@ -454,6 +470,7 @@ struct utmp.ut_exit.ut_exit
 struct utmp.ut_exit.ut_termination
 struct utmpx.ut_exit.ut_exit
 struct utmpx.ut_exit.ut_termination
+suncc
 symbols are prefixed
 sys/access.h
 sys/dirent.h
@@ -502,6 +519,7 @@ the systems xlc include
 thr_self
 timezone_t
 to add custom build version
+to enable debugging
 to enable maintainer-specific portions of Makefiles
 to enable pch feature
 to sign windows build
@@ -521,6 +539,7 @@ use of struct winsize requires sys/ptem.h
 util.h
 util/debug.h
 util/msg18n.h
+va_lists can be copied by value
 varargs.h
 variable rl_event_hook
 vasnprintf
@@ -529,7 +548,9 @@ w32api/winbase.h
 w32api/wtypes.h
 w3m
 we are cross compiling
+we are using the GNU C compiler
 we are using the GNU Objective C compiler
+we are using the GNU Objective C++ compiler
 we build a relocatable package
 we need to force -D_FILE_OFFSET_BITS=64
 we want to fetch tarballs
