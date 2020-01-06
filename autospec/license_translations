@@ -26,6 +26,7 @@ CC0, CC0-1.0
 CPL, CPL-1.0
 Expat, MIT
 GFDL1.1, GFDL-1.1
+GPL(==-2), GPL-2.0
 GPL(>=-2), GPL-2.0+
 GPL(>=-2.0), GPL-2.0+
 GPL(>=-2.1), GPL-2.0
@@ -65,6 +66,7 @@ LGPLv2.1+, LGPL-2.1+
 LGPLv2.1, LGPL-2.1
 LGPLv3+, LGPL-3.0+
 LGPLv3, LGPL-3.0
+MIT/X, MIT
 MPL-2, MPL-2.0
 MPL2, MPL-2.0
 MPLv1.1, MPL-1.1
@@ -79,12 +81,13 @@ ZLIB, Zlib
 ZPL 2.1, ZPL-2.1
 ZPL, ZPL-2.0
 apache, Apache-2.0
-artistic_2, Artistic-2.0
 artistic2, Artistic-2.0
+artistic_2, Artistic-2.0
 gplv3, GPL-3.0
 http://creativecommons.org/licenses/BSD/, BSD-2-Clause
 http://opensource.org/licenses/MIT, MIT
 http://www.apache.org/licenses/LICENSE-2.0, Apache-2.0
+lgpl, LGPL-2.1
 mit, MIT
 perl, Artistic-1.0-Perl
 w3c, W3C
