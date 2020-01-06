@@ -1250,7 +1250,7 @@ def parse_log(log, pkgname=''):
             total_pass += 1
             continue
 
-        match = re.search(r"(---\s+)?FAIL:?\s*", line)
+        match = re.search(r"(---\s+)?(?<!X)FAIL:?\s*", line)
         if match and incheck:
             total_tests += 1
             total_fail += 1
