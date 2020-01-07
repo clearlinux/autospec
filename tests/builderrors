@@ -1,0 +1,118 @@
+    !  swig is not installed|perl(swig)
+    ExtUtils::Depends not installed|perl(ExtUtils::Depends)
+  Could not find swig|swig
+  Did not find swig|swig
+ exec: swig: not found|swig
+ mate-common.m4 not found|mate-common-dev
+-- Could NOT find swig|swig
+-- artifact pkg#pkg;123!pkg.jar|mvn-pkg
+-- swig not found.|swig
+--- pkg:pkg:8 FAILED|mvn(pkg:pkg:jar) = 8
+etc etc /usr/bin/swig   not found|swig
+/bin/ld: cannot find -lz|zlib-dev
+/usr/bin/env: swig: No such file or directory|swig
+/usr/bin/python: No module named swig|swig
+> Could not find pkg:pkg:8.|mvn(pkg:pkg:jar) = 8
+Add the installation prefix of "swig" to CMAKE_PREFIX_PATH|swig
+By not providing "Findswig.cmake" in CMAKE_MODULE_PATH this|swig
+By not providing "swig.cmake" in CMAKE_MODULE_PATH this project|swig
+C library 'swig' not found|swig
+CMake Error at cmake/modules/swig.cmake|swig
+Can't locate swig in @INC (you may need to install the swig module)|perl(swig)
+Cannot find swig|swig
+Checking for swig     : not found|swig
+Checking for swig  >=    1.2   : not found|swig
+Checking for swig >= 1.2   : not found|swig
+Checking for swig development files... No|swig
+Checking for swig...no|swig
+Checking for swig: not found|swig
+Could NOT find swig|swig
+Could not find 'swig' (< 4) among 5 total gem|rubygem-swig
+Could not find a package configuration file provided by "swig" etc etc|swig
+Could not find gem 'swig (<= 3) ruby'|rubygem-swig
+Could not find suitable distribution for Requirement.parse('swig')|swig
+Could not resolve pkg:pkg:8.|mvn(pkg:pkg:jar) = 8
+Dependency swig found: NO|swig
+Dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
+Dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
+Download error on https://pypi.python.org/simple/swig/|swig-python
+Downloading https://test.python.org/packages/pkg/t/swig/1.23|swig
+ERROR:  Could not find a valid gem 'swig' (= 8) in any repository|rubygem-swig
+ERROR:  Could not find a valid gem 'swig' (= 8), here is why:|rubygem-swig
+ERROR: dependencies 'swig' are not available for package 'something'|R-swig
+ERROR: dependencies 'swig', 'swig2' are not available for package 'something'|R-swig
+ERROR: dependencies ‘swig’ are not available for package ‘something’|R-swig
+ERROR: dependencies ‘swig’, ‘swig2’ are not available for package ‘something’|R-swig
+ERROR: dependency 'swig' is not available for package 'something'|R-swig
+ERROR: dependency ‘swig’ is not available for package ‘something’|R-swig
+Error: Unable to find swig|swig
+Error: package 'swig' required by|R-swig
+Error: package ‘swig’ required by|R-swig
+Gem::LoadError: Could not find 'swig'|rubygem-swig
+ImportError: No module named 'swig'|swig-python
+ImportError: No module named swig|swig
+ImportError: No module named swig|swig-python
+ImportError: cannot import name swig|swig
+ImportError: swig module missing|swig
+ImportError:..*: No module named swig|swig-python
+LoadError: cannot load such file -- swig/pkg|rubygem-swig
+ModuleNotFoundError: No module named swig|swig
+Native dependency 'swig' not found|pkgconfig(swig)
+No cached version of pkg:pkg:8 available for offline mode.|mvn(pkg:pkg:jar) = 8
+No local packages or working download links found for swig|swig-python
+No matching distribution found for swig|swig-python
+No package 'swig' found|pkgconfig(swig)
+No rule to make target `swig', etc|swig
+Package 'swig', required by 'something', not found|pkgconfig(swig)
+Package which this enhances but not available for checking: 'swig'|R-swig
+Package which this enhances but not available for checking: ‘swig’|R-swig
+Perhaps you should add the directory containing `swig.pc'|pkgconfig(swig)
+Program swig found: NO|swig
+Target 't' can't be generated as 'swig' could not be found|swig
+Unable to `import swig`|swig
+Unable to find 'swig'|swig
+Unknown package 'swig' in Rd xrefs|R-swig
+Unknown package ‘swig’ in Rd xrefs|R-swig
+Unknown packages 'swig', 'swig2' in Rd xrefs|R-swig
+Unknown packages ‘swig’, ‘swig2’ in Rd xrefs|R-swig
+WARNING:  package dependency on swig (= 5.4) ardilla|rubygem-swig
+Warning: no usable swig found|swig
+Warning: prerequisite swig 8 not found.|perl(swig)
+You need swig to build this program.|swig
+[ERROR]  Cannot access https://repo.maven (mavenrepo) in offline mode and the artifact pkg:pkg:pom:8 has not been downloaded from it before|mvn(pkg:pkg:pom) = 8
+[WARNING] The POM for pkg:pkg:pom:8 is missing, no dependency information available|mvn(pkg:pkg:pom) = 8
+[WARNING] Unable to get resource 'pkg:pkg:jar:12' from repository|mvn-pkg
+"swig" with any of the following names|swig
+checking for library containing swig... no|swig
+checking for perl module swig 7... no|perl(swig)
+checking for something in swig... no|swig
+checking for swig in default path... not found|swig
+checking for swig support... no|swig
+checking for swig support... no|swig
+checking for swig with pkg-config... no|swig
+checking for swig... configure: error|swig
+checking for swig... no|swig
+checking for swig... not found|swig
+checking for swig... not_found|swig
+checking swig... no|swig
+configure: error: Cannot find swig. Make sure|swig
+configure: error: Unable to locate swig|swig
+configure: error: pkg-config missing swig|swig
+configure: error: swig is required to build|swig
+configure: error: swig not found|swig
+dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
+dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
+fatal error: swig: No such file or directory|swig
+make: swig: Command not found|swig
+module not found: pkg#pkg;123|mvn-pkg
+swig 8 is required to configure this module; please install it or upgrade your CPAN/CPANPLUS shell.|swig
+swig is not installed: cannot load such file -- rdoc/swig|rubygem-swig
+swig tool not found or not executable|swig
+swig validation tool not found or not executable|swig
+swig: command not found|swig
+there is no package called 'swig'|R-swig
+there is no package called ‘swig’|R-swig
+unable to execute 'swig': No such file or directory|swig
+warning: failed to load external entity "/usr/share/sgml/docbook/xsl-stylesheets/something"|docbook-xml
+which: no swig in (/usr/bin/swig/)|swig
+you may need to install the swig module|perl(swig)

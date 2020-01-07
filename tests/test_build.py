@@ -1,7 +1,7 @@
 import unittest
 import tempfile
 import os
-from unittest.mock import patch, mock_open
+from unittest.mock import patch, mock_open, MagicMock
 import build
 import files
 
@@ -367,28 +367,29 @@ class TestBuildpattern(unittest.TestCase):
     def test_parse_build_results_failed_pats(self):
         """
         Test parse_build_results with a test log indicating failure due to a
-        missing testpkg (failed pat error). The specific error is a python
-        ImportError.
+        missing package.
         """
-        def mock_util_call(cmd):
-            del cmd
-
         build.config.setup_patterns()
         call_backup = build.util.call
-        build.util.call = mock_util_call
+        open_auto_backup = build.util.open_auto
+        build.util.call = MagicMock(return_value=None)
         fm = files.FileManager()
 
-        open_name = 'build.util.open_auto'
-        content = 'line 1\nImportError: No module named testpkg\nexiting'
-        m_open = mock_open(read_data=content)
+        with open('tests/builderrors', 'r') as f:
+            builderrors = f.readlines()
+            for error in builderrors:
+                if not error.startswith('#'):
+                    input, output = error.strip('\n').split('|')
+                    build.buildreq.buildreqs = set()
+                    build.util.open_auto = mock_open(read_data=input)
+                    build.parse_build_results('testname', 0, fm)
 
-        with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm)
+                    self.assertIn(output, build.buildreq.buildreqs)
+                    self.assertGreater(build.must_restart, 0)
 
+        # Restoring functions
         build.util.call = call_backup
-
-        self.assertIn('testpkg-python', build.buildreq.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        build.util.open_auto = open_auto_backup
 
     def test_parse_build_results_files(self):
         """
