@@ -98,6 +98,8 @@ def build_untar(tarball_path):
                 print_fatal("Tar file doesn't appear to have any content")
                 exit(1)
             elif len(lines) > 1:
+                if 'package.xml' in lines and buildpattern.default_pattern in ['phpize']:
+                    lines.remove('package.xml')
                 prefix = os.path.commonpath(lines)
     else:
         print_fatal("Not a valid tar file.")
@@ -348,6 +350,10 @@ def detect_build_from_url(url):
     # go dependency
     if "proxy.golang.org" in url:
         buildpattern.set_build_pattern("godep", 10)
+
+    # php modules from PECL
+    if "pecl.php.net" in url:
+        buildpattern.set_build_pattern("phpize", 10)
 
 
 def set_multi_version(ver):

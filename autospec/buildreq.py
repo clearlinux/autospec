@@ -867,10 +867,6 @@ def scan_for_configure(dirn):
             add_buildreq("buildreq-meson")
             buildpattern.set_build_pattern("meson", default_score)
 
-        if "config.m4" in files:
-            add_buildreq("buildreq-php")
-            buildpattern.set_build_pattern("phpize", 1)
-
         if "pom.xml" in files:
             # Pretty straightforward maven source package
             add_buildreq("apache-maven")
