@@ -770,11 +770,17 @@ def parse_config_files(path, bump, filemanager, version):
         print("Adding additional build requirement: %s." % extra)
         buildreq.add_buildreq(extra)
 
-    content = read_conf_file(os.path.join(path, "buildreq_cache"))
+    cache_file = os.path.join(path, "buildreq_cache")
+    content = read_conf_file(cache_file)
     if content and content[0] == version:
         for extra in content[1:]:
             print("Adding additional build (cache) requirement: %s." % extra)
             buildreq.add_buildreq(extra)
+    else:
+        try:
+            os.unlink(cache_file)
+        except Exception:
+            pass
 
     content = read_conf_file(os.path.join(path, "pkgconfig_add"))
     for extra in content:
