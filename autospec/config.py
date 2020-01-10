@@ -779,8 +779,8 @@ def parse_config_files(path, bump, filemanager, version):
     else:
         try:
             os.unlink(cache_file)
-        except Exception:
-            pass
+        except Exception as e:
+            print_warning(f"Unable to remove buildreq_cache file: {e}")
 
     content = read_conf_file(os.path.join(path, "pkgconfig_add"))
     for extra in content:
