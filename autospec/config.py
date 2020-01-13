@@ -779,6 +779,8 @@ def parse_config_files(path, bump, filemanager, version):
     else:
         try:
             os.unlink(cache_file)
+        except FileNotFoundError:
+            pass
         except Exception as e:
             print_warning(f"Unable to remove buildreq_cache file: {e}")
 
