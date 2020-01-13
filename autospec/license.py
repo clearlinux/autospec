@@ -98,7 +98,11 @@ def decode_license(license):
 
 def license_from_copying_hash(copying, srcdir):
     """Add licenses based on the hash of the copying file."""
-    data = get_contents(copying)
+    try:
+        data = get_contents(copying)
+    except FileNotFoundError:
+        # LICENSE file is a bad symlink (qemu-4.2.0!)
+        return
 
     if data.startswith(b'#!'):
         # Not a license if this is a script
