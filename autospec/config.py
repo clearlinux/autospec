@@ -539,21 +539,48 @@ def parse_existing_spec(path, name):
     if not os.path.exists(spec):
         return
 
+    found_old_version = False
+    found_old_patches = False
+    ver_regex = r"^Version *: *(.*) *$"
+    patch_regex = r"^Patch[0-9]* *: *(.*) *$"
+
+    # If git history exists, read the Version and Patch* spec header fields
+    # from the latest commit to take priority over the working copy.
+    cmd = ["git", "-C", path, "grep", "-E", "-h", ver_regex, "HEAD", spec]
+    result = subprocess.run(cmd, capture_output=True)
+    if result.returncode == 0:
+        # The first matching line is from the spec header (hopefully)
+        line = result.stdout.decode().split("\n")[0]
+        m = re.search(ver_regex, line)
+        if m:
+            old_version = m.group(1)
+            found_old_version = True
+
+    cmd = ["git", "-C", path, "grep", "-E", "-h", patch_regex, "HEAD", spec]
+    result = subprocess.run(cmd, capture_output=True)
+    if result.returncode == 0:
+        lines = result.stdout.decode().split("\n")
+        for line in lines:
+            m = re.search(patch_regex, line)
+            if m:
+                old_patches.append(m.group(1).lower())
+                found_old_patches = True
+
     with open_auto(spec, "r") as inp:
         for line in inp.readlines():
             line = line.strip().replace("\r", "").replace("\n", "")
             if "Source0 file verified with key" in line:
                 keyidx = line.find('0x') + 2
                 old_keyid = line[keyidx:].split()[0] if keyidx > 2 else old_keyid
-            if ":" not in line:
-                continue
-            spl = line.split(":")
-            key = spl[0].lower().strip()
-            value = ":".join(spl[1:]).strip()
-            if key == "version":
-                old_version = value
-            elif key.startswith("patch"):
-                old_patches.append(value.lower())
+            # As a fallback, read the Version and Patch* header fields from the
+            # working copy of the spec, in case a git repo does not exist.
+            m = re.search(ver_regex, line)
+            if m and not found_old_version:
+                old_version = m.group(1)
+                found_old_version = True
+            m = re.search(patch_regex, line)
+            if m and not found_old_patches:
+                old_patches.append(m.group(1).lower())
 
     # Ignore nopatch
     for patch in patches:
