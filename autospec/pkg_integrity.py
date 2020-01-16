@@ -549,7 +549,7 @@ class GPGVerifier(Verifier):
                 return self.verify(recursion=True)
             return None
         # public key exists or is imported, verify
-        EMAIL = parse_key(pubkey_loc, r':user ID packet: ".* <(.+?)>"\n')
+        EMAIL = get_email(pubkey_loc)
         sign_status = verify_cli(pubkey_loc, self.package_path, self.package_sign_path)
         if not sign_status:
             if config.old_keyid:
@@ -714,33 +714,68 @@ def attempt_key_import(keyid, key_fullpath):
     return False
 
 
-def parse_key(filename, pattern, verbose=True):
-    """Parse gpg --list-packet signature for pattern, return first match."""
-    args = ["gpg", "--list-packet", filename]
+def parse_gpg_packets(filename, verbose=True):
+    """Return a list with metadata about each packet from a GPG key or signature."""
+    args = ["gpg", "--list-packets", filename]
     try:
         out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
         if err.decode('utf-8') != '' and verbose is True:
             print(err.decode('utf-8'))
             return None
         out = out.decode('utf-8')
-        match = re.search(pattern, out)
-        return match.group(1).strip() if match else None
+        packets = []
+        for line in out.splitlines():
+            m = re.search(r'^# off=(\d+) ctb=.* tag=.* hlen=(\d+) plen=(\d+).*$', line)
+            if m:
+                packet = {}
+                packet["offset"] = int(m.group(1))
+                packet["length"] = int(m.group(2)) + int(m.group(3))
+                packets.append(packet)
+            m = re.search(r'^:signature packet:.* keyid ([0-9A-F]+)$', line)
+            if m:
+                packets[-1]["keyid"] = m.group(1)
+            m = re.search(r'^:user ID packet: "(.*) <(.+?)>"', line)
+            if m:
+                packets[-1]["user"] = m.group(1)
+                packets[-1]["email"] = m.group(2)
+        return packets
     except Exception:
         return None
     return None
 
 
 def get_keyid(sig_filename):
-    """Get keyid from signature file and set global KEYID_TRY."""
+    """Get keyid from GPG pubkey or signature file and set global KEYID_TRY."""
     global KEYID_TRY
-    keyid = parse_key(sig_filename, r'keyid (.+?)\n')
+    keyid = None
+    packets = parse_gpg_packets(sig_filename)
+    if packets:
+        for p in packets:
+            if "keyid" in p:
+                keyid = p["keyid"]
+                break
     KEYID_TRY = keyid
     return keyid.upper() if keyid else None
 
 
+def get_email(pubkey):
+    """Get user email address from GPG pubkey file and set global EMAIL."""
+    email = None
+    packets = parse_gpg_packets(pubkey)
+    if packets:
+        for p in packets:
+            if "email" in p:
+                email = p["email"]
+                break
+    return email
+
+
 def sign_isvalid(sig_filename):
     """Get keyid from signature file."""
-    keyid = parse_key(sig_filename, r'keyid (.+?)\n', verbose=False)
+    keyid = None
+    packets = parse_gpg_packets(sig_filename, verbose=False)
+    if packets:
+        keyid = packets[0].get("keyid")
     return keyid is not None
 
 
