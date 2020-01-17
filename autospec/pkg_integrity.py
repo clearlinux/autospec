@@ -114,7 +114,22 @@ class GPGCli(object):
 
     def verify(self, _, tarfile, signature):
         """Validate tarfile with signature."""
-        args = self.args + ['--verify', signature, tarfile]
+        # Since autospec can only verify one signature for now, extract the
+        # first signature from the detached signature file.
+        sig_name = signature
+        packets = parse_gpg_packets(signature)
+        if len(packets) > 1:
+            # sig file may be ascii-armored, so dearmor it first...
+            args = self.args + ['--dearmor', '--output', '-', signature]
+            output, err, code = self.exec_cmd(args)
+            if code != 0:
+                return None
+            num_bytes = packets[0]["length"]
+            first_sig = output[:num_bytes]
+            with tempfile.NamedTemporaryFile(prefix="newsig-", dir=self._home, delete=False) as new_sig_file:
+                new_sig_file.write(first_sig)
+                sig_name = new_sig_file.name
+        args = self.args + ['--verify', sig_name, tarfile]
         output, err, code = self.exec_cmd(args)
         if code == 0:
             return None
