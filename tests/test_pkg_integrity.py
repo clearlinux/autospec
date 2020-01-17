@@ -287,7 +287,7 @@ class TestUtils(unittest.TestCase):
                 self.assertEqual(packets[packet_with_val]["keyid"], key_id)
                 tmpf.close()
 
-        check_packets(KEY_ALGO17, '8AFAFCD242818A52', 9, 2)
+        check_packets(KEY_ALGO17, '8AFAFCD242818A52', 6, 1)
         check_packets(KEY_ALGO1, '330239C1C4DAFEE1', 1, 0)
 
     def test_get_keyid(self):
@@ -345,7 +345,7 @@ class TestUtils(unittest.TestCase):
                     self.assertEqual(packets[packet_with_val]["email"], email)
                 tmpf.close()
 
-        check_packets(KEY_ALGO17, 'kislyuk@gmail.com', 9, 1)
+        check_packets(KEY_ALGO17, 'kislyuk@gmail.com', 6, 0)
         check_packets(KEY_ALGO1, None, 1, None)
 
     def test_get_email(self):
