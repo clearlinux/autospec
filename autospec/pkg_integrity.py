@@ -124,7 +124,9 @@ class GPGCli(object):
             output, err, code = self.exec_cmd(args)
             if code != 0:
                 return None
-            num_bytes = packets[0]["length"]
+            num_bytes = packets[0].get("length")
+            if not num_bytes:
+                return None
             first_sig = output[:num_bytes]
             with tempfile.NamedTemporaryFile(prefix="newsig-", dir=self._home, delete=False) as new_sig_file:
                 new_sig_file.write(first_sig)
