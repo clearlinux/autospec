@@ -275,19 +275,36 @@ class TestUtils(unittest.TestCase):
                 )
         self.assertTrue(isinstance(z, pkg_integrity.GEMShaVerifier))
 
-    def test_get_keyid(self):
-
-        def check_algo(algo, k_id):
+    def test_parse_gpg_packets_for_keyid(self):
+        """Test parse_gpg_packets() to retrieve keyid info."""
+        def check_packets(algo, key_id, packet_count, packet_with_val):
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                 tmpf.write(algo)
                 tmpf.flush()
-                self.assertEqual(pkg_integrity.parse_key(tmpf.name, r'keyid (.+?)\n'), k_id)
+                packets = pkg_integrity.parse_gpg_packets(tmpf.name)
+                self.assertIsNotNone(packets)
+                self.assertEqual(len(packets), packet_count)
+                self.assertEqual(packets[packet_with_val]["keyid"], key_id)
                 tmpf.close()
 
-        check_algo(KEY_ALGO17, '8AFAFCD242818A52')
-        check_algo(KEY_ALGO1, '330239C1C4DAFEE1')
+        check_packets(KEY_ALGO17, '8AFAFCD242818A52', 9, 2)
+        check_packets(KEY_ALGO1, '330239C1C4DAFEE1', 1, 0)
+
+    def test_get_keyid(self):
+        """Test get_keyid() to retrieve key ID from GPG key or signature."""
+        def check_get_keyid(algo, key_id):
+            with tempfile.NamedTemporaryFile(delete=True) as tmpf:
+                tmpf.write(algo)
+                tmpf.flush()
+                result = pkg_integrity.get_keyid(tmpf.name)
+                self.assertEqual(result, key_id)
+                tmpf.close()
+
+        check_get_keyid(KEY_ALGO17, '8AFAFCD242818A52')
+        check_get_keyid(KEY_ALGO1, '330239C1C4DAFEE1')
 
     def test_get_keyid_none(self):
+        """Test get_keyid() when the key name is invalid."""
         false_name = '/false/name'
         self.assertTrue(pkg_integrity.get_keyid(false_name) is None)
 
@@ -315,18 +332,34 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu2, '.')[-5:], '.sign')
         self.assertEqual(pkg_integrity.get_signature_file(url_from_pypi1, '.')[-4:], '.asc')
 
-    def test_parse_key_for_email(self):
-        def check_pubkey(algo, email):
-            pattern = r':user ID packet: ".* <(.+?)>"\n'
+    def test_parse_gpg_packets_for_email(self):
+        """Test parse_gpg_packets() to retrieve email info."""
+        def check_packets(algo, email, packet_count, packet_with_val):
             with tempfile.NamedTemporaryFile(delete=True) as tmpf:
                 tmpf.write(algo)
                 tmpf.flush()
-                self.assertEqual(pkg_integrity.parse_key(tmpf.name, pattern), email)
+                packets = pkg_integrity.parse_gpg_packets(tmpf.name)
+                self.assertIsNotNone(packets)
+                self.assertEqual(len(packets), packet_count)
+                if packet_with_val:
+                    self.assertEqual(packets[packet_with_val]["email"], email)
                 tmpf.close()
 
-        check_pubkey(KEY_ALGO17, 'kislyuk@gmail.com')
-        check_pubkey(KEY_ALGO1, None)
+        check_packets(KEY_ALGO17, 'kislyuk@gmail.com', 9, 1)
+        check_packets(KEY_ALGO1, None, 1, None)
 
+    def test_get_email(self):
+        """Test get_email() to retrieve email info from GPG key."""
+        def check_get_email(algo, email):
+            with tempfile.NamedTemporaryFile(delete=True) as tmpf:
+                tmpf.write(algo)
+                tmpf.flush()
+                result = pkg_integrity.get_email(tmpf.name)
+                self.assertEqual(result, email)
+                tmpf.close()
+
+        check_get_email(KEY_ALGO17, 'kislyuk@gmail.com')
+        check_get_email(KEY_ALGO1, None)
 
 KEY_ALGO1 = b"""\
 -----BEGIN PGP SIGNATURE-----
