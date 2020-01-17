@@ -739,20 +739,28 @@ def parse_gpg_packets(filename, verbose=True):
             return None
         out = out.decode('utf-8')
         packets = []
+        packet = {}
         for line in out.splitlines():
+            complete = False
             m = re.search(r'^# off=(\d+) ctb=.* tag=.* hlen=(\d+) plen=(\d+).*$', line)
             if m:
-                packet = {}
                 packet["offset"] = int(m.group(1))
                 packet["length"] = int(m.group(2)) + int(m.group(3))
+            m = re.search(r'^:(signature) packet:.* keyid ([0-9A-F]+)$', line)
+            if m and "type" not in packet:
+                packet["type"] = m.group(1)
+                packet["keyid"] = m.group(2)
+                complete = True
+            m = re.search(r'^:(user ID) packet: "(.*) <(.+?)>"', line)
+            if m and "type" not in packet:
+                packet["type"] = m.group(1)
+                packet["user"] = m.group(2)
+                packet["email"] = m.group(3)
+                complete = True
+            # add the packet only if we've extracted all data we need from it
+            if complete:
                 packets.append(packet)
-            m = re.search(r'^:signature packet:.* keyid ([0-9A-F]+)$', line)
-            if m:
-                packets[-1]["keyid"] = m.group(1)
-            m = re.search(r'^:user ID packet: "(.*) <(.+?)>"', line)
-            if m:
-                packets[-1]["user"] = m.group(1)
-                packets[-1]["email"] = m.group(2)
+                packet = {}
         return packets
     except Exception:
         return None
