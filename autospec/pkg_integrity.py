@@ -123,10 +123,10 @@ class GPGCli(object):
             args = self.args + ['--dearmor', '--output', '-', signature]
             output, err, code = self.exec_cmd(args)
             if code != 0:
-                return None
+                return GPGCliStatus(f'Failed to convert {signature} to binary format')
             num_bytes = packets[0].get("length")
             if not num_bytes:
-                return None
+                return GPGCliStatus(f'Cannot verify first signature from {signature}')
             first_sig = output[:num_bytes]
             with tempfile.NamedTemporaryFile(prefix="newsig-", dir=self._home, delete=False) as new_sig_file:
                 new_sig_file.write(first_sig)
