@@ -236,6 +236,89 @@ class TestGPGVerifier(unittest.TestCase):
             result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
             self.assertIsNone(result)
 
+    @patch.object(pkg_integrity.GPGCli, 'exec_cmd')
+    @patch('pkg_integrity.parse_gpg_packets')
+    def test_result_multiple_sig(self, mock_parse, mock_exec):
+        """Test verification of first signature of tarball with multiple signatures."""
+        def packets_separator(filename, **kwargs):
+            if filename.endswith('.pkey'):
+                packets = [
+                    {
+                        'offset': 528,
+                        'length': 37,
+                        'type': 'user ID',
+                        'email': 'user1@example.com',
+                    },
+                ]
+            elif filename.endswith('.asc'):
+                packets = [
+                    {
+                        'offset': 0,
+                        'length': 543,
+                        'type': 'signature',
+                        'keyid': '023A4420C7EC6914',
+                    },
+                    {
+                        'offset': 543,
+                        'length': 543,
+                        'type': 'signature',
+                        'keyid': '12345678DEADCAFE',
+                    },
+                ]
+            return packets
+        mock_parse.side_effect = packets_separator
+
+        mock_exec.return_value = (b'', b'', 0)
+
+        with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd)
+            self.assertTrue(result)
+            self.assertEqual(mock_parse.call_count, 4)
+            self.assertEqual(mock_exec.call_count, 3)
+            self.assertEqual(pkg_integrity.EMAIL, "user1@example.com")
+            self.assertEqual(pkg_integrity.KEYID, "023A4420C7EC6914")
+
+    @patch.object(pkg_integrity.GPGCli, 'exec_cmd')
+    @patch('pkg_integrity.parse_gpg_packets')
+    def test_result_multiple_sig_no_separators(self, mock_parse, mock_exec):
+        """Test skipping of sig verification in the multiple sig case when packet separators are absent."""
+        def packets_no_separator(filename, **kwargs):
+            if filename.endswith('.pkey'):
+                packets = [
+                    {
+                        'type': 'user ID',
+                        'email': 'user2@example.com',
+                    },
+                ]
+            elif filename.endswith('.asc'):
+                packets = [
+                    {
+                        'type': 'signature',
+                        'keyid': '023A4420C7EC6914',
+                    },
+                    {
+                        'type': 'signature',
+                        'keyid': 'DEADCAFEC7EC6914',
+                    },
+                ]
+            return packets
+        mock_parse.side_effect = packets_no_separator
+
+        mock_exec.return_value = (b'', b'', 0)
+
+        with tempfile.TemporaryDirectory() as tmpd:
+            shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
+            shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
+            with self.assertRaises(SystemExit) as msg:
+                result = pkg_integrity.check(PACKAGE_URL, tmpd)
+            self.assertEqual(msg.exception.code, 1)
+            self.assertEqual(mock_parse.call_count, 4)
+            self.assertEqual(mock_exec.call_count, 2)
+            self.assertEqual(pkg_integrity.EMAIL, "user2@example.com")
+            self.assertEqual(pkg_integrity.KEYID, "023A4420C7EC6914")
+
 
 class TestInputGetter(unittest.TestCase):
 
