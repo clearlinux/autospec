@@ -22,7 +22,6 @@ import glob
 import os
 import re
 import shutil
-import subprocess
 import tarfile
 import zipfile
 from collections import OrderedDict
@@ -144,85 +143,6 @@ def build_unzip(zip_path):
         extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
 
     return extract_cmd, prefix
-
-
-def build_un7z(zip_path):
-    """Return correct 7z command and the prefix folder name of the contents of 7z file.
-
-    This function will run the 7z file through a content list, parsing that list to get the
-    root folder name containing the 7z file's contents.
-
-    The output of the 7z l command has the following format:
-    ***snip***
-    7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : 2016-05-21
-    p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,64 bits,4 CPUs Intel(R) Core(TM) i5-6260U CPU @ 1.80GHz (406E3),ASM,AES-NI)
-
-    Scanning the drive for archives:
-    1 file, 7933454 bytes (7748 KiB)
-
-    Listing archive: foo.7z
-
-    --
-    Path = foo.7z
-    Type = 7z
-    Physical Size = 7933454
-    Headers Size = 1526
-    Method = LZMA2:23
-    Solid = +
-    Blocks = 1
-
-    Date         Time    Attr         Size   Compressed  Name
-    ------------------- ----- ------------ ------------  ------------------------
-    2018-05-15 05:50:54 ....A        25095      7931928  prefix-dir/sub_dir1/subdir2
-    ***snip***
-
-    and this function gets the 'prefix-dir' portion from the start of the unzip -l output.
-    """
-    prefix = ""
-    contents = subprocess.check_output(["7z", "l", zip_path], universal_newlines=True)
-    lines = contents.splitlines() if contents else []
-    # looking for directory prefix in unzip output as it may differ from default
-    past_header = False
-    for line in lines:
-        if past_header:
-            # This should be an archive entry; use it
-            prefix = line.split("/")[0].split()[-1]
-            break
-        if line.startswith('----------'):
-            # This is the header line; next line should be an archive entry
-            past_header = True
-
-    if not past_header:
-        print_fatal("Zip file doesn't appear to have any content")
-        exit(1)
-
-    if not prefix:
-        print_fatal("Malformed zipfile, unable to determine zipfile prefix")
-        exit(1)
-
-    extract_cmd = "7z x -o{0} {1}".format(build.base_path, zip_path)
-    return extract_cmd, prefix
-
-
-def build_gem_unpack(tarball_path):
-    """Create gem unpack command.
-
-    gem unpack --verbose
-    /path/to/dir/file1
-    /path/to/dir/file2
-    ...
-    Unpacked gem: '/path/to/gem/tarball_prefix'
-    """
-    tar_prefix = ''
-    tarball_contents = subprocess.check_output(
-        ["gem", "unpack", "--verbose", tarball_path], universal_newlines=True)
-    extract_cmd = "gem unpack --target={0} {1}".format(build.base_path, tarball_path)
-    if tarball_contents:
-        tar_prefix = tarball_contents.splitlines()[-1].rsplit("/")[-1]
-        if tar_prefix.endswith("'"):
-            tar_prefix = tar_prefix[:-1]
-
-    return extract_cmd, tar_prefix
 
 
 def build_go_unzip(tarball_path):
@@ -550,11 +470,7 @@ def write_upstream(sha, tarfile, mode="w"):
 def find_extract(tar_path, tarfile):
     """Determine the extract command and tarball_prefix."""
     tar_prefix = "{}-{}".format(name, version)
-    if tarfile.lower().endswith('.zip'):
-        extract_cmd, tar_prefix = build_unzip(tar_path)
-    elif tarfile.lower().endswith('.gem'):
-        extract_cmd, tar_prefix = build_gem_unpack(tar_path)
-    elif tarfile.lower().endswith('.jar'):
+    if tarfile.lower().endswith(('.zip', '.jar')):
         extract_cmd, tar_prefix = build_unzip(tar_path)
     elif tarfile == "list":
         extract_cmd, tar_prefix = build_go_unzip(tar_path)
@@ -587,8 +503,6 @@ def process_archives(archives):
 
         if source_tarball_path.lower().endswith('.zip'):
             extract_cmd, source_tarball_prefix = build_unzip(source_tarball_path)
-        elif source_tarball_path.lower().endswith('.7z'):
-            extract_cmd, source_tarball_prefix = build_un7z(source_tarball_path)
         else:
             extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
         buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix

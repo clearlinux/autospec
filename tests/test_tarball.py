@@ -117,6 +117,7 @@ class TestTarballVersionName(unittest.TestCase):
                 tarball.print_fatal = mock_gen(rv=None)
                 tarball.tarfile.is_tarfile = mock_gen(rv=input['is_tar'])
                 src_content = input['content']
+                tarball.build.base_path = '.'
                 tarball.tarfile.open = MockSrcFile
                 actual = tarball.build_untar('path/tar_file-v1.tar')
             except:
@@ -160,6 +161,7 @@ class TestTarballVersionName(unittest.TestCase):
                 tarball.print_fatal = mock_gen(rv=None)
                 tarball.zipfile.is_zipfile = mock_gen(rv=input['is_zip'])
                 zip_content = input['content']
+                tarball.build.base_path = '.'
                 tarball.zipfile.ZipFile = MockZipFile
                 actual = tarball.build_unzip('path/zip_file-v1.zip')
             except:
@@ -186,49 +188,24 @@ class TestTarballVersionName(unittest.TestCase):
         self.assertEqual(tarball.buildpattern.sources["godep"], go_sources)
         tarball.buildpattern.sources["godep"] = []
 
-    def test_build_un7z(self):
-        """
-        Test build_un7z
-        """
-        check_output_backup = subprocess.check_output
-        tarball.subprocess.check_output = mock_gen(rv=UN7Z_OUT)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_un7z('zip/path'),
-                         ('7z x -o. zip/path', 'src'))
-
-    def test_build_gem_unpack(self):
-        """
-        Test build_gem_unpack
-        """
-        check_output_backup = subprocess.check_output
-        tarball.subprocess.check_output = mock_gen(rv=GEM_OUT)
-        tarball.build.base_path = '.'
-        self.assertEqual(tarball.build_gem_unpack('gem/path'),
-                         ('gem unpack --target=. gem/path', 'test-prefix'))
-
     def test_find_extract(self):
         """
         Test find_extract with the three supported filetypes
-        (*.zip, *.gem, *.tar*)
+        (*.zip, *.tar*)
         """
         build_unzip_backup = tarball.build_unzip
-        build_gem_unpack_backup = tarball.build_gem_unpack
         build_untar_backup = tarball.build_untar
 
         tarball.build_unzip = Mock(return_value=('', ''))
-        tarball.build_gem_unpack = Mock(return_value=('', ''))
         tarball.build_untar = Mock(return_value=('', ''))
 
         tarball.find_extract('path/to/tar', 'test.zip')
-        tarball.find_extract('path/to/tar', 'test.gem')
         tarball.find_extract('path/to/tar', 'test.tar.gz')
 
         tarball.build_unzip.assert_called_once()
-        tarball.build_gem_unpack.assert_called_once()
         tarball.build_untar.assert_called_once()
 
         tarball.build_unzip = build_unzip_backup
-        tarball.build_gem_unpack = build_gem_unpack_backup
         tarball.build_untar = build_untar_backup
 
 
@@ -255,43 +232,6 @@ UNZIP_OUT = 'longhashstring\n'                             \
             '        0  04-03-2017 06:27   prefix-dir/\n'  \
             '      668  04-03-2017 06:27   prefix-dir/.gitignore\n'
 
-
-GEM_OUT = '/path/to/dir/file1\n'                           \
-          '/path/to/dir/file2\n'                           \
-          '...\n'                                          \
-          'Unpacked gem: \'/path/to/gem/test-prefix\''
-
-
-UN7Z_OUT = '\n'                                                             \
-           '7-Zip [64] 16.02 : Copyright (c) 1999-2016 Igor Pavlov : '      \
-           '2016-05-21\n'                                                   \
-           'p7zip Version 16.02 (locale=en_US.UTF-8,Utf16=on,HugeFiles=on,' \
-           '64 bits,4 CPUs Intel(R) Core(TM) i5-6260U CPU @ 1.80GHz (406E3)'\
-           ',ASM,AES-NI)\n'                                                 \
-           '\n'                                                             \
-           'Scanning the drive for archives:\n'                             \
-           '1 file, 7933454 bytes (7748 KiB)\n'                             \
-           '\n'                                                             \
-           'Listing archive: converted_ogg_to_mp3-0.91.7z\n'                \
-           '\n'                                                             \
-           '--\n'                                                           \
-           'Path = converted_ogg_to_mp3-0.91.7z\n'                          \
-           'Type = 7z\n'                                                    \
-           'Physical Size = 7933454\n'                                      \
-           'Headers Size = 1526\n'                                          \
-           'Method = LZMA2:23\n'                                            \
-           'Solid = +\n'                                                    \
-           'Blocks = 1\n'                                                   \
-           '\n'                                                             \
-           '   Date      Time    Attr         Size   Compressed  Name\n'    \
-           '------------------- ----- ------------ ------------  '          \
-           '------------------------\n'                                     \
-           '2018-05-15 05:50:54 ....A        25095      7931928  '          \
-           'src/activities/chronos/resource/sound/1.mp3\n'                  \
-           '2018-05-15 05:50:54 ....A        23214               '          \
-           'src/activities/chronos/resource/sound/2.mp3\n'                  \
-           '2018-05-15 05:50:54 ....A        36589               '          \
-           'src/activities/chronos/resource/sound/3.mp3\n'
 
 # Run test_setup to generate tests
 test_setup()
