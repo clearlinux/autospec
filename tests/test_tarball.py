@@ -169,25 +169,6 @@ class TestTarballVersionName(unittest.TestCase):
             finally:
                 self.assertEqual(actual, expected)
 
-    def test_build_go_unzip(self):
-        """
-        Test build_go_unzip
-        """
-        build_unzip_backup = tarball.build_unzip
-        tarball.build_unzip = lambda x: (f"unzip {x}", "/foo")
-        tarball.multi_version = ["v1.0.0"]
-        open_name = 'tarball.open'
-        content = "v1.0.0\n"
-        go_sources = ["v1.0.0.info", "v1.0.0.mod", "v1.0.0.zip"]
-        tarball.buildpattern.sources["godep"] = []
-        cmd, prefix = tarball.build_go_unzip("/foo/bar")
-        tarball.build_unzip = build_unzip_backup
-        self.assertEqual(len(cmd), 1)
-        self.assertEqual(cmd[0], "unzip /foo/v1.0.0.zip")
-        self.assertEqual(prefix, "/foo")
-        self.assertEqual(tarball.buildpattern.sources["godep"], go_sources)
-        tarball.buildpattern.sources["godep"] = []
-
     def test_find_extract(self):
         """
         Test find_extract with the three supported filetypes
