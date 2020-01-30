@@ -43,42 +43,16 @@ path = ""
 tarball_prefix = ""
 gcov_file = ""
 archives = []
+go_archives = []
 giturl = ""
 domain = ""
 prefixes = dict()
 
 
-def get_go_artifacts(url, target, ver):
-    """Get artifacts required to be a go proxy alternative."""
-    for name in [f"{ver}.{x}" for x in ["info", "mod", "zip"]]:
-        path = os.path.join(target, name)
-        if not os.path.exists(path):
-            download.do_curl(os.path.join(url, name),
-                             dest=path,
-                             is_fatal=True)
-        sha1 = get_sha1sum(path)
-        write_upstream(sha1, name, mode="a")
-
-
-def process_go_dependency(url, target):
-    """Handle go dependency files."""
-    base_url = os.path.dirname(url)
-    # Unlink the upstream file to avoid appending existing go artifacts
-    try:
-        os.unlink(os.path.join(build.download_path, "upstream"))
-    except FileNotFoundError:
-        pass
-    for ver in list(multi_version.keys()):
-        get_go_artifacts(base_url, target, ver)
-
-
 def check_or_get_file(upstream_url, tarfile, mode="w"):
     """Download tarball from url unless it is present locally."""
     tarball_path = build.download_path + "/" + tarfile
-    # check if url signifies a go dependency, which needs special handling
-    if tarfile == "list":
-        process_go_dependency(upstream_url, build.download_path)
-    elif not os.path.isfile(tarball_path):
+    if not os.path.isfile(tarball_path):
         download.do_curl(upstream_url, dest=tarball_path, is_fatal=True)
         write_upstream(get_sha1sum(tarball_path), tarfile, mode)
     else:
@@ -143,23 +117,6 @@ def build_unzip(zip_path):
         extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
 
     return extract_cmd, prefix
-
-
-def build_go_unzip(tarball_path):
-    """Create go unzip command(s)."""
-    base_path = os.path.dirname(tarball_path)
-    full_extract = []
-    prefix = ""
-    base_url = os.path.dirname(url)
-    for ver in multi_version:
-        source_info = os.path.join(base_url, f"{ver}.info")
-        source_mod = os.path.join(base_url, f"{ver}.mod")
-        source_zip = os.path.join(base_url, f"{ver}.zip")
-        extract_cmd, prefix = build_unzip(os.path.join(base_path, f"{ver}.zip"))
-        buildpattern.sources["godep"] += [source_info, source_mod, source_zip]
-        full_extract.append(extract_cmd)
-
-    return full_extract, prefix
 
 
 def print_header():
@@ -473,7 +430,9 @@ def find_extract(tar_path, tarfile):
     if tarfile.lower().endswith(('.zip', '.jar')):
         extract_cmd, tar_prefix = build_unzip(tar_path)
     elif tarfile == "list":
-        extract_cmd, tar_prefix = build_go_unzip(tar_path)
+        process_go_archives()
+        extract_cmd = 'true'
+        tar_prefix = ''
     else:
         extract_cmd, tar_prefix = build_untar(tar_path)
 
@@ -486,11 +445,7 @@ def prepare_and_extract(extract_cmd):
     shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
     os.makedirs("{}".format(build.base_path), exist_ok=True)
     call("mkdir -p %s" % build.download_path)
-    if isinstance(extract_cmd, list) and buildpattern.default_pattern in ["godep"]:
-        for cmd in extract_cmd:
-            call(cmd)
-    else:
-        call(extract_cmd)
+    call(extract_cmd)
 
 
 def process_archives(archives):
@@ -528,6 +483,24 @@ def process_archives(archives):
 
             call(mkdir_cmd)
             call(move_cmd)
+
+
+def process_go_archives():
+    """Set up extra archives required by go packages."""
+    global go_archives
+    base_url = os.path.dirname(url)
+    for ver in multi_version:
+        url_info = os.path.join(base_url, f"{ver}.info")
+        url_mod = os.path.join(base_url, f"{ver}.mod")
+        url_zip = os.path.join(base_url, f"{ver}.zip")
+        # Append elements in pairs url and destination if doesn't exist
+        if url_info not in archives:
+            go_archives.extend([url_info, ':'])
+        if url_mod not in archives:
+            go_archives.extend([url_mod, ':'])
+        if url_zip not in archives:
+            go_archives.extend([url_zip, f'{ver}/'])
+        buildpattern.sources["godep"] += [url_info, url_mod, url_zip]
 
 
 def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
@@ -570,7 +543,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # prepare directory and extract tarball
     prepare_and_extract(extract_cmd)
     # locate or download archives and move them into the right spot
-    process_archives(archives_arg)
+    process_archives(archives_arg + go_archives)
     # process any additional versions
     urls = config.parse_config_versions(build.download_path)
     if len(urls) <= 1:
