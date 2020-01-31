@@ -1776,19 +1776,21 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
                           .format(config.extra_configure,
                                   config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
-
         if config.config_opts['use_avx2']:
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
                               'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(config.extra_configure, config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
-
+        if self.subdir:
+            self._write_strip("popd")
         if config.config_opts['32bit']:
-            self._write_strip("pushd ../build32")
+            self._write_strip("pushd ../build32/" + self.subdir)
             self.write_32bit_exports()
             self._write_strip('meson '
                               '--libdir=lib32 --prefix=/usr --buildtype=plain {0} {1} builddir'
@@ -1804,7 +1806,7 @@ class Specfile(object):
         self.write_install_prepend()
         self.write_license_files()
         if config.config_opts['32bit']:
-            self._write_strip('pushd ../build32')
+            self._write_strip('pushd ../build32/' + self.subdir)
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddir install')
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
@@ -1813,11 +1815,14 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
-
+        if self.subdir:
+            self._write_strip("pushd " + self.subdir)
         if config.config_opts['use_avx2']:
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx2 install')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
+        if self.subdir:
+            self._write_strip("popd")
         self.write_find_lang()
 
     def write_phpize_pattern(self):
