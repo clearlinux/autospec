@@ -136,23 +136,30 @@ def convert_int(intstr):
 
 
 def parse_meson_test(lines):
-    """Parse outout of meson tests logs."""
+    """Parse output of meson tests logs."""
     global total_pass
+    global total_xfail
     global total_fail
     global total_skip
     for line in lines:
-        line = line.rstrip().split()
-        if len(line) != 2:
+        lsplit = line.rstrip().split()
+        if len(lsplit) == 2:
+            val = lsplit[-1]
+            if re.search(r'^ok:', line, flags=re.I):
+                total_pass += convert_int(val)
+            elif re.search(r'^fail:', line, flags=re.I):
+                total_fail += convert_int(val)
+            elif re.search(r'^skip(ped)?:', line, flags=re.I):
+                total_skip += convert_int(val)
+            elif re.search(r'^timeout:', line, flags=re.I):
+                # Count timeouts as failures.
+                total_fail += convert_int(val)
+        elif len(lsplit) == 3:
+            val = lsplit[-1]
+            if re.search(r'^expected fail:', line, flags=re.I):
+                total_xfail += convert_int(val)
+        else:
             continue
-        if line[0] == 'OK:':
-            total_pass = convert_int(line[1])
-        elif line[0] == 'FAIL:':
-            total_fail = convert_int(line[1])
-        elif line[0] == 'SKIP:':
-            total_skip = convert_int(line[1])
-        elif line[0] == 'TIMEOUT:':
-            # Count timeouts as failures.
-            total_fail = convert_int(line[1])
 
 
 def parse_log(log, pkgname=''):
@@ -188,7 +195,7 @@ def parse_log(log, pkgname=''):
                 else:
                     incheck = True
 
-        if "/usr/bin/meson test" in line:
+        if "meson test" in line:
             zero_test_data()
             parse_meson_test(lines[idx:])
             break

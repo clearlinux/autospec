@@ -456,6 +456,23 @@ pats = [
      'SKIP:       0\n'
      'TIMEOUT:    0\n',
      [16, 16, 0, 0, 0, 0, 0, 0, 0, 0]),
+    # gstreamer (uses meson / ninja)
+    ('+ meson test -C builddir\n'
+     "ninja: Entering directory `builddir'\n"
+     'ninja: no work to do.\n'
+     '1/6 gst_gst                                  OK       0.40 s\n'
+     '2/6 gst_gstabi                               FAIL     0.35 s\n'
+     '3/6 pipelines_stress                         OK       10.49 s\n'
+     '4/6 generic_sinks                            EXPECTEDFAIL 4.12 s\n'
+     '5/6 gst_gstcpp                               OK       0.37 s\n'
+     '6/6 libs_gstlibscpp                          OK       0.03 s\n'
+     'Ok:                   4\n'
+     'Expected Fail:        1\n'
+     'Fail:                 1\n'
+     'Unexpected Pass:      0\n'
+     'Skipped:              0\n'
+     'Timeout:              0\n',
+     [6, 4, 1, 1, 0, 0, 0, 0, 0, 0]),
 ]
 
 backup_zero_test_data = count.zero_test_data
