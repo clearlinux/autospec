@@ -20,6 +20,7 @@
 #
 
 import os
+import re
 
 import buildpattern
 import buildreq
@@ -67,11 +68,13 @@ def scan_for_tests(src_dir):
     cmake_check = "make test"
     perl_check = "make TEST_VERBOSE=1 test"
     setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
+    meson_check = "meson test -C builddir"
     if config.config_opts['allow_test_failures']:
         make_check += " || :"
         cmake_check += " || :"
         perl_check += " || :"
         setup_check += " || :"
+        meson_check += " || :"
 
     testsuites = {
         "makecheck": make_check,
@@ -79,11 +82,13 @@ def scan_for_tests(src_dir):
         "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
         "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd"
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd",
+        "meson": meson_check,
     }
     if config.config_opts['32bit']:
         testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check + " || :"
+        testsuites["meson"] += "\ncd ../build32;\n" + meson_check + " || :"
     if config.config_opts['use_avx2']:
         testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check + " || :"
@@ -131,6 +136,21 @@ def scan_for_tests(src_dir):
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
                        "R CMD check --no-manual --no-examples --no-codoc "    \
                        + tarball.rawname + " || :"
+    elif buildpattern.default_pattern == "meson":
+        found_tests = False
+        makefile_path = os.path.join(src_dir, "meson.build")
+        if not os.path.isfile(makefile_path):
+            return
+        for dirpath, _, files in os.walk(src_dir):
+            for f in files:
+                if f == "meson.build":
+                    with util.open_auto(os.path.join(dirpath, f)) as fp:
+                        if any(re.search(r'^\s*test\s*\(.+', line) for line in fp):
+                            found_tests = True
+                            tests_config = testsuites["meson"]
+                            break
+            if found_tests:
+                break
 
     if "tox.ini" in files:
         buildreq.add_buildreq("tox")
