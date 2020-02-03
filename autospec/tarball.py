@@ -22,7 +22,7 @@ import glob
 import os
 import re
 import shutil
-import tarfile
+import subprocess
 import zipfile
 from collections import OrderedDict
 
@@ -89,20 +89,17 @@ def check_or_get_file(upstream_url, tarfile, mode="w"):
 def build_untar(tarball_path):
     """Determine extract command and tarball prefix from tar -tf output."""
     prefix = None
-    if tarfile.is_tarfile(tarball_path):
-        with tarfile.open(tarball_path, 'r') as content:
-            lines = content.getnames()
-            # When tarball is not empty
-            if len(lines) == 0:
-                print_fatal("Tar file doesn't appear to have any content")
-                exit(1)
-            elif len(lines) > 1:
-                if 'package.xml' in lines and buildpattern.default_pattern in ['phpize']:
-                    lines.remove('package.xml')
-                prefix = os.path.commonpath(lines)
-    else:
+    p = subprocess.run(["tar", "tf", tarball_path], stdout=subprocess.PIPE)
+    if p.returncode:
         print_fatal("Not a valid tar file.")
         exit(1)
+
+    lines = p.stdout.decode("utf-8").splitlines()
+    if not len(lines):
+        print_fatal("Tar file doesn't appear to have any content")
+        exit(1)
+
+    prefix = os.path.commonpath(lines)
 
     # If we didn't find a common prefix, make a dir, based on the tar filename
     if not prefix:
