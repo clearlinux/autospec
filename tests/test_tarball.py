@@ -1,22 +1,79 @@
-import subprocess
 import unittest
-from unittest.mock import patch, Mock, mock_open, call
-import build  # needs to be imported before tarball due to dependencies
+from unittest.mock import Mock, patch
 import tarball
-import re
 
 
-src_content = None
+# Stores all test cases for dynamic tests.
+# In order to add more tests just add more elements to the lists provided below.
 
-class FileManager():
-    want_dev_split = False
+CONTENT_PREFIX = [
+    'common-prefix/',
+    'common-prefix/md5/',
+    'common-prefix/md5/CMakeLists.txt',
+    'common-prefix/md5/md5.h',
+    'common-prefix/md5/md5hl.c',
+    'common-prefix/md5/md5cmp.c',
+    'common-prefix/md5/md5.c',
+    'common-prefix/md5/Makefile.am',
+    'common-prefix/md5/Makefile.in',
+    'common-prefix/jerror.c',
+    'common-prefix/sharedlib/',
+    'common-prefix/sharedlib/CMakeLists.txt',
+    'common-prefix/turbojpeg-mapfile',
+    'common-prefix/jdpostct.c',
+    'common-prefix/turbojpeg-jni.c',
+]
+
+CONTENT_SUBDIR = [
+    'dir1/',
+    'dir1/md5/',
+    'dir1/md5/CMakeLists.txt',
+    'dir1/md5/md5.h',
+    'dir1/md5/md5hl.c',
+    'dir1/md5/md5cmp.c',
+    'dir1/md5/md5.c',
+    'dir1/md5/Makefile.am',
+    'dir1/md5/Makefile.in',
+    'dir2/',
+    'dir2/jerror.c',
+    'dir2/sharedlib/',
+    'dir2/sharedlib/CMakeLists.txt',
+    'dir2/turbojpeg-mapfile',
+    'dir2/jdpostct.c',
+    'dir2/turbojpeg-jni.c',
+    'file.c'
+]
+
+# Input for tarball.Source class tests.
+# Structure: (url, destination, path, fake-content, source_type, prefix, subddir)
+SRC_CREATION = [
+    ("https://example/src-prefix.zip", "", "/tmp/src-prefix.zip", CONTENT_PREFIX, "zip", "common-prefix", None),
+    ("https://example/src-subdir.zip", "", "/tmp/src-subdir.zip", CONTENT_SUBDIR, "zip", "", "src-subdir"),
+    ("https://example/src-prefix.tar", "", "/tmp/src-prefix.tar", CONTENT_PREFIX, "tar", "common-prefix", None),
+    ("https://example/src-subdir.tar", "", "/tmp/src-subdir.tar", CONTENT_SUBDIR, "tar", "", "src-subdir"),
+    ("https://example/src-no-extractable.tar", ":", "/tmp/src-no-extractable.tar", None, None, None, None),
+    ("https://example/go-src/list", "", "/tmp/list", None, "go", "", "list"),
+]
+
+# Input for tarball.detect_build_from_url method tests
+# Structure: (url, build_pattern)
+BUILD_PAT_URL = [
+    ("https://cran.r-project.org/src/contrib/raster_3.0-12.tar.gz", "R"),
+    ("http://pypi.debian.net/argparse/argparse-1.4.0.tar.gz", "distutils3"),
+    ("https://pypi.python.org/packages/source/T/Tempita/Tempita-0.5.2.tar.gz", "distutils3"),
+    ("https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-Tty-1.14.tar.gz", "cpan"),
+    ("http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-2.111.tar.gz", "cpan"),
+    ("https://proxy.golang.org/github.com/spf13/pflag/@v/list", "godep"),
+    ("https://pecl.php.net//get/lua-2.0.6.tgz", "phpize"),
+]
 
 
-class MockSrcFile:
+class MockSrcFile():
+    """Mock class for zipfile and tarfile."""
+
     def __init__(self, path, mode):
         self.name = path
         self.mode = mode
-        self.content = src_content
 
     def __enter__(self):
         return self
@@ -24,199 +81,183 @@ class MockSrcFile:
     def __exit__(self, exc_type, exc_val, traceback):
         return False
 
+    @classmethod
+    def set_content(cls, content):
+        cls.content = content
+
     def getnames(self):
         return self.content
 
-
-def mock_gen(rv=None):
-    def mock_f(*args, **kwargs):
-        return rv
-
-    return mock_f
+    def namelist(self):
+        return self.content
 
 
-def test_generator(url, name, version):
-    """
-    Generate a test for each line passed in
-    """
-    @patch('tarball.build')
-    def test_packageurl(self, mock_build):
-        """
-        Test the name and version detection from tarball url
-        """
-        tarball.giturl = ''
+def source_test_generator(url, destination, path, content, src_type, prefix, subdir):
+    """Create test for tarball.Source class using generator template."""
+
+    @patch('tarball.tarfile.open', MockSrcFile)
+    @patch('tarball.zipfile.ZipFile', MockSrcFile)
+    @patch('tarball.tarfile.is_tarfile', Mock(return_value=True))
+    @patch('tarball.zipfile.is_zipfile', Mock(return_value=True))
+    def generator(self):
+        """Test template."""
+        # Set fake content
+        MockSrcFile.set_content(content)
+        src = tarball.Source(url, destination, path)
+        self.assertEqual(src.type, src_type)
+        self.assertEqual(src.prefix, prefix)
+        self.assertEqual(src.subdir, subdir)
+
+    return generator
+
+
+def detect_build_test_generator(url, build_pattern):
+    """Create test for tarball.detect_build_from_url method."""
+    def generator(self):
+        """Test template."""
+        tarball.detect_build_from_url(url)
+        self.assertEqual(build_pattern, tarball.buildpattern.default_pattern)
+
+    return generator
+
+
+def name_and_version_test_generator(url, name, version):
+    """Create test for tarball.name_and_version method."""
+    @patch('tarball.config.parse_config_versions', Mock(return_value={}))
+    def generator(self):
+        """Test template."""
         tarball.url = url
-        set_multi_version_backup = tarball.set_multi_version
-        tarball.config.parse_config_versions = mock_gen(rv=version)
-        n, _, v = tarball.name_and_version('', '', FileManager())
-        tarball.set_multi_version = set_multi_version_backup
+        n, _, v = tarball.name_and_version('', '', Mock())
         self.assertEqual(name, n)
         self.assertEqual(version, v)
-        if re.match("https?://github.com", url) != None:
-            self.assertIsNotNone(tarball.giturl)
-            self.assertNotEqual('', tarball.giturl, "giturl should not be empty")
-            self.assertIsNotNone(
-                    re.match("https://github.com/[^/]+/"+tarball.repo+".git",
-                    tarball.giturl), "%s looks incorrect" % tarball.giturl)
+        if "github.com" in url:
+            self.assertRegex(tarball.giturl, r"https://github.com/[^/]+/" + tarball.repo + ".git")
 
-    return test_packageurl
+    return generator
 
 
-def test_setup():
-    global TestTarballVersionName
+def create_dynamic_tests():
+    """Create dynamic tests based on content in lists and packageulrs file."""
+    # Create tests for tarball.Source class.
+    for url, dest, path, content, src_type, prefix, subdir in SRC_CREATION:
+        test_name = 'test_src_{}'.format(url)
+        test = source_test_generator(url, dest, path, content, src_type, prefix, subdir)
+        setattr(TestTarball, test_name, test)
+
+    # Create tests for tarball.detect_build_from_url method.
+    for url, build_pattern in BUILD_PAT_URL:
+        test_name = 'test_pat_{}'.format(url)
+        test = detect_build_test_generator(url, build_pattern)
+        setattr(TestTarball, test_name, test)
+
+    # Create tests for tarball.name_and_version method.
     with open('tests/packageurls', 'r') as pkgurls:
         for urlline in pkgurls.read().split('\n'):
             if not urlline or urlline.startswith('#'):
                 continue
-
-            tarball.name = ''
-            tarball.version = ''
             (url, name, version) = urlline.split(',')
-            test_name = 'test_pat_{}'.format(url)
-            test = test_generator(url, name, version)
-            setattr(TestTarballVersionName, test_name, test)
+            test_name = 'test_name_ver_{}'.format(url)
+            test = name_and_version_test_generator(url, name, version)
+            setattr(TestTarball, test_name, test)
 
 
-class TestTarballVersionName(unittest.TestCase):
+class TestTarball(unittest.TestCase):
+    """Main testing class for tarball.py.
 
-    def test_version_configuration_override(self):
-        """
-        Test the version and name override from the command line
-        """
-        set_multi_version_backup = tarball.set_multi_version
-        n, _, v = tarball.name_and_version('something', 'else', FileManager())
-        tarball.set_multi_version = set_multi_version_backup
-        self.assertEqual(v, 'else')
-        self.assertEqual(n, 'something')
+    This class would contain all static tests and dynamic tests for tarball.py
+    """
 
-    def test_build_untar(self):
-        """
-        Test build_untar using an array to test multiple cases.
-        Case 1: Existent tar, with content and common dir.
-        Case 2: Non existent tar.
-        Case 3: Existent tar, but empty.
-        Case 4: Existent tar, with content and non common dir.
-        Case 5: Existent tar, with content, common dir with leading dot (./)
-        Case 6: Existent tar, with content, one element only with (./)
-        Case 7: Existent tar, with one single file
-        """
+    def setUp(self):
+        """Set up default values before start test."""
+        # Set strenght to 0 so it can be updated during tests
+        tarball.build.base_path = '/tmp'
+        tarball.build.download_path = '/download/path/'
 
-        tests = (
-                ({'is_tar': True, 'content':['dir/','dir/file1']}, ('tar --directory=. -xf path/tar_file-v1.tar', 'dir')),
-                ({'is_tar': False, 'content':[]}, (False, False)),
-                ({'is_tar': True, 'content':[]}, (False, False)),
-                ({'is_tar': True, 'content':['dir/','dir1/file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', '')),
-                ({'is_tar': True, 'content':['./dir/','./dir/file1']}, ('tar --directory=. -xf path/tar_file-v1.tar', 'dir')),
-                ({'is_tar': True, 'content':['./','./dir/','./dir1/file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', '')),
-                ({'is_tar': True, 'content':['file1']}, ('tar --directory=. --one-top-level=tar_file-v1 -xf path/tar_file-v1.tar', None)),
-                )
-        global src_content
+    def tearDown(self):
+        """Clean up after running each test."""
+        tarball.build.base_path = None
+        tarball.build.download_path = None
+        tarball.buildpattern.archive_details = {}
+        tarball.buildpattern.pattern_strength = 0
+        tarball.buildpattern.sources['godep'] = []
+        tarball.buildpattern.sources['version'] = []
+        tarball.gcov_file = ''
+        tarball.giturl = ''
+        tarball.name = ''
+        tarball.prefixes = {}
+        tarball.repo = ''
+        tarball.url = ''
+        tarball.version = ''
 
-        for input, expected in tests:
-            try:
-                tarball.print_fatal = mock_gen(rv=None)
-                tarball.tarfile.is_tarfile = mock_gen(rv=input['is_tar'])
-                src_content = input['content']
-                tarball.build.base_path = '.'
-                tarball.tarfile.open = MockSrcFile
-                actual = tarball.build_untar('path/tar_file-v1.tar')
-            except:
-                actual = (False, False)
-            finally:
-                self.assertEqual(actual, expected)
+    @patch('tarball.os.path.isfile', Mock(return_value=True))
+    def test_set_gcov(self):
+        """Test for tarball.set_gcov method."""
+        # Set up input values
+        tarball.name = 'test'
+        tarball.set_gcov()
+        self.assertEqual(tarball.gcov_file, 'test.gcov')
 
-    def test_build_unzip(self):
-        """
-        Test build_unzip using an array to test multiple cases.
-        Case 1: Existent zip, with content and common dir.
-        Case 2: Non existen zip.
-        Case 3: Existent zip, but empty.
-        Case 4: Existent zip, with content and non common dir.
-        """
+    def test_process_go_archives(self):
+        """Test for tarball.process_go_archives method."""
+        # Set up input values
+        tarball.url = 'https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/list'
+        tarball.multi_version = ['v0.3.1', 'v0.3.0', 'v0.2.0']
+        go_archives = []
+        go_archives_expected = [
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.info", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.mod", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.zip", "",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.info", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.mod", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.zip", "",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.info", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.mod", ":",
+            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.zip", "",
+        ]
+        tarball.process_go_archives(go_archives)
+        self.assertEqual(go_archives, go_archives_expected)
 
-        class MockZipFile:
-            def __init__(self, path, mode):
-                self.name = path
-                self.mode = mode
-                self.content = zip_content
+    @patch('tarball.config', Mock())
+    def test_process_multiver_archives(self):
+        """Test for tarball.process_multiver_archives method."""
+        # Set up input values
+        main_src = tarball.Source('https://example/src-5.0.tar', ':', '/tmp/src.tar')
+        multiver_archives = []
+        config_versions = {
+            '5.0': 'https://example/src-5.0.tar',
+            '4.0': 'https://example/src-4.0.tar',
+            '3.5': 'https://example/src-3.5.tar',
+            '3.0': 'https://example/src-3.0.tar',
+        }
+        expected_multiver_archives = [
+            'https://example/src-4.0.tar', '',
+            'https://example/src-3.5.tar', '',
+            'https://example/src-3.0.tar', '',
+        ]
+        # Set up a return value for parse_config_versions method
+        attrs = {'parse_config_versions.return_value': config_versions}
+        tarball.config.configure_mock(**attrs)
+        tarball.process_multiver_archives(main_src, multiver_archives)
+        self.assertEqual(multiver_archives, expected_multiver_archives)
 
-            def __enter__(self):
-                return self
-
-            def __exit__(self, exc_type, exc_val, traceback):
-                return False
-
-            def namelist(self):
-                return self.content
-
-        tests = (
-                ({'is_zip':True, 'content':['dir/','dir/file1']}, ('unzip -qq -d . path/zip_file-v1.zip', 'dir')),
-                ({'is_zip':False, 'content':[]}, (False, False)),
-                ({'is_zip':True, 'content':[]}, (False, False)),
-                ({'is_zip':True, 'content':['dir/','dir1/file1', ]}, ('unzip -qq -d ./zip_file-v1 path/zip_file-v1.zip', '')),
-                )
-
-        for input, expected in tests:
-            try:
-                tarball.print_fatal = mock_gen(rv=None)
-                tarball.zipfile.is_zipfile = mock_gen(rv=input['is_zip'])
-                zip_content = input['content']
-                tarball.build.base_path = '.'
-                tarball.zipfile.ZipFile = MockZipFile
-                actual = tarball.build_unzip('path/zip_file-v1.zip')
-            except:
-                actual = (False, False)
-            finally:
-                self.assertEqual(actual, expected)
-
-    def test_find_extract(self):
-        """
-        Test find_extract with the three supported filetypes
-        (*.zip, *.tar*)
-        """
-        build_unzip_backup = tarball.build_unzip
-        build_untar_backup = tarball.build_untar
-
-        tarball.build_unzip = Mock(return_value=('', ''))
-        tarball.build_untar = Mock(return_value=('', ''))
-
-        tarball.find_extract('path/to/tar', 'test.zip')
-        tarball.find_extract('path/to/tar', 'test.tar.gz')
-
-        tarball.build_unzip.assert_called_once()
-        tarball.build_untar.assert_called_once()
-
-        tarball.build_unzip = build_unzip_backup
-        tarball.build_untar = build_untar_backup
+    @patch('tarball.Source.set_prefix', Mock())
+    @patch('tarball.Source.extract', Mock())
+    def test_extract_sources(self):
+        """Test for tarball.extract_sources method."""
+        # Set up input values
+        main_src = tarball.Source('https://example1.tar', '', '/tmp')
+        arch1_src = tarball.Source('https://example2.tar', '', '/tmp')
+        arch2_src = tarball.Source('https://example3.tar', ':', '/tmp')
+        arch3_src = tarball.Source('https://example4.tar', '', '/tmp')
+        archives_src = [arch1_src, arch2_src, arch3_src]
+        tarball.extract_sources(main_src, archives_src)
+        # Sources with destination=':' should not be extracted, so method
+        # should be called only 3 times.
+        self.assertEqual(tarball.Source.extract.call_count, 3)
 
 
-TAR_OUT = 'libjpeg-turbo-1.5.1/\n'                         \
-          'libjpeg-turbo-1.5.1/md5/\n'                     \
-          'libjpeg-turbo-1.5.1/md5/CMakeLists.txt\n'       \
-          'libjpeg-turbo-1.5.1/md5/md5.h\n'                \
-          'libjpeg-turbo-1.5.1/md5/md5hl.c\n'              \
-          'libjpeg-turbo-1.5.1/md5/md5cmp.c\n'             \
-          'libjpeg-turbo-1.5.1/md5/md5.c\n'                \
-          'libjpeg-turbo-1.5.1/md5/Makefile.am\n'          \
-          'libjpeg-turbo-1.5.1/md5/Makefile.in\n'          \
-          'libjpeg-turbo-1.5.1/jerror.c\n'                 \
-          'libjpeg-turbo-1.5.1/sharedlib/\n'               \
-          'libjpeg-turbo-1.5.1/sharedlib/CMakeLists.txt\n' \
-          'libjpeg-turbo-1.5.1/turbojpeg-mapfile\n'        \
-          'libjpeg-turbo-1.5.1/jdpostct.c\n'               \
-          'libjpeg-turbo-1.5.1/turbojpeg-jni.c\n'
-
-
-UNZIP_OUT = 'longhashstring\n'                             \
-            '  Length      Date    Time    Name\n'         \
-            '---------  ---------- -----   ----\n'         \
-            '        0  04-03-2017 06:27   prefix-dir/\n'  \
-            '      668  04-03-2017 06:27   prefix-dir/.gitignore\n'
-
-
-# Run test_setup to generate tests
-test_setup()
-
+# Create dynamic tests based on config file
+create_dynamic_tests()
 
 if __name__ == '__main__':
     unittest.main(buffer=True)

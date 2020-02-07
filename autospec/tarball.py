@@ -18,10 +18,8 @@
 #
 
 import configparser
-import glob
 import os
 import re
-import shutil
 import tarfile
 import zipfile
 from collections import OrderedDict
@@ -43,10 +41,104 @@ path = ""
 tarball_prefix = ""
 gcov_file = ""
 archives = []
-go_archives = []
 giturl = ""
 domain = ""
 prefixes = dict()
+
+
+class Source(object):
+    """Holds data and methods for source code or archives management."""
+
+    def __init__(self, url, destination, path):
+        """Set default values for source file."""
+        self.url = url
+        self.destination = destination
+        self.path = path
+        self.type = None
+        self.prefix = None
+        self.subdir = None
+
+        # Extra  compressed archives
+        if not self.destination.startswith(':'):
+            self.set_type()
+            self.set_prefix()
+
+    def set_type(self):
+        """Determine compression type."""
+        if self.url.lower().endswith(('.zip', 'jar')):
+            self.type = 'zip'
+        elif self.url.lower().endswith('list'):
+            self.type = 'go'
+        else:
+            self.type = 'tar'
+
+    def set_prefix(self):
+        """Determine the prefix and subdir if no prefix."""
+        prefix_method = getattr(self, 'set_{}_prefix'.format(self.type))
+        prefix_method()
+        # When there is no prefix, create subdir
+        if not self.prefix:
+            self.subdir = os.path.splitext(os.path.basename(self.path))[0]
+
+    def set_tar_prefix(self):
+        """Determine prefix folder name of tar file."""
+        if tarfile.is_tarfile(self.path):
+            with tarfile.open(self.path, 'r') as content:
+                lines = content.getnames()
+                # When tarball is not empty
+                if len(lines) == 0:
+                    print_fatal("Tar file doesn't appear to have any content")
+                    exit(1)
+                elif len(lines) > 1:
+                    if 'package.xml' in lines and buildpattern.default_pattern in ['phpize']:
+                        lines.remove('package.xml')
+                    self.prefix = os.path.commonpath(lines)
+        else:
+            print_fatal("Not a valid tar file.")
+            exit(1)
+
+    def set_zip_prefix(self):
+        """Determine prefix folder name of zip file."""
+        if zipfile.is_zipfile(self.path):
+            with zipfile.ZipFile(self.path, 'r') as content:
+                lines = content.namelist()
+                # When zipfile is not empty
+                if len(lines) > 0:
+                    self.prefix = os.path.commonpath(lines)
+                else:
+                    print_fatal("Zip file doesn't appear to have any content")
+                    exit(1)
+        else:
+            print_fatal("Not a valid zip file.")
+            exit(1)
+
+    def set_go_prefix(self):
+        """Set empty prefix for go packages (*.list)."""
+        self.prefix = ''
+
+    def extract(self):
+        """Prepare extraction path and call specific extraction method."""
+        if not self.prefix:
+            extraction_path = os.path.join(build.base_path, self.subdir)
+        else:
+            extraction_path = build.base_path
+
+        extract_method = getattr(self, 'extract_{}'.format(self.type))
+        extract_method(extraction_path)
+
+    def extract_tar(self, extraction_path):
+        """Extract tar in path."""
+        with tarfile.open(self.path) as content:
+            content.extractall(path=extraction_path)
+
+    def extract_zip(self, extraction_path):
+        """Extract zip in path."""
+        with zipfile.ZipFile(self.path, 'r') as content:
+            content.extractall(path=extraction_path)
+
+    def extract_go(self, extraction_path):
+        """Pretend to do something."""
+        return
 
 
 def check_or_get_file(upstream_url, tarfile, mode="w"):
@@ -58,65 +150,6 @@ def check_or_get_file(upstream_url, tarfile, mode="w"):
     else:
         write_upstream(get_sha1sum(tarball_path), tarfile, mode)
     return tarball_path
-
-
-def build_untar(tarball_path):
-    """Determine extract command and tarball prefix from tar -tf output."""
-    prefix = None
-    if tarfile.is_tarfile(tarball_path):
-        with tarfile.open(tarball_path, 'r') as content:
-            lines = content.getnames()
-            # When tarball is not empty
-            if len(lines) == 0:
-                print_fatal("Tar file doesn't appear to have any content")
-                exit(1)
-            elif len(lines) > 1:
-                if 'package.xml' in lines and buildpattern.default_pattern in ['phpize']:
-                    lines.remove('package.xml')
-                prefix = os.path.commonpath(lines)
-    else:
-        print_fatal("Not a valid tar file.")
-        exit(1)
-
-    # If we didn't find a common prefix, make a dir, based on the tar filename
-    if not prefix:
-        subdir = os.path.splitext(os.path.basename(tarball_path))[0]
-        extract_cmd = "tar --directory={0} --one-top-level={1} -xf {2}".format(build.base_path, subdir, tarball_path)
-    else:
-        extract_cmd = "tar --directory={0} -xf {1}".format(build.base_path, tarball_path)
-    return extract_cmd, prefix
-
-
-def build_unzip(zip_path):
-    """Return correct unzip command and the prefix folder name of the contents of zip file.
-
-    This function will run the zip file through a content list, parsing that list to get the
-    root folder name containing the zip file's contents.
-    """
-    prefix = None
-
-    if zipfile.is_zipfile(zip_path):
-        with zipfile.ZipFile(zip_path, 'r') as content:
-            lines = content.namelist()
-            # When zipfile is not empty
-            if len(lines) > 0:
-                prefix = os.path.commonpath(lines)
-            else:
-                print_fatal("Zip file doesn't appear to have any content")
-                exit(1)
-    else:
-        print_fatal("Not a valid zip file.")
-        exit(1)
-
-    # If we didn't find a common prefix, make a dir, based on the zip filename
-    if not prefix:
-        subdir = os.path.splitext(os.path.basename(zip_path))[0]
-        extract_cmd = "unzip -qq -d {0} {1}".format(
-            os.path.join(build.base_path, subdir), zip_path)
-    else:
-        extract_cmd = "unzip -qq -d {0} {1}".format(build.base_path, zip_path)
-
-    return extract_cmd, prefix
 
 
 def print_header():
@@ -424,70 +457,8 @@ def write_upstream(sha, tarfile, mode="w"):
               os.path.join(sha, tarfile) + "\n", mode=mode)
 
 
-def find_extract(tar_path, tarfile):
-    """Determine the extract command and tarball_prefix."""
-    tar_prefix = "{}-{}".format(name, version)
-    if tarfile.lower().endswith(('.zip', '.jar')):
-        extract_cmd, tar_prefix = build_unzip(tar_path)
-    elif tarfile == "list":
-        process_go_archives()
-        extract_cmd = 'true'
-        tar_prefix = ''
-    else:
-        extract_cmd, tar_prefix = build_untar(tar_path)
-
-    return extract_cmd, tar_prefix
-
-
-def prepare_and_extract(extract_cmd):
-    """Prepare the directory and extract the tarball."""
-    shutil.rmtree(os.path.join(build.base_path, name), ignore_errors=True)
-    shutil.rmtree(os.path.join(build.base_path, tarball_prefix), ignore_errors=True)
-    os.makedirs("{}".format(build.base_path), exist_ok=True)
-    call("mkdir -p %s" % build.download_path)
-    call(extract_cmd)
-
-
-def process_archives(archives):
-    """Download and process archives."""
-    for archive, destination in zip(archives[::2], archives[1::2]):
-        source_tarball_path = check_or_get_file(archive, os.path.basename(archive), mode="a")
-
-        if destination.startswith(':'):
-            continue
-
-        if source_tarball_path.lower().endswith('.zip'):
-            extract_cmd, source_tarball_prefix = build_unzip(source_tarball_path)
-        else:
-            extract_cmd, source_tarball_prefix = build_untar(source_tarball_path)
-        buildpattern.archive_details[archive + "prefix"] = source_tarball_prefix
-        call(extract_cmd)
-        tar_path = os.path.join(build.base_path, source_tarball_prefix)
-        if source_tarball_prefix:
-            prefixes[archive] = source_tarball_prefix
-        else:
-            fake_prefix = os.path.splitext(os.path.basename(source_tarball_path))[0]
-            tar_path = os.path.join(build.base_path, fake_prefix)
-        tar_files = glob.glob("{}/*".format(tar_path))
-        if tar_path == path:
-            print("Archive {} already unpacked in main path {}; ignoring destination"
-                  .format(archive, path))
-        else:
-            move_cmd = "mv "
-            for tar_file in tar_files:
-                move_cmd += '"{}"'.format(tar_file) + " "
-            move_cmd += '"{0}/{1}"'.format(path, destination)
-
-            mkdir_cmd = "mkdir -p "
-            mkdir_cmd += '"{0}/{1}"'.format(path, destination)
-
-            call(mkdir_cmd)
-            call(move_cmd)
-
-
-def process_go_archives():
+def process_go_archives(go_archives):
     """Set up extra archives required by go packages."""
-    global go_archives
     base_url = os.path.dirname(url)
     for ver in multi_version:
         url_info = os.path.join(base_url, f"{ver}.info")
@@ -499,8 +470,68 @@ def process_go_archives():
         if url_mod not in archives:
             go_archives.extend([url_mod, ':'])
         if url_zip not in archives:
-            go_archives.extend([url_zip, f'{ver}/'])
+            go_archives.extend([url_zip, ''])
         buildpattern.sources["godep"] += [url_info, url_mod, url_zip]
+
+
+def process_multiver_archives(main_src, multiver_archives):
+    """Set up multiversion archives."""
+    config_versions = config.parse_config_versions(build.download_path)
+    # Check if exist more than one version.
+    if len(config_versions) > 1:
+        for extraver in config_versions:
+            extraurl = config_versions[extraver]
+            if extraurl and extraurl != main_src.url:
+                buildpattern.sources["version"].append(extraurl)
+                multiver_archives.append(extraurl)
+                multiver_archives.append('')
+                set_multi_version(None)
+
+
+def process_archives(main_src, archives):
+    """Process extra sources needed by package.
+
+    This sources include: archives, go archives and multiversion.
+    """
+    go_archives = []
+    multiver_archives = []
+    src_objects = []
+
+    # Add extra archives and multiversion for Go packages
+    if os.path.basename(main_src.url) == "list":
+        process_go_archives(go_archives)
+    # Add multiversion for the rest of the patterns
+    else:
+        process_multiver_archives(main_src, multiver_archives)
+
+    full_archives = archives + go_archives + multiver_archives
+    # Download and extract full list
+    for arch_url, destination in zip(full_archives[::2], full_archives[1::2]):
+        src_path = check_or_get_file(arch_url, os.path.basename(arch_url), mode="a")
+        # Create source object and extract archive
+        archive = Source(arch_url, destination, src_path)
+        # Add archive prefix to list
+        buildpattern.archive_details[arch_url + "prefix"] = archive.prefix
+        prefixes[arch_url] = archive.prefix
+        # Add archive to list
+        src_objects.append(archive)
+
+    return src_objects
+
+
+def process_main_source(url):
+    """Download and get important information from main source code."""
+    src_path = check_or_get_file(url, os.path.basename(url))
+    main_src = Source(url, '', src_path)
+    return main_src
+
+
+def extract_sources(main_src, archives_src):
+    """Extract sources."""
+    full_list_src = [main_src] + archives_src
+    for src in full_list_src:
+        if src.destination != ':':
+            src.extract()
 
 
 def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
@@ -516,7 +547,6 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     name = name_arg
     version = ver_arg
     archives = archives_arg
-    tarfile = os.path.basename(url_arg)
     # determine build pattern and build requirements from url
     detect_build_from_url(url)
     # Create the download path for content and set build.download_path
@@ -529,43 +559,20 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # name is created by adding ".gcov" to the package name (if a gcov file
     # exists)
     set_gcov()
-    # download the tarball to tar_path
-    tar_path = check_or_get_file(url, tarfile)
-    # determine extract command and tarball prefix for the tarfile
-    extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
+    # Download and process main source
+    main_src = process_main_source(url)
     # Store the detected prefix associated with this file
-    prefixes[url] = tarball_prefix
+    prefixes[url] = main_src.prefix
+    tarball_prefix = main_src.prefix
     # set global path with tarball_prefix
     path = os.path.join(build.base_path, tarball_prefix)
     # Now that the metadata has been collected print the header
     print_header()
-    # write out the Makefile with the name, url, and archives we found
-    # prepare directory and extract tarball
-    prepare_and_extract(extract_cmd)
-    # locate or download archives and move them into the right spot
-    process_archives(archives_arg + go_archives)
-    # process any additional versions
-    urls = config.parse_config_versions(build.download_path)
-    if len(urls) <= 1:
-        # This is a single version package
-        return
-    for extraver in urls:
-        extraurl = urls[extraver]
-        if not extraurl:
-            # Nothing to do here
-            continue
-        if extraurl == url:
-            # This is the same as the SOURCE0 package, which we already handled
-            continue
-        buildpattern.sources["version"].append(extraurl)
-        name, rawname, extraver = name_and_version(name_arg, extraver, filemanager)
-        # Make sure we don't stick to a single version
-        set_multi_version(None)
-        tarfile = os.path.basename(extraurl)
-        tar_path = check_or_get_file(extraurl, tarfile, mode="a")
-        extract_cmd, tarball_prefix = find_extract(tar_path, tarfile)
-        prefixes[extraurl] = tarball_prefix
-        prepare_and_extract(extract_cmd)
+    # Download and process extra sources: archives, go archives and
+    # multiversion
+    archives_src = process_archives(main_src, archives)
+    # Extract all sources
+    extract_sources(main_src, archives_src)
 
 
 def load_specfile(specfile):
