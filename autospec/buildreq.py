@@ -867,28 +867,9 @@ def scan_for_configure(dirn):
             add_buildreq("buildreq-meson")
             buildpattern.set_build_pattern("meson", default_score)
 
-        if "pom.xml" in files:
-            # Pretty straightforward maven source package
-            add_buildreq("apache-maven")
-            add_buildreq("buildreq-mvn")
-            buildpattern.set_build_pattern("maven", default_score)
-
         if "build.xml" in files:
             add_buildreq("apache-ant")
-            add_buildreq("buildreq-mvn")
             buildpattern.set_build_pattern("ant", default_score)
-            # But wait, this might use maven!
-            for f in files:
-                if f.endswith('/build.xml'):
-                    for line in open(f):
-                        if "<artifact:mvn>" in line:
-                            buildpattern.set_build_pattern("maven", default_score)
-                            break
-
-        if "build.gradle" in files:
-            add_buildreq("gradle")
-            add_buildreq("buildreq-mvn")
-            buildpattern.set_build_pattern("gradle", default_score)
 
         for name in files:
             if name.lower() == "cargo.toml" and dirpath == dirn:

@@ -5,14 +5,11 @@
  exec: swig: not found|swig
  mate-common.m4 not found|mate-common-dev
 -- Could NOT find swig|swig
--- artifact pkg#pkg;123!pkg.jar|mvn-pkg
 -- swig not found.|swig
---- pkg:pkg:8 FAILED|mvn(pkg:pkg:jar) = 8
 etc etc /usr/bin/swig   not found|swig
 /bin/ld: cannot find -lz|zlib-dev
 /usr/bin/env: swig: No such file or directory|swig
 /usr/bin/python: No module named swig|swig
-> Could not find pkg:pkg:8.|mvn(pkg:pkg:jar) = 8
 Add the installation prefix of "swig" to CMAKE_PREFIX_PATH|swig
 By not providing "Findswig.cmake" in CMAKE_MODULE_PATH this|swig
 By not providing "swig.cmake" in CMAKE_MODULE_PATH this project|swig
@@ -31,7 +28,6 @@ Could not find 'swig' (< 4) among 5 total gem|rubygem-swig
 Could not find a package configuration file provided by "swig" etc etc|swig
 Could not find gem 'swig (<= 3) ruby'|rubygem-swig
 Could not find suitable distribution for Requirement.parse('swig')|swig
-Could not resolve pkg:pkg:8.|mvn(pkg:pkg:jar) = 8
 Dependency swig found: NO|swig
 Dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
 Dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
@@ -58,7 +54,6 @@ ImportError:..*: No module named swig|swig-python
 LoadError: cannot load such file -- swig/pkg|rubygem-swig
 ModuleNotFoundError: No module named swig|swig
 Native dependency 'swig' not found|pkgconfig(swig)
-No cached version of pkg:pkg:8 available for offline mode.|mvn(pkg:pkg:jar) = 8
 No local packages or working download links found for swig|swig-python
 No matching distribution found for swig|swig-python
 No package 'swig' found|pkgconfig(swig)
@@ -79,9 +74,6 @@ WARNING:  package dependency on swig (= 5.4) ardilla|rubygem-swig
 Warning: no usable swig found|swig
 Warning: prerequisite swig 8 not found.|perl(swig)
 You need swig to build this program.|swig
-[ERROR]  Cannot access https://repo.maven (mavenrepo) in offline mode and the artifact pkg:pkg:pom:8 has not been downloaded from it before|mvn(pkg:pkg:pom) = 8
-[WARNING] The POM for pkg:pkg:pom:8 is missing, no dependency information available|mvn(pkg:pkg:pom) = 8
-[WARNING] Unable to get resource 'pkg:pkg:jar:12' from repository|mvn-pkg
 "swig" with any of the following names|swig
 checking for library containing swig... no|swig
 checking for perl module swig 7... no|perl(swig)
@@ -104,7 +96,6 @@ dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
 dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
 fatal error: swig: No such file or directory|swig
 make: swig: Command not found|swig
-module not found: pkg#pkg;123|mvn-pkg
 swig 8 is required to configure this module; please install it or upgrade your CPAN/CPANPLUS shell.|swig
 swig is not installed: cannot load such file -- rdoc/swig|rubygem-swig
 swig tool not found or not executable|swig
