@@ -232,11 +232,11 @@ def parse_build_results(filename, returncode, filemanager):
 
         check_for_warning_pattern(line)
 
-        # search for files to add to the %files section
-        # track with infiles. If infiles == 1 we found the header
-        # "Installed (but unpackaged) file(s) found" in the build log
-        # This tells us to look in the next line. Increment infiles if we don't
-        # find a file in the next line.
+        # Search for files to add to the %files section.
+        # * infiles == 0 before we reach the files listing
+        # * infiles == 1 for the "Installed (but unpackaged) file(s) found" header
+        #     and for the entirety of the files listing
+        # * infiles == 2 after the files listing has ended
         if infiles == 1:
             for search in ["RPM build errors", "Childreturncodewas",
                            "Child returncode", "Empty %files file"]:
@@ -246,7 +246,7 @@ def parse_build_results(filename, returncode, filemanager):
                 if line.startswith(start):
                     infiles = 2
 
-        if "Installed (but unpackaged) file(s) found:" in line:
+        if infiles == 0 and "Installed (but unpackaged) file(s) found:" in line:
             infiles = 1
         elif infiles == 1 and "not matching the package arch" not in line:
             # exclude blank lines from consideration...
