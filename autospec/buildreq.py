@@ -38,6 +38,7 @@ buildreqs = set()
 buildreqs_cache = set()
 requires = set()
 extra_cmake = set()
+extra_cmake_openmpi = set()
 verbose = False
 cargo_bin = False
 pypi_provides = None
@@ -954,3 +955,4 @@ def load_specfile(specfile):
     specfile.extra_cmake += " " + " ".join(extra_cmake)
     specfile.pypi_provides = pypi_provides
     specfile.pypi_requires = sorted(pypi_requires)
+    specfile.extra_cmake_openmpi += " " + " ".join(extra_cmake_openmpi)

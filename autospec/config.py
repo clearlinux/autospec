@@ -48,6 +48,7 @@ extra32_make = ""
 extra_make_install = ""
 extra_make32_install = ""
 extra_cmake = ""
+extra_cmake_openmpi = ""
 cmake_srcdir = ""
 subdir = ""
 install_macro = "%make_install"
@@ -92,6 +93,11 @@ qt_modules = {}
 cmake_modules = {}
 
 cves = []
+
+conf_args_openmpi = '--program-prefix=  --exec-prefix=$MPI_ROOT \\\n' \
+    '--libdir=$MPI_LIB --bindir=$MPI_BIN --sbindir=$MPI_BIN --includedir=$MPI_INCLUDE \\\n' \
+    '--datarootdir=$MPI_ROOT/share --mandir=$MPI_MAN -exec-prefix=$MPI_ROOT --sysconfdir=$MPI_SYSCONFIG \\\n' \
+    '--build=x86_64-generic-linux-gnu --host=x86_64-generic-linux-gnu --target=x86_64-clr-linux-gnu '
 
 # Keep track of the package versions
 versions = OrderedDict()
@@ -141,7 +147,8 @@ config_options = {
                   "(used by other tools)",
     "compat": "this package is a library compatibility package and only "
               "ships versioned library files",
-    "nodebug": "do not generate debuginfo for this package"}
+    "nodebug": "do not generate debuginfo for this package",
+    "openmpi": "configure build also for openmpi"}
 
 # simple_pattern_pkgconfig patterns
 # contains patterns for parsing build.log for missing dependencies
@@ -635,6 +642,7 @@ def parse_config_files(path, bump, filemanager, version):
     global extra_configure64
     global extra_configure_avx2
     global extra_configure_avx512
+    global extra_configure_openmpi
     global config_files
     global extra_sources
     global parallel_build
@@ -651,6 +659,7 @@ def parse_config_files(path, bump, filemanager, version):
     global extra_make_install
     global extra_make32_install
     global extra_cmake
+    global extra_cmake_openmpi
     global cmake_srcdir
     global subdir
     global install_macro
@@ -904,6 +913,9 @@ def parse_config_files(path, bump, filemanager, version):
     content = read_conf_file(os.path.join(path, "configure_avx512"))
     extra_configure_avx512 = " \\\n".join(content)
 
+    content = read_conf_file(os.path.join(path, "configure_openmpi"))
+    extra_configure_openmpi = " \\\n".join(content)
+
     if config_opts["keepstatic"]:
         disable_static = ""
     if config_opts['broken_parallel_build']:
@@ -932,6 +944,10 @@ def parse_config_files(path, bump, filemanager, version):
     content = read_conf_file(os.path.join(path, "cmake_args"))
     if content:
         extra_cmake = " \\\n".join(content)
+
+    content = read_conf_file(os.path.join(path, "cmake_args_openmpi"))
+    if content:
+        extra_cmake_openmpi = " \\\n".join(content)
 
     content = read_conf_file(os.path.join(path, "cmake_srcdir"))
     if content and content[0]:
@@ -974,6 +990,12 @@ def parse_config_files(path, bump, filemanager, version):
         buildreq.add_buildreq("gcc-libgcc32")
         buildreq.add_buildreq("gcc-libstdc++32")
 
+    if config_opts['openmpi']:
+        buildreq.add_buildreq("openmpi-dev")
+        buildreq.add_buildreq("modules")
+        # MPI testsuites generally require "openssh"
+        buildreq.add_buildreq("openssh")
+
     prep_prepend = read_script_file(os.path.join(path, "prep_prepend"))
     if os.path.isfile(os.path.join(path, "prep_append")):
         os.rename(os.path.join(path, "prep_append"), os.path.join(path, "build_prepend"))
@@ -1002,6 +1024,7 @@ def load_specfile(specfile):
     specfile.extra_make_install = extra_make_install
     specfile.extra_make32_install = extra_make32_install
     specfile.extra_cmake = extra_cmake
+    specfile.extra_cmake_openmpi = extra_cmake_openmpi
     specfile.cmake_srcdir = cmake_srcdir or specfile.cmake_srcdir
     specfile.subdir = subdir
     specfile.install_macro = install_macro

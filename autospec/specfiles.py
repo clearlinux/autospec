@@ -272,6 +272,8 @@ class Specfile(object):
         deps["python"] = ["python3"]
         if config.config_opts['dev_requires_extras']:
             deps["dev"].append("extras")
+        if config.config_opts['openmpi']:
+            deps["dev"].append("openmpi")
         for k, v in self.custom_extras.items():
             if "requires" in v:
                 deps[k] = v['requires']
@@ -420,6 +422,21 @@ class Specfile(object):
         else:
             self._write_strip("make {} {}".format(config.parallel_build, self.extra_make))
 
+    def write_install_openmpi(self):
+        """Write make install line (openmpi) to spec file."""
+        self._write_strip('module load openmpi')
+        make_string = '%make_install_openmpi'
+        self._write_strip("{} {}".format(make_string, self.extra_make_install))
+        self._write_strip('module unload openmpi')
+
+    def write_cmake_line_openmpi(self):
+        """Write cmake line (openmpi) to spec file."""
+        cmake_string = 'cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$MPI_ROOT -DCMAKE_INSTALL_SBINDIR=$MPI_BIN \\\n' \
+                       '-DCMAKE_INSTALL_LIBDIR=$MPI_LIB -DCMAKE_INSTALL_INCLUDEDIR=$MPI_INCLUDE -DLIB_INSTALL_DIR=$MPI_LIB \\\n' \
+                       '-DBUILD_SHARED_LIBS:BOOL=ON -DLIB_SUFFIX=64 \\\n' \
+                       '-DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \\\n'
+        self._write_strip("{} {} {}".format(cmake_string, self.cmake_srcdir, self.extra_cmake_openmpi))
+
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file."""
         self._write_strip("%prep")
@@ -527,6 +544,10 @@ class Specfile(object):
             if config.config_opts['use_avx512']:
                 self._write_strip("pushd ..")
                 self._write_strip("cp -a {} buildavx512".format(self.tarball_prefix))
+                self._write_strip("popd")
+            if config.config_opts['openmpi']:
+                self._write_strip("pushd ..")
+                self._write_strip("cp -a {} build-openmpi".format(self.tarball_prefix))
                 self._write_strip("popd")
         self._write_strip("\n")
 
@@ -737,6 +758,11 @@ class Specfile(object):
         if config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.subdir)
             self._write_strip("%s_avx2 %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("popd")
+
+        if config.config_opts['openmpi']:
+            self._write_strip("pushd ../build-openmpi/" + self.subdir)
+            self.write_install_openmpi()
             self._write_strip("popd")
 
         if self.subdir:
@@ -1000,6 +1026,11 @@ class Specfile(object):
             self._write_strip("%s_avx2 %s || :\n" % (self.install_macro, self.extra_make_install))
             self._write_strip("popd")
 
+        if config.config_opts['openmpi']:
+            self._write_strip("pushd clr-build-openmpi")
+            self.write_install_openmpi()
+            self._write_strip("popd")
+
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
         self._write_strip("popd")
@@ -1134,6 +1165,24 @@ class Specfile(object):
                                       config.extra_configure,
                                       config.extra_configure_avx512))
             self.write_make_line()
+            self._write_strip("popd")
+
+        if config.config_opts['openmpi']:
+            self._write_strip("pushd ../build-openmpi/" + self.subdir)
+            self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
+            self._write_strip("module load openmpi")
+            self.write_build_prepend()
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("./configure {0} \\\n{1} {2}"
+                              .format(config.conf_args_openmpi,
+                                      self.disable_static,
+                                      config.extra_configure_openmpi))
+            self.write_make_line()
+            self._write_strip("module unload openmpi")
             self._write_strip("popd")
 
         self.write_check()
@@ -1526,6 +1575,25 @@ class Specfile(object):
                               "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
+            self._write_strip("popd")
+
+        if config.config_opts['openmpi']:
+            self._write_strip("mkdir -p clr-build-openmpi")
+            self._write_strip("pushd clr-build-openmpi")
+            self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
+            self._write_strip("module load openmpi")
+            saved_avx2flags = self.need_avx2_flags
+            self.need_avx2_flags = True
+            self.write_build_prepend()
+            self.write_variables()
+            self.need_avx2_flags = saved_avx2flags
+            self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=haswell -m64"')
+            self._write_strip('export FFLAGS="$FFLAGS -march=haswell -m64"')
+            self.write_cmake_line_openmpi()
+            self.write_make_line()
+            self._write_strip("module unload openmpi")
             self._write_strip("popd")
 
         if self.subdir:

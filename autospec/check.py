@@ -66,6 +66,17 @@ def scan_for_tests(src_dir):
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
     make_check = "make VERBOSE=1 V=1 {}check".format(makeflags)
     cmake_check = "make test"
+    make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
+                         "make VERBOSE=1 V=1 {}check\nmodule unload openmpi".format(makeflags)
+    cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
+                          "make test\nmodule unload openmpi"
+
+    if config.config_opts['allow_test_failures']:
+        make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
+                             "make VERBOSE=1 V=1 {}check || :\nmodule unload openmpi".format(makeflags)
+        cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
+                              "make test || :\nmodule unload openmpi"
+
     perl_check = "make TEST_VERBOSE=1 test"
     setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
     meson_check = "meson test -C builddir"
@@ -95,6 +106,9 @@ def scan_for_tests(src_dir):
     if config.config_opts['use_avx512']:
         testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check + " || :"
+    if config.config_opts['openmpi']:
+        testsuites["makecheck"] += "\ncd ../build-openmpi;\n" + make_check_openmpi
+        testsuites["cmake"] += "\ncd ../clr-build-openmpi;\n" + cmake_check_openmpi
 
     files = os.listdir(src_dir)
 

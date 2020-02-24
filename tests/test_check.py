@@ -24,6 +24,7 @@ class TestTest(unittest.TestCase):
         check.config.config_opts['32bit'] = False
         check.config.config_opts['use_avx2'] = False
         check.config.config_opts['use_avx512'] = False
+        check.config.config_opts['openmpi'] = False
         check.os.path.isfile = mock_generator(True)
 
     @classmethod
