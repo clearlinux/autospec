@@ -229,6 +229,7 @@ class FileManager(object):
         # the dev package. THis is useful for packages with a plugin
         # architecture like elfutils and mesa.
         so_dest = 'lib' if config.config_opts.get('so_to_lib') else 'dev'
+        so_dest_ompi = 'openmpi' if config.config_opts.get('so_to_lib') else 'dev'
 
         patterns = [
             # Patterns for matching files, format is a tuple as follows:
@@ -241,6 +242,13 @@ class FileManager(object):
             (r"^/usr/share/info/", "info"),
             (r"^/usr/share/abi/", "abi"),
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
+            (r"^/usr/lib64/openmpi/bin/", "openmpi"),
+            (r"^/usr/lib64/openmpi/share", "openmpi"),
+            (r"^/usr/lib64/openmpi/include/", "dev"),
+            (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.so$", so_dest_ompi),
+            (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.so\.", "openmpi"),
+            (r"^/usr/lib64/openmpi/lib/", "dev"),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.so\.", "plugins"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so\.", "lib"),
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.so\.", "lib32"),

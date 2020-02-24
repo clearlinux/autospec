@@ -235,6 +235,10 @@ configure
   ``./configure`` for an autootools based tarball would result in ``%configure
   --disable-static`` being emitted in the ``.spec``.
 
+configure_openmpi
+  This file contains configuration flags to pass to the ``%configure`` macro for
+  autotools based tarballs to configure openmpi builds.
+
 configure32, configure64, configure_avx2, configure_avx512
   These files are appended to the ``%configure'' macro after the
   contents of the ``configure'' file above. They are used for 32-bit,
@@ -245,6 +249,10 @@ cmake_args
   CMake based tarballs. As an example, adding ``-DUSE_LIB64=ON`` to
   ``./cmake_args`` would result in ``%cmake -DUSE_LIB64=ON`` being emitted in
   the ``.spec``.
+
+cmake_args_openmpi
+  This file contains arguments that should be passed to the ``%cmake`` macro for
+  CMake based tarballs for openmpi builds.
 
 make_args
   The contents of this file are appended to the ``make`` invocation. This may be
@@ -507,6 +515,9 @@ use_avx2
 
 use_avx512
   If this option is set, an additional set of libraries, for AVX512, is built.
+
+openmpi
+  If this option is set, an additional openmpi package is built.
 
 fast-math
   If this option is set, -ffast-math is passed to the compiler.
