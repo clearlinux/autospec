@@ -51,6 +51,7 @@ def commit_to_git(path):
     call("bash -c 'shopt -s failglob; git add *.spec'", cwd=path)
     call("git add %s.tmpfiles" % tarball.name, check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add prep_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add pypi.json", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add build_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add make_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add install_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
