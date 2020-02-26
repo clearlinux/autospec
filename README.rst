@@ -457,6 +457,13 @@ summary
   Provides the main Summary: value of the package, overriding any automatically
   found values. Only the first line is used.
 
+pypi.json
+  Provides an alternative to reading the pypi api url for package metadata.
+  provides, requires, summary, description and license information could be
+  sourced from this file (see https://wiki.python.org/moin/PyPIJSON) for more
+  details on the structure.
+
+
 Controlling flags and optimization
 ----------------------------------
 Further control of the build can be achieved through the use of the

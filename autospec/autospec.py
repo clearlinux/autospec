@@ -276,7 +276,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
         exit(0)
 
     buildreq.set_build_req()
-    buildreq.scan_for_configure(_dir)
+    buildreq.scan_for_configure(_dir, tarball.name, tarball.version, build.download_path)
     specdescription.scan_for_description(tarball.name, _dir)
     # Start one directory higher so we scan *all* versions for licenses
     license.scan_for_licenses(os.path.dirname(_dir))
