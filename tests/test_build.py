@@ -419,9 +419,9 @@ class TestBuildpattern(unittest.TestCase):
         build.util.call = call_backup
 
         self.assertEqual(fm.files,
-                         ['/usr/testdir/file',
-                          '/usr/testdir/file1',
-                          '/usr/testdir/file2'])
+                         set(['/usr/testdir/file',
+                              '/usr/testdir/file1',
+                              '/usr/testdir/file2']))
         # one for each file added
         self.assertEqual(build.must_restart, 3)
 

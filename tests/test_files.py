@@ -223,7 +223,7 @@ class TestFiles(unittest.TestCase):
         """
         Test remove_file with filename in files list and main package
         """
-        self.fm.files.append('test')
+        self.fm.files.add('test')
         self.fm.packages['main'] = ['test']
         self.assertIn('test', self.fm.files)
         self.assertNotIn('test', self.fm.files_blacklist)
