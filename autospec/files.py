@@ -35,7 +35,7 @@ class FileManager(object):
     def __init__(self):
         """Set defaults for FileManager."""
         self.packages = OrderedDict()  # per sub-package file list for spec purposes
-        self.files = []  # global file list to weed out dupes
+        self.files = set()  # global file set to weed out dupes
         self.files_blacklist = set()
         self.excludes = []
         self.extras = []
@@ -193,7 +193,7 @@ class FileManager(object):
         if filename in self.files or filename in self.files_blacklist:
             return
 
-        self.files.append(filename)
+        self.files.add(filename)
         if self.file_is_locale(filename):
             return
 
