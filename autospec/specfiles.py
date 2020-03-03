@@ -55,6 +55,7 @@ class Specfile(object):
         self.requires = set()
         self.buildreqs = []
         self.pypi_provides = None
+        self.pypi_requires = []
         self.extra_sources = []
         self.patches = []
         self.verpatches = OrderedDict()
@@ -320,6 +321,8 @@ class Specfile(object):
                 self._write("Requires: python3-core\n")
                 if self.pypi_provides:
                     self._write(f"Provides: pypi({self.pypi_provides})\n")
+                for req in self.pypi_requires:
+                    self._write(f"Requires: pypi({req})\n")
 
             if pkg == "perl":
                 self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
