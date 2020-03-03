@@ -27,7 +27,7 @@ import subprocess
 
 import buildpattern
 import config
-import download
+import pypidata
 import specdescription
 import toml
 import util
@@ -41,6 +41,7 @@ extra_cmake = set()
 verbose = False
 cargo_bin = False
 pypi_provides = None
+pypi_requires = set()
 banned_buildreqs = set(["llvm-devel",
                         "gcj",
                         "pkgconfig(dnl)",
@@ -782,9 +783,10 @@ def is_qmake_pro(f):
     return f.endswith(".pro") and not f.startswith(".")
 
 
-def scan_for_configure(dirn, tname, tversion, dlpath):
+def scan_for_configure(dirn, tname, dlpath):
     """Scan the package directory for build files to determine build pattern."""
     global pypi_provides
+    global pypi_requires
     if buildpattern.default_pattern == "distutils36":
         add_buildreq("buildreq-distutils36")
     elif buildpattern.default_pattern == "distutils3":
@@ -915,28 +917,24 @@ def scan_for_configure(dirn, tname, tversion, dlpath):
                 pypi_json = pfile.read()
         else:
             # Try and grab the pypi details for the package
-            pypi_api_url = f"https://pypi.python.org/pypi/{tname}/{tversion}/json"
-            pypi_json = download.do_curl(pypi_api_url)
-            pypi_json = pypi_json.getvalue().decode("utf-8") if pypi_json else ""
+            if config.alias:
+                tname = config.alias
+            pypi_name = pypidata.get_pypi_name(tname)
+            pypi_json = pypidata.get_pypi_metadata(pypi_name)
         if pypi_json:
             try:
                 package_pypi = json.loads(pypi_json)
             except json.JSONDecodeError:
                 package_pypi = {}
-            if package_pypi.get("info"):
-                info = package_pypi["info"]
-                if info.get("name"):
-                    pypi_provides = info["name"]
-                if info.get("requires_dist"):
-                    # Not yet adding requires
-                    pass
-                if info.get("license"):
-                    # The license field is freeform, might be worth adding though
-                    print(f"Pypi says the license is: {info['license']}")
-                if info.get("summary"):
-                    specdescription.assign_summary(info["summary"], 4)
-                if info.get("description"):
-                    specdescription.assign_description(info["description"], 1)
+            if package_pypi.get("name"):
+                pypi_provides = package_pypi["name"]
+            if package_pypi.get("requires"):
+                pypi_requires = set(package_pypi["requires"])
+            if package_pypi.get("license"):
+                # The license field is freeform, might be worth looking at though
+                print(f"Pypi says the license is: {package_pypi['license']}")
+            if package_pypi.get("summary"):
+                specdescription.assign_summary(package_pypi["summary"], 4)
 
     print("Buildreqs   : ", end="")
     for lic in sorted(buildreqs):
@@ -955,3 +953,4 @@ def load_specfile(specfile):
     specfile.cargo_bin = cargo_bin
     specfile.extra_cmake += " " + " ".join(extra_cmake)
     specfile.pypi_provides = pypi_provides
+    specfile.pypi_requires = sorted(pypi_requires)

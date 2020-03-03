@@ -1,7 +1,7 @@
 import unittest
 import tempfile
 import os
-from unittest.mock import mock_open, patch
+from unittest.mock import MagicMock, mock_open, patch
 import json
 import io
 import buildreq
@@ -433,7 +433,7 @@ class TestBuildreq(unittest.TestCase):
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
             open(os.path.join(tmpd, 'meson.build'), 'w').close()
 
-            buildreq.scan_for_configure(tmpd, "", "", "")
+            buildreq.scan_for_configure(tmpd, "", "")
 
         self.assertEqual(buildreq.buildreqs,
                          set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
@@ -443,34 +443,33 @@ class TestBuildreq(unittest.TestCase):
         Test scan_for_configure when distutils is being used for the build
         pattern to test pypi metadata handling.
         """
-        do_curl_name = 'buildreq.download.do_curl'
-        orig_description = buildreq.specdescription.default_description
-        orig_dscore = buildreq.specdescription.default_description_score
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
+        orig_pypi_name = buildreq.pypidata.get_pypi_name
+        orig_pypi_meta = buildreq.pypidata.get_pypi_metadata
         name = "name"
+        requires = ["abc",
+                    "def"]
         summary = "summary"
-        description = "description"
-        content = json.dumps({"info": {"name": name,
-                                       "summary": summary,
-                                       "description": description}})
-        m_do_curl = lambda _: io.BytesIO(content.encode('utf-8'))
+        content = json.dumps({"name": name,
+                              "summary": summary,
+                              "requires": requires})
+        buildreq.pypidata.get_pypi_name = MagicMock(return_value=True)
+        buildreq.pypidata.get_pypi_metadata = MagicMock(return_value=content)
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
-            with patch(do_curl_name, m_do_curl):
-                buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", "", tmpd)
+            buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd)
 
-        sdescription = buildreq.specdescription.default_description
-        buildreq.specdescription.default_description = orig_description
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
         buildreq.specdescription.default_summary_score = orig_sscore
-        buildreq.specdescription.default_description_score = orig_dscore
+        buildreq.pypidata.get_pypi_name = orig_pypi_name
+        buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
 
         self.assertEqual(buildreq.pypi_provides, name)
+        self.assertEqual(buildreq.pypi_requires, set(requires))
         self.assertEqual(ssummary, summary)
-        self.assertEqual(sdescription, description)
 
     def test_scan_for_configure_pypi_override(self):
         """
@@ -478,34 +477,29 @@ class TestBuildreq(unittest.TestCase):
         pattern to test pypi metadata file override handling.
         """
         open_name = 'buildreq.open'
-        orig_description = buildreq.specdescription.default_description
-        orig_dscore = buildreq.specdescription.default_description_score
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
         name = "name"
         summary = "summary"
-        description = "description"
-        content = json.dumps({"info": {"name": name,
-                                       "summary": summary,
-                                       "description": description}})
+        requires = ["req"]
+        content = json.dumps({"name": name,
+                              "summary": summary,
+                              "requires": requires})
         m_open = mock_open(read_data=content)
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'pypi.json'), 'w').close()
             with patch(open_name, m_open, create=True):
-                buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", "", tmpd)
+                buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd)
 
-        sdescription = buildreq.specdescription.default_description
-        buildreq.specdescription.default_description = orig_description
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
         buildreq.specdescription.default_summary_score = orig_sscore
-        buildreq.specdescription.default_description_score = orig_dscore
 
         self.assertEqual(buildreq.pypi_provides, name)
+        self.assertEqual(buildreq.pypi_requires, set(requires))
         self.assertEqual(ssummary, summary)
-        self.assertEqual(sdescription, description)
 
     def test_parse_cmake_pkg_check_modules(self):
         """
