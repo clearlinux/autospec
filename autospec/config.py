@@ -79,6 +79,7 @@ profile_payload = None
 signature = None
 yum_conf = None
 failed_pattern_dir = None
+alias = None
 
 failed_commands = {}
 ignored_commands = {}
@@ -304,6 +305,12 @@ def get_metadata_conf():
 
     metadata['giturl'] = tarball.giturl
     metadata['domain'] = tarball.domain
+
+    if alias:
+        metadata['alias'] = alias
+    else:
+        metadata['alias'] = ""
+
     return metadata
 
 
@@ -375,6 +382,7 @@ def read_config_opts(path):
     """Read config options from path/options.conf."""
     global config_opts
     global transforms
+    global alias
 
     opts_path = os.path.join(path, 'options.conf')
     if not os.path.exists(opts_path):
@@ -385,6 +393,9 @@ def read_config_opts(path):
     if "autospec" not in config_f.sections():
         print("Missing autospec section in options.conf")
         sys.exit(1)
+
+    if 'package' in config_f.sections() and config_f['package'].get('alias'):
+        alias = config_f['package']['alias']
 
     for key in config_f['autospec']:
         config_opts[key] = config_f['autospec'].getboolean(key)
