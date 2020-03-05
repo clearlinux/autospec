@@ -64,7 +64,8 @@ def get_pypi_metadata(name):
     for line in show:
         if line.startswith("Name: "):
             # 'Name: pypi-name'
-            metadata["name"] = line.split()[1]
+            # normalize names -> lowercase and dash to underscore
+            metadata["name"] = line.split()[1].lower().replace('-', '_')
         elif line.startswith("Summary: "):
             # 'Summary: <description of the package>'
             try:
