@@ -825,16 +825,17 @@ def scan_for_configure(dirn, tname, dlpath):
                 # so only use go directly if we can't find a Makefile
                 buildpattern.set_build_pattern("golang", default_score)
             add_buildreq("buildreq-golang")
-            config.set_gopath = False
-            mod_path = os.path.join(dirpath, "go.mod")
-            reqs = parse_go_mod(mod_path)
-            for req in reqs:
-                # req[0] is a SCM url segment in the form, repo/XXX/dependency-name
-                # req[1] is the version of the dependency
-                pkg = "go-" + req[0].replace("/", "-")
-                add_buildreq(pkg)
-                if buildpattern.default_pattern == "godep":
-                    add_requires(pkg)
+            if buildpattern.default_pattern == "golang-mod" or buildpattern.default_pattern == "godep":
+                config.set_gopath = False
+                mod_path = os.path.join(dirpath, "go.mod")
+                reqs = parse_go_mod(mod_path)
+                for req in reqs:
+                    # req[0] is a SCM url segment in the form, repo/XXX/dependency-name
+                    # req[1] is the version of the dependency
+                    pkg = "go-" + req[0].replace("/", "-")
+                    add_buildreq(pkg)
+                    if buildpattern.default_pattern == "godep":
+                        add_requires(pkg)
 
         if "CMakeLists.txt" in files and "configure.ac" not in files:
             add_buildreq("buildreq-cmake")
