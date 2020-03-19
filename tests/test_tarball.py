@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
+import config
 import tarball
 
 
@@ -123,11 +124,12 @@ def detect_build_test_generator(url, build_pattern):
 
 def name_and_version_test_generator(url, name, version):
     """Create test for tarball.name_and_version method."""
-    @patch('tarball.config.parse_config_versions', Mock(return_value={}))
     def generator(self):
         """Test template."""
+        conf = config.Config()
+        conf.parse_config_versions = Mock(return_value={})
         tarball.url = url
-        n, _, v = tarball.name_and_version('', '', Mock())
+        n, _, v = tarball.name_and_version('', '', Mock(), conf)
         self.assertEqual(name, n)
         self.assertEqual(version, v)
         if "github.com" in url:
@@ -217,7 +219,6 @@ class TestTarball(unittest.TestCase):
         tarball.process_go_archives(go_archives)
         self.assertEqual(go_archives, go_archives_expected)
 
-    @patch('tarball.config', Mock())
     def test_process_multiver_archives(self):
         """Test for tarball.process_multiver_archives method."""
         # Set up input values
@@ -236,8 +237,9 @@ class TestTarball(unittest.TestCase):
         ]
         # Set up a return value for parse_config_versions method
         attrs = {'parse_config_versions.return_value': config_versions}
-        tarball.config.configure_mock(**attrs)
-        tarball.process_multiver_archives(main_src, multiver_archives)
+        conf = Mock()
+        conf.configure_mock(**attrs)
+        tarball.process_multiver_archives(main_src, multiver_archives, conf)
         self.assertEqual(multiver_archives, expected_multiver_archives)
 
     @patch('tarball.Source.set_prefix', Mock())

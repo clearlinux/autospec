@@ -29,25 +29,24 @@ import sys
 from subprocess import PIPE, run
 
 import build
-import config
 import tarball
 import util
 
 
-def scan_for_changes(download_path, directory):
+def scan_for_changes(download_path, directory, transforms):
     """Scan for changelogs or news files in the file sources.
 
     Scan for changelogs or news files in the source code and copy them to download_path as their
-    `config.transform`ed name. The file with the transformed name will later be parsed to find the
+    `transform`ed name. The file with the transformed name will later be parsed to find the
     commit message.
     """
     found = []
-    interests = config.transforms.keys()
+    interests = transforms.keys()
     for dirpath, dirnames, files in os.walk(directory, topdown=False):
         hits = [x for x in files if x.lower() in interests and x.lower() not in found]
         for item in hits:
             source = os.path.join(dirpath, item)
-            target = os.path.join(download_path, config.transforms[item.lower()])
+            target = os.path.join(download_path, transforms[item.lower()])
             try:
                 shutil.copy(source, target)
                 os.chmod(target, 0o644)
@@ -82,7 +81,7 @@ def find_in_line(pattern, line):
     return bool(re.search(pattern, line))
 
 
-def process_NEWS(newsfile):
+def process_NEWS(newsfile, old_version):
     """Parse the newfile for relevent changes.
 
     Look for changes and CVE fixes relevant to current version update. This information is returned
@@ -99,7 +98,7 @@ def process_NEWS(newsfile):
     success = False
     start_found = False
 
-    if config.old_version is None or config.old_version == tarball.version:
+    if old_version is None or old_version == tarball.version:
         # no version update, so no information to search for in newsfile
         return commitmessage, cves
 
@@ -113,7 +112,7 @@ def process_NEWS(newsfile):
 
     # escape some values for use in regular expressions below
     escaped_curver = re.escape(tarball.version)
-    escaped_oldver = re.escape(config.old_version)
+    escaped_oldver = re.escape(old_version)
     escaped_tarname = re.escape(tarball.name)
 
     # these are patterns that define the beginning of a block of information
@@ -219,7 +218,7 @@ def process_git(giturl, oldversion, newversion):
         return shortlog
 
 
-def guess_commit_message(keyinfo):
+def guess_commit_message(keyinfo, config):
     """Parse newsfile for a commit message.
 
     Try and find a sane commit message for the newsfile. The commit message defaults to the
@@ -271,7 +270,7 @@ def guess_commit_message(keyinfo):
         newsfiles = ["NEWS", "ChangeLog"]
     for newsfile in newsfiles:
         # parse news files for relevant version updates and cve fixes
-        newcommitmessage, newcves = process_NEWS(newsfile)
+        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version)
         commitmessage.extend(newcommitmessage)
         cves.update(newcves)
 

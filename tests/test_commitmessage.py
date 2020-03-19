@@ -3,6 +3,7 @@ import unittest.mock as mock
 import os
 import tempfile
 import commitmessage
+import config
 
 
 class TestCommitmessage(unittest.TestCase):
@@ -10,7 +11,6 @@ class TestCommitmessage(unittest.TestCase):
     def setUp(self):
         commitmessage.tarball.name = 'testball'
         commitmessage.tarball.version = '0.0.1'
-        commitmessage.config.old_version = '0.0.0'
         self.workingdir = tempfile.TemporaryDirectory()
         commitmessage.build.setup_workingdir(self.workingdir.name)
 
@@ -59,7 +59,7 @@ class TestCommitmessage(unittest.TestCase):
             # last items
             expected_msg = [""] + GOOD_NEWS.split('\n')[3:13]
             expected_cvs = set()
-            self.assertEqual(commitmessage.process_NEWS('NEWS'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0'),
                              (expected_msg, expected_cvs))
 
     def test_process_NEWS_bad_news(self):
@@ -71,7 +71,7 @@ class TestCommitmessage(unittest.TestCase):
             with open(os.path.join(tmpd, 'NEWS'), 'w') as newsfile:
                 # make GOOD_NEWS irrelevant by replacing current version
                 newsfile.write(GOOD_NEWS.replace('0.0.1', '0.0.0'))
-            self.assertEqual(commitmessage.process_NEWS('NEWS'), ([], set()))
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0'), ([], set()))
 
     def test_process_NEWS_good_cves(self):
         """
@@ -90,7 +90,7 @@ class TestCommitmessage(unittest.TestCase):
                                            .replace('change2.2', 'CVE-2-2')\
                                            .split('\n')[3:13]
             expected_cvs = set(['CVE-2-1', 'CVE-2-2'])
-            self.assertEqual(commitmessage.process_NEWS('NEWS'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0'),
                              (expected_msg, expected_cvs))
 
     def test_process_NEWS_long(self):
@@ -111,7 +111,7 @@ class TestCommitmessage(unittest.TestCase):
             expected_msg.extend(['1', '2', '3', '4', '5', '6', '7', '',
                                  '(NEWS truncated at 15 lines)', ''])
             expected_cvs = set()
-            self.assertEqual(commitmessage.process_NEWS('NEWS'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0'),
                              (expected_msg, expected_cvs))
 
     def test_guess_commit_message(self):
@@ -119,9 +119,11 @@ class TestCommitmessage(unittest.TestCase):
         Test guess_commit_message() with mocked internal functions and both
         commitmessage information and cves available from newsfile.
         """
+        conf = config.Config()
+        conf.old_version = "0.0.0"
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile):
+        def mock_process_NEWS(newsfile, old_version):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
@@ -129,7 +131,7 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("")
+            commitmessage.guess_commit_message("", conf)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -147,23 +149,23 @@ class TestCommitmessage(unittest.TestCase):
         also available from config, which changes the first line of the commmit
         message.
         """
+        conf = config.Config()
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile):
+        def mock_process_NEWS(newsfile, old_version):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
         commitmessage.process_NEWS = mock_process_NEWS
-        commitmessage.config.cves = set(['CVE-1234-5678'])
-        commitmessage.config.old_version = None  # Allow cve title to be set
+        conf.cves = set(['CVE-1234-5678'])
+        conf.old_version = None  # Allow cve title to be set
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("")
+            commitmessage.guess_commit_message("", conf)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
-            commitmessage.config.cves = set()
             fh = mock_open.return_value.__enter__.return_value
             fh.write.assert_called_with(
                 'testball: Fix for CVE-1234-5678\n\n\ncommit\nmessage\nwith\n'
@@ -178,23 +180,23 @@ class TestCommitmessage(unittest.TestCase):
         message. Additionally there is imported key info that will be displayed
         at the end of the message.
         """
+        conf = config.Config()
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile):
+        def mock_process_NEWS(newsfile, old_version):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
         commitmessage.process_NEWS = mock_process_NEWS
-        commitmessage.config.cves = set(['CVE-1234-5678'])
-        commitmessage.config.old_version = None  # Allow cve title to be set
+        conf.cves = set(['CVE-1234-5678'])
+        conf.old_version = None  # Allow cve title to be set
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("keyinfo content")
+            commitmessage.guess_commit_message("keyinfo content", conf)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
-            commitmessage.config.cves = set()
             fh = mock_open.return_value.__enter__.return_value
             fh.write.assert_called_with(
                 'testball: Fix for CVE-1234-5678\n\n\ncommit\nmessage\nwith\n'
@@ -206,12 +208,13 @@ class TestCommitmessage(unittest.TestCase):
         """
         Tests scan_for_changes using temporary directories
         """
+        conf = config.Config()
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'changelog.txt'), 'w') as newsfile:
                 newsfile.write('new changelog file')
 
             with tempfile.TemporaryDirectory() as tmpd1:
-                commitmessage.scan_for_changes(tmpd1, tmpd)
+                commitmessage.scan_for_changes(tmpd1, tmpd, conf.transforms)
                 self.assertTrue(os.path.isfile(tmpd1 + '/ChangeLog'))
 
 

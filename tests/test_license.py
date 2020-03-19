@@ -7,6 +7,7 @@ from unittest.mock import patch, mock_open, MagicMock
 
 import pycurl
 
+import config
 import download
 import license
 import util
@@ -14,20 +15,17 @@ import util
 
 class TestLicense(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        license.config.setup_patterns()
-
     def setUp(self):
         license.licenses = []
-        license.config.license_fetch = None
 
     def test_add_license(self):
         """
         Test add_license from valid string, Apache-2 should be translated to
         Apache-2.0
         """
-        self.assertTrue(license.add_license('Apache-2'))
+        conf = config.Config()
+        conf.setup_patterns()
+        self.assertTrue(license.add_license('Apache-2', conf.license_translations, conf.license_blacklist))
         self.assertIn('Apache-2.0', license.licenses)
 
     def test_add_license_present(self):
@@ -36,8 +34,10 @@ class TestLicense(unittest.TestCase):
         the licenses list. Should return True and should not modify the
         licenses list. GPL-3 translates to GPL-3.0.
         """
+        conf = config.Config()
+        conf.setup_patterns()
         license.licenses.append('GPL-3.0')
-        self.assertTrue(license.add_license('GPL-3'))
+        self.assertTrue(license.add_license('GPL-3', conf.license_translations, conf.license_blacklist))
         self.assertEqual(['GPL-3.0'], license.licenses)
 
     def test_add_license_blacklisted(self):
@@ -45,18 +45,22 @@ class TestLicense(unittest.TestCase):
         Test add_license from string in license_blacklist. Should return False
         and should not modify the licenses list.
         """
+        conf = config.Config()
+        conf.setup_patterns()
         # sanity check to make sure the licenses list is empty before the later
         # assertIn() call
         self.assertEqual(license.licenses, [])
 
-        self.assertFalse(license.add_license('License'))
+        self.assertFalse(license.add_license('License', conf.license_translations, conf.license_blacklist))
         self.assertNotIn('License', license.licenses)
 
     def test_license_from_copying_hash(self):
         """
         Test license_from_copying_hash with valid license file
         """
-        license.license_from_copying_hash('tests/COPYING_TEST', '')
+        conf = config.Config()
+        conf.setup_patterns()
+        license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
         self.assertIn('GPL-3.0', license.licenses)
 
     def test_license_from_copying_hash_no_license_show(self):
@@ -64,26 +68,26 @@ class TestLicense(unittest.TestCase):
         Test license_from_copying_hash with invalid hash and no license_show
         set
         """
-        bkup_hash = license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')]
+        conf = config.Config()
+        conf.setup_patterns()
         # remove the hash from license_hashes
-        del(license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
-        license.config.license_show = "license.show.url"
-        license.license_from_copying_hash('tests/COPYING_TEST', '')
+        del(conf.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
+        conf.license_show = "license.show.url"
+        license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
 
-        # restore the hash
-        license.config.license_hashes[license.get_sha1sum('tests/COPYING_TEST')] = bkup_hash
         self.assertEquals(license.licenses, [])
 
     def test_license_from_copying_hash_bad_license(self):
         """
         Test license_from_copying_hash with invalid license file
         """
+        conf = config.Config()
         content = util.get_contents("tests/COPYING_TEST").replace(b"GNU", b"SNU")
         m_open = MagicMock()
         m_open.__str__.return_value = content
 
         with patch('license.get_contents', m_open, create=True):
-            license.license_from_copying_hash('copying.txt', '')
+            license.license_from_copying_hash('copying.txt', '', conf)
 
         self.assertEquals(license.licenses, [])
 
@@ -114,13 +118,14 @@ class TestLicense(unittest.TestCase):
         # set the mock curl
         download.pycurl.Curl = MockCurl
 
-        license.config.license_fetch = 'license.server.url'
+        conf = config.Config()
+        conf.license_fetch = 'license.server.url'
 
         # let's check that the proper thing is being printed as well
         out = StringIO()
         with redirect_stdout(out):
             with self.assertRaises(SystemExit):
-                license.license_from_copying_hash('tests/COPYING_TEST', '')
+                license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
 
         self.assertIn('Unable to fetch license.server.url: Test Exception', out.getvalue())
 
@@ -167,12 +172,13 @@ class TestLicense(unittest.TestCase):
         # set the mock curl
         download.pycurl.Curl = MockCurl
 
-        license.config.license_fetch = 'license.server.url'
+        conf = config.Config()
+        conf.license_fetch = 'license.server.url'
 
         # let's check that the proper thing is being printed as well
         out = StringIO()
         with redirect_stdout(out):
-            license.license_from_copying_hash('tests/COPYING_TEST', '')
+            license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
 
         self.assertIn('GPL-3.0', license.licenses)
         self.assertIn('License     :  GPL-3.0  (server)', out.getvalue())
@@ -187,6 +193,8 @@ class TestLicense(unittest.TestCase):
         """
         Test scan_for_licenses in temporary directory with valid license file
         """
+        conf = config.Config()
+        conf.setup_patterns()
         with open('tests/COPYING_TEST', 'rb') as copyingf:
             content = copyingf.read()
 
@@ -198,7 +206,7 @@ class TestLicense(unittest.TestCase):
             for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
                 with open(os.path.join(tmpd, testf), 'w') as newtestf:
                     newtestf.write('test content')
-            license.scan_for_licenses(tmpd)
+            license.scan_for_licenses(tmpd, conf)
 
         self.assertIn('GPL-3.0', license.licenses)
 
@@ -208,6 +216,8 @@ class TestLicense(unittest.TestCase):
         Should not add any licenses, should print a fatal message, should exit
         with a status code of 1.
         """
+        conf = config.Config()
+        conf.setup_patterns()
         with tempfile.TemporaryDirectory() as tmpd:
             # create some cruft for testing
             for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
@@ -217,7 +227,7 @@ class TestLicense(unittest.TestCase):
             out = StringIO()
             with redirect_stdout(out):
                 with self.assertRaises(SystemExit) as thread:
-                    license.scan_for_licenses(tmpd)
+                    license.scan_for_licenses(tmpd, conf)
 
         self.assertEqual(thread.exception.code, 1)
         self.assertIn("Cannot find any license", out.getvalue())

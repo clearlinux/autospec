@@ -6,6 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import config
 import download
 import pkg_integrity
 
@@ -46,27 +47,30 @@ def mock_download_do_curl(url, dst=None):
 @patch('download.do_curl', mock_download_do_curl)
 class TestCheckFn(unittest.TestCase):
 
-    def setUp(self):
-        def mock_rewrite(path):
-            del path
-        pkg_integrity.config.rewrite_config_opts = mock_rewrite
-        pkg_integrity.config.config_opts['verify_required'] = False
+    def _mock_rewrite(self, path):
+        del path
 
     def test_check_matching_sign_url(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             pkey = "023A4420C7EC6914.pkey"
             shutil.copy(os.path.join(TESTKEYDIR, pkey), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)) + ".asc", tmpd)
-            result = pkg_integrity.check(PACKAGE_URL, tmpd)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd, conf)
             self.assertTrue(result)
 
     def test_check_with_existing_sign(self):
         """ Download signature for local verification """
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL)), tmpd)
-            result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd)
+            result = pkg_integrity.check(NOSIGN_PKT_URL, tmpd, conf)
             self.assertTrue(result)
 
 
@@ -130,11 +134,8 @@ class TestDomainBasedVerifiers(unittest.TestCase):
 @patch('download.do_curl', mock_download_do_curl)
 class TestGEMShaVerifier(unittest.TestCase):
 
-    def setUp(self):
-        def mock_rewrite(path):
-            del path
-        pkg_integrity.config.rewrite_config_opts = mock_rewrite
-        pkg_integrity.config.config_opts['verify_required'] = False
+    def _mock_rewrite(self, path):
+        del path
 
     def _mock_get_gem_info(pkg):
         info = '''
@@ -153,67 +154,85 @@ class TestGEMShaVerifier(unittest.TestCase):
 
     @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
     def test_from_url(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             filen = os.path.basename(GEM_PKT)
             shutil.copy(os.path.join(TESTDIR, filen), tmpd)
-            result = pkg_integrity.check(GEM_PKT, tmpd)
+            result = pkg_integrity.check(GEM_PKT, tmpd, conf)
             self.assertTrue(result)
 
     @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
     def test_non_matchingsha(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
             f = open(out_file, 'wb')
             f.write(b'this is made up data that will force a failure')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                pkg_integrity.check(GEM_PKT, tmpd)
+                pkg_integrity.check(GEM_PKT, tmpd, conf)
             self.assertEqual(a.exception.code, 1)
 
 
 @patch('download.do_curl', mock_download_do_curl)
 class TestGPGVerifier(unittest.TestCase):
 
-    def setUp(self):
-        def mock_rewrite(path):
-            del path
-        pkg_integrity.config.rewrite_config_opts = mock_rewrite
-        pkg_integrity.config.config_opts['verify_required'] = False
+    def _mock_rewrite(self, path):
+        del path
 
     def test_from_url(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
-            result = pkg_integrity.check(PACKAGE_URL, tmpd)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd, conf)
             self.assertTrue(result)
 
     def test_invalid_key(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL_BAD)), tmpd)
             with open(os.path.join(tmpd, os.path.basename(NOSIGN_PKT_URL_BAD) + ".asc"), 'w') as ofile:
                 ofile.write("Invalid signature")
-            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
+            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd, conf)
             self.assertIsNone(result)
 
     def test_key_not_found(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "6FE57CA8C1A4AEA6.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL_BAD)), tmpd)
-            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd)
+            result = pkg_integrity.check(NOSIGN_PKT_URL_BAD, tmpd, conf)
             self.assertIsNone(result)
 
     def test_from_disk(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
             out_key = out_file + ".asc"
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)) + ".asc", tmpd)
-            result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key)
+            result = pkg_integrity.from_disk(PACKAGE_URL, out_file, out_key, conf)
             self.assertTrue(result)
 
     def test_non_matchingsig(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             out_file = os.path.join(tmpd, os.path.basename(PACKAGE_URL))
@@ -221,19 +240,26 @@ class TestGPGVerifier(unittest.TestCase):
             f.write(b'made up date that will fail check')
             f.close()
             with self.assertRaises(SystemExit) as a:
-                pkg_integrity.check(PACKAGE_URL, tmpd)
+                pkg_integrity.check(PACKAGE_URL, tmpd, conf)
             self.assertEqual(a.exception.code, 1)
 
     def test_result_on_non_existent_pkg_path(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         result = pkg_integrity.from_disk('http://nokey.com/package.tar.gz',
                                          'NonExistentPKG.tar.gz',
-                                         'NonExistentKey.asc')
+                                         'NonExistentKey.asc',
+                                         conf)
         self.assertIsNone(result)
 
     def test_result_on_nosign_package(self):
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTDIR, os.path.basename(NOSIGN_PKT_URL)), tmpd)
-            result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd)
+            result = pkg_integrity.check(NO_SIGN_PKT_URL, tmpd, conf)
             self.assertIsNone(result)
 
     @patch.object(pkg_integrity.GPGCli, 'exec_cmd')
@@ -270,10 +296,13 @@ class TestGPGVerifier(unittest.TestCase):
 
         mock_exec.return_value = (b'', b'', 0)
 
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
-            result = pkg_integrity.check(PACKAGE_URL, tmpd)
+            result = pkg_integrity.check(PACKAGE_URL, tmpd, conf)
             self.assertTrue(result)
             self.assertEqual(mock_parse.call_count, 4)
             self.assertEqual(mock_exec.call_count, 3)
@@ -308,11 +337,14 @@ class TestGPGVerifier(unittest.TestCase):
 
         mock_exec.return_value = (b'', b'', 0)
 
+        conf = config.Config()
+        conf.rewrite_config_opts = self._mock_rewrite
+        conf.config_opts['verify_required'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             shutil.copy(os.path.join(TESTKEYDIR, "023A4420C7EC6914.pkey"), tmpd)
             shutil.copy(os.path.join(TESTDIR, os.path.basename(PACKAGE_URL)), tmpd)
             with self.assertRaises(SystemExit) as msg:
-                result = pkg_integrity.check(PACKAGE_URL, tmpd)
+                result = pkg_integrity.check(PACKAGE_URL, tmpd, conf)
             self.assertEqual(msg.exception.code, 1)
             self.assertEqual(mock_parse.call_count, 4)
             self.assertEqual(mock_exec.call_count, 2)
@@ -334,12 +366,6 @@ class TestInputGetter(unittest.TestCase):
 
 
 class TestUtils(unittest.TestCase):
-
-    def setUp(self):
-        def mock_rewrite(path):
-            del path
-        pkg_integrity.config.rewrite_config_opts = mock_rewrite
-        pkg_integrity.config.config_opts['verify_required'] = False
 
     def test_get_verifier(self):
         x = pkg_integrity.get_verifier('file.abcd')
