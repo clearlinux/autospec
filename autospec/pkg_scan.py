@@ -17,11 +17,10 @@
 #
 import subprocess
 
-import config
 import util
 
 
-def get_whatrequires(pkg):
+def get_whatrequires(pkg, yum_conf):
     """
     Write list of packages.
 
@@ -30,7 +29,7 @@ def get_whatrequires(pkg):
     """
     # clean up dnf cache to avoid 'no more mirrors repo' error
     try:
-        subprocess.check_output(['dnf', '--config', config.yum_conf,
+        subprocess.check_output(['dnf', '--config', yum_conf,
                                  '--releasever', 'clear', 'clean', 'all'])
     except subprocess.CalledProcessError as err:
         util.print_warning("Unable to clean dnf repo: {}, {}".format(pkg, err))
@@ -38,7 +37,7 @@ def get_whatrequires(pkg):
 
     try:
         out = subprocess.check_output(['dnf', 'repoquery',
-                                       '--config', config.yum_conf,
+                                       '--config', yum_conf,
                                        '--releasever', 'clear',
                                        '--archlist=src', '--recursive', '--queryformat=%{NAME}',
                                        '--whatrequires', pkg]).decode('utf-8')

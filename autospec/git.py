@@ -25,12 +25,11 @@ import subprocess
 
 import build
 import buildpattern
-import config
 import tarball
 from util import call, write_out
 
 
-def commit_to_git(path):
+def commit_to_git(path, config):
     """Update package's git tree for autospec managed changes."""
     call("git init", stdout=subprocess.DEVNULL, cwd=path)
 

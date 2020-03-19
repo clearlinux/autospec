@@ -27,7 +27,6 @@ from collections import OrderedDict
 import build
 import buildpattern
 import buildreq
-import config
 import download
 from util import call, do_regex, get_sha1sum, print_fatal, write_out
 
@@ -266,7 +265,7 @@ def detect_build_from_url(url):
         buildpattern.set_build_pattern("phpize", 10)
 
 
-def set_multi_version(ver):
+def set_multi_version(ver, config):
     """Add ver to multi_version set and return latest version."""
     global multi_version
 
@@ -287,7 +286,7 @@ def set_multi_version(ver):
     return latest
 
 
-def name_and_version(name_arg, version_arg, filemanager):
+def name_and_version(name_arg, version_arg, filemanager, config):
     """Parse the url for the package name and version."""
     global rawname
     global url
@@ -307,7 +306,7 @@ def name_and_version(name_arg, version_arg, filemanager):
         # rawname == name in this case
         name = name_arg
         rawname = name_arg
-        version = set_multi_version(version_arg)
+        version = set_multi_version(version_arg, config)
         return name, rawname, convert_version(version, name)
 
     name = name_arg
@@ -439,7 +438,7 @@ def name_and_version(name_arg, version_arg, filemanager):
     # override name and version from commandline
     name = name_arg if name_arg else name
     version = version_arg if version_arg else version
-    version = set_multi_version(version)
+    version = set_multi_version(version, config)
     return name, rawname, convert_version(version, name)
 
 
@@ -474,7 +473,7 @@ def process_go_archives(go_archives):
         buildpattern.sources["godep"] += [url_info, url_mod, url_zip]
 
 
-def process_multiver_archives(main_src, multiver_archives):
+def process_multiver_archives(main_src, multiver_archives, config):
     """Set up multiversion archives."""
     config_versions = config.parse_config_versions(build.download_path)
     # Check if exist more than one version.
@@ -485,10 +484,10 @@ def process_multiver_archives(main_src, multiver_archives):
                 buildpattern.sources["version"].append(extraurl)
                 multiver_archives.append(extraurl)
                 multiver_archives.append('')
-                set_multi_version(None)
+                set_multi_version(None, config)
 
 
-def process_archives(main_src, archives):
+def process_archives(main_src, archives, config):
     """Process extra sources needed by package.
 
     This sources include: archives, go archives and multiversion.
@@ -502,7 +501,7 @@ def process_archives(main_src, archives):
         process_go_archives(go_archives)
     # Add multiversion for the rest of the patterns
     else:
-        process_multiver_archives(main_src, multiver_archives)
+        process_multiver_archives(main_src, multiver_archives, config)
 
     full_archives = archives + go_archives + multiver_archives
     # Download and extract full list
@@ -534,7 +533,7 @@ def extract_sources(main_src, archives_src):
             src.extract()
 
 
-def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
+def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager, config):
     """Download and process the tarball at url_arg."""
     global url
     global name
@@ -552,7 +551,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     # Create the download path for content and set build.download_path
     create_download_path(target)
     # determine name and version of package
-    name, rawname, version = name_and_version(name_arg, ver_arg, filemanager)
+    name, rawname, version = name_and_version(name_arg, ver_arg, filemanager, config)
     # Store the top-level version
     config.versions[version] = url
     # set gcov file information, must be done after name is set since the gcov
@@ -570,7 +569,7 @@ def process(url_arg, name_arg, ver_arg, target, archives_arg, filemanager):
     print_header()
     # Download and process extra sources: archives, go archives and
     # multiversion
-    archives_src = process_archives(main_src, archives)
+    archives_src = process_archives(main_src, archives, config)
     # Extract all sources
     extract_sources(main_src, archives_src)
 

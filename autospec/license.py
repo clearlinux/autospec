@@ -28,7 +28,6 @@ import sys
 import urllib.parse
 
 import chardet
-import config
 import download
 
 import tarball
@@ -41,17 +40,17 @@ license_files = []
 hashes = dict()
 
 
-def process_licenses(lics):
+def process_licenses(lics, translations, blacklist):
     """Handle licenses string from the license server.
 
     The license server response may contain multiple space-separated licenses.
     Add each license individually.
     """
     for lic in lics.split():
-        add_license(lic)
+        add_license(lic, translations, blacklist)
 
 
-def add_license(lic):
+def add_license(lic, translations, blacklist):
     """Add licenses from the server.
 
     Add license from license string lic after checking for duplication or
@@ -64,10 +63,10 @@ def add_license(lic):
     result = False
 
     # Translate the license if a translation exists
-    real_lic_str = config.license_translations.get(lic, lic)
+    real_lic_str = translations.get(lic, lic)
     real_lics = real_lic_str.split()
     for real_lic in real_lics:
-        if real_lic in config.license_blacklist:
+        if real_lic in blacklist:
             continue
         elif real_lic in licenses:
             result = True
@@ -96,7 +95,7 @@ def decode_license(license):
     return try_with_charset(license, chardet.detect(license)['encoding'])
 
 
-def license_from_copying_hash(copying, srcdir):
+def license_from_copying_hash(copying, srcdir, config):
     """Add licenses based on the hash of the copying file."""
     try:
         data = get_contents(copying)
@@ -124,7 +123,7 @@ def license_from_copying_hash(copying, srcdir):
         page = response.decode('utf-8').strip()
         if page:
             print("License     : ", page, " (server) (", hash_sum, ")")
-            process_licenses(page)
+            process_licenses(page, config.license_translations, config.license_blacklist)
 
             if page != "none":
                 # Strip the build source directory off the front
@@ -139,7 +138,9 @@ def license_from_copying_hash(copying, srcdir):
             return
 
     if hash_sum in config.license_hashes:
-        add_license(config.license_hashes[hash_sum])
+        add_license(config.license_hashes[hash_sum],
+                    config.license_translations,
+                    config.license_blacklist)
     else:
         if not config.license_show:
             return
@@ -148,7 +149,7 @@ def license_from_copying_hash(copying, srcdir):
         print_warning("Visit {0} to enter".format(hash_url))
 
 
-def scan_for_licenses(srcdir):
+def scan_for_licenses(srcdir, config):
     """Scan the project directory for things we can use to guess a description and summary."""
     targets = ["copyright",
                "copyright.txt",
@@ -167,7 +168,8 @@ def scan_for_licenses(srcdir):
     for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
-                license_from_copying_hash(os.path.join(dirpath, name), srcdir)
+                license_from_copying_hash(os.path.join(dirpath, name),
+                                          srcdir, config)
 
     if not licenses:
         print_fatal(" Cannot find any license or a valid {}.license file!\n".format(tarball.name))

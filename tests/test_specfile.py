@@ -1,5 +1,6 @@
 import unittest
 import unittest.mock
+import config
 import specfiles
 
 
@@ -11,9 +12,10 @@ class TestSpecfileWrite(unittest.TestCase):
         self.WRITES = []
 
     def setUp(self):
+        conf = config.Config()
+        conf.config_opts['dev_requires_extras'] = False
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2')
-        specfiles.config.config_opts['dev_requires_extras'] = False
+        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf)
 
         def mock_write(string):
             self.WRITES.append(string)
@@ -286,8 +288,6 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_scriplets base test
         """
-        backup_read_conf_file = specfiles.config.read_conf_file
-
         def mock_read_conf_file(name):
             prefix = "pre" if "pre" in name else "post"
             return ["{}-script line 1\n".format(prefix),
@@ -299,12 +299,11 @@ class TestSpecfileWrite(unittest.TestCase):
             def writelines(stringlist):
                 self.WRITES.extend(stringlist)
 
-        specfiles.config.read_conf_file = mock_read_conf_file
+        self.specfile.config.read_conf_file = mock_read_conf_file
         self.specfile.specfile = MockSpecfile()
         self.specfile.packages["ruby"] = ["rubyfile1"]
         self.specfile.packages["ignore"] = ["ignorefile1", "ignorefile2"]
         self.specfile.write_scriplets()
-        specfiles.config.read_conf_file = backup_read_conf_file
         expect = ["\n%post ruby\n",
                   "post-script line 1\n\n",
                   "post-script line 2\n\n",
@@ -320,8 +319,6 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_scriplets with only pre-scripts present.
         """
-        backup_read_conf_file = specfiles.config.read_conf_file
-
         def mock_read_conf_file(name):
             if "pre" in name:
                 return ["pre-script line 1\n",
@@ -335,12 +332,11 @@ class TestSpecfileWrite(unittest.TestCase):
             def writelines(stringlist):
                 self.WRITES.extend(stringlist)
 
-        specfiles.config.read_conf_file = mock_read_conf_file
+        self.specfile.config.read_conf_file = mock_read_conf_file
         self.specfile.specfile = MockSpecfile()
         self.specfile.packages["ruby"] = ["rubyfile1"]
         self.specfile.packages["ignore"] = ["ignorefile1", "ignorefile2"]
         self.specfile.write_scriplets()
-        specfiles.config.read_conf_file = backup_read_conf_file
         expect = ["\n%pre ruby\n",
                   "pre-script line 1\n\n",
                   "pre-script line 2\n\n",
@@ -352,8 +348,6 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_scriplets with no scripts present.
         """
-        backup_read_conf_file = specfiles.config.read_conf_file
-
         def mock_read_conf_file(name):
             return []
 
@@ -362,12 +356,11 @@ class TestSpecfileWrite(unittest.TestCase):
             def writelines(stringlist):
                 self.WRITES.extend(stringlist)
 
-        specfiles.config.read_conf_file = mock_read_conf_file
+        self.specfile.config.read_conf_file = mock_read_conf_file
         self.specfile.specfile = MockSpecfile()
         self.specfile.packages["ruby"] = ["rubyfile1"]
         self.specfile.packages["ignore"] = ["ignorefile1", "ignorefile2"]
         self.specfile.write_scriplets()
-        specfiles.config.read_conf_file = backup_read_conf_file
         self.assertEqual([], self.WRITES)
 
     def test_write_files_base(self):

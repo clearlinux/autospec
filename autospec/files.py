@@ -24,7 +24,6 @@ import re
 from collections import OrderedDict
 
 import build
-import config
 import tarball
 import util
 
@@ -32,8 +31,9 @@ import util
 class FileManager(object):
     """Class to handle spec file %files section management."""
 
-    def __init__(self):
+    def __init__(self, config):
         """Set defaults for FileManager."""
+        self.config = config
         self.packages = OrderedDict()  # per sub-package file list for spec purposes
         self.files = set()  # global file set to weed out dupes
         self.files_blacklist = set()
@@ -89,7 +89,7 @@ class FileManager(object):
 
     def compat_exclude(self, filename):
         """Exclude non-library files if the package is for compatability."""
-        if not config.config_opts.get("compat"):
+        if not self.config.config_opts.get("compat"):
             return False
 
         patterns = [
@@ -228,8 +228,8 @@ class FileManager(object):
         # if configured to do so, add .so files to the lib package instead of
         # the dev package. THis is useful for packages with a plugin
         # architecture like elfutils and mesa.
-        so_dest = 'lib' if config.config_opts.get('so_to_lib') else 'dev'
-        so_dest_ompi = 'openmpi' if config.config_opts.get('so_to_lib') else 'dev'
+        so_dest = 'lib' if self.config.config_opts.get('so_to_lib') else 'dev'
+        so_dest_ompi = 'openmpi' if self.config.config_opts.get('so_to_lib') else 'dev'
 
         patterns = [
             # Patterns for matching files, format is a tuple as follows:

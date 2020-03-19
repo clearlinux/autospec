@@ -3,17 +3,11 @@ import tempfile
 import os
 from unittest.mock import patch, mock_open, MagicMock
 import build
+import config
 import files
 
 
 class TestBuildpattern(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(self):
-        """
-        Class setup method to configure necessary modules
-        """
-        build.config.setup_patterns()
 
     def setUp(self):
         """
@@ -25,7 +19,6 @@ class TestBuildpattern(unittest.TestCase):
         build.base_path = None
         build.download_path = None
         build.buildreq.buildreqs = set()
-        build.config.config_opts['32bit'] = False
 
     def test_setup_workingdir(self):
         """
@@ -40,10 +33,10 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test simple_pattern_pkgconfig with match
         """
-        build.buildreq.config.config_opts['32bit'] = False
         build.simple_pattern_pkgconfig('line to test for testpkg.xyz',
                                        r'testpkg.xyz',
-                                       'testpkg')
+                                       'testpkg',
+                                       False)
         self.assertIn('pkgconfig(testpkg)', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
@@ -51,10 +44,10 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test simple_pattern_pkgconfig with match and 32bit option set
         """
-        build.buildreq.config.config_opts['32bit'] = True
         build.simple_pattern_pkgconfig('line to test for testpkg.zyx',
                                        r'testpkg.zyx',
-                                       'testpkgz')
+                                       'testpkgz',
+                                       True)
         self.assertIn('pkgconfig(32testpkgz)', build.buildreq.buildreqs)
         self.assertIn('pkgconfig(testpkgz)', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
@@ -65,7 +58,8 @@ class TestBuildpattern(unittest.TestCase):
         """
         build.simple_pattern_pkgconfig('line to test for somepkg.xyz',
                                        r'testpkg.xyz',
-                                       'testpkg')
+                                       'testpkg',
+                                       False)
         self.assertEqual(build.buildreq.buildreqs, set())
         self.assertEqual(build.must_restart, 0)
 
@@ -95,7 +89,8 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with no match
         """
-        build.failed_pattern('line to test for failure: somepkg', r'(test)', 0)
+        conf = config.Config()
+        build.failed_pattern('line to test for failure: somepkg', conf, r'(test)', 0)
         self.assertEqual(build.buildreq.buildreqs, set())
         self.assertEqual(build.must_restart, 0)
 
@@ -104,7 +99,8 @@ class TestBuildpattern(unittest.TestCase):
         Test failed_pattern with buildtool unset and initial match, but no
         match in failed_commands.
         """
-        build.failed_pattern('line to test for failure: testpkg', r'(test)', 0)
+        conf = config.Config()
+        build.failed_pattern('line to test for failure: testpkg', conf, r'(test)', 0)
         self.assertEqual(build.buildreq.buildreqs, set())
         self.assertEqual(build.must_restart, 0)
 
@@ -112,7 +108,9 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with buildtool unset and match in failed_commands
         """
-        build.failed_pattern('line to test for failure: lex', r'(lex)', 0)
+        conf = config.Config()
+        conf.setup_patterns()
+        build.failed_pattern('line to test for failure: lex', conf, r'(lex)', 0)
         self.assertIn('flex', build.buildreq.buildreqs)
         self.assertEqual(build.must_restart, 1)
 
@@ -120,8 +118,9 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with buildtool set to pkgconfig
         """
-        build.buildreq.config.config_opts['32bit'] = False
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg.xyz',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='pkgconfig')
@@ -132,7 +131,10 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with buildtool set to R
         """
+        conf = config.Config()
+        conf.setup_patterns()
         build.failed_pattern('line to test for failure: testpkg.r',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='R')
@@ -144,7 +146,9 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with buildtool set to perl
         """
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg.pl',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='perl')
@@ -155,7 +159,9 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test failed_pattern with buildtool set to pypi
         """
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg.py',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='pypi')
@@ -167,7 +173,9 @@ class TestBuildpattern(unittest.TestCase):
         Test failed_pattern with buildtool set to ruby, but no match in
         config.gems, it should just prepend 'rubygem-' to the package name.
         """
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg.rb',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='ruby')
@@ -180,7 +188,10 @@ class TestBuildpattern(unittest.TestCase):
         config.gems. In the particular case of test/unit, the result should
         be rubygem-test-unit.
         """
+        conf = config.Config()
+        conf.setup_patterns()
         build.failed_pattern('line to test for failure: test/unit',
+                             conf,
                              r'(test/unit)',
                              0,  # verbose=0
                              buildtool='ruby')
@@ -192,7 +203,10 @@ class TestBuildpattern(unittest.TestCase):
         Test failed_pattern with buildtool set to ruby table and a match in
         config.gems
         """
+        conf = config.Config()
+        conf.setup_patterns()
         build.failed_pattern('line to test for failure: test/unit',
+                             conf,
                              r'(test/unit)',
                              0,  # verbose=0
                              buildtool='ruby table')
@@ -204,7 +218,9 @@ class TestBuildpattern(unittest.TestCase):
         Test failed_pattern with buildtool set to ruby table but no match in
         config.gems. This should not modify anything.
         """
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='ruby table')
@@ -216,7 +232,9 @@ class TestBuildpattern(unittest.TestCase):
         Test failed_pattern with buildtool set to maven, but no match in
         config.maven_jars, it should just prepend 'mvn-' to the package name.
         """
+        conf = config.Config()
         build.failed_pattern('line to test for failure: testpkg',
+                             conf,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='maven')
@@ -229,7 +247,10 @@ class TestBuildpattern(unittest.TestCase):
         config.maven_jars. In the particular case of aether, the corresponding
         maven jar is 'mvn-aether-core'
         """
+        conf = config.Config()
+        conf.setup_patterns()
         build.failed_pattern('line to test for failure: aether',
+                             conf,
                              r'(aether)',
                              0,  # verbose=0
                              buildtool='maven')
@@ -244,8 +265,6 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
-        build.config.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
 
@@ -269,8 +288,6 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
-        build.config.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
 
@@ -295,8 +312,6 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
-        build.config.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
 
@@ -320,18 +335,19 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
-        build.config.config_opts['32bit'] = True
+        conf = config.Config()
+        conf.setup_patterns()
+        conf.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager()
+        fm = files.FileManager(conf)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\nwhich: no qmake\nexiting'
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm)
+            build.parse_build_results('testname', 0, fm, conf)
 
         build.util.call = call_backup
 
@@ -347,17 +363,18 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
+        conf = config.Config()
+        conf.setup_patterns()
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager()
+        fm = files.FileManager(conf)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\nchecking for Apache test module support\nexiting'
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm)
+            build.parse_build_results('testname', 0, fm, conf)
 
         build.util.call = call_backup
 
@@ -369,11 +386,12 @@ class TestBuildpattern(unittest.TestCase):
         Test parse_build_results with a test log indicating failure due to a
         missing package.
         """
-        build.config.setup_patterns()
+        conf = config.Config()
+        conf.setup_patterns()
         call_backup = build.util.call
         open_auto_backup = build.util.open_auto
         build.util.call = MagicMock(return_value=None)
-        fm = files.FileManager()
+        fm = files.FileManager(conf)
 
         with open('tests/builderrors', 'r') as f:
             builderrors = f.readlines()
@@ -382,7 +400,7 @@ class TestBuildpattern(unittest.TestCase):
                     input, output = error.strip('\n').split('|')
                     build.buildreq.buildreqs = set()
                     build.util.open_auto = mock_open(read_data=input)
-                    build.parse_build_results('testname', 0, fm)
+                    build.parse_build_results('testname', 0, fm, conf)
 
                     self.assertIn(output, build.buildreq.buildreqs)
                     self.assertGreater(build.must_restart, 0)
@@ -398,10 +416,11 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
+        conf = config.Config()
+        conf.setup_patterns()
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager()
+        fm = files.FileManager(conf)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\n' \
@@ -414,7 +433,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm)
+            build.parse_build_results('testname', 0, fm, conf)
 
         build.util.call = call_backup
 
@@ -432,10 +451,11 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
-        build.config.setup_patterns()
+        conf = config.Config()
+        conf.setup_patterns()
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager()
+        fm = files.FileManager(conf)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\n' \
@@ -450,7 +470,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm)
+            build.parse_build_results('testname', 0, fm, conf)
 
         build.util.call = call_backup
 

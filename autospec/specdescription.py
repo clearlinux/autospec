@@ -29,7 +29,6 @@
 import os
 import re
 
-import config
 import license
 import util
 
@@ -84,7 +83,7 @@ def assign_description(description, score):
         default_description_score = score
 
 
-def description_from_spec(specfile):
+def description_from_spec(specfile, translations, blacklist):
     """Parse any existing RPM specfiles."""
     try:
         with util.open_auto(specfile, 'r') as specfd:
@@ -105,15 +104,15 @@ def description_from_spec(specfile):
         if line.startswith("License:") and not any(e in line for e in excludes):
             splits = line.split(":")[1:]
             words = ":".join(splits).strip()
-            if words in config.license_translations:
+            if words in translations:
                 print("Adding license from spec:", words)
-                license.add_license(words)
+                license.add_license(words, translations, blacklist)
             else:
                 words = clean_license_string(words).split()
                 for word in words:
                     if ":" not in word and not word.startswith("@"):
                         print("Adding license from spec:", word)
-                        license.add_license(word)
+                        license.add_license(word, translations, blacklist)
 
         if line.startswith("Summary: "):
             assign_summary(line[9:], 4)
@@ -128,7 +127,7 @@ def description_from_spec(specfile):
         assign_description(specdesc, 4)
 
 
-def description_from_pkginfo(pkginfo):
+def description_from_pkginfo(pkginfo, translations, blacklist):
     """Parse existing package info files."""
     try:
         with util.open_auto(pkginfo, 'r') as pkgfd:
@@ -146,15 +145,15 @@ def description_from_pkginfo(pkginfo):
         if line.lower().startswith("license:") and not any(e in line for e in excludes):
             splits = line.split(":")[1:]
             words = ":".join(splits).strip()
-            if words in config.license_translations:
+            if words in translations:
                 print("Adding license from PKG-INFO:", words)
-                license.add_license(words)
+                license.add_license(words, translations, blacklist)
             else:
                 words = clean_license_string(words).split()
                 for word in words:
                     if ":" not in word:
                         print("Adding license from PKG-INFO:", word)
-                        license.add_license(word)
+                        license.add_license(word, translations, blacklist)
 
         for sub in ["Summary: ", "abstract: "]:
             if line.startswith(sub):
@@ -241,7 +240,7 @@ def description_from_readme(readmefile):
     assign_description(desc, score)
 
 
-def scan_for_description(package, dirn):
+def scan_for_description(package, dirn, translations, blacklist):
     """Scan the project directory for things we can use to guess a description and summary."""
     test_pat = re.compile(r"tests?")
     dirpath_seen = ""
@@ -253,13 +252,13 @@ def scan_for_description(package, dirn):
             if name.lower().endswith(".pdf"):
                 continue
             if name.lower().endswith(".spec"):
-                description_from_spec(os.path.join(dirpath, name))
+                description_from_spec(os.path.join(dirpath, name), translations, blacklist)
             if name.lower().endswith("pkg-info"):
-                description_from_pkginfo(os.path.join(dirpath, name))
+                description_from_pkginfo(os.path.join(dirpath, name), translations, blacklist)
             if name.lower().endswith("meta.yml"):
-                description_from_pkginfo(os.path.join(dirpath, name))
+                description_from_pkginfo(os.path.join(dirpath, name), translations, blacklist)
             if name.lower().endswith("description"):
-                description_from_pkginfo(os.path.join(dirpath, name))
+                description_from_pkginfo(os.path.join(dirpath, name), translations, blacklist)
             if name.lower().endswith(".pc"):
                 summary_from_pkgconfig(os.path.join(dirpath, name), package)
             if name.startswith("DESCRIPTION"):
@@ -272,13 +271,13 @@ def scan_for_description(package, dirn):
     print("Summary     :", default_summary.strip())
 
 
-def load_specfile(specfile):
+def load_specfile(specfile, description, summary):
     """Load specfile with parse results."""
-    if config.custom_desc:
-        specfile.default_desc = "\n".join(config.custom_desc)
+    if description:
+        specfile.default_desc = "\n".join(description)
     else:
         specfile.default_desc = default_description
-    if config.custom_summ:
-        specfile.default_sum = config.custom_summ[0]
+    if summary:
+        specfile.default_sum = summary[0]
     else:
         specfile.default_sum = default_summary

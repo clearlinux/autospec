@@ -85,11 +85,11 @@ def check_requirements(use_git):
         sys.exit(1)
 
 
-def load_specfile(specfile):
+def load_specfile(conf, specfile):
     """Gather all information from static analysis into Specfile instance."""
-    config.load_specfile(specfile)
+    conf.load_specfile(specfile)
     tarball.load_specfile(specfile)
-    specdescription.load_specfile(specfile)
+    specdescription.load_specfile(specfile, conf.custom_desc, conf.custom_summ)
     license.load_specfile(specfile)
     buildreq.load_specfile(specfile)
     buildpattern.load_specfile(specfile)
@@ -125,10 +125,10 @@ def save_mock_logs(path, iteration):
         os.rename(src, dest)
 
 
-def write_prep(workingdir):
+def write_prep(conf, workingdir):
     """Write metadata to the local workingdir when --prep-only is used."""
-    if config.urlban:
-        used_url = re.sub(config.urlban, "localhost", tarball.url)
+    if conf.urlban:
+        used_url = re.sub(conf.urlban, "localhost", tarball.url)
     else:
         used_url = tarball.url
 
@@ -239,6 +239,7 @@ def main():
 
 def package(args, url, name, archives, workingdir, infile_dict):
     """Entry point for building a package with autospec."""
+    conf = config.Config()
     check_requirements(args.git)
     build.setup_workingdir(workingdir)
 
@@ -246,9 +247,9 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # First, download the tarball, extract it and then do a set
     # of static analysis on the content of the tarball.
     #
-    filemanager = files.FileManager()
-    tarball.process(url, name, args.version, args.target, archives, filemanager)
-    config.create_versions(build.download_path, tarball.multi_version)
+    filemanager = files.FileManager(conf)
+    tarball.process(url, name, args.version, args.target, archives, filemanager, conf)
+    conf.create_versions(build.download_path, tarball.multi_version)
     # Search up one level from here to capture multiple versions
     _dir = tarball.path
 
@@ -262,36 +263,36 @@ def package(args, url, name, archives, workingdir, infile_dict):
         except Exception:
             pass
         # Start one directory higher so we scan *all* versions for licenses
-        license.scan_for_licenses(os.path.dirname(_dir))
+        license.scan_for_licenses(os.path.dirname(_dir), conf)
         exit(0)
 
-    config.setup_patterns()
-    config.config_file = args.config
-    config.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
-    config.setup_patterns(config.failed_pattern_dir)
-    config.parse_existing_spec(build.download_path, tarball.name)
+    conf.setup_patterns()
+    conf.config_file = args.config
+    conf.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
+    conf.setup_patterns(conf.failed_pattern_dir)
+    conf.parse_existing_spec(build.download_path, tarball.name)
 
     if args.prep_only:
-        write_prep(workingdir)
+        write_prep(conf, workingdir)
         exit(0)
 
     buildreq.set_build_req()
-    buildreq.scan_for_configure(_dir, tarball.name, build.download_path)
-    specdescription.scan_for_description(tarball.name, _dir)
+    buildreq.scan_for_configure(_dir, tarball.name, build.download_path, conf)
+    specdescription.scan_for_description(tarball.name, _dir, conf.license_translations, conf.license_blacklist)
     # Start one directory higher so we scan *all* versions for licenses
-    license.scan_for_licenses(os.path.dirname(_dir))
-    commitmessage.scan_for_changes(build.download_path, _dir)
+    license.scan_for_licenses(os.path.dirname(_dir), conf)
+    commitmessage.scan_for_changes(build.download_path, _dir, conf.transforms)
     add_sources(build.download_path, archives)
-    check.scan_for_tests(_dir)
+    check.scan_for_tests(_dir, conf)
 
     #
     # Now, we have enough to write out a specfile, and try to build it.
     # We will then analyze the build result and learn information until the
     # package builds
     #
-    specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release)
+    specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release, conf)
     filemanager.load_specfile(specfile)
-    load_specfile(specfile)
+    load_specfile(conf, specfile)
 
     #
     # If infile is passed, parse it and overwrite the specfile configurations
@@ -303,12 +304,12 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     if args.integrity:
         interactive_mode = not args.non_interactive
-        pkg_integrity.check(url, build.download_path, interactive=interactive_mode)
+        pkg_integrity.check(url, build.download_path, conf, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package(filemanager, args.mock_config, args.mock_opts, args.cleanup)
+        build.package(filemanager, args.mock_config, args.mock_opts, conf, args.cleanup)
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0
@@ -326,10 +327,10 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
         save_mock_logs(build.download_path, build.round)
 
-    check.check_regression(build.download_path)
+    check.check_regression(build.download_path, conf.config_opts['skip_tests'])
 
     if build.success == 0:
-        config.create_buildreq_cache(build.download_path, tarball.version)
+        conf.create_buildreq_cache(build.download_path, tarball.version)
         print_fatal("Build failed, aborting")
         sys.exit(1)
     elif os.path.isfile("README.clear"):
@@ -345,18 +346,18 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     examine_abi(build.download_path)
     if os.path.exists("/var/lib/rpm"):
-        pkg_scan.get_whatrequires(tarball.name)
+        pkg_scan.get_whatrequires(tarball.name, conf.yum_conf)
 
     write_out(build.download_path + "/release", tarball.release + "\n")
 
     # record logcheck output
     logcheck(build.download_path)
 
-    commitmessage.guess_commit_message(pkg_integrity.IMPORTED)
-    config.create_buildreq_cache(build.download_path, tarball.version)
+    commitmessage.guess_commit_message(pkg_integrity.IMPORTED, conf)
+    conf.create_buildreq_cache(build.download_path, tarball.version)
 
     if args.git:
-        git.commit_to_git(build.download_path)
+        git.commit_to_git(build.download_path, conf)
     else:
         print("To commit your changes, git add the relevant files and "
               "run 'git commit -F commitmsg'")

@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import mock_open, patch
+import config
 import specdescription
 
 
@@ -15,7 +16,6 @@ class TestSpecdescription(unittest.TestCase):
         specdescription.default_summary = "No detailed summary available"
         specdescription.default_summary_score = 0
         specdescription.license.licenses = []
-        specdescription.config.license_translations = {}
 
     def test_clean_license_string(self):
         """
@@ -48,7 +48,7 @@ class TestSpecdescription(unittest.TestCase):
                 "%donewithdesc\n"
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            specdescription.description_from_spec("filename")
+            specdescription.description_from_spec("filename", {}, [])
 
         self.assertEqual(specdescription.default_description,
                          "Here is the description section\n"
@@ -68,7 +68,7 @@ class TestSpecdescription(unittest.TestCase):
         content = "# this is a specfile without much in it\n"
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            specdescription.description_from_spec("filename")
+            specdescription.description_from_spec("filename", {}, [])
 
         self.assertEqual(specdescription.default_description,
                          "No detailed description available")
@@ -94,7 +94,7 @@ class TestSpecdescription(unittest.TestCase):
                 "donewithdesc:\n"
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            specdescription.description_from_pkginfo("filename")
+            specdescription.description_from_pkginfo("filename", {}, [])
 
         self.assertEqual(specdescription.default_description,
                          "Here is the description section\n"
@@ -113,7 +113,7 @@ class TestSpecdescription(unittest.TestCase):
         content = "# this is a pkginfo file without much in it\n"
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
-            specdescription.description_from_pkginfo("filename")
+            specdescription.description_from_pkginfo("filename", {}, [])
 
         self.assertEqual(specdescription.default_description,
                          "No detailed description available")

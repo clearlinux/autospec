@@ -210,6 +210,7 @@ class Verifier(object):
         """Set default values."""
         self.url = kwargs.get('url', None)
         self.package_sign_path = kwargs.get('package_sign_path', None)
+        self.config = kwargs.get('config', None)
         print(SEPT)
 
     @staticmethod
@@ -569,13 +570,13 @@ class GPGVerifier(Verifier):
         EMAIL = get_email(pubkey_loc)
         sign_status = verify_cli(pubkey_loc, self.package_path, self.package_sign_path)
         if not sign_status:
-            if config.old_keyid:
-                compare_keys(KEYID_TRY, config.old_keyid)
+            if self.config.old_keyid:
+                compare_keys(KEYID_TRY, self.config.old_keyid)
             self.print_result(self.package_path)
             KEYID = KEYID_TRY
-            config.signature = self.key_url
-            config.config_opts['verify_required'] = True
-            config.rewrite_config_opts(os.path.dirname(self.package_path))
+            self.config.signature = self.key_url
+            self.config.config_opts['verify_required'] = True
+            self.config.rewrite_config_opts(os.path.dirname(self.package_path))
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)
@@ -833,14 +834,17 @@ def apply_verification(verifier, **kwargs):
         return v.verify()
 
 
-def from_disk(url, package_path, package_check, interactive=True):
+def from_disk(url, package_path, package_check, config, interactive=True):
     """Run verification."""
     verifier = get_verifier(package_path)
-    return apply_verification(verifier, **{
-                              'package_path': package_path,
-                              'package_check': package_check,
-                              'url': url,
-                              'interactive': interactive})
+    return apply_verification(verifier,
+                              **{
+                                  'package_path': package_path,
+                                  'package_check': package_check,
+                                  'url': url,
+                                  'interactive': interactive,
+                                  'config': config,
+                              })
 
 
 def attempt_verification_per_domain(package_path, url):
@@ -879,7 +883,7 @@ def get_integrity_file(package_path):
     return None
 
 
-def check(url, download_path, interactive=True):
+def check(url, download_path, config, interactive=True):
     """Run verification based on tar file url."""
     package_name = filename_from_url(url)
     package_path = os.path.join(download_path, package_name)
@@ -892,15 +896,15 @@ def check(url, download_path, interactive=True):
     print_info('Performing package integrity verification')
     verified = None
     if package_check is not None:
-        verified = from_disk(url, package_path, package_check, interactive=interactive)
+        verified = from_disk(url, package_path, package_check, config, interactive=interactive)
     elif package_path[-4:] == '.gem':
         signature_file = get_signature_file(url, download_path)
-        verified = from_disk(url, package_path, signature_file, interactive=interactive)
+        verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
     else:
         print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, download_path))
         signature_file = get_signature_file(url, download_path)
         if signature_file is not None:
-            verified = from_disk(url, package_path, signature_file, interactive=interactive)
+            verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
             if verified is None:
                 print_info('Unable to find a signature')
                 verified = attempt_verification_per_domain(package_path, url)
@@ -936,7 +940,7 @@ def load_specfile(specfile):
 
 def main(args):
     """Verify tar content with signature."""
-    from_disk(args.url, args.tar, args.sig)
+    from_disk(args.url, args.tar, args.sig, config.Config())
 
 
 if __name__ == '__main__':

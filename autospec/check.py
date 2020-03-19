@@ -24,7 +24,6 @@ import re
 
 import buildpattern
 import buildreq
-import config
 import count
 import tarball
 import util
@@ -32,9 +31,9 @@ import util
 tests_config = ""
 
 
-def check_regression(pkg_dir):
+def check_regression(pkg_dir, skip_tests):
     """Check the build log for test regressions using the count module."""
-    if config.config_opts['skip_tests']:
+    if skip_tests:
         return
 
     result = count.parse_log(os.path.join(pkg_dir, "results/build.log"))
@@ -56,11 +55,11 @@ def check_regression(pkg_dir):
     util.write_out(os.path.join(pkg_dir, "testresults"), res_str)
 
 
-def scan_for_tests(src_dir):
+def scan_for_tests(src_dir, config):
     """Scan source directory for test files and set tests_config accordingly."""
     global tests_config
 
-    if config.config_opts['skip_tests'] or tests_config:
+    if config.config_opts.get('skip_tests') or tests_config:
         return
 
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
@@ -71,7 +70,7 @@ def scan_for_tests(src_dir):
     cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
                           "make test\nmodule unload openmpi"
 
-    if config.config_opts['allow_test_failures']:
+    if config.config_opts.get('allow_test_failures'):
         make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
                              "make VERBOSE=1 V=1 {}check || :\nmodule unload openmpi".format(makeflags)
         cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
@@ -80,7 +79,7 @@ def scan_for_tests(src_dir):
     perl_check = "make TEST_VERBOSE=1 test"
     setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
     meson_check = "meson test -C builddir"
-    if config.config_opts['allow_test_failures']:
+    if config.config_opts.get('allow_test_failures'):
         make_check += " || :"
         cmake_check += " || :"
         perl_check += " || :"
@@ -96,17 +95,17 @@ def scan_for_tests(src_dir):
         "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd",
         "meson": meson_check,
     }
-    if config.config_opts['32bit']:
+    if config.config_opts.get('32bit'):
         testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check + " || :"
         testsuites["meson"] += "\ncd ../build32;\n" + meson_check + " || :"
-    if config.config_opts['use_avx2']:
+    if config.config_opts.get('use_avx2'):
         testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check + " || :"
-    if config.config_opts['use_avx512']:
+    if config.config_opts.get('use_avx512'):
         testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check + " || :"
         testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check + " || :"
-    if config.config_opts['openmpi']:
+    if config.config_opts.get('openmpi'):
         testsuites["makecheck"] += "\ncd ../build-openmpi;\n" + make_check_openmpi
         testsuites["cmake"] += "\ncd ../clr-build-openmpi;\n" + cmake_check_openmpi
 
