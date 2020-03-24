@@ -40,7 +40,7 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test Specfile.write_nvr with urlban set
         """
-        self.specfile.urlban = "www.testpkg.com"
+        self.specfile.config.urlban = "www.testpkg.com"
         self.specfile.write_nvr()
         expect = ["Name     : pkg\n",
                   "Version  : 1.0\n",
@@ -102,7 +102,7 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["lib"] = ["package.so"]
         self.specfile.requires.add("pkg1")
         self.specfile.requires.add("pkg2")
-        self.specfile.no_autostart = True
+        self.specfile.config.config_opts['no_autostart'] = True
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-bin = %{version}-%{release}\n",
                   "Requires: pkg-lib = %{version}-%{release}\n",
@@ -161,9 +161,9 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_patch_header with list of patches.
         """
-        self.specfile.patches = ["speedup.patch",
-                                 "slowdown.patch",
-                                 "revert.patch reverts slowdown.patch"]
+        self.specfile.config.patches = ["speedup.patch",
+                                        "slowdown.patch",
+                                        "revert.patch reverts slowdown.patch"]
         self.specfile.write_patch_header()
         expect = ["Patch1: speedup.patch\n",
                   "Patch2: slowdown.patch\n",
@@ -421,7 +421,7 @@ class TestSpecfileWrite(unittest.TestCase):
         Validate that service_restart configuration is written to the spec file
         correctly.
         """
-        self.specfile.service_restart = [
+        self.specfile.config.service_restart = [
                 "/usr/lib/systemd/system/foo.service",
                 "/usr/lib/systemd/system/bar.service",
         ]

@@ -91,7 +91,7 @@ class Config(object):
         self.extra_make32_install = ""
         self.extra_cmake = ""
         self.extra_cmake_openmpi = ""
-        self.cmake_srcdir = ""
+        self.cmake_srcdir = ".."
         self.subdir = ""
         self.install_macro = "%make_install"
         self.disable_static = "--disable-static"
@@ -929,31 +929,3 @@ class Config(object):
 
         self.custom_desc = self.read_conf_file(os.path.join(path, "description"))
         self.custom_summ = self.read_conf_file(os.path.join(path, "summary"))
-
-    def load_specfile(self, specfile):
-        """Load specfile object with configuration."""
-        specfile.urlban = self.urlban
-        specfile.keepstatic = self.config_opts['keepstatic']
-        specfile.no_autostart = self.config_opts['no_autostart']
-        specfile.extra_make = self.extra_make
-        specfile.extra32_make = self.extra32_make
-        specfile.extra_make_install = self.extra_make_install
-        specfile.extra_make32_install = self.extra_make32_install
-        specfile.extra_cmake = self.extra_cmake
-        specfile.extra_cmake_openmpi = self.extra_cmake_openmpi
-        specfile.cmake_srcdir = self.cmake_srcdir or specfile.cmake_srcdir
-        specfile.subdir = self.subdir
-        specfile.install_macro = self.install_macro
-        specfile.disable_static = self.disable_static
-        specfile.prep_prepend = self.prep_prepend
-        specfile.build_prepend = self.build_prepend
-        specfile.build_append = self.build_append
-        specfile.make_prepend = self.make_prepend
-        specfile.install_prepend = self.install_prepend
-        specfile.install_append = self.install_append
-        specfile.service_restart = self.service_restart
-        specfile.extra_sources = self.extra_sources
-        specfile.patches = self.patches
-        specfile.verpatches = self.verpatches
-        specfile.autoreconf = self.autoreconf
-        specfile.set_gopath = self.set_gopath

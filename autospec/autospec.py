@@ -87,7 +87,6 @@ def check_requirements(use_git):
 
 def load_specfile(conf, specfile):
     """Gather all information from static analysis into Specfile instance."""
-    conf.load_specfile(specfile)
     tarball.load_specfile(specfile)
     specdescription.load_specfile(specfile, conf.custom_desc, conf.custom_summ)
     license.load_specfile(specfile)
