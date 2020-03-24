@@ -41,9 +41,6 @@ class Specfile(object):
         self.name = name
         self.release = release
         self.config = config
-        self.keepstatic = False
-        self.urlban = ""
-        self.no_autostart = False
         self.specfile = None
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
@@ -56,18 +53,9 @@ class Specfile(object):
         self.buildreqs = []
         self.pypi_provides = None
         self.pypi_requires = []
-        self.extra_sources = []
-        self.patches = []
-        self.verpatches = OrderedDict()
         self.default_desc = ""
         self.locales = []
         self.default_pattern = ""
-        self.autoreconf = False
-        self.set_gopath = True
-        self.extra_make = ""
-        self.extra32_make = ""
-        self.extra_make_install = ""
-        self.extra_make32_install = ""
         self.tarball_prefix = ""
         self.prefixes = dict()    # Detected prefixes, indexed by source URL
         self.build_dirs = dict()  # Build directories, indexed by source URL
@@ -78,18 +66,6 @@ class Specfile(object):
         self.need_avx2_flags = False
         self.need_avx512_flags = False
         self.tests_config = ""
-        self.subdir = ""
-        self.install_macro = "%make_install"
-        self.disable_static = "--disable-static"
-        self.extra_cmake = ""
-        self.cmake_srcdir = ".."
-        self.prep_prepend = []
-        self.build_prepend = []
-        self.build_append = []
-        self.make_prepend = []
-        self.install_prepend = []
-        self.install_append = []
-        self.service_restart = []
         self.excludes = []
         self.custom_extras = {}
         self.keyid = ""
@@ -104,7 +80,7 @@ class Specfile(object):
         # spec file comment header
         self.write_comment_header()
 
-        if self.keepstatic:
+        if self.config.config_opts.get('keepstatic'):
             self._write("%define keepstatic 1\n")
 
         # general package header
@@ -153,8 +129,8 @@ class Specfile(object):
 
     def write_nvr(self):
         """Write name, version, and release information."""
-        if self.urlban:
-            clean_url = re.sub(self.urlban, "localhost", self.url)
+        if self.config.urlban:
+            clean_url = re.sub(self.config.urlban, "localhost", self.url)
             # Duplicate prefixes entry before we change the url
             self.prefixes[clean_url] = self.prefixes.get(self.url)
             self.url = clean_url
@@ -174,8 +150,8 @@ class Specfile(object):
         for source in sorted(self.sources["version"] + self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"] + self.sources["godep"]):
             count += 1
             self.source_index[source] = count
-            if self.urlban:
-                source = re.sub(self.urlban, "localhost", source)
+            if self.config.urlban:
+                source = re.sub(self.config.urlban, "localhost", source)
             self._write("Source{0}  : {1}\n".format(count, source))
 
         # if package is verified, include the signature in the source tarball
@@ -183,7 +159,7 @@ class Specfile(object):
             count += 1
             self._write_strip(f"Source{count}  : {self.config.signature}")
 
-        for source in self.extra_sources:
+        for source in self.config.extra_sources:
             count += 1
             self._write("Source{0}  : {1}\n".format(count, source[0]))
 
@@ -201,7 +177,7 @@ class Specfile(object):
     def write_main_subpackage_requires(self):
         """Write subpackage build requirements."""
         for pkg in sorted(self.packages):
-            if pkg == "autostart" and self.no_autostart:
+            if pkg == "autostart" and self.config.config_opts.get('no_autostart'):
                 continue
             if pkg.startswith("extras-"):
                 continue
@@ -240,7 +216,7 @@ class Specfile(object):
         # and picks up from where first loop left off.
         count = -1
         # Write the patches for the primary version as given in Makefile
-        for count, patch in enumerate(self.patches):
+        for count, patch in enumerate(self.config.patches):
             self._write("Patch{0}: {1}\n".format(count + 1, patch.split()[0]))
         # Write the version-specific patches
         for version in self.config.verpatches:
@@ -412,21 +388,21 @@ class Specfile(object):
 
     def write_make_line(self, build32=False):
         """Write make line to spec file."""
-        if self.make_prepend:
+        if self.config.make_prepend:
             self._write_strip("## make_prepend content")
-            for line in self.make_prepend:
+            for line in self.config.make_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## make_prepend end")
         if build32:
-            self._write_strip("make {} {} {}".format(self.config.parallel_build, self.extra_make, self.extra32_make))
+            self._write_strip("make {} {} {}".format(self.config.parallel_build, self.config.extra_make, self.config.extra32_make))
         else:
-            self._write_strip("make {} {}".format(self.config.parallel_build, self.extra_make))
+            self._write_strip("make {} {}".format(self.config.parallel_build, self.config.extra_make))
 
     def write_install_openmpi(self):
         """Write make install line (openmpi) to spec file."""
         self._write_strip('module load openmpi')
         make_string = '%make_install_openmpi'
-        self._write_strip("{} {}".format(make_string, self.extra_make_install))
+        self._write_strip("{} {}".format(make_string, self.config.extra_make_install))
         self._write_strip('module unload openmpi')
 
     def write_cmake_line_openmpi(self):
@@ -435,7 +411,7 @@ class Specfile(object):
                        '-DCMAKE_INSTALL_LIBDIR=$MPI_LIB -DCMAKE_INSTALL_INCLUDEDIR=$MPI_INCLUDE -DLIB_INSTALL_DIR=$MPI_LIB \\\n' \
                        '-DBUILD_SHARED_LIBS:BOOL=ON -DLIB_SUFFIX=64 \\\n' \
                        '-DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \\\n'
-        self._write_strip("{} {} {}".format(cmake_string, self.cmake_srcdir, self.extra_cmake_openmpi))
+        self._write_strip("{} {} {}".format(cmake_string, self.config.cmake_srcdir, self.config.extra_cmake_openmpi))
 
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file."""
@@ -580,7 +556,7 @@ class Specfile(object):
         else:
             lto = "-flto=4"
 
-        if not self.set_gopath:
+        if not self.config.set_gopath:
             self._write_strip("export GOPROXY=file:///usr/share/goproxy")
 
         if self.config.config_opts['optimize_size']:
@@ -693,19 +669,19 @@ class Specfile(object):
         if pattern == "configure":
             init = f"{self.get_profile_generate_flags()}" \
                    f"%configure " \
-                   f"{self.disable_static} " \
+                   f"{self.config.disable_static} " \
                    f"{self.config.extra_configure} " \
                    f"{self.config.extra_configure64}"
         elif pattern == "configure_ac":
             init = f"{self.get_profile_generate_flags()}" \
                    f"%reconfigure " \
-                   f"{self.disable_static} " \
+                   f"{self.config.disable_static} " \
                    f"{self.config.extra_configure} " \
                    f"{self.config.extra_configure64}"
         elif pattern == "autogen":
             init = f"{self.get_profile_generate_flags()}" \
                    f"%autogen " \
-                   f"{self.disable_static} " \
+                   f"{self.config.disable_static} " \
                    f"{self.config.extra_configure} " \
                    f"{self.config.extra_configure64}"
         elif pattern == "cmake":
@@ -715,12 +691,12 @@ class Specfile(object):
         elif pattern == "make":
             init = f"{self.get_profile_generate_flags()}"
             post = f"{self.get_profile_use_flags()}"
-        if use_subdir and self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if use_subdir and self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         if init:
             self._write_strip(init)
         self.write_make_line()
-        if use_subdir and self.subdir:
+        if use_subdir and self.config.subdir:
             self._write_strip("popd")
         self._write_strip("\n")
         self._write_strip("\n".join(self.config.profile_payload))
@@ -739,9 +715,9 @@ class Specfile(object):
         self.write_license_files()
 
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
-            self._write_strip("%make_install32 {} {}".format(self.extra_make_install,
-                                                             self.extra_make32_install))
+            self._write_strip("pushd ../build32/" + self.config.subdir)
+            self._write_strip("%make_install32 {} {}".format(self.config.extra_make_install,
+                                                             self.config.extra_make32_install))
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
             self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
@@ -751,26 +727,26 @@ class Specfile(object):
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
-            self._write_strip("pushd ../buildavx512/" + self.subdir)
-            self._write_strip("%s_avx512 %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self._write_strip("%s_avx512 %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
-            self._write_strip("pushd ../buildavx2/" + self.subdir)
-            self._write_strip("%s_avx2 %s\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self._write_strip("%s_avx2 %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
-            self._write_strip("pushd ../build-openmpi/" + self.subdir)
+            self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self.write_install_openmpi()
             self._write_strip("popd")
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
 
-        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+        self._write_strip("%s %s\n" % (self.config.install_macro, self.config.extra_make_install))
 
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
 
         self.write_find_lang()
@@ -859,11 +835,11 @@ class Specfile(object):
         for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
-            if self.subdir:
-                self._write_strip("pushd " + self.subdir)
+            if self.config.subdir:
+                self._write_strip("pushd " + self.config.subdir)
 
             # User must provide the install goal in make_install_args
-            self._write_strip("gradle --offline " + self.extra_make_install)
+            self._write_strip("gradle --offline " + self.config.extra_make_install)
 
             # Install from a build/install directory, if it was created
             self._write_strip("if [[ -d build/install ]]; then")
@@ -902,46 +878,46 @@ class Specfile(object):
             # Done processing build/install directory
             self._write_strip("fi")
 
-            if self.subdir:
+            if self.config.subdir:
                 self._write_strip("popd")
 
     def write_prep_prepend(self):
         """Write out any custom supplied commands at the start of the %prep section."""
-        if self.prep_prepend:
+        if self.config.prep_prepend:
             self._write_strip("## prep_prepend content")
-            for line in self.prep_prepend:
+            for line in self.config.prep_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## prep_prepend end")
 
     def write_build_prepend(self):
         """Write out any custom supplied commands at the start of the %build section."""
-        if self.build_prepend:
+        if self.config.build_prepend:
             self._write_strip("## build_prepend content")
-            for line in self.build_prepend:
+            for line in self.config.build_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## build_prepend end")
 
     def write_build_append(self):
         """Write out any custom supplied commands at the end of the %build section."""
-        if self.build_append:
+        if self.config.build_append:
             self._write_strip("## build_append content")
-            for line in self.build_append:
+            for line in self.config.build_append:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## build_append end")
 
     def write_install_prepend(self):
         """Write out any custom supplied commands at the start of the %install section."""
-        if self.install_prepend:
+        if self.config.install_prepend:
             self._write_strip("## install_prepend content")
-            for line in self.install_prepend:
+            for line in self.config.install_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## install_prepend end")
 
     def write_install_append(self):
         """Write out any custom supplied commands at the very end of the %install section."""
-        if self.install_append:
+        if self.config.install_append:
             self._write_strip("## install_append content")
-            for line in self.install_append:
+            for line in self.config.install_append:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## install_append end")
 
@@ -954,11 +930,11 @@ class Specfile(object):
 
     def write_service_restart(self):
         """Enable configured units to be restarted with clr-service-restart."""
-        if self.service_restart:
+        if self.config.service_restart:
             self._write_strip("## service_restart content")
             installdir = "%{buildroot}/usr/share/clr-service-restart"
             self._write_strip("mkdir -p {}".format(installdir))
-            for unit in self.service_restart:
+            for unit in self.config.service_restart:
                 basename = os.path.basename(unit)
                 self._write_strip("ln -s {} {}".format(unit, os.path.join(installdir, basename)))
             self._write_strip("## service_restart end")
@@ -975,7 +951,7 @@ class Specfile(object):
             self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/tmpfiles.d/{1}.conf"
                               .format(self.source_index[self.sources["tmpfile"][0]], self.name))
 
-        for source in self.extra_sources:
+        for source in self.config.extra_sources:
             if len(source) == 1:
                 # Don't automatically install if we don't have install arguments
                 continue
@@ -1001,13 +977,13 @@ class Specfile(object):
 
         self.write_license_files()
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
 
         if self.config.config_opts['32bit']:
             self._write_strip("pushd clr-build32")
-            self._write_strip("%make_install32 {} {}".format(self.extra_make_install,
-                                                             self.extra_make32_install))
+            self._write_strip("%make_install32 {} {}".format(self.config.extra_make_install,
+                                                             self.config.extra_make32_install))
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
             self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
@@ -1018,12 +994,12 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd clr-build-avx512")
-            self._write_strip("%s_avx512 %s || :\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("%s_avx512 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd clr-build-avx2")
-            self._write_strip("%s_avx2 %s || :\n" % (self.install_macro, self.extra_make_install))
+            self._write_strip("%s_avx2 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1032,10 +1008,10 @@ class Specfile(object):
             self._write_strip("popd")
 
         self._write_strip("pushd clr-build")
-        self._write_strip("%s %s\n" % (self.install_macro, self.extra_make_install))
+        self._write_strip("%s %s\n" % (self.config.install_macro, self.config.extra_make_install))
         self._write_strip("popd")
 
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
 
         self.write_find_lang()
@@ -1103,7 +1079,7 @@ class Specfile(object):
 
     def write_configure_pattern(self):
         """Write configure build pattern to spec file."""
-        if self.autoreconf:
+        if self.config.autoreconf:
             # Patches affecting configure.* or Makefile.*, reconf instead
             self.write_configure_ac_pattern()
             return
@@ -1111,19 +1087,19 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self.write_profile_payload("configure")
-        if self.subdir:
-            self._write_strip("pushd {}".format(self.subdir))
+        if self.config.subdir:
+            self._write_strip("pushd {}".format(self.config.subdir))
         self._write_strip("{0}%configure {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
-                                  self.disable_static,
+                                  self.config.disable_static,
                                   self.config.extra_configure,
                                   self.config.extra_configure64))
         self.write_make_line()
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self._write_strip("\n")
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_build_prepend()
             self.write_32bit_exports()
             self._write_strip("%configure {0} {1} {2} "
@@ -1131,7 +1107,7 @@ class Specfile(object):
                               "--build=i686-generic-linux-gnu "
                               "--host=i686-generic-linux-gnu "
                               "--target=i686-clr-linux-gnu"
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure32))
             self.write_make_line(True)
@@ -1139,13 +1115,13 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("unset PKG_CONFIG_PATH")
-            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%configure {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx2))
             self.write_make_line()
@@ -1153,20 +1129,20 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("unset PKG_CONFIG_PATH")
-            self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%configure {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx512))
             self.write_make_line()
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
-            self._write_strip("pushd ../build-openmpi/" + self.subdir)
+            self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
             self._write_strip("module load openmpi")
             self.write_build_prepend()
@@ -1177,7 +1153,7 @@ class Specfile(object):
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("./configure {0} \\\n{1} {2}"
                               .format(self.config.conf_args_openmpi,
-                                      self.disable_static,
+                                      self.config.disable_static,
                                       self.config.extra_configure_openmpi))
             self.write_make_line()
             self._write_strip("module unload openmpi")
@@ -1192,18 +1168,18 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self.write_profile_payload("configure_ac")
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("{0}%reconfigure {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
-                                  self.disable_static,
+                                  self.config.disable_static,
                                   self.config.extra_configure,
                                   self.config.extra_configure64))
         self.write_make_line()
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_build_prepend()
             self.write_32bit_exports()
             self._write_strip("%reconfigure {0} {1} {2} "
@@ -1211,7 +1187,7 @@ class Specfile(object):
                               "--build=i686-generic-linux-gnu "
                               "--host=i686-generic-linux-gnu "
                               "--target=i686-clr-linux-gnu"
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure32))
             self.write_make_line(True)
@@ -1219,13 +1195,13 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("unset PKG_CONFIG_PATH")
-            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%reconfigure {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx2))
             self.write_make_line()
@@ -1233,13 +1209,13 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("unset PKG_CONFIG_PATH")
-            self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%reconfigure {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx512))
             self.write_make_line()
@@ -1255,19 +1231,19 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self.write_profile_payload("make")
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self.write_make_line()
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self._write_strip("\n")
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_32bit_exports()
             self.write_make_line(True)
             self._write_strip("popd")
         if self.config.config_opts['use_avx2']:
-            self._write_strip("pushd ../buildavx2" + self.subdir)
+            self._write_strip("pushd ../buildavx2" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
@@ -1275,7 +1251,7 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("popd")
         if self.config.config_opts['use_avx512']:
-            self._write_strip("pushd ../buildavx512" + self.subdir)
+            self._write_strip("pushd ../buildavx512" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
@@ -1295,13 +1271,13 @@ class Specfile(object):
         self.write_profile_payload("autogen")
         self._write_strip("{0}%autogen {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
-                                  self.disable_static,
+                                  self.config.disable_static,
                                   self.config.extra_configure,
                                   self.config.extra_configure64))
         self.write_make_line()
         self._write_strip("\n")
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_build_prepend()
             self.write_32bit_exports()
             self._write_strip("%autogen {0} {1} {2} "
@@ -1309,33 +1285,33 @@ class Specfile(object):
                               "--build=i686-generic-linux-gnu "
                               "--host=i686-generic-linux-gnu "
                               "--target=i686-clr-linux-gnu"
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure32))
             self.write_make_line(True)
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
-            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=haswell "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=haswell "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=haswell "')
             self._write_strip("%autogen {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx2))
             self.write_make_line()
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
-            self._write_strip("pushd ../buildavx512/" + self.subdir)
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip("%autogen {0} {1} {2} "
-                              .format(self.disable_static,
+                              .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_avx512))
             self.write_make_line()
@@ -1350,8 +1326,8 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("python3 setup.py build  " + self.config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not self.config.config_opts['skip_tests']:
@@ -1359,7 +1335,7 @@ class Specfile(object):
             # Prevent setuptools from hitting the internet
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self.write_build_append()
         self._write_strip("%install")
@@ -1369,10 +1345,10 @@ class Specfile(object):
 
         self.write_license_files()
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
@@ -1384,8 +1360,8 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("python3.6 setup.py build -b py3 " + self.config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not self.config.config_opts['skip_tests']:
@@ -1393,7 +1369,7 @@ class Specfile(object):
             # Prevent setuptools from hitting the internet
             self.write_proxy_exports()
             self._write_strip(self.tests_config)
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self.write_build_append()
         self._write_strip("%install")
@@ -1403,10 +1379,10 @@ class Specfile(object):
 
         self.write_license_files()
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("python3.6 -tt setup.py build -b py3 install --root=%{buildroot} --force")
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
@@ -1515,18 +1491,18 @@ class Specfile(object):
 
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file."""
-        if self.extra_make == "" or self.extra_cmake == " ":
-            self.extra_make = "VERBOSE=1"
+        if self.config.extra_make == "" or self.config.extra_cmake == " ":
+            self.config.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
 
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
-        self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
+        self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
 
         self.write_profile_payload("cmake")
 
@@ -1543,7 +1519,7 @@ class Specfile(object):
             self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
-            self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
+            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1557,7 +1533,7 @@ class Specfile(object):
             self.need_avx512_flags = saved_avx512flags
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip("%cmake {} {}".format(self.cmake_srcdir, self.extra_cmake))
+            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1570,7 +1546,7 @@ class Specfile(object):
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
-                              "{} {} ".format(self.cmake_srcdir, self.extra_cmake))
+                              "{} {} ".format(self.config.cmake_srcdir, self.config.extra_cmake))
             self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
@@ -1594,7 +1570,7 @@ class Specfile(object):
             self._write_strip("module unload openmpi")
             self._write_strip("popd")
 
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
 
         self._write_strip("\n")
@@ -1619,18 +1595,18 @@ class Specfile(object):
         self._write_strip("export LANG=C.UTF-8")
         self.write_variables()
 
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
 
         self._write_strip("%qmake {} {}".format(extra_qmake_args, self.config.extra_configure))
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
 
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
-            self._write_strip("pushd ../buildavx2/" + self.subdir)
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
             self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
             self._write("    QMAKE_LFLAGS+=-march=haswell {} {}\n".format(extra_qmake_args, self.config.extra_configure))
@@ -1688,9 +1664,9 @@ class Specfile(object):
         self.write_install_prepend()
         self.write_license_files()
         self._write_strip("if test -f Makefile.PL; then")
-        self._write_strip("make pure_install PERL_INSTALL_ROOT=%{buildroot} INSTALLDIRS=vendor " + self.extra_make_install)
+        self._write_strip("make pure_install PERL_INSTALL_ROOT=%{buildroot} INSTALLDIRS=vendor " + self.config.extra_make_install)
         self._write_strip("else")
-        self._write_strip("./Build install --installdirs=vendor --destdir=%{buildroot} " + self.extra_make_install)
+        self._write_strip("./Build install --installdirs=vendor --destdir=%{buildroot} " + self.config.extra_make_install)
         self._write_strip("fi")
         self._write_strip("find %{buildroot} -type f -name .packlist -exec rm -f {} ';'")
         self._write_strip("find %{buildroot} -depth -type d -exec rmdir {} 2>/dev/null ';'")
@@ -1711,7 +1687,7 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
-        self._write_strip("scons install " + self.extra_make_install)
+        self._write_strip("scons install " + self.config.extra_make_install)
         self.write_license_files()
 
     def write_golang_pattern(self):
@@ -1721,13 +1697,13 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
-        if self.set_gopath:
+        if self.config.set_gopath:
             self._write_strip("export GOPATH=\"$PWD\"")
-            self._write_strip("go build {}".format(self.extra_make))
+            self._write_strip("go build {}".format(self.config.extra_make))
         else:
             self._write_strip("export GOPROXY=file:///usr/share/goproxy")
             self._write_strip("go mod vendor")
-            self._write_strip("go build -mod=vendor {}".format(self.extra_make))
+            self._write_strip("go build -mod=vendor {}".format(self.config.extra_make))
         self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
@@ -1764,7 +1740,7 @@ class Specfile(object):
         for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
             self.write_build_prepend()
-            self._write_strip("ant -d -v " + self.extra_make)
+            self._write_strip("ant -d -v " + self.config.extra_make)
             self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
@@ -1786,8 +1762,8 @@ class Specfile(object):
         for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
 
-            if self.subdir:
-                self._write_strip("pushd " + self.subdir)
+            if self.config.subdir:
+                self._write_strip("pushd " + self.config.subdir)
 
             self.write_build_prepend()
 
@@ -1799,11 +1775,11 @@ class Specfile(object):
             self._write_strip("gradle --offline dependencies || :")
 
             # Execute the build goal -- but user must provide it in make_args
-            self._write_strip("gradle --offline " + self.extra_make)
+            self._write_strip("gradle --offline " + self.config.extra_make)
 
             self.write_build_append()
 
-            if self.subdir:
+            if self.config.subdir:
                 self._write_strip("popd")
 
         self._write_strip("\n")
@@ -1824,7 +1800,7 @@ class Specfile(object):
         for prefix in self.build_dirs.values():
             self._write_strip("cd ../{}\n".format(prefix))
             self.write_build_prepend()
-            self._write_strip("mvn --offline package " + self.extra_make)
+            self._write_strip("mvn --offline package " + self.config.extra_make)
             self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
@@ -1848,8 +1824,8 @@ class Specfile(object):
         self.write_prep()
         self.write_lang_c(export_epoch=True)
         self.write_variables()
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
                           .format(self.config.extra_configure,
                                   self.config.extra_configure64))
@@ -1859,10 +1835,10 @@ class Specfile(object):
                               'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         if self.config.config_opts['32bit']:
-            self._write_strip("pushd ../build32/" + self.subdir)
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_32bit_exports()
             self._write_strip('meson '
                               '--libdir=lib32 --prefix=/usr --buildtype=plain {0} {1} builddir'
@@ -1878,7 +1854,7 @@ class Specfile(object):
         self.write_install_prepend()
         self.write_license_files()
         if self.config.config_opts['32bit']:
-            self._write_strip('pushd ../build32/' + self.subdir)
+            self._write_strip('pushd ../build32/' + self.config.subdir)
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddir install')
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
@@ -1887,13 +1863,13 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
-        if self.subdir:
-            self._write_strip("pushd " + self.subdir)
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         if self.config.config_opts['use_avx2']:
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx2 install')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
-        if self.subdir:
+        if self.config.subdir:
             self._write_strip("popd")
         self.write_find_lang()
 
@@ -1936,7 +1912,7 @@ class Specfile(object):
     def apply_patches(self):
         """Write patch list to spec file."""
         counter = 1
-        for p in self.patches:
+        for p in self.config.patches:
             name = p.split(None, 1)[0]
             if name == p:
                 options = "-p1"
@@ -1947,10 +1923,10 @@ class Specfile(object):
             counter = counter + 1
 
         # Write version-specific patch commands
-        for version in self.verpatches:
-            if self.verpatches[version]:
+        for version in self.config.verpatches:
+            if self.config.verpatches[version]:
                 self._write("cd ../{}\n".format(self.build_dirs[self.config.versions[version]]))
-            for p in self.verpatches[version]:
+            for p in self.config.verpatches[version]:
                 name = p.split(None, 1)[0]
                 if name == p:
                     options = "-p1"
