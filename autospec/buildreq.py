@@ -612,23 +612,6 @@ def grab_python_requirements(descfile):
         add_requires(clean_python_req(line))
 
 
-def grab_pip_requirements(pkgname):
-    """Determine python requirements for pkgname using pip show."""
-    try:
-        pipeout = subprocess.check_output(['/usr/bin/pip3', 'show', pkgname])
-    except Exception:
-        return
-    lines = pipeout.decode("utf-8").split('\n')
-    for line in lines:
-        words = line.split(" ")
-        if words[0] == "Requires:":
-            for w in words[1:]:
-                w2 = w.replace(",", "")
-                if len(w2) > 2:
-                    print("Suggesting python requirement ", w2)
-                    add_requires(w2)
-
-
 def get_python_build_version_from_classifier(filename):
     """Detect if setup should use distutils3 only.
 
