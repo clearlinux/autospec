@@ -28,7 +28,6 @@ import textwrap
 from collections import OrderedDict
 
 import buildpattern
-import buildreq
 import check
 import license
 import tarball
@@ -394,11 +393,11 @@ class Config(object):
             os.remove("skip_test_suite")
         write_config(config_f, path)
 
-    def create_buildreq_cache(self, path, version):
+    def create_buildreq_cache(self, path, version, buildreqs_cache):
         """Make the buildreq_cache file."""
         content = self.read_conf_file(os.path.join(path, "buildreq_cache"))
         # don't create an empty cache file
-        if len(buildreq.buildreqs_cache) < 1:
+        if len(buildreqs_cache) < 1:
             try:
                 # file was possibly added to git so we should clean it up
                 os.unlink(content)
@@ -406,9 +405,9 @@ class Config(object):
                 pass
             return
         if not content:
-            pkgs = sorted(buildreq.buildreqs_cache)
+            pkgs = sorted(buildreqs_cache)
         else:
-            pkgs = sorted(set(content[1:]).union(buildreq.buildreqs_cache))
+            pkgs = sorted(set(content[1:]).union(buildreqs_cache))
         with open(os.path.join(path, 'buildreq_cache'), "w") as cachefile:
             cachefile.write("\n".join([version] + pkgs))
         self.config_files.add('buildreq_cache')
@@ -604,7 +603,7 @@ class Config(object):
 
         write_out(filename, wrapper.fill(description) + "\n")
 
-    def parse_config_files(self, path, bump, filemanager, version):
+    def parse_config_files(self, path, bump, filemanager, version, requirements):
         """Parse the various configuration files that may exist in the package directory."""
         packages_file = None
 
@@ -701,35 +700,35 @@ class Config(object):
         content = self.read_conf_file(os.path.join(path, "buildreq_ban"))
         for banned in content:
             print("Banning build requirement: %s." % banned)
-            buildreq.banned_buildreqs.add(banned)
-            buildreq.buildreqs.discard(banned)
-            buildreq.buildreqs_cache.discard(banned)
+            requirements.banned_buildreqs.add(banned)
+            requirements.buildreqs.discard(banned)
+            requirements.buildreqs_cache.discard(banned)
 
         content = self.read_conf_file(os.path.join(path, "pkgconfig_ban"))
         for banned in content:
             banned = "pkgconfig(%s)" % banned
             print("Banning build requirement: %s." % banned)
-            buildreq.banned_buildreqs.add(banned)
-            buildreq.buildreqs.discard(banned)
-            buildreq.buildreqs_cache.discard(banned)
+            requirements.banned_buildreqs.add(banned)
+            requirements.buildreqs.discard(banned)
+            requirements.buildreqs_cache.discard(banned)
 
         content = self.read_conf_file(os.path.join(path, "requires_ban"))
         for banned in content:
             print("Banning runtime requirement: %s." % banned)
-            buildreq.banned_requires.add(banned)
-            buildreq.requires.discard(banned)
+            requirements.banned_requires.add(banned)
+            requirements.requires.discard(banned)
 
         content = self.read_conf_file(os.path.join(path, "buildreq_add"))
         for extra in content:
             print("Adding additional build requirement: %s." % extra)
-            buildreq.add_buildreq(extra)
+            requirements.add_buildreq(extra)
 
         cache_file = os.path.join(path, "buildreq_cache")
         content = self.read_conf_file(cache_file)
         if content and content[0] == version:
             for extra in content[1:]:
                 print("Adding additional build (cache) requirement: %s." % extra)
-                buildreq.add_buildreq(extra)
+                requirements.add_buildreq(extra)
         else:
             try:
                 os.unlink(cache_file)
@@ -742,12 +741,12 @@ class Config(object):
         for extra in content:
             extra = "pkgconfig(%s)" % extra
             print("Adding additional build requirement: %s." % extra)
-            buildreq.add_buildreq(extra)
+            requirements.add_buildreq(extra)
 
         content = self.read_conf_file(os.path.join(path, "requires_add"))
         for extra in content:
             print("Adding additional runtime requirement: %s." % extra)
-            buildreq.add_requires(extra, self.os_packages, override=True)
+            requirements.add_requires(extra, self.os_packages, override=True)
 
         content = self.read_conf_file(os.path.join(path, "excludes"))
         for exclude in content:
@@ -898,20 +897,20 @@ class Config(object):
 
         if self.config_opts['use_clang']:
             self.config_opts['funroll-loops'] = False
-            buildreq.add_buildreq("llvm")
+            requirements.add_buildreq("llvm")
 
         if self.config_opts['32bit']:
-            buildreq.add_buildreq("glibc-libc32")
-            buildreq.add_buildreq("glibc-dev32")
-            buildreq.add_buildreq("gcc-dev32")
-            buildreq.add_buildreq("gcc-libgcc32")
-            buildreq.add_buildreq("gcc-libstdc++32")
+            requirements.add_buildreq("glibc-libc32")
+            requirements.add_buildreq("glibc-dev32")
+            requirements.add_buildreq("gcc-dev32")
+            requirements.add_buildreq("gcc-libgcc32")
+            requirements.add_buildreq("gcc-libstdc++32")
 
         if self.config_opts['openmpi']:
-            buildreq.add_buildreq("openmpi-dev")
-            buildreq.add_buildreq("modules")
+            requirements.add_buildreq("openmpi-dev")
+            requirements.add_buildreq("modules")
             # MPI testsuites generally require "openssh"
-            buildreq.add_buildreq("openssh")
+            requirements.add_buildreq("openssh")
 
         self.prep_prepend = self.read_script_file(os.path.join(path, "prep_prepend"))
         if os.path.isfile(os.path.join(path, "prep_append")):

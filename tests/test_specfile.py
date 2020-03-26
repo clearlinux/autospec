@@ -1,5 +1,6 @@
 import unittest
 import unittest.mock
+import buildreq
 import config
 import specfiles
 
@@ -15,7 +16,8 @@ class TestSpecfileWrite(unittest.TestCase):
         conf = config.Config()
         conf.config_opts['dev_requires_extras'] = False
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf)
+        reqs = buildreq.Requirements(url)
+        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf, reqs)
 
         def mock_write(string):
             self.WRITES.append(string)
@@ -100,8 +102,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["autostart"] = ["autostart"]
         self.specfile.packages["bin"] = []
         self.specfile.packages["lib"] = ["package.so"]
-        self.specfile.requires.add("pkg1")
-        self.specfile.requires.add("pkg2")
+        self.specfile.requirements.requires.add("pkg1")
+        self.specfile.requirements.requires.add("pkg2")
         self.specfile.config.config_opts['no_autostart'] = True
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-bin = %{version}-%{release}\n",
@@ -122,8 +124,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["ignore"] = []
         self.specfile.packages["dev"] = []
         self.specfile.packages["active-units"] = []
-        self.specfile.requires.add("pkg1")
-        self.specfile.requires.add("pkg2")
+        self.specfile.requirements.requires.add("pkg1")
+        self.specfile.requirements.requires.add("pkg2")
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-autostart = %{version}-%{release}\n",
                   "Requires: pkg-bin = %{version}-%{release}\n",
@@ -143,7 +145,7 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_buildreq with unsorted list of build requirements.
         """
-        self.specfile.buildreqs = ["python", "ruby", "go"]
+        self.specfile.requirements.buildreqs = ["python", "ruby", "go"]
         self.specfile.write_buildreq()
         expect = ["BuildRequires : go\n",
                   "BuildRequires : python\n",
@@ -195,8 +197,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["python"] = ["pyfile1", "pyfile2"]
         self.specfile.packages["dev"] = ["dev1", "dev2"]
         self.specfile.packages["pack"] = ["packf1"]
-        self.specfile.requires = ["pep8", "pylint", "pycurl"]
-        self.specfile.buildreqs = ["pep8", "pycurl"]
+        self.specfile.requirements.requires = ["pep8", "pylint", "pycurl"]
+        self.specfile.requirements.buildreqs = ["pep8", "pycurl"]
         self.specfile.write_files_header()
         expect = ["\n%package data\n",
                   "Summary: data components for the pkg package.\n",

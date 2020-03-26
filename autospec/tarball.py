@@ -26,7 +26,6 @@ from collections import OrderedDict
 
 import build
 import buildpattern
-import buildreq
 import download
 from util import call, do_regex, get_sha1sum, print_fatal, write_out
 
@@ -358,12 +357,6 @@ def name_and_version(name_arg, version_arg, filemanager, config):
             version = convert_version(version, name)
             if not giturl:
                 giturl = "https://github.com/" + match.group(1).strip() + "/" + repo + ".git"
-
-    if "gnome.org" in url:
-        buildreq.add_buildreq("buildreq-gnome")
-
-    if "kde.org" in url or "https://github.com/KDE" in url:
-        buildreq.add_buildreq("buildreq-kde")
 
     # SQLite tarballs use 7 digit versions, e.g 3290000 = 3.29.0, 3081002 = 3.8.10.2
     if "sqlite.org" in url:

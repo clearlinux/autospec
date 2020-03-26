@@ -25,7 +25,6 @@ import time
 import types
 from collections import OrderedDict
 
-import buildreq
 import tarball
 from util import _file_write
 from util import open_auto
@@ -34,13 +33,14 @@ from util import open_auto
 class Specfile(object):
     """Holds data and methods needed to write the spec file."""
 
-    def __init__(self, url, version, name, release, config):
+    def __init__(self, url, version, name, release, config, requirements):
         """Add default information for specfile template."""
         self.url = url
         self.version = version
         self.name = name
         self.release = release
         self.config = config
+        self.requirements = requirements
         self.specfile = None
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
@@ -49,10 +49,6 @@ class Specfile(object):
         self.licenses = []
         self.license_files = []
         self.packages = OrderedDict()
-        self.requires = set()
-        self.buildreqs = []
-        self.pypi_provides = None
-        self.pypi_requires = []
         self.default_desc = ""
         self.locales = []
         self.default_pattern = ""
@@ -70,7 +66,8 @@ class Specfile(object):
         self.custom_extras = {}
         self.keyid = ""
         self.email = ""
-        self.cargo_bin = False
+        self.extra_cmake = config.extra_cmake + " " + " ".join(requirements.extra_cmake)
+        self.extra_cmake_openmpi = config.extra_cmake_openmpi + " " + " ".join(requirements.extra_cmake_openmpi)
 
     def write_spec(self, path):
         """Write spec file."""
@@ -186,16 +183,16 @@ class Specfile(object):
                        "staticdev32"]:
                 continue
             # honor requires_ban for manual overrides
-            if "{}-{}".format(self.name, pkg) in buildreq.banned_requires:
+            if "{}-{}".format(self.name, pkg) in self.requirements.banned_requires:
                 continue
             self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, pkg))
 
-        for pkg in sorted(self.requires):
+        for pkg in sorted(self.requirements.requires):
             self._write("Requires: {}\n".format(pkg))
 
     def write_buildreq(self):
         """Write build requirements."""
-        for req in sorted(self.buildreqs):
+        for req in sorted(self.requirements.buildreqs):
             self._write("BuildRequires : {}\n".format(req))
 
     def write_strip_command(self):
@@ -297,9 +294,9 @@ class Specfile(object):
 
             if pkg == "python3":
                 self._write("Requires: python3-core\n")
-                if self.pypi_provides:
-                    self._write(f"Provides: pypi({self.pypi_provides})\n")
-                for req in self.pypi_requires:
+                if self.requirements.pypi_provides:
+                    self._write(f"Provides: pypi({self.requirements.pypi_provides})\n")
+                for req in self.requirements.pypi_requires:
                     self._write(f"Requires: pypi({req})\n")
 
             if pkg == "perl":
@@ -411,7 +408,7 @@ class Specfile(object):
                        '-DCMAKE_INSTALL_LIBDIR=$MPI_LIB -DCMAKE_INSTALL_INCLUDEDIR=$MPI_INCLUDE -DLIB_INSTALL_DIR=$MPI_LIB \\\n' \
                        '-DBUILD_SHARED_LIBS:BOOL=ON -DLIB_SUFFIX=64 \\\n' \
                        '-DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \\\n'
-        self._write_strip("{} {} {}".format(cmake_string, self.config.cmake_srcdir, self.config.extra_cmake_openmpi))
+        self._write_strip("{} {} {}".format(cmake_string, self.config.cmake_srcdir, self.extra_cmake_openmpi))
 
     def write_prep(self, ruby_pattern=False):
         """Write prep section to spec file."""
@@ -1491,7 +1488,7 @@ class Specfile(object):
 
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file."""
-        if self.config.extra_make == "" or self.config.extra_cmake == " ":
+        if self.config.extra_make == "" or self.extra_cmake == " ":
             self.config.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
@@ -1502,7 +1499,7 @@ class Specfile(object):
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
-        self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
+        self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
 
         self.write_profile_payload("cmake")
 
@@ -1519,7 +1516,7 @@ class Specfile(object):
             self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
-            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
+            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1533,7 +1530,7 @@ class Specfile(object):
             self.need_avx512_flags = saved_avx512flags
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.config.extra_cmake))
+            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1546,7 +1543,7 @@ class Specfile(object):
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
-                              "{} {} ".format(self.config.cmake_srcdir, self.config.extra_cmake))
+                              "{} {} ".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
@@ -1636,7 +1633,7 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
-        if self.cargo_bin:
+        if self.requirements.cargo_bin:
             self._write_strip("cargo install --frozen --root /")
         self._write_strip("cargo clean")
         self._write_strip("install -d -p %{buildroot}" + src_dir)

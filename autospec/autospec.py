@@ -90,7 +90,6 @@ def load_specfile(conf, specfile):
     tarball.load_specfile(specfile)
     specdescription.load_specfile(specfile, conf.custom_desc, conf.custom_summ)
     license.load_specfile(specfile)
-    buildreq.load_specfile(specfile)
     buildpattern.load_specfile(specfile)
     check.load_specfile(specfile)
 
@@ -267,7 +266,9 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     conf.setup_patterns()
     conf.config_file = args.config
-    conf.parse_config_files(build.download_path, args.bump, filemanager, tarball.version)
+    requirements = buildreq.Requirements(tarball.url)
+    requirements.set_build_req()
+    conf.parse_config_files(build.download_path, args.bump, filemanager, tarball.version, requirements)
     conf.setup_patterns(conf.failed_pattern_dir)
     conf.parse_existing_spec(build.download_path, tarball.name)
 
@@ -275,21 +276,25 @@ def package(args, url, name, archives, workingdir, infile_dict):
         write_prep(conf, workingdir)
         exit(0)
 
-    buildreq.set_build_req()
-    buildreq.scan_for_configure(_dir, tarball.name, build.download_path, conf)
+    requirements.scan_for_configure(_dir, tarball.name, build.download_path, conf)
     specdescription.scan_for_description(tarball.name, _dir, conf.license_translations, conf.license_blacklist)
     # Start one directory higher so we scan *all* versions for licenses
     license.scan_for_licenses(os.path.dirname(_dir), conf)
     commitmessage.scan_for_changes(build.download_path, _dir, conf.transforms)
     add_sources(build.download_path, archives)
-    check.scan_for_tests(_dir, conf)
+    check.scan_for_tests(_dir, conf, requirements)
 
     #
     # Now, we have enough to write out a specfile, and try to build it.
     # We will then analyze the build result and learn information until the
     # package builds
     #
-    specfile = specfiles.Specfile(tarball.url, tarball.version, tarball.name, tarball.release, conf)
+    specfile = specfiles.Specfile(tarball.url,
+                                  tarball.version,
+                                  tarball.name,
+                                  tarball.release,
+                                  conf,
+                                  requirements)
     filemanager.load_specfile(specfile)
     load_specfile(conf, specfile)
 
@@ -308,7 +313,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     specfile.write_spec(build.download_path)
     while 1:
-        build.package(filemanager, args.mock_config, args.mock_opts, conf, args.cleanup)
+        build.package(filemanager, args.mock_config, args.mock_opts, conf, requirements, args.cleanup)
         filemanager.load_specfile(specfile)
         specfile.write_spec(build.download_path)
         filemanager.newfiles_printed = 0
@@ -329,7 +334,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     check.check_regression(build.download_path, conf.config_opts['skip_tests'])
 
     if build.success == 0:
-        conf.create_buildreq_cache(build.download_path, tarball.version)
+        conf.create_buildreq_cache(build.download_path, tarball.version, requirements.buildreqs_cache)
         print_fatal("Build failed, aborting")
         sys.exit(1)
     elif os.path.isfile("README.clear"):
@@ -353,7 +358,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     logcheck(build.download_path)
 
     commitmessage.guess_commit_message(pkg_integrity.IMPORTED, conf)
-    conf.create_buildreq_cache(build.download_path, tarball.version)
+    conf.create_buildreq_cache(build.download_path, tarball.version, requirements.buildreqs_cache)
 
     if args.git:
         git.commit_to_git(build.download_path, conf)
