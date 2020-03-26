@@ -257,9 +257,10 @@ def parse_build_results(filename, returncode, filemanager, config):
             print(line)
             returncode = 99
 
-        if "File not found: /builddir/build/BUILDROOT/" in line:
-            left = "File not found: /builddir/build/BUILDROOT/%s-%s-%s.x86_64/" % (tarball.name, tarball.version, tarball.release)
-            missing_file = "/" + line.split(left)[1].strip()
+        nvr = f"{tarball.name}-{tarball.version}-{tarball.release}"
+        match = f"File not found: /builddir/build/BUILDROOT/{nvr}.x86_64/"
+        if match in line:
+            missing_file = "/" + line.split(match)[1].strip()
             filemanager.remove_file(missing_file)
 
         if line.startswith("Executing(%clean") and returncode == 0:
