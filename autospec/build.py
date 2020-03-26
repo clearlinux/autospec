@@ -23,7 +23,6 @@ import os
 import re
 import shutil
 
-import buildreq
 import tarball
 import util
 
@@ -44,22 +43,22 @@ def setup_workingdir(workingdir):
     download_path = os.path.join(base_path, tarball.name)
 
 
-def simple_pattern_pkgconfig(line, pattern, pkgconfig, conf32):
+def simple_pattern_pkgconfig(line, pattern, pkgconfig, conf32, requirements):
     """Check for pkgconfig patterns and restart build as needed."""
     global must_restart
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart += buildreq.add_pkgconfig_buildreq(pkgconfig, conf32, cache=True)
+        must_restart += requirements.add_pkgconfig_buildreq(pkgconfig, conf32, cache=True)
 
 
-def simple_pattern(line, pattern, req):
+def simple_pattern(line, pattern, req, requirements):
     """Check for simple patterns and restart the build as needed."""
     global must_restart
     pat = re.compile(pattern)
     match = pat.search(line)
     if match:
-        must_restart += buildreq.add_buildreq(req, cache=True)
+        must_restart += requirements.add_buildreq(req, cache=True)
 
 
 def cleanup_req(s: str) -> str:
@@ -96,7 +95,7 @@ def cleanup_req(s: str) -> str:
     return s
 
 
-def failed_pattern(line, config, pattern, verbose, buildtool=None):
+def failed_pattern(line, config, requirements, pattern, verbose, buildtool=None):
     """Check against failed patterns to restart build as needed."""
     global must_restart
     global warned_about
@@ -116,29 +115,29 @@ def failed_pattern(line, config, pattern, verbose, buildtool=None):
         if not buildtool:
             req = config.failed_commands[s]
             if req:
-                must_restart += buildreq.add_buildreq(req, cache=True)
+                must_restart += requirements.add_buildreq(req, cache=True)
         elif buildtool == 'pkgconfig':
-            must_restart += buildreq.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
+            must_restart += requirements.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
         elif buildtool == 'R':
-            if buildreq.add_buildreq("R-" + s, cache=True) > 0:
+            if requirements.add_buildreq("R-" + s, cache=True) > 0:
                 must_restart += 1
-                buildreq.add_requires("R-" + s, config.os_packages)
+                requirements.add_requires("R-" + s, config.os_packages)
         elif buildtool == 'perl':
             s = s.replace('inc::', '')
-            must_restart += buildreq.add_buildreq('perl(%s)' % s, cache=True)
+            must_restart += requirements.add_buildreq('perl(%s)' % s, cache=True)
         elif buildtool == 'pypi':
             s = util.translate(s)
             if not s:
                 return
-            must_restart += buildreq.add_buildreq(util.translate('%s-python' % s), cache=True)
+            must_restart += requirements.add_buildreq(util.translate('%s-python' % s), cache=True)
         elif buildtool == 'ruby':
             if s in config.gems:
-                must_restart += buildreq.add_buildreq(config.gems[s], cache=True)
+                must_restart += requirements.add_buildreq(config.gems[s], cache=True)
             else:
-                must_restart += buildreq.add_buildreq('rubygem-%s' % s, cache=True)
+                must_restart += requirements.add_buildreq('rubygem-%s' % s, cache=True)
         elif buildtool == 'ruby table':
             if s in config.gems:
-                must_restart += buildreq.add_buildreq(config.gems[s], cache=True)
+                must_restart += requirements.add_buildreq(config.gems[s], cache=True)
             else:
                 print("Unknown ruby gem match", s)
         elif buildtool == 'maven' or buildtool == 'gradle':
@@ -149,10 +148,10 @@ def failed_pattern(line, config, pattern, verbose, buildtool=None):
                 # Hyphens are disallowed for version strings, so use dots instead
                 ver = match.group(2).replace('-', '.')
                 mvn_provide = f'mvn({name}) = {ver}'
-                must_restart += buildreq.add_buildreq(mvn_provide, cache=True)
+                must_restart += requirements.add_buildreq(mvn_provide, cache=True)
             elif s in config.maven_jars:
                 # Overrides for dependencies with custom grouping
-                must_restart += buildreq.add_buildreq(config.maven_jars[s], cache=True)
+                must_restart += requirements.add_buildreq(config.maven_jars[s], cache=True)
             elif group_count == 3:
                 org = match.group(1)
                 name = match.group(2)
@@ -161,13 +160,13 @@ def failed_pattern(line, config, pattern, verbose, buildtool=None):
                     mvn_provide = f'mvn({org}:{name}:pom) = {ver}'
                 else:
                     mvn_provide = f'mvn({org}:{name}:jar) = {ver}'
-                must_restart += buildreq.add_buildreq(mvn_provide, cache=True)
+                must_restart += requirements.add_buildreq(mvn_provide, cache=True)
             else:
                 # Fallback to mvn-ARTIFACTID package name
-                must_restart += buildreq.add_buildreq('mvn-%s' % s, cache=True)
+                must_restart += requirements.add_buildreq('mvn-%s' % s, cache=True)
         elif buildtool == 'catkin':
-            must_restart += buildreq.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
-            must_restart += buildreq.add_buildreq(s, cache=True)
+            must_restart += requirements.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
+            must_restart += requirements.add_buildreq(s, cache=True)
 
     except Exception:
         if s not in warned_about and s[:2] != '--':
@@ -206,11 +205,11 @@ def check_for_warning_pattern(line):
             util.print_warning("Build log contains: {}".format(pat))
 
 
-def parse_build_results(filename, returncode, filemanager, config):
+def parse_build_results(filename, returncode, filemanager, config, requirements):
     """Handle build log contents."""
     global must_restart
     global success
-    buildreq.verbose = 1
+    requirements.verbose = 1
     must_restart = 0
     infiles = 0
 
@@ -221,13 +220,13 @@ def parse_build_results(filename, returncode, filemanager, config):
 
     for line in loglines:
         for pat in config.pkgconfig_pats:
-            simple_pattern_pkgconfig(line, *pat, config.config_opts.get('32bit'))
+            simple_pattern_pkgconfig(line, *pat, config.config_opts.get('32bit'), requirements)
 
         for pat in config.simple_pats:
-            simple_pattern(line, *pat)
+            simple_pattern(line, *pat, requirements)
 
         for pat in config.failed_pats:
-            failed_pattern(line, config, *pat)
+            failed_pattern(line, config, requirements, *pat)
 
         check_for_warning_pattern(line)
 
@@ -277,7 +276,7 @@ def get_mock_cmd():
     return 'sudo /usr/bin/mock'
 
 
-def package(filemanager, mockconfig, mockopts, config, cleanup=False):
+def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=False):
     """Run main package build routine."""
     global round
     global uniqueext
@@ -343,7 +342,7 @@ def package(filemanager, mockconfig, mockopts, config, cleanup=False):
 
     is_clean = parse_buildroot_log(download_path + "/results/root.log", ret)
     if is_clean:
-        parse_build_results(download_path + "/results/build.log", ret, filemanager, config)
+        parse_build_results(download_path + "/results/build.log", ret, filemanager, config, requirements)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
             exit(1)

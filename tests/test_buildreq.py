@@ -10,116 +10,105 @@ import config
 
 class TestBuildreq(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        """
-        Class setup method to configure necessary modules
-        """
-        buildreq.banned_buildreqs.add('bannedreq')
-
     def setUp(self):
         """
         Test setup method to reset the buildreq module
         """
-        buildreq.banned_requires = set()
-        buildreq.buildreqs = set()
-        buildreq.requires = set()
-        buildreq.verbose = False
-        buildreq.cargo_bin = False
-        buildreq.buildpattern.pattern_strength = 0
+        self.reqs = buildreq.Requirements("")
+        self.reqs.banned_buildreqs.add('bannedreq')
 
     def test_add_buildreq(self):
         """
         Test add_buildreq with unbanned new req. Follow up by asserting that
         trying to add the same req a second time results in a False return.
         """
-        self.assertTrue(buildreq.add_buildreq('testreq'))
-        self.assertIn('testreq', buildreq.buildreqs)
-        self.assertFalse(buildreq.add_buildreq('testreq'))
+        self.assertTrue(self.reqs.add_buildreq('testreq'))
+        self.assertIn('testreq', self.reqs.buildreqs)
+        self.assertFalse(self.reqs.add_buildreq('testreq'))
 
     def test_add_buildreq_banned(self):
         """
         Test add_buildreq with banned new req
         """
-        self.assertFalse(buildreq.add_buildreq('bannedreq'))
-        self.assertNotIn('bannedreq', buildreq.buildreqs)
+        self.assertFalse(self.reqs.add_buildreq('bannedreq'))
+        self.assertNotIn('bannedreq', self.reqs.buildreqs)
 
     def test_add_requires(self):
         """
         Test add_requires with unbanned new req already present in
         buildreqs but not yet present in requires
         """
-        buildreq.add_buildreq('testreq')
-        self.assertTrue(buildreq.add_requires('testreq', ['testreq']))
-        self.assertIn('testreq', buildreq.requires)
+        self.reqs.add_buildreq('testreq')
+        self.assertTrue(self.reqs.add_requires('testreq', ['testreq']))
+        self.assertIn('testreq', self.reqs.requires)
 
     def test_add_requires_not_in_buildreqs(self):
         """
         Test add_requires with unbanned new req not present in buildreqs.
         """
-        self.assertFalse(buildreq.add_requires('testreq', []))
-        self.assertNotIn('testreq', buildreq.requires)
+        self.assertFalse(self.reqs.add_requires('testreq', []))
+        self.assertNotIn('testreq', self.reqs.requires)
 
     def test_add_pkgconfig_buildreq(self):
         """
         Test add_pkgconfig_buildreq with config_opts['32bit'] set to False
         """
-        self.assertTrue(buildreq.add_pkgconfig_buildreq('testreq', False))
-        self.assertIn('pkgconfig(testreq)', buildreq.buildreqs)
+        self.assertTrue(self.reqs.add_pkgconfig_buildreq('testreq', False))
+        self.assertIn('pkgconfig(testreq)', self.reqs.buildreqs)
 
     def test_add_pkgconfig_buildreq_32bit(self):
         """
         Test add_pkgconfig_buildreq with config_opts['32bit'] set to True
         """
-        self.assertTrue(buildreq.add_pkgconfig_buildreq('testreq', True))
-        self.assertIn('pkgconfig(testreq)', buildreq.buildreqs)
-        self.assertIn('pkgconfig(32testreq)', buildreq.buildreqs)
+        self.assertTrue(self.reqs.add_pkgconfig_buildreq('testreq', True))
+        self.assertIn('pkgconfig(testreq)', self.reqs.buildreqs)
+        self.assertIn('pkgconfig(32testreq)', self.reqs.buildreqs)
 
     def test_configure_ac_line(self):
         """
         Test configure_ac_line with standard pattern
         """
-        buildreq.configure_ac_line('AC_CHECK_FUNC\([tgetent])', False)
-        self.assertIn('ncurses-devel', buildreq.buildreqs)
+        self.reqs.configure_ac_line('AC_CHECK_FUNC\([tgetent])', False)
+        self.assertIn('ncurses-devel', self.reqs.buildreqs)
 
     def test_configure_ac_line_comment(self):
         """
         Test configure_ac_line with commented line
         """
-        buildreq.configure_ac_line('# AC_CHECK_FUNC\([tgetent])', False)
-        self.assertEqual(buildreq.buildreqs, set())
+        self.reqs.configure_ac_line('# AC_CHECK_FUNC\([tgetent])', False)
+        self.assertEqual(self.reqs.buildreqs, set())
 
     def test_configure_ac_line_pkg_check_modules(self):
         """
         Test the somewhat complicated logic of configure_ac_line check for the
         PKG_CHECK_MODULES\((.*?)\) line.
         """
-        buildreq.configure_ac_line(
+        self.reqs.configure_ac_line(
             'PKG_CHECK_MODULES(prefix, '
             '[module > 2 module2 < 2], '
             'action-if-found, action-if-not-found)', False)
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(module)', 'pkgconfig(module2)']))
 
     def test_configure_ac_line_xdt_check_package(self):
         """
         Test configure_ac_line for the XFCE version of PKG_CHECK_MODULES
         """
-        buildreq.configure_ac_line(
+        self.reqs.configure_ac_line(
             'XDT_CHECK_PACKAGE(prefix, '
             '[module = 2 module2 > 9], '
             'action-if-found, action-if-not-found)', False)
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(module)', 'pkgconfig(module2)']))
 
     def test_configure_ac_line_pkg_check_exists(self):
         """
         Test configure_ac_line for the PKG_CHECK_EXISTS macro
         """
-        buildreq.configure_ac_line('PKG_CHECK_EXISTS([module1 > 1 module2], '
+        self.reqs.configure_ac_line('PKG_CHECK_EXISTS([module1 > 1 module2], '
                                    'action-if-found, '
                                    'action-if-not-found)', False)
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(module1)', 'pkgconfig(module2)']))
 
     def test_parse_configure_ac(self):
@@ -127,6 +116,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_configure_ac with changing () depths and package
         requirements
         """
+        buildreq.buildpattern.pattern_strength = 0
         open_name = 'buildreq.util.open_auto'
         content = 'AC_CHECK_FUNC([tgetent])\n'                   \
                   'XDT_CHECK_PACKAGE(prefix, '                   \
@@ -139,10 +129,10 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_configure_ac(os.path.join(tmpd, 'fname'), False)
+            self.reqs.parse_configure_ac(os.path.join(tmpd, 'fname'), False)
 
         self.assertEqual(buildreq.buildpattern.default_pattern, 'configure_ac')
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['gettext',
                               'perl(XML::Parser)',
                               'pkgconfig(module2)',
@@ -200,15 +190,16 @@ class TestBuildreq(unittest.TestCase):
         open_name = 'buildreq.util.open_auto'
         content = 'does not matter, let us mock'
         m_open = mock_open(read_data=content)
+        buildreq.buildpattern.pattern_strength = 0
         with patch(open_name, m_open, create=True):
-            buildreq.parse_cargo_toml('filename', ['dep1', 'dep2', 'dep3'])
+            self.reqs.parse_cargo_toml('filename', ['dep1', 'dep2', 'dep3'])
 
         buildreq.os.path.exists = exists_backup
         buildreq.toml.loads = loads_backup
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['rustc', 'dep1', 'dep2', 'dep3']))
-        self.assertTrue(buildreq.cargo_bin)
+        self.assertTrue(self.reqs.cargo_bin)
         self.assertEqual(buildreq.buildpattern.default_pattern, 'cargo')
 
     def test_set_build_req_maven(self):
@@ -218,8 +209,8 @@ class TestBuildreq(unittest.TestCase):
         case the overall package list changes in the future.
         """
         buildreq.buildpattern.default_pattern = 'maven'
-        buildreq.set_build_req()
-        self.assertIn('apache-maven', buildreq.buildreqs)
+        self.reqs.set_build_req()
+        self.assertIn('apache-maven', self.reqs.buildreqs)
 
     def test_set_build_req_ruby(self):
         """
@@ -228,8 +219,8 @@ class TestBuildreq(unittest.TestCase):
         case the overall package list changes in the future.
         """
         buildreq.buildpattern.default_pattern = 'ruby'
-        buildreq.set_build_req()
-        self.assertIn('ruby', buildreq.buildreqs)
+        self.reqs.set_build_req()
+        self.assertIn('ruby', self.reqs.buildreqs)
 
     def test_set_build_req_cargo(self):
         """
@@ -238,8 +229,8 @@ class TestBuildreq(unittest.TestCase):
         case the overall package list changes in the future.
         """
         buildreq.buildpattern.default_pattern = 'cargo'
-        buildreq.set_build_req()
-        self.assertIn('rustc', buildreq.buildreqs)
+        self.reqs.set_build_req()
+        self.assertIn('rustc', self.reqs.buildreqs)
 
     def test_rakefile(self):
         """
@@ -251,9 +242,9 @@ class TestBuildreq(unittest.TestCase):
         content = "line1\nrequire 'bundler/gem_tasks'\nline3\nrequire 'nope'"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.rakefile('filename', conf.gems)
+            self.reqs.rakefile('filename', conf.gems)
 
-        self.assertEqual(buildreq.buildreqs, set(['rubygem-rubygems-tasks']))
+        self.assertEqual(self.reqs.buildreqs, set(['rubygem-rubygems-tasks']))
 
     def test_clean_python_req(self):
         """
@@ -282,32 +273,32 @@ class TestBuildreq(unittest.TestCase):
         Test grab_python_requirements with a reasonable requirements file
         """
         # buildreqs must include the requires also
-        buildreq.buildreqs = set(['req1', 'req2', 'req7'])
+        self.reqs.buildreqs = set(['req1', 'req2', 'req7'])
         open_name = 'buildreq.util.open_auto'
         content = 'req1 <= 1.2.3\n' \
                   'req2 >= 1.55\n'  \
                   'req7 == 3.3.3\n'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
+            self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(buildreq.requires, set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req7']))
 
     def test_grab_python_requirements_strange_file(self):
         """
         Test grab_python_requirements with a poorly written file
         """
         # buildreqs must include the requires also
-        buildreq.buildreqs = set(['req1', 'req2', 'req7'])
+        self.reqs.buildreqs = set(['req1', 'req2', 'req7'])
         open_name = 'buildreq.util.open_auto'
         content = '    req1 <= 1.2.3\n   ' \
                   'req2    >= 1.55   \n'   \
                   '   req7 == 3.3.3\n    '
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
+            self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(buildreq.requires, set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req7']))
 
     def test_add_setup_py_requires(self):
         """
@@ -319,10 +310,10 @@ class TestBuildreq(unittest.TestCase):
                   "setup_requires=['req2']"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
-        self.assertEqual(buildreq.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(buildreq.requires, set(['req1']))
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires, set(['req1']))
 
     def test_add_setup_py_requires_multiline(self):
         """
@@ -334,10 +325,10 @@ class TestBuildreq(unittest.TestCase):
                   "'req3']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(buildreq.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(buildreq.requires, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req3']))
 
     def test_add_setup_py_requires_multiline_formatted(self):
         """
@@ -352,10 +343,10 @@ class TestBuildreq(unittest.TestCase):
                   "]\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(buildreq.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(buildreq.requires, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req3']))
 
     def test_add_setup_py_requires_multiline_variable(self):
         """
@@ -370,10 +361,10 @@ class TestBuildreq(unittest.TestCase):
                   "]\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
-        self.assertEqual(buildreq.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(buildreq.requires, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2']))
 
     def test_add_setup_py_requires_variable(self):
         """
@@ -383,10 +374,10 @@ class TestBuildreq(unittest.TestCase):
         content = "install_requires=[reqname, 'req1', 'req2']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
-        self.assertEqual(buildreq.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(buildreq.requires, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires, set(['req1', 'req2']))
 
     def test_add_setup_py_requires_single_variable(self):
         """
@@ -396,10 +387,10 @@ class TestBuildreq(unittest.TestCase):
         content = "install_requires=reqname"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            buildreq.add_setup_py_requires('filename', [])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(buildreq.buildreqs, set())
-        self.assertEqual(buildreq.requires, set())
+        self.assertEqual(self.reqs.buildreqs, set())
+        self.assertEqual(self.reqs.requires, set())
 
     def test_setup_py3_version_classifier(self):
         """
@@ -432,9 +423,9 @@ class TestBuildreq(unittest.TestCase):
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
             open(os.path.join(tmpd, 'meson.build'), 'w').close()
 
-            buildreq.scan_for_configure(tmpd, "", "", conf)
+            self.reqs.scan_for_configure(tmpd, "", "", conf)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
 
     def test_scan_for_configure_pypi(self):
@@ -443,6 +434,7 @@ class TestBuildreq(unittest.TestCase):
         pattern to test pypi metadata handling.
         """
         conf = config.Config()
+        buildreq.buildpattern.pattern_strength = 0
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
         orig_pypi_name = buildreq.pypidata.get_pypi_name
@@ -459,7 +451,7 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
-            buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
 
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
@@ -467,8 +459,8 @@ class TestBuildreq(unittest.TestCase):
         buildreq.pypidata.get_pypi_name = orig_pypi_name
         buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
 
-        self.assertEqual(buildreq.pypi_provides, name)
-        self.assertEqual(buildreq.pypi_requires, set(requires))
+        self.assertEqual(self.reqs.pypi_provides, name)
+        self.assertEqual(self.reqs.pypi_requires, set(requires))
         self.assertEqual(ssummary, summary)
 
     def test_scan_for_configure_pypi_override(self):
@@ -477,6 +469,7 @@ class TestBuildreq(unittest.TestCase):
         pattern to test pypi metadata file override handling.
         """
         conf = config.Config()
+        buildreq.buildpattern.pattern_strength = 0
         open_name = 'buildreq.open'
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
@@ -492,14 +485,14 @@ class TestBuildreq(unittest.TestCase):
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'pypi.json'), 'w').close()
             with patch(open_name, m_open, create=True):
-                buildreq.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
+                self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
 
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
         buildreq.specdescription.default_summary_score = orig_sscore
 
-        self.assertEqual(buildreq.pypi_provides, name)
-        self.assertEqual(buildreq.pypi_requires, set(requires))
+        self.assertEqual(self.reqs.pypi_provides, name)
+        self.assertEqual(self.reqs.pypi_requires, set(requires))
         self.assertEqual(ssummary, summary)
 
     def test_parse_cmake_pkg_check_modules(self):
@@ -513,9 +506,9 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
+            self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(gio-unix-2.0)', 'pkgconfig(glib-2.0)']))
 
     def test_parse_cmake_pkg_check_modules_whitespace(self):
@@ -529,9 +522,9 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
+            self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(gio-unix-2.0)', 'pkgconfig(glib-2.0)']))
 
     def test_parse_cmake_pkg_check_modules_in_a_comment(self):
@@ -548,9 +541,9 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
+            self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set([]))
 
     def test_parse_cmake_pkg_check_modules_variables(self):
@@ -564,9 +557,9 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
+            self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), conf.cmake_modules, False)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['pkgconfig(libavcodec)', 'pkgconfig(libavutil)']))
 
     def test_parse_cmake_find_package(self):
@@ -587,9 +580,9 @@ find_package(different_name)
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            buildreq.parse_cmake(os.path.join(tmpd, 'fname'), cmake_modules, False)
+            self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), cmake_modules, False)
 
-        self.assertEqual(buildreq.buildreqs,
+        self.assertEqual(self.reqs.buildreqs,
                          set(['valid', 'another_name']))
 
     def test_r_desc_field_begin(self):
@@ -695,8 +688,8 @@ find_package(different_name)
         content = 'Depends: pkg1'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open):
-            buildreq.parse_r_description('filename', pkgs)
-        self.assertTrue('R-pkg1' in buildreq.buildreqs)
+            self.reqs.parse_r_description('filename', pkgs)
+        self.assertTrue('R-pkg1' in self.reqs.buildreqs)
 
     def test_parse_r_desc_imports(self):
         """Test parsing of an R description Imports field."""
@@ -705,8 +698,8 @@ find_package(different_name)
         content = 'Imports: pkg2'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open):
-            buildreq.parse_r_description('filename', pkgs)
-        self.assertTrue('R-pkg2' in buildreq.buildreqs)
+            self.reqs.parse_r_description('filename', pkgs)
+        self.assertTrue('R-pkg2' in self.reqs.buildreqs)
 
     def test_parse_r_desc_linkingto(self):
         """Test parsing of an R description LinkingTo field."""
@@ -715,8 +708,8 @@ find_package(different_name)
         content = 'LinkingTo: pkg3'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open):
-            buildreq.parse_r_description('filename', pkgs)
-        self.assertTrue('R-pkg3' in buildreq.buildreqs)
+            self.reqs.parse_r_description('filename', pkgs)
+        self.assertTrue('R-pkg3' in self.reqs.buildreqs)
 
     def test_parse_r_desc_multiple(self):
         """Test parsing of an R description file that captures multiple fields."""
@@ -736,13 +729,13 @@ find_package(different_name)
         ]
         m_open = mock_open(read_data='\n'.join(content))
         with patch(open_name, m_open):
-            buildreq.parse_r_description('filename', pkgs)
-        self.assertFalse('R-foo' in buildreq.buildreqs)
-        self.assertFalse('R-bar' in buildreq.buildreqs)
-        self.assertTrue('R-pkg1' in buildreq.buildreqs)
-        self.assertTrue('R-pkg2' in buildreq.buildreqs)
-        self.assertTrue('R-pkg3' in buildreq.buildreqs)
-        self.assertTrue('R-pkg4' in buildreq.buildreqs)
+            self.reqs.parse_r_description('filename', pkgs)
+        self.assertFalse('R-foo' in self.reqs.buildreqs)
+        self.assertFalse('R-bar' in self.reqs.buildreqs)
+        self.assertTrue('R-pkg1' in self.reqs.buildreqs)
+        self.assertTrue('R-pkg2' in self.reqs.buildreqs)
+        self.assertTrue('R-pkg3' in self.reqs.buildreqs)
+        self.assertTrue('R-pkg4' in self.reqs.buildreqs)
 
     def test_parse_r_desc_not_in_os(self):
         """Test parsing of an R description file with some non-OS packages."""
@@ -756,10 +749,10 @@ find_package(different_name)
         ]
         m_open = mock_open(read_data='\n'.join(content))
         with patch(open_name, m_open):
-            buildreq.parse_r_description('filename', pkgs)
-        self.assertTrue('R-pkg1' in buildreq.buildreqs)
-        self.assertFalse('R-pkg2' in buildreq.buildreqs)
-        self.assertFalse('R-pkg3' in buildreq.buildreqs)
+            self.reqs.parse_r_description('filename', pkgs)
+        self.assertTrue('R-pkg1' in self.reqs.buildreqs)
+        self.assertFalse('R-pkg2' in self.reqs.buildreqs)
+        self.assertFalse('R-pkg3' in self.reqs.buildreqs)
 
 
 if __name__ == '__main__':

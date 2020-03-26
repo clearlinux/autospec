@@ -23,7 +23,6 @@ import os
 import re
 
 import buildpattern
-import buildreq
 import count
 import tarball
 import util
@@ -55,7 +54,7 @@ def check_regression(pkg_dir, skip_tests):
     util.write_out(os.path.join(pkg_dir, "testresults"), res_str)
 
 
-def scan_for_tests(src_dir, config):
+def scan_for_tests(src_dir, config, requirements):
     """Scan source directory for test files and set tests_config accordingly."""
     global tests_config
 
@@ -166,11 +165,11 @@ def scan_for_tests(src_dir, config):
                 break
 
     if "tox.ini" in files:
-        buildreq.add_buildreq("tox")
-        buildreq.add_buildreq("pytest")
-        buildreq.add_buildreq("virtualenv")
-        buildreq.add_buildreq("pluggy")
-        buildreq.add_buildreq("py-python")
+        requirements.add_buildreq("tox")
+        requirements.add_buildreq("pytest")
+        requirements.add_buildreq("virtualenv")
+        requirements.add_buildreq("pluggy")
+        requirements.add_buildreq("py-python")
 
 
 def load_specfile(specfile):

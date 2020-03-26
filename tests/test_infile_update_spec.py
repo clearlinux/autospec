@@ -1,5 +1,6 @@
 import unittest
 
+import buildreq
 import config
 import infile_update_spec
 import specfiles
@@ -9,7 +10,7 @@ class TestUpdateSpecfile(unittest.TestCase):
     def setUp(self):
         # url, version, name, release
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        self.specfile = specfiles.Specfile(url, '1.1.1', 'test_pkg', '1', config.Config())
+        self.specfile = specfiles.Specfile(url, '1.1.1', 'test_pkg', '1', config.Config(), buildreq.Requirements(url))
 
         self.bb_dict = {
             "DEPENDS": "ncurses gettext-native",
