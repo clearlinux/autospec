@@ -24,7 +24,6 @@ import re
 from collections import OrderedDict
 
 import build
-import tarball
 import util
 
 
@@ -188,7 +187,7 @@ class FileManager(object):
 
         return removed
 
-    def push_file(self, filename):
+    def push_file(self, filename, pkg_name):
         """Perform a number of checks against the filename and push the filename if appropriate."""
         if filename in self.files or filename in self.files_blacklist:
             return
@@ -310,7 +309,7 @@ class FileManager(object):
             (r"^/usr/share/aclocal/[a-zA-Z0-9._+-]*\.m4$", "dev", "/usr/share/aclocal/*.m4"),
             (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9._+-]*\.ac$", "dev", "/usr/share/aclocal-1.*/*.ac"),
             (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9._+-]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"),
-            (r"^/usr/share/doc/" + re.escape(tarball.name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(tarball.name) + "/*"),
+            (r"^/usr/share/doc/" + re.escape(pkg_name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(pkg_name) + "/*"),
             (r"^/usr/share/doc/", "doc"),
             (r"^/usr/share/gtk-doc/html", "doc"),
             (r"^/usr/share/help", "doc"),

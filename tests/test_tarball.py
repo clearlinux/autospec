@@ -122,18 +122,35 @@ def detect_build_test_generator(url, build_pattern):
     return generator
 
 
-def name_and_version_test_generator(url, name, version):
+def name_and_version_test_generator(url, name, version, state):
     """Create test for tarball.name_and_version method."""
     def generator(self):
         """Test template."""
         conf = config.Config()
         conf.parse_config_versions = Mock(return_value={})
-        tarball.url = url
-        n, _, v = tarball.name_and_version('', '', Mock(), conf)
-        self.assertEqual(name, n)
-        self.assertEqual(version, v)
+        name_arg = ""
+        version_arg = ""
+        if state == 1 or state == 3:
+            name_arg = f"state.{name}"
+        if state == 2 or state == 3:
+            version_arg = f"state.{version}"
+        content = tarball.Content(url, name_arg, version_arg, [], conf)
+        content.config = conf
+        content.name_and_version(Mock())
+        name_cmp = name
+        version_cmp = version
+        if state == 1 or state == 3:
+            name_cmp = name_arg
+        if state == 2 or state == 3:
+            version_cmp = version_arg
+        self.assertEqual(name_cmp, content.name)
+        self.assertEqual(version_cmp, content.version)
+        # redo without args and verify giturl is set correctly
+        content.name = ""
+        content.version = ""
+        content.name_and_version(Mock())
         if "github.com" in url:
-            self.assertRegex(tarball.giturl, r"https://github.com/[^/]+/" + tarball.repo + ".git")
+            self.assertRegex(content.giturl, r"https://github.com/[^/]+/" + content.repo + ".git")
 
     return generator
 
@@ -154,13 +171,20 @@ def create_dynamic_tests():
 
     # Create tests for tarball.name_and_version method.
     with open('tests/packageurls', 'r') as pkgurls:
+        # add count to test if content state is used
+        # 0 - no state
+        # 1 - name only
+        # 2 - version only
+        # 3 - name and version
+        c = 0
         for urlline in pkgurls.read().split('\n'):
             if not urlline or urlline.startswith('#'):
                 continue
             (url, name, version) = urlline.split(',')
             test_name = 'test_name_ver_{}'.format(url)
-            test = name_and_version_test_generator(url, name, version)
+            test = name_and_version_test_generator(url, name, version, c)
             setattr(TestTarball, test_name, test)
+            c = (c + 1) % 4
 
 
 class TestTarball(unittest.TestCase):
@@ -174,6 +198,9 @@ class TestTarball(unittest.TestCase):
         # Set strenght to 0 so it can be updated during tests
         tarball.build.base_path = '/tmp'
         tarball.build.download_path = '/download/path/'
+        conf = config.Config()
+        self.content = tarball.Content('', '', '', [], conf)
+        conf.content = self.content
 
     def tearDown(self):
         """Clean up after running each test."""
@@ -183,27 +210,20 @@ class TestTarball(unittest.TestCase):
         tarball.buildpattern.pattern_strength = 0
         tarball.buildpattern.sources['godep'] = []
         tarball.buildpattern.sources['version'] = []
-        tarball.gcov_file = ''
-        tarball.giturl = ''
-        tarball.name = ''
-        tarball.prefixes = {}
-        tarball.repo = ''
-        tarball.url = ''
-        tarball.version = ''
 
     @patch('tarball.os.path.isfile', Mock(return_value=True))
     def test_set_gcov(self):
         """Test for tarball.set_gcov method."""
         # Set up input values
-        tarball.name = 'test'
-        tarball.set_gcov()
-        self.assertEqual(tarball.gcov_file, 'test.gcov')
+        self.content.name = 'test'
+        self.content.set_gcov()
+        self.assertEqual(self.content.gcov_file, 'test.gcov')
 
     def test_process_go_archives(self):
         """Test for tarball.process_go_archives method."""
         # Set up input values
-        tarball.url = 'https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/list'
-        tarball.multi_version = ['v0.3.1', 'v0.3.0', 'v0.2.0']
+        self.content.url = 'https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/list'
+        self.content.multi_version = ['v0.3.1', 'v0.3.0', 'v0.2.0']
         go_archives = []
         go_archives_expected = [
             "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.info", ":",
@@ -216,7 +236,7 @@ class TestTarball(unittest.TestCase):
             "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.mod", ":",
             "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.zip", "",
         ]
-        tarball.process_go_archives(go_archives)
+        self.content.process_go_archives(go_archives)
         self.assertEqual(go_archives, go_archives_expected)
 
     def test_process_multiver_archives(self):
@@ -239,7 +259,8 @@ class TestTarball(unittest.TestCase):
         attrs = {'parse_config_versions.return_value': config_versions}
         conf = Mock()
         conf.configure_mock(**attrs)
-        tarball.process_multiver_archives(main_src, multiver_archives, conf)
+        self.content.config = conf
+        self.content.process_multiver_archives(main_src, multiver_archives)
         self.assertEqual(multiver_archives, expected_multiver_archives)
 
     @patch('tarball.Source.set_prefix', Mock())

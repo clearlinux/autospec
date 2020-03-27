@@ -24,7 +24,6 @@ import re
 
 import buildpattern
 import count
-import tarball
 import util
 
 tests_config = ""
@@ -54,7 +53,7 @@ def check_regression(pkg_dir, skip_tests):
     util.write_out(os.path.join(pkg_dir, "testresults"), res_str)
 
 
-def scan_for_tests(src_dir, config, requirements):
+def scan_for_tests(src_dir, config, requirements, content):
     """Scan source directory for test files and set tests_config accordingly."""
     global tests_config
 
@@ -90,8 +89,8 @@ def scan_for_tests(src_dir, config, requirements):
         "perlcheck": perl_check,
         "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + tarball.tarball_prefix + "\nrspec -I.:lib spec/\npopd",
+        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + content.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
+        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + content.tarball_prefix + "\nrspec -I.:lib spec/\npopd",
         "meson": meson_check,
     }
     if config.config_opts.get('32bit'):
@@ -147,7 +146,7 @@ def scan_for_tests(src_dir, config, requirements):
     elif buildpattern.default_pattern == "R":
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
                        "R CMD check --no-manual --no-examples --no-codoc "    \
-                       + tarball.rawname + " || :"
+                       + content.rawname + " || :"
     elif buildpattern.default_pattern == "meson":
         found_tests = False
         makefile_path = os.path.join(src_dir, "meson.build")

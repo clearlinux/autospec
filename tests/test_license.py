@@ -60,7 +60,7 @@ class TestLicense(unittest.TestCase):
         """
         conf = config.Config()
         conf.setup_patterns()
-        license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
+        license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
         self.assertIn('GPL-3.0', license.licenses)
 
     def test_license_from_copying_hash_no_license_show(self):
@@ -73,7 +73,7 @@ class TestLicense(unittest.TestCase):
         # remove the hash from license_hashes
         del(conf.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
         conf.license_show = "license.show.url"
-        license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
+        license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
 
         self.assertEquals(license.licenses, [])
 
@@ -87,7 +87,7 @@ class TestLicense(unittest.TestCase):
         m_open.__str__.return_value = content
 
         with patch('license.get_contents', m_open, create=True):
-            license.license_from_copying_hash('copying.txt', '', conf)
+            license.license_from_copying_hash('copying.txt', '', conf, '')
 
         self.assertEquals(license.licenses, [])
 
@@ -125,7 +125,7 @@ class TestLicense(unittest.TestCase):
         out = StringIO()
         with redirect_stdout(out):
             with self.assertRaises(SystemExit):
-                license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
+                license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
 
         self.assertIn('Unable to fetch license.server.url: Test Exception', out.getvalue())
 
@@ -178,7 +178,7 @@ class TestLicense(unittest.TestCase):
         # let's check that the proper thing is being printed as well
         out = StringIO()
         with redirect_stdout(out):
-            license.license_from_copying_hash('tests/COPYING_TEST', '', conf)
+            license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
 
         self.assertIn('GPL-3.0', license.licenses)
         self.assertIn('License     :  GPL-3.0  (server)', out.getvalue())
@@ -206,7 +206,7 @@ class TestLicense(unittest.TestCase):
             for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
                 with open(os.path.join(tmpd, testf), 'w') as newtestf:
                     newtestf.write('test content')
-            license.scan_for_licenses(tmpd, conf)
+            license.scan_for_licenses(tmpd, conf, '')
 
         self.assertIn('GPL-3.0', license.licenses)
 
@@ -227,7 +227,7 @@ class TestLicense(unittest.TestCase):
             out = StringIO()
             with redirect_stdout(out):
                 with self.assertRaises(SystemExit) as thread:
-                    license.scan_for_licenses(tmpd, conf)
+                    license.scan_for_licenses(tmpd, conf, '')
 
         self.assertEqual(thread.exception.code, 1)
         self.assertIn("Cannot find any license", out.getvalue())

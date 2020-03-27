@@ -29,7 +29,6 @@ import sys
 from subprocess import PIPE, run
 
 import build
-import tarball
 import util
 
 
@@ -81,7 +80,7 @@ def find_in_line(pattern, line):
     return bool(re.search(pattern, line))
 
 
-def process_NEWS(newsfile, old_version):
+def process_NEWS(newsfile, old_version, name, version):
     """Parse the newfile for relevent changes.
 
     Look for changes and CVE fixes relevant to current version update. This information is returned
@@ -98,7 +97,7 @@ def process_NEWS(newsfile, old_version):
     success = False
     start_found = False
 
-    if old_version is None or old_version == tarball.version:
+    if old_version is None or old_version == version:
         # no version update, so no information to search for in newsfile
         return commitmessage, cves
 
@@ -111,9 +110,9 @@ def process_NEWS(newsfile, old_version):
     newslines = [news.rstrip('\n') for news in newslines]
 
     # escape some values for use in regular expressions below
-    escaped_curver = re.escape(tarball.version)
+    escaped_curver = re.escape(version)
     escaped_oldver = re.escape(old_version)
-    escaped_tarname = re.escape(tarball.name)
+    escaped_tarname = re.escape(name)
 
     # these are patterns that define the beginning of a block of information
     # regarding the current version.
@@ -172,7 +171,7 @@ def process_NEWS(newsfile, old_version):
     return commitmessage, cves
 
 
-def process_git(giturl, oldversion, newversion):
+def process_git(giturl, oldversion, newversion, name):
     """Check out a git tree and try to turn the git history into a commit message."""
     oldtag = ""
     guessed_oldtag = oldversion
@@ -184,8 +183,8 @@ def process_git(giturl, oldversion, newversion):
     if oldversion == newversion:
         return ""
 
-    run(["git", "-C", "results", "clone", giturl, tarball.name])
-    p = run(["git", "-C", "results/" + tarball.name, "tag"], stdout=PIPE)
+    run(["git", "-C", "results", "clone", giturl, name])
+    p = run(["git", "-C", "results/" + name, "tag"], stdout=PIPE)
     tags = p.stdout.decode('utf-8').split('\n')
 
     for t in tags:
@@ -205,11 +204,11 @@ def process_git(giturl, oldversion, newversion):
     if newtag == "":
         newtag = guessed_newtag
 
-    p = run(["git", "-C", "results/" + tarball.name, "log", "--no-merges", oldtag + ".." + newtag], stdout=PIPE)
+    p = run(["git", "-C", "results/" + name, "log", "--no-merges", oldtag + ".." + newtag], stdout=PIPE)
     fulllog = p.stdout.decode('utf-8').split('\n')
     # 'git shortlog' can accept any 'git log' output over stdin, so make sure
     # it lacks merge commits, too.
-    p = run(["git", "-C", "results/" + tarball.name, "shortlog"], input=p.stdout, stdout=PIPE)
+    p = run(["git", "-C", "results/" + name, "shortlog"], input=p.stdout, stdout=PIPE)
     shortlog = p.stdout.decode('utf-8').split('\n')
 
     if len(fulllog) < 15:
@@ -218,7 +217,7 @@ def process_git(giturl, oldversion, newversion):
         return shortlog
 
 
-def guess_commit_message(keyinfo, config):
+def guess_commit_message(keyinfo, config, content):
     """Parse newsfile for a commit message.
 
     Try and find a sane commit message for the newsfile. The commit message defaults to the
@@ -246,31 +245,31 @@ def guess_commit_message(keyinfo, config):
         cvestring += " " + cve
 
     # default commit messages before we get too smart
-    if config.old_version is not None and config.old_version != tarball.version:
+    if config.old_version is not None and config.old_version != content.version:
         commitmessage.append("{}: Autospec creation for update from version {} to version {}"
-                             .format(tarball.name, config.old_version, tarball.version))
-        if tarball.giturl != "":
-            gitmsg = process_git(tarball.giturl, config.old_version, tarball.version)
+                             .format(content.name, config.old_version, content.version))
+        if content.giturl != "":
+            gitmsg = process_git(content.giturl, config.old_version, content.version, content.name)
             commitmessage.append("")
             commitmessage.extend(gitmsg)
     else:
         if cves:
             commitmessage.append("{}: Fix for {}"
-                                 .format(tarball.name, cvestring.strip()))
+                                 .format(content.name, cvestring.strip()))
         else:
             commitmessage.append("{}: Autospec creation for version {}"
-                                 .format(tarball.name, tarball.version))
+                                 .format(content.name, content.version))
     commitmessage.append("")
 
     # Only use Changelog if the giturl isn't defined as it is often
     # duplicate content from the git log.
-    if tarball.giturl:
+    if content.giturl:
         newsfiles = ["NEWS"]
     else:
         newsfiles = ["NEWS", "ChangeLog"]
     for newsfile in newsfiles:
         # parse news files for relevant version updates and cve fixes
-        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version)
+        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version, content.name, content.version)
         commitmessage.extend(newcommitmessage)
         cves.update(newcves)
 
