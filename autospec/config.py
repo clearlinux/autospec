@@ -30,7 +30,6 @@ from collections import OrderedDict
 import buildpattern
 import check
 import license
-import tarball
 from util import call, print_warning, write_out
 from util import open_auto
 
@@ -76,6 +75,7 @@ class Config(object):
 
     def __init__(self):
         """Initialize Default configuration settings."""
+        self.content = None  # hack to avoid circular init dependency
         self.extra_configure = ""
         self.extra_configure32 = ""
         self.extra_configure64 = ""
@@ -331,18 +331,18 @@ class Config(object):
         ]
 
     def get_metadata_conf(self):
-        """Gather package metadata from the tarball module."""
+        """Gather package metadata from the content."""
         metadata = {}
-        metadata['name'] = tarball.name
+        metadata['name'] = self.content.name
         if self.urlban:
-            metadata['url'] = re.sub(self.urlban, "localhost", tarball.url)
-            metadata['archives'] = re.sub(self.urlban, "localhost", " ".join(tarball.archives))
+            metadata['url'] = re.sub(self.urlban, "localhost", self.content.url)
+            metadata['archives'] = re.sub(self.urlban, "localhost", " ".join(self.content.archives))
         else:
-            metadata['url'] = tarball.url
-            metadata['archives'] = " ".join(tarball.archives)
+            metadata['url'] = self.content.url
+            metadata['archives'] = " ".join(self.content.archives)
 
-        metadata['giturl'] = tarball.giturl
-        metadata['domain'] = tarball.domain
+        metadata['giturl'] = self.content.giturl
+        metadata['domain'] = self.content.domain
 
         if self.alias:
             metadata['alias'] = self.alias
@@ -687,8 +687,8 @@ class Config(object):
             r = int(content[0])
             if bump:
                 r += 1
-            tarball.release = str(r)
-            print("Release     :", tarball.release)
+            self.content.release = str(r)
+            print("Release     :", self.content.release)
 
         content = self.read_conf_file(os.path.join(path, "extra_sources"))
         for source in content:
@@ -882,18 +882,18 @@ class Config(object):
         if content:
             check.tests_config = '\n'.join(content)
 
-        content = self.read_conf_file(os.path.join(path, tarball.name + ".license"))
+        content = self.read_conf_file(os.path.join(path, self.content.name + ".license"))
         if content and content[0]:
             words = content[0].split()
             for word in words:
                 if word.find(":") < 0:
                     if not license.add_license(word, self.license_translations, self.license_blacklist):
-                        print_warning("{}: blacklisted license {} ignored.".format(tarball.name + ".license", word))
+                        print_warning("{}: blacklisted license {} ignored.".format(self.content.name + ".license", word))
 
         content = self.read_conf_file(os.path.join(path, "golang_libpath"))
         if content and content[0]:
-            tarball.golibpath = content[0]
-            print("golibpath   : {}".format(tarball.golibpath))
+            self.content.golibpath = content[0]
+            print("golibpath   : {}".format(self.content.golibpath))
 
         if self.config_opts['use_clang']:
             self.config_opts['funroll-loops'] = False

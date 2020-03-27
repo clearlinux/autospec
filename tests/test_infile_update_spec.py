@@ -4,13 +4,17 @@ import buildreq
 import config
 import infile_update_spec
 import specfiles
+import tarball
 
 
 class TestUpdateSpecfile(unittest.TestCase):
     def setUp(self):
         # url, version, name, release
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        self.specfile = specfiles.Specfile(url, '1.1.1', 'test_pkg', '1', config.Config(), buildreq.Requirements(url))
+        conf = config.Config()
+        content = tarball.Content('', '', '', [], conf)
+        conf.content = content
+        self.specfile = specfiles.Specfile(url, '1.1.1', 'test_pkg', '1', conf, buildreq.Requirements(url), content)
 
         self.bb_dict = {
             "DEPENDS": "ncurses gettext-native",

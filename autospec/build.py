@@ -23,7 +23,6 @@ import os
 import re
 import shutil
 
-import tarball
 import util
 
 success = 0
@@ -38,9 +37,7 @@ warned_about = set()
 def setup_workingdir(workingdir):
     """Create directory for expanding tar file."""
     global base_path
-    global download_path
     base_path = workingdir
-    download_path = os.path.join(base_path, tarball.name)
 
 
 def simple_pattern_pkgconfig(line, pattern, pkgconfig, conf32, requirements):
@@ -205,7 +202,7 @@ def check_for_warning_pattern(line):
             util.print_warning("Build log contains: {}".format(pat))
 
 
-def parse_build_results(filename, returncode, filemanager, config, requirements):
+def parse_build_results(filename, returncode, filemanager, config, requirements, content):
     """Handle build log contents."""
     global must_restart
     global success
@@ -250,13 +247,13 @@ def parse_build_results(filename, returncode, filemanager, config, requirements)
             # exclude blank lines from consideration...
             file = line.strip()
             if file and file[0] == "/":
-                filemanager.push_file(file)
+                filemanager.push_file(file, content.name)
 
         if line.startswith("Sorry: TabError: inconsistent use of tabs and spaces in indentation"):
             print(line)
             returncode = 99
 
-        nvr = f"{tarball.name}-{tarball.version}-{tarball.release}"
+        nvr = f"{content.name}-{content.version}-{content.release}"
         match = f"File not found: /builddir/build/BUILDROOT/{nvr}.x86_64/"
         if match in line:
             missing_file = "/" + line.split(match)[1].strip()
@@ -276,7 +273,7 @@ def get_mock_cmd():
     return 'sudo /usr/bin/mock'
 
 
-def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=False):
+def package(filemanager, mockconfig, mockopts, config, requirements, content, cleanup=False):
     """Run main package build routine."""
     global round
     global uniqueext
@@ -284,16 +281,16 @@ def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=Fal
     round = round + 1
     success = 0
     mock_cmd = get_mock_cmd()
-    print("Building package " + tarball.name + " round", round)
+    print("Building package " + content.name + " round", round)
 
-    uniqueext = tarball.name
+    uniqueext = content.name
 
     if cleanup:
         cleanup_flag = "--cleanup-after"
     else:
         cleanup_flag = "--no-cleanup-after"
 
-    print("{} mock chroot at /var/lib/mock/clear-{}".format(tarball.name, uniqueext))
+    print("{} mock chroot at /var/lib/mock/clear-{}".format(content.name, uniqueext))
 
     if round == 1:
         shutil.rmtree('{}/results'.format(download_path), ignore_errors=True)
@@ -304,7 +301,7 @@ def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=Fal
         f"--root={mockconfig}",
         "--buildsrpm",
         "--sources=./",
-        f"--spec={tarball.name}.spec",
+        f"--spec={content.name}.spec",
         f"--uniqueext={uniqueext}",
         "--result=results/",
         cleanup_flag,
@@ -318,7 +315,7 @@ def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=Fal
     util.call("mv results/root.log results/srpm-root.log", cwd=download_path)
     util.call("mv results/build.log results/srpm-build.log", cwd=download_path)
 
-    srcrpm = f"results/{tarball.name}-{tarball.version}-{tarball.release}.src.rpm"
+    srcrpm = f"results/{content.name}-{content.version}-{content.release}.src.rpm"
 
     cmd_args = [
         mock_cmd,
@@ -342,7 +339,7 @@ def package(filemanager, mockconfig, mockopts, config, requirements, cleanup=Fal
 
     is_clean = parse_buildroot_log(download_path + "/results/root.log", ret)
     if is_clean:
-        parse_build_results(download_path + "/results/build.log", ret, filemanager, config, requirements)
+        parse_build_results(download_path + "/results/build.log", ret, filemanager, config, requirements, content)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
             exit(1)

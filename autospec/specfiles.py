@@ -25,7 +25,6 @@ import time
 import types
 from collections import OrderedDict
 
-import tarball
 from util import _file_write
 from util import open_auto
 
@@ -33,7 +32,7 @@ from util import open_auto
 class Specfile(object):
     """Holds data and methods needed to write the spec file."""
 
-    def __init__(self, url, version, name, release, config, requirements):
+    def __init__(self, url, version, name, release, config, requirements, content):
         """Add default information for specfile template."""
         self.url = url
         self.version = version
@@ -41,6 +40,7 @@ class Specfile(object):
         self.release = release
         self.config = config
         self.requirements = requirements
+        self.content = content
         self.specfile = None
         self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
@@ -52,11 +52,7 @@ class Specfile(object):
         self.default_desc = ""
         self.locales = []
         self.default_pattern = ""
-        self.tarball_prefix = ""
-        self.prefixes = dict()    # Detected prefixes, indexed by source URL
         self.build_dirs = dict()  # Build directories, indexed by source URL
-        self.gcov_file = ""
-        self.rawname = ""
         self.golibpath = ""
         self.archive_details = {}
         self.need_avx2_flags = False
@@ -129,7 +125,7 @@ class Specfile(object):
         if self.config.urlban:
             clean_url = re.sub(self.config.urlban, "localhost", self.url)
             # Duplicate prefixes entry before we change the url
-            self.prefixes[clean_url] = self.prefixes.get(self.url)
+            self.content.prefixes[clean_url] = self.content.prefixes.get(self.url)
             self.url = clean_url
         self._write("Name     : {}\n".format(self.name))
         self._write("Version  : {}\n".format(self.version))
@@ -416,16 +412,16 @@ class Specfile(object):
         self.write_prep_prepend()
         if ruby_pattern:
             self._write_strip("gem unpack %{SOURCE0}")
-            self._write_strip("%setup -q -D -T -n " + self.tarball_prefix)
+            self._write_strip("%setup -q -D -T -n " + self.content.tarball_prefix)
             self._write_strip("gem spec %{{SOURCE0}} -l --ruby > {}.gemspec".format(self.name))
         else:
             if self.default_pattern == 'R':
-                self._write_strip("%setup -q -c -n " + self.tarball_prefix)
+                self._write_strip("%setup -q -c -n " + self.content.tarball_prefix)
             elif self.default_pattern == "godep":
                 # No setup needed each source is installed as is
                 pass
             else:
-                prefix = self.prefixes[self.url]
+                prefix = self.content.prefixes[self.url]
                 if prefix:
                     self._write_strip("%setup -q -n " + prefix)
                 else:
@@ -467,7 +463,7 @@ class Specfile(object):
 
                 # Now handle extra versions, indexed by SOURCE
                 for url in self.sources["version"]:
-                    prefix = self.prefixes[url]
+                    prefix = self.content.prefixes[url]
                     if prefix:
                         self._write_strip("cd ..")
                         self._write_strip("%setup -q -T -n {0} -b {1}"
@@ -486,9 +482,9 @@ class Specfile(object):
         for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
             if destination.startswith(':'):
                 continue
-            if self.archive_details[archive + "prefix"] == self.tarball_prefix:
+            if self.archive_details[archive + "prefix"] == self.content.tarball_prefix:
                 print("Archive {} already unpacked in {}; ignoring destination"
-                      .format(archive, self.tarball_prefix))
+                      .format(archive, self.content.tarball_prefix))
             else:
                 self._write_strip("mkdir -p {}"
                                   .format(destination))
@@ -502,25 +498,25 @@ class Specfile(object):
                     archive_prefix = os.path.splitext(os.path.basename(archive))[0]
                 self._write_strip("cp -r %{{_builddir}}/{0}/* %{{_builddir}}/{1}/{2}"
                                   .format(archive_prefix,
-                                          self.tarball_prefix,
+                                          self.content.tarball_prefix,
                                           destination))
         self.apply_patches()
         if self.default_pattern != 'cmake':
             if self.config.config_opts['32bit']:
                 self._write_strip("pushd ..")
-                self._write_strip("cp -a {} build32".format(self.tarball_prefix))
+                self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
                 self._write_strip("popd")
             if self.config.config_opts['use_avx2']:
                 self._write_strip("pushd ..")
-                self._write_strip("cp -a {} buildavx2".format(self.tarball_prefix))
+                self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
                 self._write_strip("popd")
             if self.config.config_opts['use_avx512']:
                 self._write_strip("pushd ..")
-                self._write_strip("cp -a {} buildavx512".format(self.tarball_prefix))
+                self._write_strip("cp -a {} buildavx512".format(self.content.tarball_prefix))
                 self._write_strip("popd")
             if self.config.config_opts['openmpi']:
                 self._write_strip("pushd ..")
-                self._write_strip("cp -a {} build-openmpi".format(self.tarball_prefix))
+                self._write_strip("cp -a {} build-openmpi".format(self.content.tarball_prefix))
                 self._write_strip("popd")
         self._write_strip("\n")
 
@@ -605,7 +601,7 @@ class Specfile(object):
             flags.extend(["-ffast-math", "-ftree-loop-vectorize"])
         if self.config.config_opts['pgo']:
             flags.extend(["-O3"])
-        if self.gcov_file:
+        if self.content.gcov_file:
             flags = list(filter((lto).__ne__, flags))
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
         if flags or self.config.config_opts['broken_c++']:
@@ -1418,7 +1414,7 @@ class Specfile(object):
                           "--install-tests "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -march=skylake-avx512 -ftree-vectorize \" > ~/.R/Makevars")
@@ -1431,7 +1427,7 @@ class Specfile(object):
                           "--no-test-load "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx512 ; mv $i.avx512 ~/.stash/; done\n")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
@@ -1443,7 +1439,7 @@ class Specfile(object):
                           "--install-tests "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.rawname)
+                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
         self._write_strip("cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :")
 
         self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
@@ -1469,7 +1465,7 @@ class Specfile(object):
         self._write_strip("  --force \\")
         self._write_strip("  --install-dir .%{gem_dir} \\")
         self._write_strip("  --bindir .%{_bindir} \\")
-        self._write_strip(" {}.gem".format(self.tarball_prefix))
+        self._write_strip(" {}.gem".format(self.content.tarball_prefix))
         self._write_strip("\n")
 
         self._write_strip("mkdir -p %{buildroot}%{gem_dir}")
@@ -1721,7 +1717,7 @@ class Specfile(object):
         self._write_strip(f"mkdir -p {proxy_path}")
         list_file = os.path.join(proxy_path, "list")
         self._write_strip("# Create list file using packaged versions")
-        for ver in list(tarball.multi_version.keys()):
+        for ver in list(self.content.multi_version.keys()):
             self._write_strip(f"echo {ver} >> {list_file}")
         for idx, source in enumerate(sorted(self.sources["godep"])):
             file_path = os.path.join(proxy_path, os.path.basename(source))

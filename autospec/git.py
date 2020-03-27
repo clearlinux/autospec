@@ -25,11 +25,10 @@ import subprocess
 
 import build
 import buildpattern
-import tarball
 from util import call, write_out
 
 
-def commit_to_git(path, config):
+def commit_to_git(path, config, name):
     """Update package's git tree for autospec managed changes."""
     call("git init", stdout=subprocess.DEVNULL, cwd=path)
 
@@ -38,7 +37,7 @@ def commit_to_git(path, config):
         try:
             call("git config --get remote.origin.url", cwd=path)
         except subprocess.CalledProcessError:
-            upstream_uri = config.git_uri % {'NAME': tarball.name}
+            upstream_uri = config.git_uri % {'NAME': name}
             call("git remote add origin %s" % upstream_uri, cwd=path)
 
     for config_file in config.config_files:
@@ -48,7 +47,7 @@ def commit_to_git(path, config):
     call("git add Makefile", cwd=path)
     call("git add upstream", cwd=path)
     call("bash -c 'shopt -s failglob; git add *.spec'", cwd=path)
-    call("git add %s.tmpfiles" % tarball.name, check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add %s.tmpfiles" % name, check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add prep_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add pypi.json", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add build_prepend", check=False, stderr=subprocess.DEVNULL, cwd=path)

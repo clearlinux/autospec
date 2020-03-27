@@ -30,7 +30,6 @@ import urllib.parse
 import chardet
 import download
 
-import tarball
 from util import get_contents, get_sha1sum, print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"
@@ -95,7 +94,7 @@ def decode_license(license):
     return try_with_charset(license, chardet.detect(license)['encoding'])
 
 
-def license_from_copying_hash(copying, srcdir, config):
+def license_from_copying_hash(copying, srcdir, config, name):
     """Add licenses based on the hash of the copying file."""
     try:
         data = get_contents(copying)
@@ -114,7 +113,7 @@ def license_from_copying_hash(copying, srcdir, config):
     hash_sum = get_sha1sum(copying)
 
     if config.license_fetch:
-        values = {'hash': hash_sum, 'text': data, 'package': tarball.name}
+        values = {'hash': hash_sum, 'text': data, 'package': name}
         data = urllib.parse.urlencode(values)
         data = data.encode('utf-8')
 
@@ -149,7 +148,7 @@ def license_from_copying_hash(copying, srcdir, config):
         print_warning("Visit {0} to enter".format(hash_url))
 
 
-def scan_for_licenses(srcdir, config):
+def scan_for_licenses(srcdir, config, pkg_name):
     """Scan the project directory for things we can use to guess a description and summary."""
     targets = ["copyright",
                "copyright.txt",
@@ -169,10 +168,10 @@ def scan_for_licenses(srcdir, config):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
                 license_from_copying_hash(os.path.join(dirpath, name),
-                                          srcdir, config)
+                                          srcdir, config, pkg_name)
 
     if not licenses:
-        print_fatal(" Cannot find any license or a valid {}.license file!\n".format(tarball.name))
+        print_fatal(" Cannot find any license or a valid {}.license file!\n".format(pkg_name))
         sys.exit(1)
 
     print("Licenses    : ", " ".join(sorted(licenses)))

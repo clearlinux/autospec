@@ -3,6 +3,7 @@ import unittest.mock
 import buildreq
 import config
 import specfiles
+import tarball
 
 
 class TestSpecfileWrite(unittest.TestCase):
@@ -16,8 +17,10 @@ class TestSpecfileWrite(unittest.TestCase):
         conf = config.Config()
         conf.config_opts['dev_requires_extras'] = False
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
+        content = tarball.Content(url, 'pkg', '1.0', [], conf)
+        conf.content = content
         reqs = buildreq.Requirements(url)
-        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf, reqs)
+        self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf, reqs, content)
 
         def mock_write(string):
             self.WRITES.append(string)

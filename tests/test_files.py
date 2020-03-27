@@ -150,7 +150,7 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         autostart = '/usr/lib/systemd/system/some.target.wants/some'
-        self.fm.push_file(autostart)
+        self.fm.push_file(autostart, '')
         calls = [call(autostart, 'autostart'), call('%exclude ' + autostart, 'services')]
         self.fm.push_package_file.assert_has_calls(calls)
 
@@ -161,7 +161,7 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.extras.append('test')
-        self.fm.push_file('test')
+        self.fm.push_file('test', '')
         calls = [call('test', 'extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
@@ -173,7 +173,7 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.custom_extras = {'test-extras': {'files': ["test"]}}
-        self.fm.push_file('test')
+        self.fm.push_file('test', '')
         calls = [call('test', 'test-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
@@ -185,7 +185,7 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.setuid.append('test')
-        self.fm.push_file('test')
+        self.fm.push_file('test', '')
         calls = [call('%attr(4755, root, root) test', 'setuid')]
         self.fm.push_package_file.assert_has_calls(calls)
 
@@ -196,18 +196,17 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.push_file('/usr/bin/test')
+        self.fm.push_file('/usr/bin/test', '')
         self.fm.push_package_file.assert_called_once_with('/usr/bin/test', 'bin')
 
-    def test_push_file_match_tarball_name_dependency(self):
+    def test_push_file_match_pkg_name_dependency(self):
         """
         Test push_file with match in the list on the single item that is
-        dependent on the tarball name.
+        dependent on the pkg_name.
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        files.tarball.name = 'testball'
-        self.fm.push_file('/usr/share/doc/testball/')
+        self.fm.push_file('/usr/share/doc/testball/', 'testball')
         self.fm.push_package_file.assert_called_once_with('%doc /usr/share/doc/testball/*', 'doc')
 
     def test_push_file_no_match(self):
@@ -217,7 +216,7 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.push_file('doesntmatcha thing')
+        self.fm.push_file('doesntmatcha thing', '')
         self.fm.push_package_file.assert_called_once_with('doesntmatcha thing')
 
     def test_remove_file(self):

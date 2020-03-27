@@ -6,6 +6,7 @@ from unittest.mock import mock_open, patch
 import buildreq
 import check
 import config
+import tarball
 
 def mock_generator(rv=None):
     def mock_f(*args, **kwargs):
@@ -28,7 +29,6 @@ class TestTest(unittest.TestCase):
 
     def setUp(self):
         check.tests_config = ''
-        check.tarball.name = ''
         check.buildpattern.default_pattern = "make"
 
     def test_check_regression(self):
@@ -90,13 +90,14 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.in'])
         content = 'check:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
             check.buildpattern.default_pattern = "configure"
-            check.scan_for_tests('pkgdir', conf, reqs)
+            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
 
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
@@ -109,12 +110,13 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.am'])
         m_open = mock_open()
         with patch(self.open_name, m_open, create=True):
             check.buildpattern.default_pattern = "configure_ac"
-            check.scan_for_tests('pkgdir', conf, reqs)
+            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
 
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
@@ -127,10 +129,11 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.PL'])
         check.buildpattern.default_pattern = "cpan"
-        check.scan_for_tests('pkgdir', conf, reqs)
+        check.scan_for_tests('pkgdir', conf, reqs, tcontent)
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
         self.assertEqual(check.tests_config, 'make TEST_VERBOSE=1 test')
@@ -141,13 +144,14 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.in'])
         content = 'test:'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
             check.buildpattern.default_pattern = "cpan"
-            check.scan_for_tests('pkgdir', conf, reqs)
+            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
 
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
@@ -159,13 +163,14 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['setup.py'])
         content = 'test_suite'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
             check.buildpattern.default_pattern = "distutils3"
-            check.scan_for_tests('pkgdir', conf, reqs)
+            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
 
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
@@ -179,13 +184,14 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['CMakeLists.txt'])
         content = 'enable_testing'
         m_open = mock_open(read_data=content)
         with patch(self.open_name, m_open, create=True):
             check.buildpattern.default_pattern = "cmake"
-            check.scan_for_tests('pkgdir', conf, reqs)
+            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
 
         check.os.listdir = listdir_backup
         check.buildpattern.default_pattern = "make"
@@ -199,9 +205,10 @@ class TestTest(unittest.TestCase):
         """
         reqs = buildreq.Requirements("")
         conf = config.Config()
+        tcontent = tarball.Content("", "", "", [], conf)
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['tox.ini'])
-        check.scan_for_tests('pkgdir', conf, reqs)
+        check.scan_for_tests('pkgdir', conf, reqs, tcontent)
         check.os.listdir = listdir_backup
         self.assertEqual(reqs.buildreqs,
                          set(['tox',

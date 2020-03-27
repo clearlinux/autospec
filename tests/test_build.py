@@ -6,7 +6,7 @@ import build
 import buildreq
 import config
 import files
-
+import tarball
 
 class TestBuildpattern(unittest.TestCase):
 
@@ -24,10 +24,8 @@ class TestBuildpattern(unittest.TestCase):
         """
         Test that setup_workingdir sets the correct directory patterns
         """
-        build.tarball.name = "testtarball"
         build.setup_workingdir("test_directory")
         self.assertEqual(build.base_path, "test_directory")
-        self.assertEqual(build.download_path, "test_directory/testtarball")
 
     def test_simple_pattern_pkgconfig(self):
         """
@@ -371,6 +369,7 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf)
         conf.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
@@ -381,7 +380,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs)
+            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
@@ -400,6 +399,7 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
         fm = files.FileManager(conf)
@@ -409,7 +409,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs)
+            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
@@ -424,6 +424,7 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         open_auto_backup = build.util.open_auto
         build.util.call = MagicMock(return_value=None)
@@ -436,7 +437,7 @@ class TestBuildpattern(unittest.TestCase):
                     input, output = error.strip('\n').split('|')
                     reqs.buildreqs = set()
                     build.util.open_auto = mock_open(read_data=input)
-                    build.parse_build_results('testname', 0, fm, conf, reqs)
+                    build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
                     self.assertIn(output, reqs.buildreqs)
                     self.assertGreater(build.must_restart, 0)
@@ -455,6 +456,7 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
         fm = files.FileManager(conf)
@@ -470,7 +472,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs)
+            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
@@ -491,6 +493,7 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
         fm = files.FileManager(conf)
@@ -508,7 +511,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs)
+            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 

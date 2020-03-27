@@ -27,7 +27,6 @@ import shutil
 import subprocess
 import sys
 
-import tarball
 import util
 
 valid_dirs = ["/usr/lib", "/usr/lib64"]
@@ -202,7 +201,7 @@ def truncate_file(path):
         trunc.truncate()
 
 
-def examine_abi(download_path):
+def examine_abi(download_path, name):
     """Proxy the ABI reporting to the right function."""
     download_path = os.path.abspath(download_path)
     results_dir = os.path.abspath(os.path.join(download_path, "results"))
@@ -212,17 +211,17 @@ def examine_abi(download_path):
         sys.exit(1)
 
     if util.binary_in_path("abireport"):
-        examine_abi_host(download_path, results_dir)
+        examine_abi_host(download_path, results_dir, name)
     else:
         util.print_warning("abireport is not installed. Using slow scanning")
-        examine_abi_fallback(download_path, results_dir)
+        examine_abi_fallback(download_path, results_dir, name)
 
 
-def examine_abi_host(download_path, results_dir):
+def examine_abi_host(download_path, results_dir, name):
     """Make use of the hostside abireport tool."""
     rpms = set()
     for item in os.listdir(results_dir):
-        namelen = len(tarball.name)
+        namelen = len(name)
         if item.find("-extras-", namelen) >= namelen:
             continue
         if item.endswith(".rpm") and not item.endswith(".src.rpm"):
@@ -239,13 +238,13 @@ def examine_abi_host(download_path, results_dir):
         util.print_fatal("Error invoking abireport: {}".format(e))
 
 
-def examine_abi_fallback(download_path, results_dir):
+def examine_abi_fallback(download_path, results_dir, name):
     """Missing abireport so fallback to internal scanning."""
     old_dir = os.getcwd()
 
     rpms = set()
     for item in os.listdir(results_dir):
-        namelen = len(tarball.name)
+        namelen = len(name)
         if item.find("-extras-", namelen) >= namelen:
             continue
         if item.endswith(".rpm") and not item.endswith(".src.rpm"):
