@@ -248,6 +248,7 @@ class FileManager(object):
             (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.so$", so_dest_ompi),
             (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
             (r"^/usr/lib64/openmpi/lib/[a-zA-Z0-9._+-]*\.so\.", "openmpi"),
+            (r"^/usr/lib64/openmpi/lib/python3.*/", "openmpi"),
             (r"^/usr/lib64/openmpi/lib/", "dev"),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.so\.", "plugins"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.so\.", "lib"),
