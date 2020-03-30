@@ -380,9 +380,11 @@ class Content(object):
             version = major + "." + minor + "." + patch + "." + build
             version = version.strip(".")
 
-        # construct github giturl from gnome projects
-        if not self.giturl and "download.gnome.org" in self.url:
-            self.giturl = "https://github.com/GNOME/{}.git".format(name)
+        # Construct gitlab giturl for GNOME projects, and update previous giturls
+        # that pointed to the GitHub mirror.
+        if "download.gnome.org" in self.url:
+            if not self.giturl or "github.com/GNOME" in self.giturl or "git.gnome.org" in self.giturl:
+                self.giturl = "https://gitlab.gnome.org/GNOME/{}".format(name)
 
         if "mirrors.kernel.org" in self.url:
             m = re.search(r".*/sourceware/(.*?)/releases/(.*?).tgz", self.url)
