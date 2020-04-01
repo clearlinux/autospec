@@ -28,7 +28,6 @@ import shutil
 import sys
 from subprocess import PIPE, run
 
-import build
 import util
 
 
@@ -80,7 +79,7 @@ def find_in_line(pattern, line):
     return bool(re.search(pattern, line))
 
 
-def process_NEWS(newsfile, old_version, name, version):
+def process_NEWS(newsfile, old_version, name, version, download_path):
     """Parse the newfile for relevent changes.
 
     Look for changes and CVE fixes relevant to current version update. This information is returned
@@ -102,7 +101,7 @@ def process_NEWS(newsfile, old_version, name, version):
         return commitmessage, cves
 
     try:
-        with util.open_auto(os.path.join(build.download_path, newsfile)) as f:
+        with util.open_auto(os.path.join(download_path, newsfile)) as f:
             newslines = f.readlines()
     except EnvironmentError:
         return commitmessage, cves
@@ -217,7 +216,7 @@ def process_git(giturl, oldversion, newversion, name):
         return shortlog
 
 
-def guess_commit_message(keyinfo, config, content):
+def guess_commit_message(keyinfo, config, content, package):
     """Parse newsfile for a commit message.
 
     Try and find a sane commit message for the newsfile. The commit message defaults to the
@@ -269,14 +268,14 @@ def guess_commit_message(keyinfo, config, content):
         newsfiles = ["NEWS", "ChangeLog"]
     for newsfile in newsfiles:
         # parse news files for relevant version updates and cve fixes
-        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version, content.name, content.version)
+        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version, content.name, content.version, package.download_path)
         commitmessage.extend(newcommitmessage)
         cves.update(newcves)
 
     if cves:
         # make the package security sensitive if a CVE was patched
         config.config_opts['security_sensitive'] = True
-        config.rewrite_config_opts(build.base_path)
+        config.rewrite_config_opts(package.base_path)
         # append CVE fixes to end of commit message
         commitmessage.append("CVEs fixed in this build:")
         commitmessage.extend(sorted(list(cves)))
@@ -285,7 +284,7 @@ def guess_commit_message(keyinfo, config, content):
     if keyinfo:
         commitmessage.append("Key imported:\n{}".format(keyinfo))
 
-    util.write_out(os.path.join(build.download_path, "commitmsg"),
+    util.write_out(os.path.join(package.download_path, "commitmsg"),
                    "\n".join(commitmessage) + "\n")
 
     print("Guessed commit message:")

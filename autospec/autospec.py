@@ -60,7 +60,7 @@ def add_sources(download_path, archives, content):
     # /run or /tmp.
     #
     if os.path.exists(os.path.normpath(
-            build.download_path + "/{0}.tmpfiles".format(content.name))):
+            download_path + "/{0}.tmpfiles".format(content.name))):
         buildpattern.sources["tmpfile"].append(
             "{}.tmpfiles".format(content.name))
     if content.gcov_file:
@@ -238,23 +238,23 @@ def package(args, url, name, archives, workingdir, infile_dict):
     """Entry point for building a package with autospec."""
     conf = config.Config()
     check_requirements(args.git)
-    build.setup_workingdir(workingdir)
+    package = build.Build(workingdir)
 
     #
     # First, download the tarball, extract it and then do a set
     # of static analysis on the content of the tarball.
     #
-    filemanager = files.FileManager(conf)
+    filemanager = files.FileManager(conf, package)
     content = tarball.Content(url, name, args.version, archives, conf)
     content.process(args.target, filemanager)
-    conf.create_versions(build.download_path, content.multi_version)
+    conf.create_versions(package.download_path, content.multi_version)
     conf.content = content  # hack to avoid recursive dependency on init
     # Search up one level from here to capture multiple versions
     _dir = content.path
 
     if args.license_only:
         try:
-            with open(os.path.join(build.download_path,
+            with open(os.path.join(package.download_path,
                                    content.name + ".license"), "r") as dotlic:
                 for word in dotlic.read().split():
                     if ":" not in word:
@@ -269,20 +269,20 @@ def package(args, url, name, archives, workingdir, infile_dict):
     conf.config_file = args.config
     requirements = buildreq.Requirements(content.url)
     requirements.set_build_req()
-    conf.parse_config_files(build.download_path, args.bump, filemanager, content, requirements)
+    conf.parse_config_files(package.download_path, args.bump, filemanager, content, requirements)
     conf.setup_patterns(conf.failed_pattern_dir)
-    conf.parse_existing_spec(build.download_path, content.name)
+    conf.parse_existing_spec(package.download_path, content.name)
 
     if args.prep_only:
         write_prep(conf, workingdir, content)
         exit(0)
 
-    requirements.scan_for_configure(_dir, content.name, build.download_path, conf)
+    requirements.scan_for_configure(_dir, content.name, package.download_path, conf)
     specdescription.scan_for_description(content.name, _dir, conf.license_translations, conf.license_blacklist)
     # Start one directory higher so we scan *all* versions for licenses
     license.scan_for_licenses(os.path.dirname(_dir), conf, content.name)
-    commitmessage.scan_for_changes(build.download_path, _dir, conf.transforms)
-    add_sources(build.download_path, archives, content)
+    commitmessage.scan_for_changes(package.download_path, _dir, conf.transforms)
+    add_sources(package.download_path, archives, content)
     check.scan_for_tests(_dir, conf, requirements, content)
 
     #
@@ -310,33 +310,33 @@ def package(args, url, name, archives, workingdir, infile_dict):
 
     if args.integrity:
         interactive_mode = not args.non_interactive
-        pkg_integrity.check(url, build.download_path, conf, interactive=interactive_mode)
+        pkg_integrity.check(url, package.download_path, conf, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
 
-    specfile.write_spec(build.download_path)
+    specfile.write_spec(package.download_path)
     while 1:
-        build.package(filemanager, args.mock_config, args.mock_opts, conf, requirements, content, args.cleanup)
+        package.package(filemanager, args.mock_config, args.mock_opts, conf, requirements, content, args.cleanup)
         filemanager.load_specfile(specfile)
-        specfile.write_spec(build.download_path)
+        specfile.write_spec(package.download_path)
         filemanager.newfiles_printed = 0
         mock_chroot = "/var/lib/mock/clear-{}/root/builddir/build/BUILDROOT/" \
-                      "{}-{}-{}.x86_64".format(build.uniqueext,
+                      "{}-{}-{}.x86_64".format(package.uniqueext,
                                                content.name,
                                                content.version,
                                                content.release)
         if filemanager.clean_directories(mock_chroot):
             # directories added to the blacklist, need to re-run
-            build.must_restart += 1
+            package.must_restart += 1
 
-        if build.round > 20 or build.must_restart == 0:
+        if package.round > 20 or package.must_restart == 0:
             break
 
-        save_mock_logs(build.download_path, build.round)
+        save_mock_logs(package.download_path, package.round)
 
-    check.check_regression(build.download_path, conf.config_opts['skip_tests'])
+    check.check_regression(package.download_path, conf.config_opts['skip_tests'])
 
-    if build.success == 0:
-        conf.create_buildreq_cache(build.download_path, content.version, requirements.buildreqs_cache)
+    if package.success == 0:
+        conf.create_buildreq_cache(package.download_path, content.version, requirements.buildreqs_cache)
         print_fatal("Build failed, aborting")
         sys.exit(1)
     elif os.path.isfile("README.clear"):
@@ -350,20 +350,20 @@ def package(args, url, name, archives, workingdir, infile_dict):
         except Exception:
             pass
 
-    examine_abi(build.download_path, content.name)
+    examine_abi(package.download_path, content.name)
     if os.path.exists("/var/lib/rpm"):
         pkg_scan.get_whatrequires(content.name, conf.yum_conf)
 
-    write_out(build.download_path + "/release", content.release + "\n")
+    write_out(package.download_path + "/release", content.release + "\n")
 
     # record logcheck output
-    logcheck(build.download_path)
+    logcheck(package.download_path)
 
-    commitmessage.guess_commit_message(pkg_integrity.IMPORTED, conf, content)
-    conf.create_buildreq_cache(build.download_path, content.version, requirements.buildreqs_cache)
+    commitmessage.guess_commit_message(pkg_integrity.IMPORTED, conf, content, package)
+    conf.create_buildreq_cache(package.download_path, content.version, requirements.buildreqs_cache)
 
     if args.git:
-        git.commit_to_git(build.download_path, conf, content.name)
+        git.commit_to_git(package.download_path, conf, content.name, package.success)
     else:
         print("To commit your changes, git add the relevant files and "
               "run 'git commit -F commitmsg'")

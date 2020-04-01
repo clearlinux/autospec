@@ -4,6 +4,7 @@ import files
 import tempfile
 import os
 from unittest.mock import call, MagicMock
+import build
 from files import FileManager
 
 
@@ -21,7 +22,8 @@ class TestFiles(unittest.TestCase):
 
     def setUp(self):
         conf = config.Config()
-        self.fm = FileManager(conf)
+        pkg = build.Build("/")
+        self.fm = FileManager(conf, pkg)
 
     def test_banned_path(self):
         """

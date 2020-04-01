@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import Mock, patch
+import build
 import config
+import files
 import tarball
 
 
@@ -104,7 +106,7 @@ def source_test_generator(url, destination, path, content, src_type, prefix, sub
         """Test template."""
         # Set fake content
         MockSrcFile.set_content(content)
-        src = tarball.Source(url, destination, path)
+        src = tarball.Source(url, destination, path, '/tmp')
         self.assertEqual(src.type, src_type)
         self.assertEqual(src.prefix, prefix)
         self.assertEqual(src.subdir, subdir)
@@ -136,7 +138,10 @@ def name_and_version_test_generator(url, name, version, state):
             version_arg = f"state.{version}"
         content = tarball.Content(url, name_arg, version_arg, [], conf)
         content.config = conf
-        content.name_and_version(Mock())
+        pkg = build.Build('/tmp')
+        pkg.download_path = '/download/path/'
+        mgr = files.FileManager(conf, pkg)
+        content.name_and_version(mgr)
         name_cmp = name
         version_cmp = version
         if state == 1 or state == 3:
@@ -196,16 +201,12 @@ class TestTarball(unittest.TestCase):
     def setUp(self):
         """Set up default values before start test."""
         # Set strenght to 0 so it can be updated during tests
-        tarball.build.base_path = '/tmp'
-        tarball.build.download_path = '/download/path/'
         conf = config.Config()
         self.content = tarball.Content('', '', '', [], conf)
         conf.content = self.content
 
     def tearDown(self):
         """Clean up after running each test."""
-        tarball.build.base_path = None
-        tarball.build.download_path = None
         tarball.buildpattern.archive_details = {}
         tarball.buildpattern.pattern_strength = 0
         tarball.buildpattern.sources['godep'] = []
@@ -216,7 +217,7 @@ class TestTarball(unittest.TestCase):
         """Test for tarball.set_gcov method."""
         # Set up input values
         self.content.name = 'test'
-        self.content.set_gcov()
+        self.content.set_gcov('')
         self.assertEqual(self.content.gcov_file, 'test.gcov')
 
     def test_process_go_archives(self):
@@ -242,7 +243,7 @@ class TestTarball(unittest.TestCase):
     def test_process_multiver_archives(self):
         """Test for tarball.process_multiver_archives method."""
         # Set up input values
-        main_src = tarball.Source('https://example/src-5.0.tar', ':', '/tmp/src.tar')
+        main_src = tarball.Source('https://example/src-5.0.tar', ':', '/tmp/src.tar', '/tmp')
         multiver_archives = []
         config_versions = {
             '5.0': 'https://example/src-5.0.tar',
@@ -260,7 +261,7 @@ class TestTarball(unittest.TestCase):
         conf = Mock()
         conf.configure_mock(**attrs)
         self.content.config = conf
-        self.content.process_multiver_archives(main_src, multiver_archives)
+        self.content.process_multiver_archives(main_src, multiver_archives, '/download/path')
         self.assertEqual(multiver_archives, expected_multiver_archives)
 
     @patch('tarball.Source.set_prefix', Mock())
@@ -268,10 +269,10 @@ class TestTarball(unittest.TestCase):
     def test_extract_sources(self):
         """Test for tarball.extract_sources method."""
         # Set up input values
-        main_src = tarball.Source('https://example1.tar', '', '/tmp')
-        arch1_src = tarball.Source('https://example2.tar', '', '/tmp')
-        arch2_src = tarball.Source('https://example3.tar', ':', '/tmp')
-        arch3_src = tarball.Source('https://example4.tar', '', '/tmp')
+        main_src = tarball.Source('https://example1.tar', '', '/tmp', '/tmp')
+        arch1_src = tarball.Source('https://example2.tar', '', '/tmp', '/tmp')
+        arch2_src = tarball.Source('https://example3.tar', ':', '/tmp', '/tmp')
+        arch3_src = tarball.Source('https://example4.tar', '', '/tmp', '/tmp')
         archives_src = [arch1_src, arch2_src, arch3_src]
         tarball.extract_sources(main_src, archives_src)
         # Sources with destination=':' should not be extracted, so method

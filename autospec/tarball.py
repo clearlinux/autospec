@@ -24,7 +24,6 @@ import tarfile
 import zipfile
 from collections import OrderedDict
 
-import build
 import buildpattern
 import download
 from util import call, do_regex, get_sha1sum, print_fatal, write_out
@@ -33,11 +32,12 @@ from util import call, do_regex, get_sha1sum, print_fatal, write_out
 class Source(object):
     """Holds data and methods for source code or archives management."""
 
-    def __init__(self, url, destination, path):
+    def __init__(self, url, destination, path, base_path):
         """Set default values for source file."""
         self.url = url
         self.destination = destination
         self.path = path
+        self.base_path = base_path
         self.type = None
         self.prefix = None
         self.subdir = None
@@ -103,9 +103,9 @@ class Source(object):
     def extract(self):
         """Prepare extraction path and call specific extraction method."""
         if not self.prefix:
-            extraction_path = os.path.join(build.base_path, self.subdir)
+            extraction_path = os.path.join(self.base_path, self.subdir)
         else:
-            extraction_path = build.base_path
+            extraction_path = self.base_path
 
         extract_method = getattr(self, 'extract_{}'.format(self.type))
         extract_method(extraction_path)
@@ -125,14 +125,14 @@ class Source(object):
         return
 
 
-def check_or_get_file(upstream_url, tarfile, mode="w"):
+def check_or_get_file(upstream_url, tarfile, download_path, mode="w"):
     """Download tarball from url unless it is present locally."""
-    tarball_path = build.download_path + "/" + tarfile
+    tarball_path = download_path + "/" + tarfile
     if not os.path.isfile(tarball_path):
         download.do_curl(upstream_url, dest=tarball_path, is_fatal=True)
-        write_upstream(get_sha1sum(tarball_path), tarfile, mode)
+        write_upstream(get_sha1sum(tarball_path), tarfile, download_path, mode)
     else:
-        write_upstream(get_sha1sum(tarball_path), tarfile, mode)
+        write_upstream(get_sha1sum(tarball_path), tarfile, download_path, mode)
     return tarball_path
 
 
@@ -206,16 +206,16 @@ def detect_build_from_url(url):
         buildpattern.set_build_pattern("phpize", 10)
 
 
-def write_upstream(sha, tarfile, mode="w"):
+def write_upstream(sha, tarfile, download_path, mode="w"):
     """Write the upstream hash to the upstream file."""
-    write_out(os.path.join(build.download_path, "upstream"),
+    write_out(os.path.join(download_path, "upstream"),
               os.path.join(sha, tarfile) + "\n", mode=mode)
 
 
-def process_main_source(url):
+def process_main_source(url, package):
     """Download and get important information from main source code."""
-    src_path = check_or_get_file(url, os.path.basename(url))
-    main_src = Source(url, '', src_path)
+    src_path = check_or_get_file(url, os.path.basename(url), package.download_path)
+    main_src = Source(url, '', src_path, package.base_path)
     return main_src
 
 
@@ -283,13 +283,12 @@ class Content(object):
         if target_dir:
             target = target_dir
 
-        build.download_path = target
-        call("mkdir -p {}".format(build.download_path))
+        call("mkdir -p {}".format(target))
         return target
 
-    def set_multi_version(self, ver):
+    def set_multi_version(self, ver, path):
         """Add ver to multi_version set and return latest version."""
-        self.multi_version = self.config.parse_config_versions(build.download_path)
+        self.multi_version = self.config.parse_config_versions(path)
         if ver:
             # Some build patterns put multiple versions in the same package.
             # For those patterns add to the multi_version list
@@ -318,7 +317,7 @@ class Content(object):
         if self.name and self.version:
             # rawname == name in this case
             self.rawname = self.name
-            self.version = convert_version(self.set_multi_version(self.version), self.name)
+            self.version = convert_version(self.set_multi_version(self.version, filemanager.package.download_path), self.name)
             return
 
         name = self.name
@@ -446,11 +445,11 @@ class Content(object):
         # override name and version from commandline
         self.name = self.name if self.name else name
         self.version = self.version if self.version else version
-        self.version = self.set_multi_version(self.version)
+        self.version = self.set_multi_version(self.version, filemanager.package.download_path)
 
-    def set_gcov(self):
+    def set_gcov(self, download_path):
         """Set the gcov file name."""
-        gcov_path = os.path.join(build.download_path, self.name + ".gcov")
+        gcov_path = os.path.join(download_path, self.name + ".gcov")
         if os.path.isfile(gcov_path):
             self.gcov_file = self.name + ".gcov"
 
@@ -470,9 +469,9 @@ class Content(object):
                 go_archives.extend([url_zip, ''])
             buildpattern.sources["godep"] += [url_info, url_mod, url_zip]
 
-    def process_multiver_archives(self, main_src, multiver_archives):
+    def process_multiver_archives(self, main_src, multiver_archives, download_path):
         """Set up multiversion archives."""
-        config_versions = self.config.parse_config_versions(build.download_path)
+        config_versions = self.config.parse_config_versions(download_path)
         # Check if exist more than one version.
         if len(config_versions) > 1:
             for extraver in config_versions:
@@ -481,9 +480,9 @@ class Content(object):
                     buildpattern.sources["version"].append(extraurl)
                     multiver_archives.append(extraurl)
                     multiver_archives.append('')
-                    self.set_multi_version(None)
+                    self.set_multi_version(None, download_path)
 
-    def process_archives(self, main_src):
+    def process_archives(self, main_src, package):
         """Process extra sources needed by package.
 
         This sources include: archives, go archives and multiversion.
@@ -497,14 +496,14 @@ class Content(object):
             self.process_go_archives(go_archives)
         else:
             # Add multiversion for the rest of the patterns
-            self.process_multiver_archives(main_src, multiver_archives)
+            self.process_multiver_archives(main_src, multiver_archives, package.download_path)
 
         full_archives = self.archives + go_archives + multiver_archives
         # Download and extract full list
         for arch_url, destination in zip(full_archives[::2], full_archives[1::2]):
-            src_path = check_or_get_file(arch_url, os.path.basename(arch_url), mode="a")
+            src_path = check_or_get_file(arch_url, os.path.basename(arch_url), package.download_path, mode="a")
             # Create source object and extract archive
-            archive = Source(arch_url, destination, src_path)
+            archive = Source(arch_url, destination, src_path, package.base_path)
             # Add archive prefix to list
             buildpattern.archive_details[arch_url + "prefix"] = archive.prefix
             self.prefixes[arch_url] = archive.prefix
@@ -517,8 +516,8 @@ class Content(object):
         """Download and process the tarball at url_arg."""
         # determine build pattern and build requirements from url
         detect_build_from_url(self.url)
-        # Create the download path for content and set build.download_path
-        self.create_download_path(target)
+        # Create the download path for content and set download_path
+        filemanager.package.download_path = self.create_download_path(target)
         # determine name and version of package
         self.name_and_version(filemanager)
         # Store the top-level version
@@ -526,18 +525,18 @@ class Content(object):
         # set gcov file information, must be done after name is set since the gcov
         # name is created by adding ".gcov" to the package name (if a gcov file
         # exists)
-        self.set_gcov()
+        self.set_gcov(filemanager.package.download_path)
         # Download and process main source
-        main_src = process_main_source(self.url)
+        main_src = process_main_source(self.url, filemanager.package)
         # Store the detected prefix associated with this file
         self.prefixes[self.url] = main_src.prefix
         self.tarball_prefix = main_src.prefix
         # set global path with tarball_prefix
-        self.path = os.path.join(build.base_path, self.tarball_prefix)
+        self.path = os.path.join(filemanager.package.base_path, self.tarball_prefix)
         # Now that the metadata has been collected print the header
         self.print_header()
         # Download and process extra sources: archives, go archives and
         # multiversion
-        archives_src = self.process_archives(main_src)
+        archives_src = self.process_archives(main_src, filemanager.package)
         # Extract all sources
         extract_sources(main_src, archives_src)

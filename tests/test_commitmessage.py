@@ -2,6 +2,7 @@ import unittest
 import unittest.mock as mock
 import os
 import tempfile
+import build
 import commitmessage
 import config
 import tarball
@@ -11,7 +12,6 @@ class TestCommitmessage(unittest.TestCase):
 
     def setUp(self):
         self.workingdir = tempfile.TemporaryDirectory()
-        commitmessage.build.setup_workingdir(self.workingdir.name)
 
     def tearDown(self):
         self.workingdir.cleanup()
@@ -51,14 +51,13 @@ class TestCommitmessage(unittest.TestCase):
         Test process_NEWS() function with valid newsfile provided
         """
         with tempfile.TemporaryDirectory() as tmpd:
-            commitmessage.build.download_path = tmpd
             with open(os.path.join(tmpd, 'NEWS'), 'w') as newsfile:
                 newsfile.write(GOOD_NEWS)
             # commitmessage returned will have an empty string as first and
             # last items
             expected_msg = [""] + GOOD_NEWS.split('\n')[3:13]
             expected_cvs = set()
-            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1', tmpd),
                              (expected_msg, expected_cvs))
 
     def test_process_NEWS_bad_news(self):
@@ -66,18 +65,16 @@ class TestCommitmessage(unittest.TestCase):
         Test process_NEWS() function with irrelevant newsfile provided
         """
         with tempfile.TemporaryDirectory() as tmpd:
-            commitmessage.build.download_path = tmpd
             with open(os.path.join(tmpd, 'NEWS'), 'w') as newsfile:
                 # make GOOD_NEWS irrelevant by replacing current version
                 newsfile.write(GOOD_NEWS.replace('0.0.1', '0.0.0'))
-            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1'), ([], set()))
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1', tmpd), ([], set()))
 
     def test_process_NEWS_good_cves(self):
         """
         Test process_NEWS() function with valid newsfile and CVEs
         """
         with tempfile.TemporaryDirectory() as tmpd:
-            commitmessage.build.download_path = tmpd
             with open(os.path.join(tmpd, 'NEWS'), 'w') as newsfile:
                 # give GOOD_NEWS some CVEs
                 newsfile.write(GOOD_NEWS.replace('change2.1', 'CVE-2-1')
@@ -89,7 +86,7 @@ class TestCommitmessage(unittest.TestCase):
                                            .replace('change2.2', 'CVE-2-2')\
                                            .split('\n')[3:13]
             expected_cvs = set(['CVE-2-1', 'CVE-2-2'])
-            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1', tmpd),
                              (expected_msg, expected_cvs))
 
     def test_process_NEWS_long(self):
@@ -98,7 +95,6 @@ class TestCommitmessage(unittest.TestCase):
         block is longer than 15 lines, causing it to be truncated.
         """
         with tempfile.TemporaryDirectory() as tmpd:
-            commitmessage.build.download_path = tmpd
             long_news = GOOD_NEWS.replace('text explaining change2.2',
                                           '1\n2\n3\n4\n5\n6\n7\n8\n9\n')
             with open(os.path.join(tmpd, 'NEWS'), 'w') as newsfile:
@@ -110,7 +106,7 @@ class TestCommitmessage(unittest.TestCase):
             expected_msg.extend(['1', '2', '3', '4', '5', '6', '7', '',
                                  '(NEWS truncated at 15 lines)', ''])
             expected_cvs = set()
-            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1'),
+            self.assertEqual(commitmessage.process_NEWS('NEWS', '0.0.0', '', '0.0.1', tmpd),
                              (expected_msg, expected_cvs))
 
     def test_guess_commit_message(self):
@@ -120,20 +116,21 @@ class TestCommitmessage(unittest.TestCase):
         """
         conf = config.Config()
         conf.old_version = "0.0.0"
+        pkg = build.Build(self.workingdir.name)
+        pkg.download_path = ""
         tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile, old_version, name, version):
+        def mock_process_NEWS(newsfile, old_version, name, version, download_path):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
         commitmessage.process_NEWS = mock_process_NEWS
-        commitmessage.build.download_path = ""
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("", conf, tcontent)
+            commitmessage.guess_commit_message("", conf, tcontent, pkg)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -152,11 +149,13 @@ class TestCommitmessage(unittest.TestCase):
         message.
         """
         conf = config.Config()
+        pkg = build.Build(self.workingdir.name)
+        pkg.download_path = ""
         tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile, old_version, name, version):
+        def mock_process_NEWS(newsfile, old_version, name, version, download_path):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
@@ -166,7 +165,7 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("", conf, tcontent)
+            commitmessage.guess_commit_message("", conf, tcontent, pkg)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -185,11 +184,13 @@ class TestCommitmessage(unittest.TestCase):
         at the end of the message.
         """
         conf = config.Config()
+        pkg = build.Build(self.workingdir.name)
+        pkg.download_path = ""
         tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
-        def mock_process_NEWS(newsfile, old_version, name, version):
+        def mock_process_NEWS(newsfile, old_version, name, version, download_path):
             return (['', 'commit', 'message', 'with', 'cves', ''],
                     set(['cve1', 'cve2']))
 
@@ -199,7 +200,7 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("keyinfo content", conf, tcontent)
+            commitmessage.guess_commit_message("keyinfo content", conf, tcontent, pkg)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup

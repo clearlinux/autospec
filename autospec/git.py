@@ -23,12 +23,11 @@ import glob
 import os
 import subprocess
 
-import build
 import buildpattern
 from util import call, write_out
 
 
-def commit_to_git(path, config, name):
+def commit_to_git(path, config, name, success):
     """Update package's git tree for autospec managed changes."""
     call("git init", stdout=subprocess.DEVNULL, cwd=path)
 
@@ -137,7 +136,7 @@ def commit_to_git(path, config, name):
     write_out(os.path.join(path, '.gitignore'), '\n'.join(ignorelist))
     call("git add .gitignore", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
-    if build.success == 0:
+    if success == 0:
         return
 
     call("git commit -a -F commitmsg ", cwd=path)
