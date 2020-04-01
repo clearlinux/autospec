@@ -177,7 +177,7 @@ class Specfile(object):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
                        "lib32", "dev32", "doc", "examples", "abi", "staticdev",
-                       "staticdev32"]:
+                       "staticdev32", "tests"]:
                 continue
             # honor requires_ban for manual overrides
             if "{}-{}".format(self.name, pkg) in self.requirements.banned_requires:

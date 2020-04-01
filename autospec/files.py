@@ -242,6 +242,8 @@ class FileManager(object):
             (r"^/usr/share/abi/", "abi"),
             (r"^/usr/share/qt5/examples/", "examples"),
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
+            (r"^/usr/share/installed-tests/", "tests"),
+            (r"^/usr/libexec/installed-tests/", "tests"),
             (r"^/usr/lib64/openmpi/bin/", "openmpi"),
             (r"^/usr/lib64/openmpi/share", "openmpi"),
             (r"^/usr/lib64/openmpi/include/", "dev"),
