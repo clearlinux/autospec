@@ -177,7 +177,7 @@ def main():
                         default="/usr/share/defaults/autospec/autospec.conf",
                         help="Set configuration file to use")
     parser.add_argument("-t", "--target", dest="target", action="store",
-                        default=None,
+                        required=True,
                         help="Target location to create or reuse")
     parser.add_argument("-i", "--integrity", action="store_true",
                         default=False,
@@ -223,6 +223,13 @@ def main():
         if infile_dict.get("LICENSE"):
             license.add_license(infile_dict.get("LICENSE"))
             print_infile("License added: {}".format(infile_dict.get("LICENSE")))
+
+    if not args.target:
+        parser.error(argparse.ArgumentTypeError(
+            "The target option is not valid"))
+    else:
+        # target path must exist or be created
+        os.makedirs(args.target, exist_ok=True)
 
     if not url:
         parser.error(argparse.ArgumentTypeError(
