@@ -10,62 +10,48 @@ import tarball
 
 class TestBuildpattern(unittest.TestCase):
 
-    def setUp(self):
-        """
-        Test setup method to reset the buildpattern module
-        """
-        build.success = 0
-        build.round = 0
-        build.must_restart = 0
-        build.base_path = None
-        build.download_path = None
-
-    def test_setup_workingdir(self):
-        """
-        Test that setup_workingdir sets the correct directory patterns
-        """
-        build.setup_workingdir("test_directory")
-        self.assertEqual(build.base_path, "test_directory")
-
     def test_simple_pattern_pkgconfig(self):
         """
         Test simple_pattern_pkgconfig with match
         """
         reqs = buildreq.Requirements("")
-        build.simple_pattern_pkgconfig('line to test for testpkg.xyz',
-                                       r'testpkg.xyz',
-                                       'testpkg',
-                                       False,
-                                       reqs)
+        pkg = build.Build("/")
+        pkg.simple_pattern_pkgconfig('line to test for testpkg.xyz',
+                                     r'testpkg.xyz',
+                                     'testpkg',
+                                     False,
+                                     reqs)
         self.assertIn('pkgconfig(testpkg)', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_simple_pattern_pkgconfig_32bit(self):
         """
         Test simple_pattern_pkgconfig with match and 32bit option set
         """
         reqs = buildreq.Requirements("")
-        build.simple_pattern_pkgconfig('line to test for testpkg.zyx',
-                                       r'testpkg.zyx',
-                                       'testpkgz',
-                                       True,
-                                       reqs)
+        pkg = build.Build("/")
+        pkg.simple_pattern_pkgconfig('line to test for testpkg.zyx',
+                                     r'testpkg.zyx',
+                                     'testpkgz',
+                                     True,
+                                     reqs)
         self.assertIn('pkgconfig(32testpkgz)', reqs.buildreqs)
         self.assertIn('pkgconfig(testpkgz)', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_simple_pattern_pkgconfig_no_match(self):
         """
         Test simple_pattern_pkgconfig with no match, nothing should be modified
         """
         reqs = buildreq.Requirements("")
-        build.simple_pattern_pkgconfig('line to test for somepkg.xyz',
-                                       r'testpkg.xyz',
-                                       'testpkg',
-                                       False,
-                                       reqs)
+        pkg = build.Build("/")
+        pkg.simple_pattern_pkgconfig('line to test for somepkg.xyz',
+                                     r'testpkg.xyz',
+                                     'testpkg',
+                                     False,
+                                     reqs)
         self.assertEqual(reqs.buildreqs, set())
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_simple_pattern(self):
         """
@@ -74,24 +60,26 @@ class TestBuildpattern(unittest.TestCase):
         to buildreq.buildreqs.
         """
         reqs = buildreq.Requirements("")
-        build.simple_pattern('line to test for testpkg.xyz',
-                             r'testpkg.xyz',
-                             'testpkg',
-                             reqs)
+        pkg = build.Build("/")
+        pkg.simple_pattern('line to test for testpkg.xyz',
+                           r'testpkg.xyz',
+                           'testpkg',
+                           reqs)
         self.assertIn('testpkg', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_simple_pattern_no_match(self):
         """
         Test simple_pattern with no match, nothing should be modified
         """
         reqs = buildreq.Requirements("")
-        build.simple_pattern('line to test for somepkg.xyz',
-                             r'testpkg.xyz',
-                             'testpkg',
-                             reqs)
+        pkg = build.Build("/")
+        pkg.simple_pattern('line to test for somepkg.xyz',
+                           r'testpkg.xyz',
+                           'testpkg',
+                           reqs)
         self.assertEqual(reqs.buildreqs, set())
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_failed_pattern_no_match(self):
         """
@@ -99,9 +87,10 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: somepkg', conf, reqs, r'(test)', 0)
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: somepkg', conf, reqs, r'(test)', 0)
         self.assertEqual(reqs.buildreqs, set())
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_failed_pattern_no_buildtool(self):
         """
@@ -110,9 +99,10 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg', conf, reqs, r'(test)', 0)
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg', conf, reqs, r'(test)', 0)
         self.assertEqual(reqs.buildreqs, set())
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_failed_pattern_no_buildtool_match(self):
         """
@@ -121,9 +111,10 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         reqs = buildreq.Requirements("")
         conf.setup_patterns()
-        build.failed_pattern('line to test for failure: lex', conf, reqs, r'(lex)', 0)
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: lex', conf, reqs, r'(lex)', 0)
         self.assertIn('flex', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_pkgconfig(self):
         """
@@ -131,14 +122,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg.xyz',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg.xyz',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='pkgconfig')
         self.assertIn('pkgconfig(testpkg)', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_R(self):
         """
@@ -147,7 +139,8 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg.r',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg.r',
                              conf,
                              reqs,
                              r'(testpkg)',
@@ -155,7 +148,7 @@ class TestBuildpattern(unittest.TestCase):
                              buildtool='R')
         self.assertIn('R-testpkg', reqs.buildreqs)
         self.assertIn('R-testpkg', reqs.requires)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_perl(self):
         """
@@ -163,14 +156,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg.pl',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg.pl',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='perl')
         self.assertIn('perl(testpkg)', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_pypi(self):
         """
@@ -178,14 +172,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg.py',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg.py',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='pypi')
         self.assertIn('testpkg-python', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_ruby(self):
         """
@@ -194,14 +189,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg.rb',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg.rb',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='ruby')
         self.assertIn('rubygem-testpkg', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_ruby_gem_match(self):
         """
@@ -212,14 +208,15 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: test/unit',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: test/unit',
                              conf,
                              reqs,
                              r'(test/unit)',
                              0,  # verbose=0
                              buildtool='ruby')
         self.assertIn('rubygem-test-unit', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_ruby_table(self):
         """
@@ -229,14 +226,15 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: test/unit',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: test/unit',
                              conf,
                              reqs,
                              r'(test/unit)',
                              0,  # verbose=0
                              buildtool='ruby table')
         self.assertIn('rubygem-test-unit', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_ruby_table_no_match(self):
         """
@@ -245,14 +243,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='ruby table')
         self.assertEqual(reqs.buildreqs, set())
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_failed_pattern_maven(self):
         """
@@ -261,14 +260,15 @@ class TestBuildpattern(unittest.TestCase):
         """
         conf = config.Config()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: testpkg',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: testpkg',
                              conf,
                              reqs,
                              r'(testpkg)',
                              0,  # verbose=0
                              buildtool='maven')
         self.assertIn('mvn-testpkg', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_maven_match(self):
         """
@@ -279,14 +279,15 @@ class TestBuildpattern(unittest.TestCase):
         conf = config.Config()
         conf.setup_patterns()
         reqs = buildreq.Requirements("")
-        build.failed_pattern('line to test for failure: aether',
+        pkg = build.Build("/")
+        pkg.failed_pattern('line to test for failure: aether',
                              conf,
                              reqs,
                              r'(aether)',
                              0,  # verbose=0
                              buildtool='maven')
         self.assertIn('mvn-aether-core', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_parse_buildroot_log_fail(self):
         """
@@ -302,15 +303,16 @@ class TestBuildpattern(unittest.TestCase):
         open_name = 'build.util.open_auto'
         content = "line1\nDEBUG util.py:399:  No matching package to install: 'foobar'\nDEBUG util.py:399:  No matching package to install: 'foobarbaz'\nline 4"
         m_open = mock_open(read_data=content)
+        pkg = build.Build("/")
 
         result = True
         with patch(open_name, m_open, create=True):
-            result = build.parse_buildroot_log('testname', 1)
+            result = pkg.parse_buildroot_log('testname', 1)
 
         build.util.call = call_backup
 
         self.assertFalse(result)
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_parse_buildroot_log_pass(self):
         """
@@ -325,15 +327,16 @@ class TestBuildpattern(unittest.TestCase):
         open_name = 'build.util.open_auto'
         content = "line 1\nline 2\nline 3\nline 4"
         m_open = mock_open(read_data=content)
+        pkg = build.Build("/")
 
         result = True
         with patch(open_name, m_open, create=True):
-            result = build.parse_buildroot_log('testname', 1)
+            result = pkg.parse_buildroot_log('testname', 1)
 
         build.util.call = call_backup
 
         self.assertTrue(result)
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_parse_buildroot_log_noop(self):
         """
@@ -349,10 +352,11 @@ class TestBuildpattern(unittest.TestCase):
         open_name = 'build.util.open_auto'
         content = "line 1\nline 2\nline 3\nline 4"
         m_open = mock_open(read_data=content)
+        pkg = build.Build("/")
 
         result = True
         with patch(open_name, m_open, create=True):
-            result = build.parse_buildroot_log('testname', 0)
+            result = pkg.parse_buildroot_log('testname', 0)
 
         build.util.call = call_backup
 
@@ -373,20 +377,21 @@ class TestBuildpattern(unittest.TestCase):
         conf.config_opts['32bit'] = True
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager(conf)
+        pkg = build.Build("/")
+        fm = files.FileManager(conf, pkg)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\nwhich: no qmake\nexiting'
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+            pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
         self.assertIn('pkgconfig(Qt)', reqs.buildreqs)
         self.assertIn('pkgconfig(32Qt)', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_parse_build_results_simple_pats(self):
         """
@@ -402,19 +407,20 @@ class TestBuildpattern(unittest.TestCase):
         tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager(conf)
+        pkg = build.Build("/")
+        fm = files.FileManager(conf, pkg)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\nchecking for Apache test module support\nexiting'
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+            pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
         self.assertIn('httpd-dev', reqs.buildreqs)
-        self.assertEqual(build.must_restart, 1)
+        self.assertEqual(pkg.must_restart, 1)
 
     def test_parse_build_results_failed_pats(self):
         """
@@ -428,7 +434,8 @@ class TestBuildpattern(unittest.TestCase):
         call_backup = build.util.call
         open_auto_backup = build.util.open_auto
         build.util.call = MagicMock(return_value=None)
-        fm = files.FileManager(conf)
+        pkg = build.Build("/")
+        fm = files.FileManager(conf, pkg)
 
         with open('tests/builderrors', 'r') as f:
             builderrors = f.readlines()
@@ -437,10 +444,10 @@ class TestBuildpattern(unittest.TestCase):
                     input, output = error.strip('\n').split('|')
                     reqs.buildreqs = set()
                     build.util.open_auto = mock_open(read_data=input)
-                    build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+                    pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
                     self.assertIn(output, reqs.buildreqs)
-                    self.assertGreater(build.must_restart, 0)
+                    self.assertGreater(pkg.must_restart, 0)
 
         # Restoring functions
         build.util.call = call_backup
@@ -459,7 +466,8 @@ class TestBuildpattern(unittest.TestCase):
         tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager(conf)
+        pkg = build.Build("/")
+        fm = files.FileManager(conf, pkg)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\n' \
@@ -472,7 +480,7 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+            pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
@@ -481,7 +489,7 @@ class TestBuildpattern(unittest.TestCase):
                               '/usr/testdir/file1',
                               '/usr/testdir/file2']))
         # one for each file added
-        self.assertEqual(build.must_restart, 3)
+        self.assertEqual(pkg.must_restart, 3)
 
     def test_parse_build_results_banned_files(self):
         """
@@ -496,7 +504,8 @@ class TestBuildpattern(unittest.TestCase):
         tcontent = tarball.Content("", "", "", [], conf)
         call_backup = build.util.call
         build.util.call = mock_util_call
-        fm = files.FileManager(conf)
+        pkg = build.Build("/")
+        fm = files.FileManager(conf, pkg)
 
         open_name = 'build.util.open_auto'
         content = 'line 1\n' \
@@ -511,13 +520,13 @@ class TestBuildpattern(unittest.TestCase):
         m_open = mock_open(read_data=content)
 
         with patch(open_name, m_open, create=True):
-            build.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+            pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
 
         build.util.call = call_backup
 
         self.assertEqual(fm.has_banned, True)
         # check no files were added
-        self.assertEqual(build.must_restart, 0)
+        self.assertEqual(pkg.must_restart, 0)
 
     def test_get_mock_cmd_without_consolehelper(self):
         """

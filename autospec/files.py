@@ -23,16 +23,16 @@ import os
 import re
 from collections import OrderedDict
 
-import build
 import util
 
 
 class FileManager(object):
     """Class to handle spec file %files section management."""
 
-    def __init__(self, config):
+    def __init__(self, config, package):
         """Set defaults for FileManager."""
         self.config = config
+        self.package = package
         self.packages = OrderedDict()  # per sub-package file list for spec purposes
         self.files = set()  # global file set to weed out dupes
         self.files_blacklist = set()
@@ -81,7 +81,7 @@ class FileManager(object):
             g = self.attrs[filename][2]
             filename = "%attr({0},{1},{2}) {3}".format(mod, u, g, filename)
         self.packages[package].add(filename)
-        build.must_restart += 1
+        self.package.must_restart += 1
         if not self.newfiles_printed:
             print("  New %files content found")
             self.newfiles_printed = True
@@ -358,7 +358,7 @@ class FileManager(object):
                 hit = True
         if hit:
             self.files_blacklist.add(filename)
-            build.must_restart += 1
+            self.package.must_restart += 1
 
     def load_specfile(self, specfile):
         """Load a specfile instance with relevant information to be written to the spec file."""
