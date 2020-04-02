@@ -576,6 +576,13 @@ class Specfile(object):
                               "-Wl,-z,max-page-size=0x1000 "
                               '-march=westmere -mtune=haswell"\n')
             self._write_strip("export CXXFLAGS=$CFLAGS\n")
+            self._write_strip('export FFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
+                              "-fexceptions -fstack-protector "
+                              "--param=ssp-buffer-size=32 "
+                              "-Wno-error "
+                              "-Wl,-z,max-page-size=0x1000 "
+                              '-march=westmere -mtune=haswell"\n')
+            self._write_strip("export FCFLAGS=$FFLAGS\n")
             self._write_strip("unset LDFLAGS\n")
         if self.config.config_opts['use_clang']:
             self._write_strip("unset LDFLAGS\n")
@@ -607,8 +614,8 @@ class Specfile(object):
         if flags or self.config.config_opts['broken_c++']:
             flags = sorted(list(set(flags)))
             self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
-            self._write_strip('export FCFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
-            self._write_strip('export FFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('export FCFLAGS="$FFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('export FFLAGS="$FFLAGS {0} "\n'.format(" ".join(flags)))
             # leave the export CXXFLAGS line open in case
             self._write('export CXXFLAGS="$CXXFLAGS {0} '.format(" ".join(flags)))
             if self.config.config_opts['broken_c++']:
@@ -1112,6 +1119,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1126,6 +1135,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1192,6 +1203,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1206,6 +1219,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1240,6 +1255,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
             self.write_make_line()
             self._write_strip("popd")
@@ -1248,6 +1265,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
             self.write_make_line()
             self._write_strip("popd")
@@ -1289,6 +1308,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=haswell "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=haswell "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=haswell "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=haswell "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=haswell "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1302,6 +1323,8 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip('export CFLAGS="$CFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=skylake-avx512 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512 "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1394,8 +1417,8 @@ class Specfile(object):
         self.write_install_prepend()
         self._write_strip("export LANG=C.UTF-8")
         self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip('export FCFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip('export FFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('export FCFLAGS="$FFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('export FFLAGS="$FFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip("export AR=gcc-ar\n")
         self._write_strip("export RANLIB=gcc-ranlib\n")
@@ -1512,6 +1535,8 @@ class Specfile(object):
             self.need_avx2_flags = saved_avx2flags
             self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
+            self._write_strip('export FFLAGS="$FFLAGS -march=haswell -m64"')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=haswell -m64"')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1526,6 +1551,8 @@ class Specfile(object):
             self.need_avx512_flags = saved_avx512flags
             self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
+            self._write_strip('export FFLAGS="$FFLAGS -march=skylake-avx512 -m64 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=skylake-avx512 -m64 "')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
