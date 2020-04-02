@@ -292,7 +292,7 @@ class Specfile(object):
                 self._write("Requires: python3-core\n")
                 if self.requirements.pypi_provides:
                     self._write(f"Provides: pypi({self.requirements.pypi_provides})\n")
-                for req in self.requirements.pypi_requires:
+                for req in sorted(self.requirements.pypi_requires):
                     self._write(f"Requires: pypi({req})\n")
 
             if pkg == "perl":
