@@ -156,27 +156,15 @@ class TestFiles(unittest.TestCase):
         calls = [call(autostart, 'autostart'), call('%exclude ' + autostart, 'services')]
         self.fm.push_package_file.assert_has_calls(calls)
 
-    def test_push_file_extras(self):
-        """
-        Test push_file to extras package
-        """
-        self.fm.file_is_locale = MagicMock(return_value=False)
-        self.fm.push_package_file = MagicMock()
-        self.fm.extras.append('test')
-        self.fm.push_file('test', '')
-        calls = [call('test', 'extras')]
-        self.fm.push_package_file.assert_has_calls(calls)
-
-
     def test_push_file_custom_extras(self):
         """
         Test push_file to a custom extras package
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.custom_extras = {'test-extras': {'files': ["test"]}}
-        self.fm.push_file('test', '')
-        calls = [call('test', 'test-extras')]
+        self.fm.file_maps = {'foobar-extras': {'files': ["foobar"]}}
+        self.fm.push_file('foobar', '')
+        calls = [call('foobar', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
 
