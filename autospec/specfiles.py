@@ -416,14 +416,15 @@ class Specfile(object):
             self._write_strip("%setup -q -D -T -n " + self.content.tarball_prefix)
             self._write_strip("gem spec %{{SOURCE0}} -l --ruby > {}.gemspec".format(self.name))
         else:
-            if self.default_pattern == 'R':
-                self._write_strip("%setup -q -c -n " + self.content.tarball_prefix)
-            elif self.default_pattern == "godep":
+            if self.default_pattern == "godep":
                 # No setup needed each source is installed as is
                 pass
             else:
                 prefix = self.content.prefixes[self.url]
-                if prefix:
+                if self.default_pattern == 'R':
+                    prefix = self.content.tarball_prefix
+                    self._write_strip("%setup -q -c -n " + prefix)
+                elif prefix:
                     self._write_strip("%setup -q -n " + prefix)
                 else:
                     # Have to make up a path and create it
