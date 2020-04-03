@@ -59,7 +59,7 @@ class Specfile(object):
         self.need_avx512_flags = False
         self.tests_config = ""
         self.excludes = []
-        self.custom_extras = {}
+        self.file_maps = {}
         self.keyid = ""
         self.email = ""
         self.extra_cmake = config.extra_cmake + " " + " ".join(requirements.extra_cmake)
@@ -244,7 +244,7 @@ class Specfile(object):
             deps["dev"].append("extras")
         if self.config.config_opts.get('openmpi'):
             deps["dev"].append("openmpi")
-        for k, v in self.custom_extras.items():
+        for k, v in self.file_maps.items():
             if "requires" in v:
                 deps[k] = v['requires']
 

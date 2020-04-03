@@ -37,9 +37,7 @@ class FileManager(object):
         self.files = set()  # global file set to weed out dupes
         self.files_blacklist = set()
         self.excludes = []
-        self.extras = []
-        self.custom_extras = {}
-        self.dev_extras = []
+        self.file_maps = {}  # Filename-to-package mapping
         self.setuid = []
         self.attrs = {}
         self.locales = []
@@ -196,14 +194,8 @@ class FileManager(object):
         if self.file_is_locale(filename):
             return
 
-        # extras
-        if filename in self.extras:
-            self.push_package_file(filename, "extras")
-            return
-        if filename in self.dev_extras:
-            self.push_package_file(filename, "dev")
-            return
-        for k, v in self.custom_extras.items():
+        # Explicit file packaging
+        for k, v in self.file_maps.items():
             if filename in v['files']:
                 self.push_package_file(filename, k)
                 return
@@ -368,4 +360,4 @@ class FileManager(object):
         specfile.packages = self.packages
         specfile.excludes = self.excludes
         specfile.locales = self.locales
-        specfile.custom_extras = self.custom_extras
+        specfile.file_maps = self.file_maps

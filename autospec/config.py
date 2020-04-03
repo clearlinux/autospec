@@ -753,30 +753,28 @@ class Config(object):
             print("%%exclude for: %s." % exclude)
         filemanager.excludes += content
 
-        content = self.read_conf_file(os.path.join(path, "extras"))
-        for extra in content:
-            print("extras for  : %s." % extra)
-        filemanager.extras += content
-
         for fname in os.listdir(path):
-            if not re.search('.+_extras$', fname) or fname == "dev_extras":
+            if re.search(r'.+_extras$', fname):
+                # Prefix all but blessed names with extras-
+                name = fname[:-len("_extras")]
+                if name not in ('dev'):
+                    name = f'extras-{name}'
+            elif fname == 'extras':
+                name = 'extras'
+            else:
                 continue
+
             content = {}
             content['files'] = self.read_conf_file(os.path.join(path, fname))
             if not content:
                 print_warning(f"Error reading custom extras file: {fname}")
                 continue
+
             req_file = os.path.join(path, f'{fname}_requires')
             if os.path.isfile(req_file):
                 content['requires'] = self.read_conf_file(req_file)
-            name = fname[:-len("_extras")]
-            print(f"extras-{name} for {content['files']}")
-            filemanager.custom_extras["extras-" + f"{name}"] = content
 
-        content = self.read_conf_file(os.path.join(path, "dev_extras"))
-        for extra in content:
-            print("dev for     : %s." % extra)
-        filemanager.dev_extras += content
+            filemanager.file_maps[name] = content
 
         content = self.read_conf_file(os.path.join(path, "setuid"))
         for suid in content:
