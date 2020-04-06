@@ -391,6 +391,12 @@ dev_extras
   functionality to place files used only for development against this
   software that Autospec does not automatically detect.
 
+tests_extras
+  Same as "extras" above, but instead of the files being placed in an
+  ``-extras`` subpackage, they will be placed in the ``-tests`` one. Use this
+  functionality to place files used only for testing against this
+  software that Autospec does not automatically detect.
+
 ${custom}_extras
   Same as "extras" above, but instead of the files being placed in an
   ``-extras`` subpackage, they will be placed in the ``extras-${custom}``
