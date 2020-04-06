@@ -240,6 +240,7 @@ class FileManager(object):
             (r"^/usr/share/man/", "man"),
             (r"^/usr/share/info/", "info"),
             (r"^/usr/share/abi/", "abi"),
+            (r"^/usr/share/qt5/examples/", "examples"),
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
             (r"^/usr/lib64/openmpi/bin/", "openmpi"),
             (r"^/usr/lib64/openmpi/share", "openmpi"),

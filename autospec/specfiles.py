@@ -175,7 +175,7 @@ class Specfile(object):
             if pkg.startswith("extras-"):
                 continue
             if pkg in ["ignore", "main", "dev", "active-units", "extras",
-                       "lib32", "dev32", "doc", "abi", "staticdev",
+                       "lib32", "dev32", "doc", "examples", "abi", "staticdev",
                        "staticdev32"]:
                 continue
             # honor requires_ban for manual overrides
@@ -233,6 +233,7 @@ class Specfile(object):
         deps = {}
         deps["dev"] = ["lib", "bin", "data"]
         deps["doc"] = ["man", "info"]
+        deps["examples"] = ["dev"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
         deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "services"]
         deps["lib"] = ["data", "libexec", "license"]
