@@ -756,7 +756,7 @@ class Config(object):
             if re.search(r'.+_extras$', fname):
                 # Prefix all but blessed names with extras-
                 name = fname[:-len("_extras")]
-                if name not in ('dev'):
+                if name not in ('dev', 'tests'):
                     name = f'extras-{name}'
             elif fname == 'extras':
                 name = 'extras'
