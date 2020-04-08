@@ -277,18 +277,15 @@ class Specfile(object):
             for prov in provides.get(pkg, []):
                 self._write("Provides: {}-{} = %{{version}}-%{{release}}\n".format(self.name, prov))
 
+            if pkg in ("dev", "perl", "tests"):
+                self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
+
+            if pkg in ("staticdev", "staticdev32"):
+                self._write("Requires: {}-dev = %{{version}}-%{{release}}\n".format(self.name))
+
             if pkg == "python":
                 if self.name != self.name.lower():
                     self._write("Provides: {}-python\n".format(self.name.lower()))
-
-            if pkg == "dev":
-                self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
-
-            if pkg == "staticdev":
-                self._write("Requires: {}-dev = %{{version}}-%{{release}}\n".format(self.name))
-
-            if pkg == "staticdev32":
-                self._write("Requires: {}-dev = %{{version}}-%{{release}}\n".format(self.name))
 
             if pkg == "python3":
                 self._write("Requires: python3-core\n")
@@ -296,9 +293,6 @@ class Specfile(object):
                     self._write(f"Provides: pypi({self.requirements.pypi_provides})\n")
                 for req in sorted(self.requirements.pypi_requires):
                     self._write(f"Requires: pypi({req})\n")
-
-            if pkg == "perl":
-                self._write("Requires: {} = %{{version}}-%{{release}}\n".format(self.name))
 
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))
