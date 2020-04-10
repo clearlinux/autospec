@@ -42,7 +42,7 @@ class Specfile(object):
         self.requirements = requirements
         self.content = content
         self.specfile = None
-        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "archive": [], "destination": [], "godep": []}
+        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "sysuser": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
         self.default_sum = ""
         self.hashes = dict()
@@ -140,7 +140,8 @@ class Specfile(object):
         Append systemd unit files, gcov, and additional source tarballs are the currently supported file types.
         """
         count = 0
-        for source in sorted(self.sources["version"] + self.sources["unit"] + self.sources["archive"] + self.sources["tmpfile"] + self.sources["gcov"] + self.sources["godep"]):
+        for source in sorted(self.sources["version"] + self.sources["unit"] + self.sources["archive"]
+                             + self.sources["tmpfile"] + self.sources["sysuser"] + self.sources["gcov"] + self.sources["godep"]): # NOQA
             count += 1
             self.source_index[source] = count
             if self.config.urlban:
@@ -952,6 +953,10 @@ class Specfile(object):
             self._write_strip("mkdir -p %{buildroot}/usr/lib/tmpfiles.d")
             self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/tmpfiles.d/{1}.conf"
                               .format(self.source_index[self.sources["tmpfile"][0]], self.name))
+        if len(self.sources["sysuser"]) != 0:
+            self._write_strip("mkdir -p %{buildroot}/usr/lib/sysusers.d")
+            self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/sysusers.d/{1}.conf"
+                              .format(self.source_index[self.sources["sysuser"][0]], self.name))
 
         for source in self.config.extra_sources:
             if len(source) == 1:

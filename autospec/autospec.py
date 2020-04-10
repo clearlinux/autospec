@@ -63,6 +63,12 @@ def add_sources(download_path, archives, content):
             download_path + "/{0}.tmpfiles".format(content.name))):
         buildpattern.sources["tmpfile"].append(
             "{}.tmpfiles".format(content.name))
+    # ditto sysusers
+    if os.path.exists(os.path.normpath(
+            download_path + "/{0}.sysusers".format(content.name))):
+        buildpattern.sources["sysuser"].append(
+            "{}.sysusers".format(content.name))
+
     if content.gcov_file:
         buildpattern.sources["gcov"].append(content.gcov_file)
     buildpattern.sources["archive"] = archives[::2]
