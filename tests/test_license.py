@@ -23,7 +23,7 @@ class TestLicense(unittest.TestCase):
         Test add_license from valid string, Apache-2 should be translated to
         Apache-2.0
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         self.assertTrue(license.add_license('Apache-2', conf.license_translations, conf.license_blacklist))
         self.assertIn('Apache-2.0', license.licenses)
@@ -34,7 +34,7 @@ class TestLicense(unittest.TestCase):
         the licenses list. Should return True and should not modify the
         licenses list. GPL-3 translates to GPL-3.0.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         license.licenses.append('GPL-3.0')
         self.assertTrue(license.add_license('GPL-3', conf.license_translations, conf.license_blacklist))
@@ -45,7 +45,7 @@ class TestLicense(unittest.TestCase):
         Test add_license from string in license_blacklist. Should return False
         and should not modify the licenses list.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         # sanity check to make sure the licenses list is empty before the later
         # assertIn() call
@@ -58,7 +58,7 @@ class TestLicense(unittest.TestCase):
         """
         Test license_from_copying_hash with valid license file
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
         self.assertIn('GPL-3.0', license.licenses)
@@ -68,7 +68,7 @@ class TestLicense(unittest.TestCase):
         Test license_from_copying_hash with invalid hash and no license_show
         set
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         # remove the hash from license_hashes
         del(conf.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
@@ -81,7 +81,7 @@ class TestLicense(unittest.TestCase):
         """
         Test license_from_copying_hash with invalid license file
         """
-        conf = config.Config()
+        conf = config.Config("")
         content = util.get_contents("tests/COPYING_TEST").replace(b"GNU", b"SNU")
         m_open = MagicMock()
         m_open.__str__.return_value = content
@@ -118,7 +118,7 @@ class TestLicense(unittest.TestCase):
         # set the mock curl
         download.pycurl.Curl = MockCurl
 
-        conf = config.Config()
+        conf = config.Config("")
         conf.license_fetch = 'license.server.url'
 
         # let's check that the proper thing is being printed as well
@@ -172,7 +172,7 @@ class TestLicense(unittest.TestCase):
         # set the mock curl
         download.pycurl.Curl = MockCurl
 
-        conf = config.Config()
+        conf = config.Config("")
         conf.license_fetch = 'license.server.url'
 
         # let's check that the proper thing is being printed as well
@@ -193,7 +193,7 @@ class TestLicense(unittest.TestCase):
         """
         Test scan_for_licenses in temporary directory with valid license file
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         with open('tests/COPYING_TEST', 'rb') as copyingf:
             content = copyingf.read()
@@ -216,7 +216,7 @@ class TestLicense(unittest.TestCase):
         Should not add any licenses, should print a fatal message, should exit
         with a status code of 1.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         with tempfile.TemporaryDirectory() as tmpd:
             # create some cruft for testing

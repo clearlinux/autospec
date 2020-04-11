@@ -89,8 +89,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with makecheck suite
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.in'])
         content = 'check:'
@@ -109,8 +109,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with makecheck suite via Makefile.am
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.am'])
         m_open = mock_open()
@@ -128,8 +128,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with perlcheck suite
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.PL'])
         check.buildpattern.default_pattern = "cpan"
@@ -143,8 +143,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with perlcheck suite via Makefile.in
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['Makefile.in'])
         content = 'test:'
@@ -162,8 +162,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with setup.py suite
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['setup.py'])
         content = 'test_suite'
@@ -183,8 +183,8 @@ class TestTest(unittest.TestCase):
         Test scan_for_tests with cmake suite
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['CMakeLists.txt'])
         content = 'enable_testing'
@@ -204,8 +204,8 @@ class TestTest(unittest.TestCase):
         build requirements
         """
         reqs = buildreq.Requirements("")
-        conf = config.Config()
-        tcontent = tarball.Content("", "", "", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "", "", [], conf, "")
         listdir_backup = os.listdir
         check.os.listdir = mock_generator(['tox.ini'])
         check.scan_for_tests('pkgdir', conf, reqs, tcontent)

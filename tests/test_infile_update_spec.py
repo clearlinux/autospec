@@ -11,8 +11,8 @@ class TestUpdateSpecfile(unittest.TestCase):
     def setUp(self):
         # url, version, name, release
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        conf = config.Config()
-        content = tarball.Content('', '', '', [], conf)
+        conf = config.Config("")
+        content = tarball.Content('', '', '', [], conf, "")
         conf.content = content
         self.specfile = specfiles.Specfile(url, '1.1.1', 'test_pkg', '1', conf, buildreq.Requirements(url), content)
 

@@ -750,7 +750,7 @@ class Requirements(object):
             self.extra_cmake.add("-DCATKIN_BUILD_BINARY_PACKAGE=ON")
             self.extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
 
-    def scan_for_configure(self, dirn, tname, dlpath, config):
+    def scan_for_configure(self, dirn, tname, config):
         """Scan the package directory for build files to determine build pattern."""
         if buildpattern.default_pattern == "distutils36":
             self.add_buildreq("buildreq-distutils36")
@@ -876,7 +876,7 @@ class Requirements(object):
         if buildpattern.default_pattern == "distutils3":
             # First look for a local override
             pypi_json = ""
-            pypi_file = os.path.join(dlpath, "pypi.json")
+            pypi_file = os.path.join(config.download_path, "pypi.json")
             if os.path.isfile(pypi_file):
                 with open(pypi_file, "r") as pfile:
                     pypi_json = pfile.read()

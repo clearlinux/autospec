@@ -216,7 +216,7 @@ def process_git(giturl, oldversion, newversion, name):
         return shortlog
 
 
-def guess_commit_message(keyinfo, config, content, package):
+def guess_commit_message(keyinfo, config, content):
     """Parse newsfile for a commit message.
 
     Try and find a sane commit message for the newsfile. The commit message defaults to the
@@ -268,14 +268,14 @@ def guess_commit_message(keyinfo, config, content, package):
         newsfiles = ["NEWS", "ChangeLog"]
     for newsfile in newsfiles:
         # parse news files for relevant version updates and cve fixes
-        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version, content.name, content.version, package.download_path)
+        newcommitmessage, newcves = process_NEWS(newsfile, config.old_version, content.name, content.version, config.download_path)
         commitmessage.extend(newcommitmessage)
         cves.update(newcves)
 
     if cves:
         # make the package security sensitive if a CVE was patched
         config.config_opts['security_sensitive'] = True
-        config.rewrite_config_opts(package.base_path)
+        config.rewrite_config_opts()
         # append CVE fixes to end of commit message
         commitmessage.append("CVEs fixed in this build:")
         commitmessage.extend(sorted(list(cves)))
@@ -284,7 +284,7 @@ def guess_commit_message(keyinfo, config, content, package):
     if keyinfo:
         commitmessage.append("Key imported:\n{}".format(keyinfo))
 
-    util.write_out(os.path.join(package.download_path, "commitmsg"),
+    util.write_out(os.path.join(config.download_path, "commitmsg"),
                    "\n".join(commitmessage) + "\n")
 
     print("Guessed commit message:")

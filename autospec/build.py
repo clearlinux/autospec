@@ -82,13 +82,11 @@ def get_mock_cmd():
 class Build(object):
     """Manage package builds."""
 
-    def __init__(self, base_path):
+    def __init__(self):
         """Initialize default build settings."""
         self.success = 0
         self.round = 0
         self.must_restart = 0
-        self.base_path = base_path
-        self.download_path = None
         self.uniqueext = ''
         self.warned_about = set()
 
@@ -272,8 +270,8 @@ class Build(object):
         print("{} mock chroot at /var/lib/mock/clear-{}".format(content.name, self.uniqueext))
 
         if self.round == 1:
-            shutil.rmtree('{}/results'.format(self.download_path), ignore_errors=True)
-            os.makedirs('{}/results'.format(self.download_path))
+            shutil.rmtree('{}/results'.format(config.download_path), ignore_errors=True)
+            os.makedirs('{}/results'.format(config.download_path))
 
         cmd_args = [
             mock_cmd,
@@ -287,12 +285,12 @@ class Build(object):
             mockopts,
         ]
         util.call(" ".join(cmd_args),
-                  logfile=f"{self.download_path}/results/mock_srpm.log",
-                  cwd=self.download_path)
+                  logfile=f"{config.download_path}/results/mock_srpm.log",
+                  cwd=config.download_path)
 
         # back up srpm mock logs
-        util.call("mv results/root.log results/srpm-root.log", cwd=self.download_path)
-        util.call("mv results/build.log results/srpm-build.log", cwd=self.download_path)
+        util.call("mv results/root.log results/srpm-root.log", cwd=config.download_path)
+        util.call("mv results/build.log results/srpm-build.log", cwd=config.download_path)
 
         srcrpm = f"results/{content.name}-{content.version}-{content.release}.src.rpm"
 
@@ -307,18 +305,18 @@ class Build(object):
             mockopts,
         ]
         ret = util.call(" ".join(cmd_args),
-                        logfile=f"{self.download_path}/results/mock_build.log",
+                        logfile=f"{config.download_path}/results/mock_build.log",
                         check=False,
-                        cwd=self.download_path)
+                        cwd=config.download_path)
 
         # sanity check the build log
-        if not os.path.exists(self.download_path + "/results/build.log"):
+        if not os.path.exists(config.download_path + "/results/build.log"):
             util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
             exit(1)
 
-        is_clean = self.parse_buildroot_log(self.download_path + "/results/root.log", ret)
+        is_clean = self.parse_buildroot_log(config.download_path + "/results/root.log", ret)
         if is_clean:
-            self.parse_build_results(self.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
+            self.parse_build_results(config.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
             exit(1)

@@ -236,7 +236,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test rakefile parsing with both configured gems and unconfigured gems
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         open_name = 'buildreq.util.open_auto'
         content = "line1\nrequire 'bundler/gem_tasks'\nline3\nrequire 'nope'"
@@ -414,7 +414,7 @@ class TestBuildreq(unittest.TestCase):
         much to test here that uses the same logic, a representative test
         should be sufficient.
         """
-        conf = config.Config()
+        conf = config.Config("")
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'test.go'), 'w').close()
@@ -423,7 +423,7 @@ class TestBuildreq(unittest.TestCase):
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
             open(os.path.join(tmpd, 'meson.build'), 'w').close()
 
-            self.reqs.scan_for_configure(tmpd, "", "", conf)
+            self.reqs.scan_for_configure(tmpd, "", conf)
 
         self.assertEqual(self.reqs.buildreqs,
                          set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
@@ -433,7 +433,6 @@ class TestBuildreq(unittest.TestCase):
         Test scan_for_configure when distutils is being used for the build
         pattern to test pypi metadata handling.
         """
-        conf = config.Config()
         buildreq.buildpattern.pattern_strength = 0
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
@@ -449,9 +448,10 @@ class TestBuildreq(unittest.TestCase):
         buildreq.pypidata.get_pypi_name = MagicMock(return_value=True)
         buildreq.pypidata.get_pypi_metadata = MagicMock(return_value=content)
         with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
-            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
 
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
@@ -468,7 +468,6 @@ class TestBuildreq(unittest.TestCase):
         Test scan_for_configure when distutils is being used for the build
         pattern to test pypi metadata file override handling.
         """
-        conf = config.Config()
         buildreq.buildpattern.pattern_strength = 0
         open_name = 'buildreq.open'
         orig_summary = buildreq.specdescription.default_summary
@@ -481,11 +480,12 @@ class TestBuildreq(unittest.TestCase):
                               "requires": requires})
         m_open = mock_open(read_data=content)
         with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'pypi.json'), 'w').close()
             with patch(open_name, m_open, create=True):
-                self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", tmpd, conf)
+                self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
 
         ssummary = buildreq.specdescription.default_summary
         buildreq.specdescription.default_summary = orig_summary
@@ -500,7 +500,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_cmake to ensure accurate detection of versioned and
         unversioned pkgconfig modules.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         content = 'pkg_check_modules(GLIB gio-unix-2.0>=2.46.0 glib-2.0 REQUIRED)'
         with tempfile.TemporaryDirectory() as tmpd:
@@ -516,7 +516,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_cmake to ensure accurate handling of versioned
         pkgconfig modules with whitespace.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         content = 'pkg_check_modules(GLIB gio-unix-2.0 >= 2.46.0 glib-2.0 REQUIRED)'
         with tempfile.TemporaryDirectory() as tmpd:
@@ -531,7 +531,7 @@ class TestBuildreq(unittest.TestCase):
         """
         Test parse_cmake to ensure it ignores pkg_check_modules in comments.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         content = '''
 # For example, consider the following patch to some CMakeLists.txt.
@@ -551,7 +551,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_cmake to ensure accurate handling of versioned
         pkgconfig modules with variable version strings.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.setup_patterns()
         content = 'pkg_check_modules(AVCODEC libavcodec${_avcodec_ver} libavutil$_avutil_ver)'
         with tempfile.TemporaryDirectory() as tmpd:

@@ -65,9 +65,9 @@ class Specfile(object):
         self.extra_cmake = config.extra_cmake + " " + " ".join(requirements.extra_cmake)
         self.extra_cmake_openmpi = config.extra_cmake_openmpi + " " + " ".join(requirements.extra_cmake_openmpi)
 
-    def write_spec(self, path):
+    def write_spec(self):
         """Write spec file."""
-        self.specfile = open_auto("{}/{}.spec".format(path, self.name), "w")
+        self.specfile = open_auto("{}/{}.spec".format(self.config.download_path, self.name), "w")
         self.specfile.write_strip = types.MethodType(_file_write, self.specfile)
 
         # spec file comment header

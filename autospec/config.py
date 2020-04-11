@@ -34,12 +34,6 @@ from util import call, print_warning, write_out
 from util import open_auto
 
 
-def write_config(config_f, path):
-    """Write the config_f to configfile."""
-    with open(os.path.join(path, 'options.conf'), 'w') as configfile:
-        config_f.write(configfile)
-
-
 def read_pattern_conf(filename, dest, list_format=False, path=None):
     """Read a fail-pattern configuration file.
 
@@ -73,7 +67,7 @@ def read_pattern_conf(filename, dest, list_format=False, path=None):
 class Config(object):
     """Class to handle autospec configuration."""
 
-    def __init__(self):
+    def __init__(self, download_path):
         """Initialize Default configuration settings."""
         self.content = None  # hack to avoid circular init dependency
         self.extra_configure = ""
@@ -131,6 +125,7 @@ class Config(object):
         self.qt_modules = {}
         self.cmake_modules = {}
         self.cves = []
+        self.download_path = download_path
         self.conf_args_openmpi = '--program-prefix=  --exec-prefix=$MPI_ROOT \\\n' \
             '--libdir=$MPI_LIB --bindir=$MPI_BIN --sbindir=$MPI_BIN --includedir=$MPI_INCLUDE \\\n' \
             '--datarootdir=$MPI_ROOT/share --mandir=$MPI_MAN -exec-prefix=$MPI_ROOT --sysconfdir=$MPI_SYSCONFIG \\\n' \
@@ -329,6 +324,11 @@ class Config(object):
             (r"you may need to install the ([a-zA-Z0-9_\-:\.]*) module", 0, 'perl'),
         ]
 
+    def write_config(self, config_f):
+        """Write the config_f to configfile."""
+        with open(os.path.join(self.download_path, 'options.conf'), 'w') as configfile:
+            config_f.write(configfile)
+
     def get_metadata_conf(self):
         """Gather package metadata from the content."""
         metadata = {}
@@ -349,7 +349,7 @@ class Config(object):
             metadata['alias'] = ""
         return metadata
 
-    def rewrite_config_opts(self, path):
+    def rewrite_config_opts(self):
         """Rewrite options.conf file when an option has changed (verify_required for example)."""
         config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
         config_f['package'] = self.get_metadata_conf()
@@ -364,9 +364,9 @@ class Config(object):
         for fname, comment in sorted(self.config_options.items()):
             config_f.set('autospec', '# {}'.format(comment))
             config_f['autospec'][fname] = 'true' if self.config_opts[fname] else 'false'
-        write_config(config_f, path)
+        self.write_config(config_f)
 
-    def create_conf(self, path):
+    def create_conf(self):
         """Create options.conf file and use deprecated configuration files or defaults to populate."""
         config_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
 
@@ -390,11 +390,11 @@ class Config(object):
         if os.path.exists("skip_test_suite"):
             config_f['autospec']['skip_tests'] = 'true'
             os.remove("skip_test_suite")
-        write_config(config_f, path)
+        self.write_config(config_f)
 
-    def create_buildreq_cache(self, path, version, buildreqs_cache):
+    def create_buildreq_cache(self, version, buildreqs_cache):
         """Make the buildreq_cache file."""
-        content = self.read_conf_file(os.path.join(path, "buildreq_cache"))
+        content = self.read_conf_file(os.path.join(self.download_path, "buildreq_cache"))
         # don't create an empty cache file
         if len(buildreqs_cache) < 1:
             try:
@@ -407,13 +407,13 @@ class Config(object):
             pkgs = sorted(buildreqs_cache)
         else:
             pkgs = sorted(set(content[1:]).union(buildreqs_cache))
-        with open(os.path.join(path, 'buildreq_cache'), "w") as cachefile:
+        with open(os.path.join(self.download_path, 'buildreq_cache'), "w") as cachefile:
             cachefile.write("\n".join([version] + pkgs))
         self.config_files.add('buildreq_cache')
 
-    def create_versions(self, path, versions):
+    def create_versions(self, versions):
         """Make versions file."""
-        with open(os.path.join(path, "versions"), 'w') as vfile:
+        with open(os.path.join(self.download_path, "versions"), 'w') as vfile:
             for version in versions:
                 vfile.write(version)
                 if versions[version]:
@@ -421,11 +421,11 @@ class Config(object):
                 vfile.write('\n')
         self.config_files.add("versions")
 
-    def read_config_opts(self, path):
+    def read_config_opts(self):
         """Read config options from path/options.conf."""
-        opts_path = os.path.join(path, 'options.conf')
+        opts_path = os.path.join(self.download_path, 'options.conf')
         if not os.path.exists(opts_path):
-            self.create_conf(path)
+            self.create_conf()
 
         config_f = configparser.ConfigParser(interpolation=None)
         config_f.read(opts_path)
@@ -442,7 +442,7 @@ class Config(object):
         # Rewrite the configuration file in case of formatting changes since a
         # configuration file may exist without any comments (either due to an older
         # version of autospec or if it was user-created)
-        self.rewrite_config_opts(path)
+        self.rewrite_config_opts()
 
         # Don't use the ChangeLog files if the giturl is set
         # ChangeLog is just extra noise when we can already see the gitlog
@@ -504,9 +504,9 @@ class Config(object):
         read_pattern_conf("qt_modules", self.qt_modules, path=path)
         read_pattern_conf("cmake_modules", self.cmake_modules, path=path)
 
-    def parse_existing_spec(self, path, name):
+    def parse_existing_spec(self, name):
         """Determine the old version, old patch list, old keyid, and cves from old spec file."""
-        spec = os.path.join(path, "{}.spec".format(name))
+        spec = os.path.join(self.download_path, "{}.spec".format(name))
         if not os.path.exists(spec):
             return
 
@@ -517,7 +517,7 @@ class Config(object):
 
         # If git history exists, read the Version and Patch* spec header fields
         # from the latest commit to take priority over the working copy.
-        cmd = ["git", "-C", path, "grep", "-E", "-h", ver_regex, "HEAD", spec]
+        cmd = ["git", "-C", self.download_path, "grep", "-E", "-h", ver_regex, "HEAD", spec]
         result = subprocess.run(cmd, capture_output=True)
         if result.returncode == 0:
             # The first matching line is from the spec header (hopefully)
@@ -527,7 +527,7 @@ class Config(object):
                 self.old_version = m.group(1)
                 found_old_version = True
 
-        cmd = ["git", "-C", path, "grep", "-E", "-h", patch_regex, "HEAD", spec]
+        cmd = ["git", "-C", self.download_path, "grep", "-E", "-h", patch_regex, "HEAD", spec]
         result = subprocess.run(cmd, capture_output=True)
         if result.returncode == 0:
             lines = result.stdout.decode().split("\n")
@@ -559,11 +559,11 @@ class Config(object):
             if patch not in self.old_patches and patch.endswith(".patch") and patch.startswith("cve-"):
                 self.cves.append(patch.upper().split(".PATCH")[0])
 
-    def parse_config_versions(self, path):
+    def parse_config_versions(self):
         """Parse the versions configuration file."""
         # Only actually parse it the first time around
         if not self.parsed_versions:
-            for line in self.read_conf_file(os.path.join(path, "versions")):
+            for line in self.read_conf_file(os.path.join(self.download_path, "versions")):
                 # Simply whitespace-separated fields
                 fields = line.split()
                 version = fields.pop(0)
@@ -593,16 +593,16 @@ class Config(object):
 
         return self.versions
 
-    def write_default_conf_file(self, path, name, wrapper, description):
+    def write_default_conf_file(self, name, wrapper, description):
         """Write default configuration file with description to file name."""
         self.config_files.add(name)
-        filename = os.path.join(path, name)
+        filename = os.path.join(self.download_path, name)
         if os.path.isfile(filename):
             return
 
         write_out(filename, wrapper.fill(description) + "\n")
 
-    def parse_config_files(self, path, bump, filemanager, version, requirements):
+    def parse_config_files(self, bump, filemanager, version, requirements):
         """Parse the various configuration files that may exist in the package directory."""
         packages_file = None
 
@@ -638,7 +638,7 @@ class Config(object):
             self.urlban = config['autospec'].get('urlban', None)
 
         # Read values from options.conf (and deprecated files) and rewrite as necessary
-        self.read_config_opts(path)
+        self.read_config_opts()
 
         if not self.git_uri:
             print("Warning: Set [autospec][git] upstream template for remote git URI configuration")
@@ -659,29 +659,29 @@ class Config(object):
         wrapper.initial_indent = "# "
         wrapper.subsequent_indent = "# "
 
-        self.write_default_conf_file(path, "buildreq_ban", wrapper,
+        self.write_default_conf_file("buildreq_ban", wrapper,
                                      "This file contains build requirements that get picked up but are "
                                      "undesirable. One entry per line, no whitespace.")
-        self.write_default_conf_file(path, "pkgconfig_ban", wrapper,
+        self.write_default_conf_file("pkgconfig_ban", wrapper,
                                      "This file contains pkgconfig build requirements that get picked up but"
                                      " are undesirable. One entry per line, no whitespace.")
-        self.write_default_conf_file(path, "requires_ban", wrapper,
+        self.write_default_conf_file("requires_ban", wrapper,
                                      "This file contains runtime requirements that get picked up but are "
                                      "undesirable. One entry per line, no whitespace.")
-        self.write_default_conf_file(path, "buildreq_add", wrapper,
+        self.write_default_conf_file("buildreq_add", wrapper,
                                      "This file contains additional build requirements that did not get "
                                      "picked up automatically. One name per line, no whitespace.")
-        self.write_default_conf_file(path, "pkgconfig_add", wrapper,
+        self.write_default_conf_file("pkgconfig_add", wrapper,
                                      "This file contains additional pkgconfig build requirements that did "
                                      "not get picked up automatically. One name per line, no whitespace.")
-        self.write_default_conf_file(path, "requires_add", wrapper,
+        self.write_default_conf_file("requires_add", wrapper,
                                      "This file contains additional runtime requirements that did not get "
                                      "picked up automatically. One name per line, no whitespace.")
-        self.write_default_conf_file(path, "excludes", wrapper,
+        self.write_default_conf_file("excludes", wrapper,
                                      "This file contains the output files that need %exclude. Full path "
                                      "names, one per line.")
 
-        content = self.read_conf_file(os.path.join(path, "release"))
+        content = self.read_conf_file(os.path.join(self.download_path, "release"))
         if content and content[0]:
             r = int(content[0])
             if bump:
@@ -689,21 +689,21 @@ class Config(object):
             self.content.release = str(r)
             print("Release     :", self.content.release)
 
-        content = self.read_conf_file(os.path.join(path, "extra_sources"))
+        content = self.read_conf_file(os.path.join(self.download_path, "extra_sources"))
         for source in content:
             fields = source.split(maxsplit=1)
             print("Adding additional source file: %s" % fields[0])
             self.config_files.add(os.path.basename(fields[0]))
             self.extra_sources.append(fields)
 
-        content = self.read_conf_file(os.path.join(path, "buildreq_ban"))
+        content = self.read_conf_file(os.path.join(self.download_path, "buildreq_ban"))
         for banned in content:
             print("Banning build requirement: %s." % banned)
             requirements.banned_buildreqs.add(banned)
             requirements.buildreqs.discard(banned)
             requirements.buildreqs_cache.discard(banned)
 
-        content = self.read_conf_file(os.path.join(path, "pkgconfig_ban"))
+        content = self.read_conf_file(os.path.join(self.download_path, "pkgconfig_ban"))
         for banned in content:
             banned = "pkgconfig(%s)" % banned
             print("Banning build requirement: %s." % banned)
@@ -711,18 +711,18 @@ class Config(object):
             requirements.buildreqs.discard(banned)
             requirements.buildreqs_cache.discard(banned)
 
-        content = self.read_conf_file(os.path.join(path, "requires_ban"))
+        content = self.read_conf_file(os.path.join(self.download_path, "requires_ban"))
         for banned in content:
             print("Banning runtime requirement: %s." % banned)
             requirements.banned_requires.add(banned)
             requirements.requires.discard(banned)
 
-        content = self.read_conf_file(os.path.join(path, "buildreq_add"))
+        content = self.read_conf_file(os.path.join(self.download_path, "buildreq_add"))
         for extra in content:
             print("Adding additional build requirement: %s." % extra)
             requirements.add_buildreq(extra)
 
-        cache_file = os.path.join(path, "buildreq_cache")
+        cache_file = os.path.join(self.download_path, "buildreq_cache")
         content = self.read_conf_file(cache_file)
         if content and content[0] == version:
             for extra in content[1:]:
@@ -736,23 +736,23 @@ class Config(object):
             except Exception as e:
                 print_warning(f"Unable to remove buildreq_cache file: {e}")
 
-        content = self.read_conf_file(os.path.join(path, "pkgconfig_add"))
+        content = self.read_conf_file(os.path.join(self.download_path, "pkgconfig_add"))
         for extra in content:
             extra = "pkgconfig(%s)" % extra
             print("Adding additional build requirement: %s." % extra)
             requirements.add_buildreq(extra)
 
-        content = self.read_conf_file(os.path.join(path, "requires_add"))
+        content = self.read_conf_file(os.path.join(self.download_path, "requires_add"))
         for extra in content:
             print("Adding additional runtime requirement: %s." % extra)
             requirements.add_requires(extra, self.os_packages, override=True)
 
-        content = self.read_conf_file(os.path.join(path, "excludes"))
+        content = self.read_conf_file(os.path.join(self.download_path, "excludes"))
         for exclude in content:
             print("%%exclude for: %s." % exclude)
         filemanager.excludes += content
 
-        for fname in os.listdir(path):
+        for fname in os.listdir(self.download_path):
             if re.search(r'.+_extras$', fname):
                 # Prefix all but blessed names with extras-
                 name = fname[:-len("_extras")]
@@ -764,23 +764,22 @@ class Config(object):
                 continue
 
             content = {}
-            content['files'] = self.read_conf_file(os.path.join(path, fname))
+            content['files'] = self.read_conf_file(os.path.join(self.download_path, fname))
             if not content:
                 print_warning(f"Error reading custom extras file: {fname}")
                 continue
-
-            req_file = os.path.join(path, f'{fname}_requires')
+            req_file = os.path.join(self.download_path, f'{fname}_requires')
             if os.path.isfile(req_file):
                 content['requires'] = self.read_conf_file(req_file)
 
             filemanager.file_maps[name] = content
 
-        content = self.read_conf_file(os.path.join(path, "setuid"))
+        content = self.read_conf_file(os.path.join(self.download_path, "setuid"))
         for suid in content:
             print("setuid for  : %s." % suid)
         filemanager.setuid += content
 
-        content = self.read_conf_file(os.path.join(path, "attrs"))
+        content = self.read_conf_file(os.path.join(self.download_path, "attrs"))
         for line in content:
             attr = line.split()
             filename = attr.pop()
@@ -788,8 +787,8 @@ class Config(object):
                 attr[0], attr[1], attr[2], filename))
             filemanager.attrs[filename] = attr
 
-        self.patches += self.read_conf_file(os.path.join(path, "series"))
-        pfiles = [("%s/%s" % (path, x.split(" ")[0])) for x in self.patches]
+        self.patches += self.read_conf_file(os.path.join(self.download_path, "series"))
+        pfiles = [("%s/%s" % (self.download_path, x.split(" ")[0])) for x in self.patches]
         cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(aclocal.m4)|(configure.ac|configure.in))\" %s" % " ".join(pfiles)  # noqa: W605
         if self.patches and call(cmd,
                                  check=False,
@@ -800,7 +799,7 @@ class Config(object):
         # Parse the version-specific patch lists
         update_security_sensitive = False
         for version in self.versions:
-            self.verpatches[version] = self.read_conf_file(os.path.join(path, '.'.join(['series', version])))
+            self.verpatches[version] = self.read_conf_file(os.path.join(self.download_path, '.'.join(['series', version])))
             if any(p.lower().startswith('cve-') for p in self.verpatches[version]):
                 update_security_sensitive = True
 
@@ -809,24 +808,24 @@ class Config(object):
 
         if update_security_sensitive:
             self.config_opts['security_sensitive'] = True
-            self.rewrite_config_opts(path)
+            self.rewrite_config_opts()
 
-        content = self.read_conf_file(os.path.join(path, "configure"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure"))
         self.extra_configure = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "configure32"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure32"))
         self.extra_configure32 = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "configure64"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure64"))
         self.extra_configure64 = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "configure_avx2"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure_avx2"))
         self.extra_configure_avx2 = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "configure_avx512"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure_avx512"))
         self.extra_configure_avx512 = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "configure_openmpi"))
+        content = self.read_conf_file(os.path.join(self.download_path, "configure_openmpi"))
         self.extra_configure_openmpi = " \\\n".join(content)
 
         if self.config_opts["keepstatic"]:
@@ -834,52 +833,52 @@ class Config(object):
         if self.config_opts['broken_parallel_build']:
             self.parallel_build = ""
 
-        content = self.read_conf_file(os.path.join(path, "make_args"))
+        content = self.read_conf_file(os.path.join(self.download_path, "make_args"))
         if content:
             self.extra_make = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "make32_args"))
+        content = self.read_conf_file(os.path.join(self.download_path, "make32_args"))
         if content:
             self.extra32_make = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "make_install_args"))
+        content = self.read_conf_file(os.path.join(self.download_path, "make_install_args"))
         if content:
             self.extra_make_install = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "make32_install_args"))
+        content = self.read_conf_file(os.path.join(self.download_path, "make32_install_args"))
         if content:
             self.extra_make32_install = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "install_macro"))
+        content = self.read_conf_file(os.path.join(self.download_path, "install_macro"))
         if content and content[0]:
             self.install_macro = content[0]
 
-        content = self.read_conf_file(os.path.join(path, "cmake_args"))
+        content = self.read_conf_file(os.path.join(self.download_path, "cmake_args"))
         if content:
             self.extra_cmake = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "cmake_args_openmpi"))
+        content = self.read_conf_file(os.path.join(self.download_path, "cmake_args_openmpi"))
         if content:
             self.extra_cmake_openmpi = " \\\n".join(content)
 
-        content = self.read_conf_file(os.path.join(path, "cmake_srcdir"))
+        content = self.read_conf_file(os.path.join(self.download_path, "cmake_srcdir"))
         if content and content[0]:
             self.cmake_srcdir = content[0]
 
-        content = self.read_conf_file(os.path.join(path, "subdir"))
+        content = self.read_conf_file(os.path.join(self.download_path, "subdir"))
         if content and content[0]:
             self.subdir = content[0]
 
-        content = self.read_conf_file(os.path.join(path, "build_pattern"))
+        content = self.read_conf_file(os.path.join(self.download_path, "build_pattern"))
         if content and content[0]:
             buildpattern.set_build_pattern(content[0], 20)
             self.autoreconf = False
 
-        content = self.read_script_file(os.path.join(path, "make_check_command"))
+        content = self.read_script_file(os.path.join(self.download_path, "make_check_command"))
         if content:
             check.tests_config = '\n'.join(content)
 
-        content = self.read_conf_file(os.path.join(path, self.content.name + ".license"))
+        content = self.read_conf_file(os.path.join(self.download_path, self.content.name + ".license"))
         if content and content[0]:
             words = content[0].split()
             for word in words:
@@ -887,7 +886,7 @@ class Config(object):
                     if not license.add_license(word, self.license_translations, self.license_blacklist):
                         print_warning("{}: blacklisted license {} ignored.".format(self.content.name + ".license", word))
 
-        content = self.read_conf_file(os.path.join(path, "golang_libpath"))
+        content = self.read_conf_file(os.path.join(self.download_path, "golang_libpath"))
         if content and content[0]:
             self.content.golibpath = content[0]
             print("golibpath   : {}".format(self.content.golibpath))
@@ -909,19 +908,19 @@ class Config(object):
             # MPI testsuites generally require "openssh"
             requirements.add_buildreq("openssh")
 
-        self.prep_prepend = self.read_script_file(os.path.join(path, "prep_prepend"))
-        if os.path.isfile(os.path.join(path, "prep_append")):
-            os.rename(os.path.join(path, "prep_append"), os.path.join(path, "build_prepend"))
-        self.make_prepend = self.read_script_file(os.path.join(path, "make_prepend"))
-        self.build_prepend = self.read_script_file(os.path.join(path, "build_prepend"))
-        self.build_append = self.read_script_file(os.path.join(path, "build_append"))
-        self.install_prepend = self.read_script_file(os.path.join(path, "install_prepend"))
-        if os.path.isfile(os.path.join(path, "make_install_append")):
-            os.rename(os.path.join(path, "make_install_append"), os.path.join(path, "install_append"))
-        self.install_append = self.read_script_file(os.path.join(path, "install_append"))
-        self.service_restart = self.read_conf_file(os.path.join(path, "service_restart"))
+        self.prep_prepend = self.read_script_file(os.path.join(self.download_path, "prep_prepend"))
+        if os.path.isfile(os.path.join(self.download_path, "prep_append")):
+            os.rename(os.path.join(self.download_path, "prep_append"), os.path.join(self.download_path, "build_prepend"))
+        self.make_prepend = self.read_script_file(os.path.join(self.download_path, "make_prepend"))
+        self.build_prepend = self.read_script_file(os.path.join(self.download_path, "build_prepend"))
+        self.build_append = self.read_script_file(os.path.join(self.download_path, "build_append"))
+        self.install_prepend = self.read_script_file(os.path.join(self.download_path, "install_prepend"))
+        if os.path.isfile(os.path.join(self.download_path, "make_install_append")):
+            os.rename(os.path.join(self.download_path, "make_install_append"), os.path.join(self.download_path, "install_append"))
+        self.install_append = self.read_script_file(os.path.join(self.download_path, "install_append"))
+        self.service_restart = self.read_conf_file(os.path.join(self.download_path, "service_restart"))
 
-        self.profile_payload = self.read_script_file(os.path.join(path, "profile_payload"))
+        self.profile_payload = self.read_script_file(os.path.join(self.download_path, "profile_payload"))
 
-        self.custom_desc = self.read_conf_file(os.path.join(path, "description"))
-        self.custom_summ = self.read_conf_file(os.path.join(path, "summary"))
+        self.custom_desc = self.read_conf_file(os.path.join(self.download_path, "description"))
+        self.custom_summ = self.read_conf_file(os.path.join(self.download_path, "summary"))

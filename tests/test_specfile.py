@@ -14,10 +14,10 @@ class TestSpecfileWrite(unittest.TestCase):
         self.WRITES = []
 
     def setUp(self):
-        conf = config.Config()
+        conf = config.Config('/download/path')
         conf.config_opts['dev_requires_extras'] = False
         url = "http://www.testpkg.com/testpkg/pkg-1.0.tar.gz"
-        content = tarball.Content(url, 'pkg', '1.0', [], conf)
+        content = tarball.Content(url, 'pkg', '1.0', [], conf, '/tmp')
         conf.content = content
         reqs = buildreq.Requirements(url)
         self.specfile = specfiles.Specfile(url, '1.0', 'pkg', '2', conf, reqs, content)
