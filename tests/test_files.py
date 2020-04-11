@@ -21,8 +21,8 @@ def mock_return(retval):
 class TestFiles(unittest.TestCase):
 
     def setUp(self):
-        conf = config.Config()
-        pkg = build.Build("/")
+        conf = config.Config("")
+        pkg = build.Build()
         self.fm = FileManager(conf, pkg)
 
     def test_banned_path(self):

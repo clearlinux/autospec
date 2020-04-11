@@ -114,11 +114,9 @@ class TestCommitmessage(unittest.TestCase):
         Test guess_commit_message() with mocked internal functions and both
         commitmessage information and cves available from newsfile.
         """
-        conf = config.Config()
+        conf = config.Config("")
         conf.old_version = "0.0.0"
-        pkg = build.Build(self.workingdir.name)
-        pkg.download_path = ""
-        tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
+        tcontent = tarball.Content("", "testball", "0.0.1", [], conf, self.workingdir.name)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
@@ -130,7 +128,8 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("", conf, tcontent, pkg)
+            conf.rewrite_config_opts = mock.Mock()
+            commitmessage.guess_commit_message("", conf, tcontent)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -148,10 +147,8 @@ class TestCommitmessage(unittest.TestCase):
         also available from config, which changes the first line of the commmit
         message.
         """
-        conf = config.Config()
-        pkg = build.Build(self.workingdir.name)
-        pkg.download_path = ""
-        tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "testball", "0.0.1", [], conf, self.workingdir.name)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
@@ -165,7 +162,8 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("", conf, tcontent, pkg)
+            conf.rewrite_config_opts = mock.Mock()
+            commitmessage.guess_commit_message("", conf, tcontent)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -183,10 +181,8 @@ class TestCommitmessage(unittest.TestCase):
         message. Additionally there is imported key info that will be displayed
         at the end of the message.
         """
-        conf = config.Config()
-        pkg = build.Build(self.workingdir.name)
-        pkg.download_path = ""
-        tcontent = tarball.Content("", "testball", "0.0.1", [], conf)
+        conf = config.Config("")
+        tcontent = tarball.Content("", "testball", "0.0.1", [], conf, self.workingdir.name)
         conf.content = tcontent
         process_NEWS_backup = commitmessage.process_NEWS
 
@@ -200,7 +196,8 @@ class TestCommitmessage(unittest.TestCase):
         open_name = 'util.open_auto'
         with mock.patch(open_name, create=True) as mock_open:
             mock_open.return_value = mock.MagicMock()
-            commitmessage.guess_commit_message("keyinfo content", conf, tcontent, pkg)
+            conf.rewrite_config_opts = mock.Mock()
+            commitmessage.guess_commit_message("keyinfo content", conf, tcontent)
             # reset mocks before asserting so a failure doesn't cascade to
             # other tests
             commitmessage.process_NEWS = process_NEWS_backup
@@ -215,7 +212,7 @@ class TestCommitmessage(unittest.TestCase):
         """
         Tests scan_for_changes using temporary directories
         """
-        conf = config.Config()
+        conf = config.Config("")
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'changelog.txt'), 'w') as newsfile:
                 newsfile.write('new changelog file')

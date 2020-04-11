@@ -13,7 +13,6 @@ from contextlib import contextmanager
 from subprocess import PIPE, Popen, TimeoutExpired
 from urllib.parse import urlparse
 
-import config
 import download
 import util
 
@@ -576,7 +575,7 @@ class GPGVerifier(Verifier):
             KEYID = KEYID_TRY
             self.config.signature = self.key_url
             self.config.config_opts['verify_required'] = True
-            self.config.rewrite_config_opts(os.path.dirname(self.package_path))
+            self.config.rewrite_config_opts()
             return True
         else:
             self.print_result(False, err_msg=sign_status.strerror)
@@ -883,10 +882,10 @@ def get_integrity_file(package_path):
     return None
 
 
-def check(url, download_path, config, interactive=True):
+def check(url, config, interactive=True):
     """Run verification based on tar file url."""
     package_name = filename_from_url(url)
-    package_path = os.path.join(download_path, package_name)
+    package_path = os.path.join(config.download_path, package_name)
     package_check = get_integrity_file(package_path)
     try:
         interactive = interactive and sys.stdin.isatty()
@@ -898,11 +897,11 @@ def check(url, download_path, config, interactive=True):
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, config, interactive=interactive)
     elif package_path[-4:] == '.gem':
-        signature_file = get_signature_file(url, download_path)
+        signature_file = get_signature_file(url, config.download_path)
         verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
     else:
-        print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, download_path))
-        signature_file = get_signature_file(url, download_path)
+        print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, config.download_path))
+        signature_file = get_signature_file(url, config.download_path)
         if signature_file is not None:
             verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
             if verified is None:
@@ -936,12 +935,3 @@ def load_specfile(specfile):
     """Set key and email in specfile."""
     specfile.keyid = KEYID
     specfile.email = EMAIL
-
-
-def main(args):
-    """Verify tar content with signature."""
-    from_disk(args.url, args.tar, args.sig, config.Config())
-
-
-if __name__ == '__main__':
-    main(parse_args())
