@@ -96,6 +96,7 @@ dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
 dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
 fatal error: swig: No such file or directory|swig
 make: swig: Command not found|swig
+make: help2man: No such file or directory|help2man
 swig 8 is required to configure this module; please install it or upgrade your CPAN/CPANPLUS shell.|swig
 swig is not installed: cannot load such file -- rdoc/swig|rubygem-swig
 swig tool not found or not executable|swig
