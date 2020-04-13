@@ -275,7 +275,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     conf.config_file = args.config
     requirements = buildreq.Requirements(content.url)
     requirements.set_build_req()
-    conf.parse_config_files(package.download_path, args.bump, filemanager, content, requirements)
+    conf.parse_config_files(package.download_path, args.bump, filemanager, content.version, requirements)
     conf.setup_patterns(conf.failed_pattern_dir)
     conf.parse_existing_spec(package.download_path, content.name)
 
