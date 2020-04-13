@@ -882,6 +882,7 @@ gstreamer-audio-1.0, pkgconfig(gstreamer-audio-1.0)
 gstreamer-plugins-base-1.0, gst-plugins-base-dev
 gtest/gtest.h, googletest-dev
 gtk+-2.0, gtk+-dev
+gtk+-3.0, pkgconfig(gtk+-3.0)
 gtk-config, pkgconfig(gtk+-2.0)
 gtk-doc documentation, gtk-doc
 gtk-doc, gtk-doc-dev
@@ -1273,6 +1274,7 @@ sys/acl.h, acl-dev
 sys/capability.h, libcap-dev
 sysfs/libsysfs.h, sysfsutils-dev
 systemctl, systemd
+systemd, pkgconfig(systemd)
 systemd/sd-daemon.h, systemd-dev
 talloc.h, talloc-dev
 taskflow, taskflow
