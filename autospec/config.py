@@ -210,7 +210,6 @@ class Config(object):
             (r"You must have XML::Parser installed", "perl(XML::Parser)"),
             (r"checking for Apache .* module support", "httpd-dev"),
             (r"checking for.*in -ljpeg... no", "libjpeg-turbo-dev"),
-            (r"fatal error\: zlib\.h\: No such file or directory", "zlib-dev"),
             (r"\* tclsh failed", "tcl"),
             (r"\/usr\/include\/python3\.[0-9]+m\/pyconfig.h", "python3-dev"),
             (r"checking \"location of ncurses\.h file\"", "ncurses-dev"),
