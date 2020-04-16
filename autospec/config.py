@@ -920,7 +920,8 @@ class Config(object):
         self.install_append = self.read_script_file(os.path.join(self.download_path, "install_append"))
         self.service_restart = self.read_conf_file(os.path.join(self.download_path, "service_restart"))
 
-        self.profile_payload = self.read_script_file(os.path.join(self.download_path, "profile_payload"))
+        if self.config_opts['pgo']:
+            self.profile_payload = self.read_script_file(os.path.join(self.download_path, "profile_payload"))
 
         self.custom_desc = self.read_conf_file(os.path.join(self.download_path, "description"))
         self.custom_summ = self.read_conf_file(os.path.join(self.download_path, "summary"))
