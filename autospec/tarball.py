@@ -24,7 +24,6 @@ import tarfile
 import zipfile
 from collections import OrderedDict
 
-import buildpattern
 import download
 from util import do_regex, get_sha1sum, print_fatal, write_out
 
@@ -73,7 +72,7 @@ class Source(object):
                     print_fatal("Tar file doesn't appear to have any content")
                     exit(1)
                 elif len(lines) > 1:
-                    if 'package.xml' in lines and buildpattern.default_pattern in ['phpize']:
+                    if 'package.xml' in lines and self.config.default_pattern in ['phpize']:
                         lines.remove('package.xml')
                     self.prefix = os.path.commonpath(lines)
         else:
@@ -159,41 +158,6 @@ def convert_version(ver_str, name):
     return ver_str.strip(".")
 
 
-def detect_build_from_url(url):
-    """Detect build patterns and build requirements from the patterns detected in the url."""
-    # R package
-    if "cran.r-project.org" in url or "cran.rstudio.com" in url:
-        buildpattern.set_build_pattern("R", 10)
-
-    # python
-    if "pypi.python.org" in url or "pypi.debian.net" in url:
-        buildpattern.set_build_pattern("distutils3", 10)
-
-    # cpan
-    if ".cpan.org/" in url or ".metacpan.org/" in url:
-        buildpattern.set_build_pattern("cpan", 10)
-
-    # ruby
-    if "rubygems.org/" in url:
-        buildpattern.set_build_pattern("ruby", 10)
-
-    # maven
-    if ".maven." in url:
-        buildpattern.set_build_pattern("maven", 10)
-
-    # rust crate
-    if "crates.io" in url:
-        buildpattern.set_build_pattern("cargo", 10)
-
-    # go dependency
-    if "proxy.golang.org" in url:
-        buildpattern.set_build_pattern("godep", 10)
-
-    # php modules from PECL
-    if "pecl.php.net" in url:
-        buildpattern.set_build_pattern("phpize", 10)
-
-
 class Content(object):
     """Detect static information about the project."""
 
@@ -271,7 +235,7 @@ class Content(object):
         if ver:
             # Some build patterns put multiple versions in the same package.
             # For those patterns add to the multi_version list
-            if buildpattern.default_pattern in ["godep"]:
+            if self.config.default_pattern in ["godep"]:
                 self.multi_version[ver] = ""
             else:
                 self.multi_version = {ver: ""}
@@ -446,7 +410,7 @@ class Content(object):
                 go_archives.extend([url_mod, ':'])
             if url_zip not in self.archives:
                 go_archives.extend([url_zip, ''])
-            buildpattern.sources["godep"] += [url_info, url_mod, url_zip]
+            self.config.sources["godep"] += [url_info, url_mod, url_zip]
 
     def process_multiver_archives(self, main_src, multiver_archives):
         """Set up multiversion archives."""
@@ -456,7 +420,7 @@ class Content(object):
             for extraver in config_versions:
                 extraurl = config_versions[extraver]
                 if extraurl and extraurl != main_src.url:
-                    buildpattern.sources["version"].append(extraurl)
+                    self.config.sources["version"].append(extraurl)
                     multiver_archives.append(extraurl)
                     multiver_archives.append('')
                     self.set_multi_version(None)
@@ -484,7 +448,7 @@ class Content(object):
             # Create source object and extract archive
             archive = Source(arch_url, destination, src_path)
             # Add archive prefix to list
-            buildpattern.archive_details[arch_url + "prefix"] = archive.prefix
+            self.config.archive_details[arch_url + "prefix"] = archive.prefix
             self.prefixes[arch_url] = archive.prefix
             # Add archive to list
             src_objects.append(archive)
@@ -494,7 +458,6 @@ class Content(object):
     def process(self, filemanager):
         """Download and process the tarball."""
         # determine build pattern and build requirements from url
-        detect_build_from_url(self.url)
         self.set_giturl_and_domain()
         # determine name and version of package
         self.name_and_version(filemanager)

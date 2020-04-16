@@ -23,7 +23,6 @@ import glob
 import os
 import subprocess
 
-import buildpattern
 from util import call, write_out
 
 
@@ -42,7 +41,7 @@ def commit_to_git(config, name, success):
 
     for config_file in config.config_files:
         call("git add %s" % config_file, cwd=path, check=False)
-    for unit in buildpattern.sources["unit"]:
+    for unit in config.sources["unit"]:
         call("git add %s" % unit, cwd=path)
     call("git add Makefile", cwd=path)
     call("git add upstream", cwd=path)

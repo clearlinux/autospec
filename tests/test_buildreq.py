@@ -116,7 +116,7 @@ class TestBuildreq(unittest.TestCase):
         Test parse_configure_ac with changing () depths and package
         requirements
         """
-        buildreq.buildpattern.pattern_strength = 0
+        conf = config.Config("")
         open_name = 'buildreq.util.open_auto'
         content = 'AC_CHECK_FUNC([tgetent])\n'                   \
                   'XDT_CHECK_PACKAGE(prefix, '                   \
@@ -129,9 +129,9 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
                 f.write(content)
-            self.reqs.parse_configure_ac(os.path.join(tmpd, 'fname'), False)
+            self.reqs.parse_configure_ac(os.path.join(tmpd, 'fname'), conf)
 
-        self.assertEqual(buildreq.buildpattern.default_pattern, 'configure_ac')
+        self.assertEqual(conf.default_pattern, 'configure_ac')
         self.assertEqual(self.reqs.buildreqs,
                          set(['gettext',
                               'perl(XML::Parser)',
@@ -190,9 +190,9 @@ class TestBuildreq(unittest.TestCase):
         open_name = 'buildreq.util.open_auto'
         content = 'does not matter, let us mock'
         m_open = mock_open(read_data=content)
-        buildreq.buildpattern.pattern_strength = 0
+        conf = config.Config("")
         with patch(open_name, m_open, create=True):
-            self.reqs.parse_cargo_toml('filename', ['dep1', 'dep2', 'dep3'])
+            self.reqs.parse_cargo_toml('filename', conf)
 
         buildreq.os.path.exists = exists_backup
         buildreq.toml.loads = loads_backup
@@ -200,36 +200,39 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(self.reqs.buildreqs,
                          set(['rustc', 'dep1', 'dep2', 'dep3']))
         self.assertTrue(self.reqs.cargo_bin)
-        self.assertEqual(buildreq.buildpattern.default_pattern, 'cargo')
+        self.assertEqual(conf.default_pattern, 'cargo')
 
     def test_set_build_req_maven(self):
         """
-        Test set_build_req with buildpattern.default_pattern set to maven.
+        Test set_build_req with default_pattern set to maven.
         This is just a simple test for the inclusion of a single package, in
         case the overall package list changes in the future.
         """
-        buildreq.buildpattern.default_pattern = 'maven'
-        self.reqs.set_build_req()
+        conf = config.Config("")
+        conf.default_pattern = "maven"
+        self.reqs.set_build_req(conf)
         self.assertIn('apache-maven', self.reqs.buildreqs)
 
     def test_set_build_req_ruby(self):
         """
-        Test set_build_req with buildpattern.default_pattern set to ruby.
+        Test set_build_req with default_pattern set to ruby.
         This is just a simple test for the inclusion of a single package, in
         case the overall package list changes in the future.
         """
-        buildreq.buildpattern.default_pattern = 'ruby'
-        self.reqs.set_build_req()
+        conf = config.Config("")
+        conf.default_pattern = "ruby"
+        self.reqs.set_build_req(conf)
         self.assertIn('ruby', self.reqs.buildreqs)
 
     def test_set_build_req_cargo(self):
         """
-        Test set_build_req with buildpattern.default_pattern set to cargo.
+        Test set_build_req with default_pattern set to cargo.
         This is just a simple test for the inclusion of a single package, in
         case the overall package list changes in the future.
         """
-        buildreq.buildpattern.default_pattern = 'cargo'
-        self.reqs.set_build_req()
+        conf = config.Config("")
+        conf.default_pattern = "cargo"
+        self.reqs.set_build_req(conf)
         self.assertIn('rustc', self.reqs.buildreqs)
 
     def test_rakefile(self):
@@ -433,7 +436,6 @@ class TestBuildreq(unittest.TestCase):
         Test scan_for_configure when distutils is being used for the build
         pattern to test pypi metadata handling.
         """
-        buildreq.buildpattern.pattern_strength = 0
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score
         orig_pypi_name = buildreq.pypidata.get_pypi_name
@@ -468,7 +470,6 @@ class TestBuildreq(unittest.TestCase):
         Test scan_for_configure when distutils is being used for the build
         pattern to test pypi metadata file override handling.
         """
-        buildreq.buildpattern.pattern_strength = 0
         open_name = 'buildreq.open'
         orig_summary = buildreq.specdescription.default_summary
         orig_sscore = buildreq.specdescription.default_summary_score

@@ -25,7 +25,6 @@ import tempfile
 
 from abireport import examine_abi
 import build
-import buildpattern
 import buildreq
 import check
 import commitmessage
@@ -46,37 +45,6 @@ from util import binary_in_path, print_fatal, print_infile, write_out
 sys.path.append(os.path.dirname(__file__))
 
 
-def add_sources(download_path, archives, content):
-    """Add archives to buildpattern sources and archive_details."""
-    for srcf in os.listdir(download_path):
-        if re.search(r".*\.(mount|service|socket|target|timer|path)$", srcf):
-            buildpattern.sources["unit"].append(srcf)
-    buildpattern.sources["unit"].sort()
-    #
-    # systemd-tmpfiles uses the configuration files from
-    # /usr/lib/tmpfiles.d/ directories to describe the creation,
-    # cleaning and removal of volatile and temporary files and
-    # directories which usually reside in directories such as
-    # /run or /tmp.
-    #
-    if os.path.exists(os.path.normpath(
-            download_path + "/{0}.tmpfiles".format(content.name))):
-        buildpattern.sources["tmpfile"].append(
-            "{}.tmpfiles".format(content.name))
-    # ditto sysusers
-    if os.path.exists(os.path.normpath(
-            download_path + "/{0}.sysusers".format(content.name))):
-        buildpattern.sources["sysuser"].append(
-            "{}.sysusers".format(content.name))
-
-    if content.gcov_file:
-        buildpattern.sources["gcov"].append(content.gcov_file)
-    buildpattern.sources["archive"] = archives[::2]
-    buildpattern.sources["destination"] = archives[1::2]
-    for archive, destination in zip(archives[::2], archives[1::2]):
-        buildpattern.archive_details[archive + "destination"] = destination
-
-
 def check_requirements(use_git):
     """Ensure all requirements are satisfied before continuing."""
     required_bins = ["mock", "rpm2cpio", "nm", "objdump", "cpio", "readelf"]
@@ -95,7 +63,6 @@ def load_specfile(conf, specfile):
     """Gather all information from static analysis into Specfile instance."""
     specdescription.load_specfile(specfile, conf.custom_desc, conf.custom_summ)
     license.load_specfile(specfile)
-    buildpattern.load_specfile(specfile)
     check.load_specfile(specfile)
 
 
@@ -252,6 +219,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     """Entry point for building a package with autospec."""
     conf = config.Config(args.target)
     check_requirements(args.git)
+    conf.detect_build_from_url(url)
     package = build.Build()
 
     #
@@ -282,7 +250,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     conf.setup_patterns()
     conf.config_file = args.config
     requirements = buildreq.Requirements(content.url)
-    requirements.set_build_req()
+    requirements.set_build_req(conf)
     conf.parse_config_files(args.bump, filemanager, content.version, requirements)
     conf.setup_patterns(conf.failed_pattern_dir)
     conf.parse_existing_spec(content.name)
@@ -296,7 +264,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # Start one directory higher so we scan *all* versions for licenses
     license.scan_for_licenses(os.path.dirname(_dir), conf, content.name)
     commitmessage.scan_for_changes(conf.download_path, _dir, conf.transforms)
-    add_sources(conf.download_path, archives, content)
+    conf.add_sources(archives, content)
     check.scan_for_tests(_dir, conf, requirements, content)
 
     #

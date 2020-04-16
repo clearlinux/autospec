@@ -42,7 +42,6 @@ class Specfile(object):
         self.requirements = requirements
         self.content = content
         self.specfile = None
-        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "sysuser": [], "archive": [], "destination": [], "godep": []}
         self.source_index = {}
         self.default_sum = ""
         self.hashes = dict()
@@ -51,10 +50,8 @@ class Specfile(object):
         self.packages = OrderedDict()
         self.default_desc = ""
         self.locales = []
-        self.default_pattern = ""
         self.build_dirs = dict()  # Build directories, indexed by source URL
         self.golibpath = ""
-        self.archive_details = {}
         self.need_avx2_flags = False
         self.need_avx512_flags = False
         self.tests_config = ""
@@ -131,7 +128,7 @@ class Specfile(object):
         self._write("Version  : {}\n".format(self.version))
         self._write("Release  : {}\n".format(str(self.release)))
         self._write("URL      : {}\n".format(self.url))
-        if not self.default_pattern == "godep":
+        if not self.config.default_pattern == "godep":
             self._write("Source0  : {}\n".format(self.url))
 
     def write_sources(self):
@@ -140,8 +137,9 @@ class Specfile(object):
         Append systemd unit files, gcov, and additional source tarballs are the currently supported file types.
         """
         count = 0
-        for source in sorted(self.sources["version"] + self.sources["unit"] + self.sources["archive"]
-                             + self.sources["tmpfile"] + self.sources["sysuser"] + self.sources["gcov"] + self.sources["godep"]): # NOQA
+        for source in sorted(self.config.sources["version"] + self.config.sources["unit"] + self.config.sources["archive"]
+                             + self.config.sources["tmpfile"] + self.config.sources["sysuser"] + self.config.sources["gcov"] # NOQA
+                             + self.config.sources["godep"]): # NOQA
             count += 1
             self.source_index[source] = count
             if self.config.urlban:
@@ -299,12 +297,9 @@ class Specfile(object):
             self._write("\n")
 
     def write_buildpattern(self):
-        """Write build pattern to spec file.
-
-        Currently depends on buildpattern.py due to pattern-matched methods.
-        """
+        """Write build pattern to spec file."""
         self._write_strip("\n")
-        pattern_method = getattr(self, 'write_{}_pattern'.format(self.default_pattern))
+        pattern_method = getattr(self, 'write_{}_pattern'.format(self.config.default_pattern))
         if pattern_method:
             pattern_method()
 
@@ -411,12 +406,12 @@ class Specfile(object):
             self._write_strip("%setup -q -D -T -n " + self.content.tarball_prefix)
             self._write_strip("gem spec %{{SOURCE0}} -l --ruby > {}.gemspec".format(self.name))
         else:
-            if self.default_pattern == "godep":
+            if self.config.default_pattern == "godep":
                 # No setup needed each source is installed as is
                 pass
             else:
                 prefix = self.content.prefixes[self.url]
-                if self.default_pattern == 'R':
+                if self.config.default_pattern == 'R':
                     prefix = self.content.tarball_prefix
                     self._write_strip("%setup -q -c -n " + prefix)
                 elif prefix:
@@ -429,7 +424,7 @@ class Specfile(object):
                 # Keep track of this build dir
                 self.build_dirs[self.url] = prefix
 
-                for archive in self.sources["archive"]:
+                for archive in self.config.sources["archive"]:
                     # Skip POM files - they don't need to be extracted
                     if archive.endswith('.pom'):
                         continue
@@ -445,7 +440,7 @@ class Specfile(object):
                         extract_cmd = 'unzip -q {}'
                     self._write_strip('cd %{_builddir}')
                     archive_file = os.path.basename(archive)
-                    if self.archive_details.get(archive + "prefix"):
+                    if self.config.archive_details.get(archive + "prefix"):
                         self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
                     else:
                         # The archive doesn't have a prefix inside, so we have
@@ -459,7 +454,7 @@ class Specfile(object):
                 self._write_strip('cd %{_builddir}/' + prefix)
 
                 # Now handle extra versions, indexed by SOURCE
-                for url in self.sources["version"]:
+                for url in self.config.sources["version"]:
                     prefix = self.content.prefixes[url]
                     if prefix:
                         self._write_strip("cd ..")
@@ -476,10 +471,10 @@ class Specfile(object):
                     # Keep track of this build dir
                     self.build_dirs[url] = prefix
 
-        for archive, destination in zip(self.sources["archive"], self.sources["destination"]):
+        for archive, destination in zip(self.config.sources["archive"], self.config.sources["destination"]):
             if destination.startswith(':'):
                 continue
-            if self.archive_details[archive + "prefix"] == self.content.tarball_prefix:
+            if self.config.archive_details[archive + "prefix"] == self.content.tarball_prefix:
                 print("Archive {} already unpacked in {}; ignoring destination"
                       .format(archive, self.content.tarball_prefix))
             else:
@@ -489,7 +484,7 @@ class Specfile(object):
                 # Here again, if the archive file has a top-level prefix
                 # directory, we simply use it. If not, we have to figure
                 # out where we extracted the files instead.
-                archive_prefix = self.archive_details[archive + "prefix"]
+                archive_prefix = self.config.archive_details[archive + "prefix"]
                 if not archive_prefix:
                     # Make it up
                     archive_prefix = os.path.splitext(os.path.basename(archive))[0]
@@ -498,7 +493,7 @@ class Specfile(object):
                                           self.content.tarball_prefix,
                                           destination))
         self.apply_patches()
-        if self.default_pattern != 'cmake':
+        if self.config.default_pattern != 'cmake':
             if self.config.config_opts['32bit']:
                 self._write_strip("pushd ..")
                 self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
@@ -588,7 +583,7 @@ class Specfile(object):
                 flags.extend(["-O3"])
             else:
                 flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
-        if self.default_pattern != 'qmake':
+        if self.config.default_pattern != 'qmake':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
                 if self.config.config_opts['use_clang']:
@@ -607,7 +602,7 @@ class Specfile(object):
             flags.extend(["-O3"])
         if self.content.gcov_file:
             flags = list(filter((lto).__ne__, flags))
-            flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.sources["gcov"][0]])])
+            flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.config.sources["gcov"][0]])])
         if flags or self.config.config_opts['broken_c++']:
             flags = sorted(list(set(flags)))
             self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
@@ -760,7 +755,7 @@ class Specfile(object):
             re.compile(r"packages.confluent.io/maven/([a-zA-Z\-\_/]+)/([a-zA-Z\-\_]+)/([a-zA-Z-\_\d.]+)/[a-zA-Z-\_\d.]*\.(?:pom|jar|xml|signature)"),
             re.compile(r"gradle.org/gradle/libs-releases/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)"),
             re.compile(r"gradle.org/m2/([a-zA-Z-\_.\d/]+)/([a-zA-Z-\_.\d]*)/([a-zA-Z\d\.\_\-]+)/(?:[a-zA-Z-\_.\d]*)\.(?:pom|jar)")]
-        mvn_sources = [self.url] + sorted(self.sources["archive"])
+        mvn_sources = [self.url] + sorted(self.config.sources["archive"])
         src_num = 0
 
         for src in mvn_sources:
@@ -938,19 +933,19 @@ class Specfile(object):
 
     def write_source_installs(self):
         """Write out installs from SourceX lines."""
-        if len(self.sources["unit"]) != 0:
+        if len(self.config.sources["unit"]) != 0:
             self._write_strip("mkdir -p %{buildroot}/usr/lib/systemd/system")
-            for unit in self.sources["unit"]:
+            for unit in self.config.sources["unit"]:
                 self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/systemd/system/{1}"
                                   .format(self.source_index[unit], unit))
-        if len(self.sources["tmpfile"]) != 0:
+        if len(self.config.sources["tmpfile"]) != 0:
             self._write_strip("mkdir -p %{buildroot}/usr/lib/tmpfiles.d")
             self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/tmpfiles.d/{1}.conf"
-                              .format(self.source_index[self.sources["tmpfile"][0]], self.name))
-        if len(self.sources["sysuser"]) != 0:
+                              .format(self.source_index[self.config.sources["tmpfile"][0]], self.name))
+        if len(self.config.sources["sysuser"]) != 0:
             self._write_strip("mkdir -p %{buildroot}/usr/lib/sysusers.d")
             self._write_strip("install -m 0644 %{{SOURCE{0}}} %{{buildroot}}/usr/lib/sysusers.d/{1}.conf"
-                              .format(self.source_index[self.sources["sysuser"][0]], self.name))
+                              .format(self.source_index[self.config.sources["sysuser"][0]], self.name))
 
         for source in self.config.extra_sources:
             if len(source) == 1:
@@ -1747,7 +1742,7 @@ class Specfile(object):
         self._write_strip("# Create list file using packaged versions")
         for ver in list(self.content.multi_version.keys()):
             self._write_strip(f"echo {ver} >> {list_file}")
-        for idx, source in enumerate(sorted(self.sources["godep"])):
+        for idx, source in enumerate(sorted(self.config.sources["godep"])):
             file_path = os.path.join(proxy_path, os.path.basename(source))
             self._write_strip(f"install -m 0644 %{{SOURCE{idx+1}}} {file_path}")
         self._write_strip("\n")
