@@ -27,7 +27,6 @@ import sys
 import textwrap
 from collections import OrderedDict
 
-import buildpattern
 import check
 import license
 from util import call, print_warning, write_out
@@ -126,6 +125,10 @@ class Config(object):
         self.cmake_modules = {}
         self.cves = []
         self.download_path = download_path
+        self.default_pattern = "make"
+        self.pattern_strength = 0
+        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "sysuser": [], "archive": [], "destination": [], "godep": [], "version": []}
+        self.archive_details = {}
         self.conf_args_openmpi = '--program-prefix=  --exec-prefix=$MPI_ROOT \\\n' \
             '--libdir=$MPI_LIB --bindir=$MPI_BIN --sbindir=$MPI_BIN --includedir=$MPI_INCLUDE \\\n' \
             '--datarootdir=$MPI_ROOT/share --mandir=$MPI_MAN -exec-prefix=$MPI_ROOT --sysconfdir=$MPI_SYSCONFIG \\\n' \
@@ -323,6 +326,77 @@ class Config(object):
             (r"which\: no ([a-zA-Z\-]*) in \(", 0, None),
             (r"you may need to install the ([a-zA-Z0-9_\-:\.]*) module", 0, 'perl'),
         ]
+
+    def set_build_pattern(self, pattern, strength):
+        """Set the global default pattern and pattern strength."""
+        if strength <= self.pattern_strength:
+            return
+        self.default_pattern = pattern
+        self.pattern_strength = strength
+
+    def detect_build_from_url(self, url):
+        """Detect build patterns and build requirements from the patterns detected in the url."""
+        # R package
+        if "cran.r-project.org" in url or "cran.rstudio.com" in url:
+            self.set_build_pattern("R", 10)
+
+        # python
+        if "pypi.python.org" in url or "pypi.debian.net" in url:
+            self.set_build_pattern("distutils3", 10)
+
+        # cpan
+        if ".cpan.org/" in url or ".metacpan.org/" in url:
+            self.set_build_pattern("cpan", 10)
+
+        # ruby
+        if "rubygems.org/" in url:
+            self.set_build_pattern("ruby", 10)
+
+        # maven
+        if ".maven." in url:
+            self.set_build_pattern("maven", 10)
+
+        # rust crate
+        if "crates.io" in url:
+            self.set_build_pattern("cargo", 10)
+
+        # go dependency
+        if "proxy.golang.org" in url:
+            self.set_build_pattern("godep", 10)
+
+        # php modules from PECL
+        if "pecl.php.net" in url:
+            self.set_build_pattern("phpize", 10)
+
+    def add_sources(self, archives, content):
+        """Add archives to sources and archive_details."""
+        for srcf in os.listdir(self.download_path):
+            if re.search(r".*\.(mount|service|socket|target|timer|path)$", srcf):
+                self.sources["unit"].append(srcf)
+        self.sources["unit"].sort()
+        #
+        # systemd-tmpfiles uses the configuration files from
+        # /usr/lib/tmpfiles.d/ directories to describe the creation,
+        # cleaning and removal of volatile and temporary files and
+        # directories which usually reside in directories such as
+        # /run or /tmp.
+        #
+        if os.path.exists(os.path.normpath(
+                self.download_path + "/{0}.tmpfiles".format(content.name))):
+            self.sources["tmpfile"].append(
+                "{}.tmpfiles".format(content.name))
+        # ditto sysusers
+        if os.path.exists(os.path.normpath(
+                self.download_path + "/{0}.sysusers".format(content.name))):
+            self.sources["sysuser"].append(
+                "{}.sysusers".format(content.name))
+
+        if content.gcov_file:
+            self.sources["gcov"].append(content.gcov_file)
+        self.sources["archive"] = archives[::2]
+        self.sources["destination"] = archives[1::2]
+        for archive, destination in zip(archives[::2], archives[1::2]):
+            self.archive_details[archive + "destination"] = destination
 
     def write_config(self, config_f):
         """Write the config_f to configfile."""
@@ -871,7 +945,7 @@ class Config(object):
 
         content = self.read_conf_file(os.path.join(self.download_path, "build_pattern"))
         if content and content[0]:
-            buildpattern.set_build_pattern(content[0], 20)
+            self.set_build_pattern(content[0], 20)
             self.autoreconf = False
 
         content = self.read_script_file(os.path.join(self.download_path, "make_check_command"))

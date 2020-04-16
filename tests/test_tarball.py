@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 import build
 import config
 import files
@@ -58,18 +58,6 @@ SRC_CREATION = [
     ("https://example/go-src/list", "", "/tmp/list", None, "go", "", "list"),
 ]
 
-# Input for tarball.detect_build_from_url method tests
-# Structure: (url, build_pattern)
-BUILD_PAT_URL = [
-    ("https://cran.r-project.org/src/contrib/raster_3.0-12.tar.gz", "R"),
-    ("http://pypi.debian.net/argparse/argparse-1.4.0.tar.gz", "distutils3"),
-    ("https://pypi.python.org/packages/source/T/Tempita/Tempita-0.5.2.tar.gz", "distutils3"),
-    ("https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-Tty-1.14.tar.gz", "cpan"),
-    ("http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-2.111.tar.gz", "cpan"),
-    ("https://proxy.golang.org/github.com/spf13/pflag/@v/list", "godep"),
-    ("https://pecl.php.net//get/lua-2.0.6.tgz", "phpize"),
-]
-
 
 class MockSrcFile():
     """Mock class for zipfile and tarfile."""
@@ -110,16 +98,6 @@ def source_test_generator(url, destination, path, content, src_type, prefix, sub
         self.assertEqual(src.type, src_type)
         self.assertEqual(src.prefix, prefix)
         self.assertEqual(src.subdir, subdir)
-
-    return generator
-
-
-def detect_build_test_generator(url, build_pattern):
-    """Create test for tarball.detect_build_from_url method."""
-    def generator(self):
-        """Test template."""
-        tarball.detect_build_from_url(url)
-        self.assertEqual(build_pattern, tarball.buildpattern.default_pattern)
 
     return generator
 
@@ -167,12 +145,6 @@ def create_dynamic_tests():
         test = source_test_generator(url, dest, path, content, src_type, prefix, subdir)
         setattr(TestTarball, test_name, test)
 
-    # Create tests for tarball.detect_build_from_url method.
-    for url, build_pattern in BUILD_PAT_URL:
-        test_name = 'test_pat_{}'.format(url)
-        test = detect_build_test_generator(url, build_pattern)
-        setattr(TestTarball, test_name, test)
-
     # Create tests for tarball.name_and_version method.
     with open('tests/packageurls', 'r') as pkgurls:
         # add count to test if content state is used
@@ -203,13 +175,6 @@ class TestTarball(unittest.TestCase):
         conf = config.Config('/download/path')
         self.content = tarball.Content('', '', '', [], conf, '/tmp')
         conf.content = self.content
-
-    def tearDown(self):
-        """Clean up after running each test."""
-        tarball.buildpattern.archive_details = {}
-        tarball.buildpattern.pattern_strength = 0
-        tarball.buildpattern.sources['godep'] = []
-        tarball.buildpattern.sources['version'] = []
 
     @patch('tarball.os.path.isfile', Mock(return_value=True))
     def test_set_gcov(self):
@@ -257,7 +222,7 @@ class TestTarball(unittest.TestCase):
         ]
         # Set up a return value for parse_config_versions method
         attrs = {'parse_config_versions.return_value': config_versions}
-        conf = Mock()
+        conf = MagicMock()
         conf.configure_mock(**attrs)
         self.content.config = conf
         self.content.process_multiver_archives(main_src, multiver_archives)

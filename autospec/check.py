@@ -22,7 +22,6 @@
 import os
 import re
 
-import buildpattern
 import count
 import util
 
@@ -109,7 +108,7 @@ def scan_for_tests(src_dir, config, requirements, content):
 
     files = os.listdir(src_dir)
 
-    if buildpattern.default_pattern == "cmake":
+    if config.default_pattern == "cmake":
         makefile_path = os.path.join(src_dir, "CMakeLists.txt")
         if not os.path.isfile(makefile_path):
             return
@@ -117,7 +116,7 @@ def scan_for_tests(src_dir, config, requirements, content):
         if "enable_testing" in util.open_auto(makefile_path).read():
             tests_config = testsuites["cmake"]
 
-    elif buildpattern.default_pattern in ["cpan", "configure", "configure_ac", "autogen"] and "Makefile.in" in files:
+    elif config.default_pattern in ["cpan", "configure", "configure_ac", "autogen"] and "Makefile.in" in files:
         makefile_path = os.path.join(src_dir, "Makefile.in")
         if os.path.isfile(makefile_path):
             with util.open_auto(makefile_path, 'r') as make_fp:
@@ -130,24 +129,24 @@ def scan_for_tests(src_dir, config, requirements, content):
                     tests_config = testsuites["perlcheck"]
                     break
 
-    elif buildpattern.default_pattern in ["configure", "configure_ac", "autogen"] and "Makefile.am" in files:
+    elif config.default_pattern in ["configure", "configure_ac", "autogen"] and "Makefile.am" in files:
         tests_config = testsuites["makecheck"]
 
-    elif buildpattern.default_pattern in ["cpan"] and "Makefile.PL" in files:
+    elif config.default_pattern in ["cpan"] and "Makefile.PL" in files:
         tests_config = testsuites["perlcheck"]
 
-    elif buildpattern.default_pattern == "distutils3" and "setup.py" in files:
+    elif config.default_pattern == "distutils3" and "setup.py" in files:
         with util.open_auto(os.path.join(src_dir, "setup.py"), 'r') as setup_fp:
             setup_contents = setup_fp.read()
 
         if "test_suite" in setup_contents or "pbr=True" in setup_contents:
             tests_config = testsuites["setup.py"]
 
-    elif buildpattern.default_pattern == "R":
+    elif config.default_pattern == "R":
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
                        "R CMD check --no-manual --no-examples --no-codoc "    \
                        + content.rawname + " || :"
-    elif buildpattern.default_pattern == "meson":
+    elif config.default_pattern == "meson":
         found_tests = False
         makefile_path = os.path.join(src_dir, "meson.build")
         if not os.path.isfile(makefile_path):

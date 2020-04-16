@@ -24,7 +24,6 @@ import json
 import os
 import re
 
-import buildpattern
 import pypidata
 import specdescription
 import toml
@@ -411,12 +410,12 @@ class Requirements(object):
             for req in parse_modules_list(rqlist):
                 self.add_pkgconfig_buildreq(req, conf32)
 
-    def parse_configure_ac(self, filename, conf32):
+    def parse_configure_ac(self, filename, config):
         """Parse the configure.ac file for build requirements."""
         buf = ""
         depth = 0
         # print("Configure parse: ", filename)
-        buildpattern.set_build_pattern("configure_ac", 1)
+        config.set_build_pattern("configure_ac", 1)
         f = util.open_auto(filename, "r")
         while 1:
             c = f.read(1)
@@ -429,17 +428,17 @@ class Requirements(object):
             if c != "\n":
                 buf += c
             if c == "\n" and depth == 0:
-                self.configure_ac_line(buf, conf32)
+                self.configure_ac_line(buf, config.config_opts.get('32bit'))
                 buf = ""
-        self.configure_ac_line(buf, conf32)
+        self.configure_ac_line(buf, config.config_opts.get('32bit'))
         f.close()
 
-    def parse_cargo_toml(self, filename, packages):
+    def parse_cargo_toml(self, filename, config):
         """Update build requirements using Cargo.toml.
 
         Set the build requirements for building rust programs using cargo.
         """
-        buildpattern.set_build_pattern("cargo", 1)
+        config.set_build_pattern("cargo", 1)
         self.add_buildreq("rustc")
         with util.open_auto(filename, "r") as ctoml:
             cargo = toml.loads(ctoml.read())
@@ -449,7 +448,7 @@ class Requirements(object):
             return
         for cdep in cargo["dependencies"]:
             if self.add_buildreq(cdep):
-                self.add_requires(cdep, packages)
+                self.add_requires(cdep, config.os_packages)
 
     def parse_r_description(self, filename, packages):
         """Update build/runtime requirements according to the R package description."""
@@ -472,9 +471,9 @@ class Requirements(object):
             else:
                 print("CRAN package '{}' not found in os_packages, skipping".format(pkg))
 
-    def set_build_req(self):
-        """Add build requirements based on the buildpattern pattern."""
-        if buildpattern.default_pattern == "maven":
+    def set_build_req(self, config):
+        """Add build requirements based on the build pattern."""
+        if config.default_pattern == "maven":
             maven_reqs = ["apache-maven",
                           "openjdk-dev",
                           "mvn-aether-core",
@@ -504,10 +503,10 @@ class Requirements(object):
             for req in maven_reqs:
                 self.add_buildreq(req)
 
-        if buildpattern.default_pattern == "ruby":
+        if config.default_pattern == "ruby":
             self.add_buildreq("ruby")
             self.add_buildreq("rubygem-rdoc")
-        if buildpattern.default_pattern == "cargo":
+        if config.default_pattern == "cargo":
             self.add_buildreq("rustc")
 
     def rakefile(self, filename, gems):
@@ -752,28 +751,28 @@ class Requirements(object):
 
     def scan_for_configure(self, dirn, tname, config):
         """Scan the package directory for build files to determine build pattern."""
-        if buildpattern.default_pattern == "distutils36":
+        if config.default_pattern == "distutils36":
             self.add_buildreq("buildreq-distutils36")
-        elif buildpattern.default_pattern == "distutils3":
+        elif config.default_pattern == "distutils3":
             self.add_buildreq("buildreq-distutils3")
-        elif buildpattern.default_pattern == "golang":
+        elif config.default_pattern == "golang":
             self.add_buildreq("buildreq-golang")
-        elif buildpattern.default_pattern == "cmake":
+        elif config.default_pattern == "cmake":
             self.add_buildreq("buildreq-cmake")
-        elif buildpattern.default_pattern == "configure":
+        elif config.default_pattern == "configure":
             self.add_buildreq("buildreq-configure")
-        elif buildpattern.default_pattern == "qmake":
+        elif config.default_pattern == "qmake":
             self.add_buildreq("buildreq-qmake")
-        elif buildpattern.default_pattern == "cpan":
+        elif config.default_pattern == "cpan":
             self.add_buildreq("buildreq-cpan")
-        elif buildpattern.default_pattern == "scons":
+        elif config.default_pattern == "scons":
             self.add_buildreq("buildreq-scons")
-        elif buildpattern.default_pattern == "R":
+        elif config.default_pattern == "R":
             self.add_buildreq("buildreq-R")
             self.parse_r_description(os.path.join(dirn, "DESCRIPTION"), config.os_packages)
-        elif buildpattern.default_pattern == "phpize":
+        elif config.default_pattern == "phpize":
             self.add_buildreq("buildreq-php")
-        elif buildpattern.default_pattern == "nginx":
+        elif config.default_pattern == "nginx":
             self.add_buildreq("buildreq-nginx")
 
         count = 0
@@ -782,15 +781,15 @@ class Requirements(object):
 
             if any(f.endswith(".go") for f in files):
                 self.add_buildreq("buildreq-golang")
-                buildpattern.set_build_pattern("golang", default_score)
+                config.set_build_pattern("golang", default_score)
 
             if "go.mod" in files:
                 if "Makefile" not in files:
                     # Go packages usually have make build systems so far
                     # so only use go directly if we can't find a Makefile
-                    buildpattern.set_build_pattern("golang", default_score)
+                    config.set_build_pattern("golang", default_score)
                 self.add_buildreq("buildreq-golang")
-                if buildpattern.default_pattern == "golang-mod" or buildpattern.default_pattern == "godep":
+                if config.default_pattern == "golang-mod" or config.default_pattern == "godep":
                     config.set_gopath = False
                     mod_path = os.path.join(dirpath, "go.mod")
                     reqs = parse_go_mod(mod_path)
@@ -799,22 +798,22 @@ class Requirements(object):
                         # req[1] is the version of the dependency
                         pkg = "go-" + req[0].replace("/", "-")
                         self.add_buildreq(pkg)
-                        if buildpattern.default_pattern == "godep":
+                        if config.default_pattern == "godep":
                             self.add_requires(pkg, config.os_packages)
 
             if "CMakeLists.txt" in files and "configure.ac" not in files:
                 self.add_buildreq("buildreq-cmake")
-                buildpattern.set_build_pattern("cmake", default_score)
+                config.set_build_pattern("cmake", default_score)
 
                 srcdir = os.path.abspath(os.path.join(dirn, "clr-build", config.cmake_srcdir or ".."))
                 if os.path.samefile(dirpath, srcdir):
                     self.parse_catkin_deps(os.path.join(srcdir, "CMakeLists.txt"), config.config_opts.get('32bit'))
 
             if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
-                buildpattern.set_build_pattern("configure", default_score)
+                config.set_build_pattern("configure", default_score)
             elif any(is_qmake_pro(f) for f in files):
                 self.add_buildreq("buildreq-qmake")
-                buildpattern.set_build_pattern("qmake", default_score)
+                config.set_build_pattern("qmake", default_score)
 
             if "requires.txt" in files:
                 self.grab_python_requirements(dirpath + '/requires.txt', config.os_packages)
@@ -823,44 +822,44 @@ class Requirements(object):
                 self.add_buildreq("buildreq-distutils3")
                 self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
                 python_pattern = get_python_build_version_from_classifier(dirpath + '/setup.py')
-                buildpattern.set_build_pattern(python_pattern, default_score)
+                config.set_build_pattern(python_pattern, default_score)
 
             if "Makefile.PL" in files or "Build.PL" in files:
-                buildpattern.set_build_pattern("cpan", default_score)
+                config.set_build_pattern("cpan", default_score)
                 self.add_buildreq("buildreq-cpan")
 
             if "SConstruct" in files:
                 self.add_buildreq("buildreq-scons")
-                buildpattern.set_build_pattern("scons", default_score)
+                config.set_build_pattern("scons", default_score)
 
             if "requirements.txt" in files:
                 self.grab_python_requirements(dirpath + '/requirements.txt', config.os_packages)
 
             if "meson.build" in files:
                 self.add_buildreq("buildreq-meson")
-                buildpattern.set_build_pattern("meson", default_score)
+                config.set_build_pattern("meson", default_score)
 
             if "build.xml" in files:
                 self.add_buildreq("apache-ant")
-                buildpattern.set_build_pattern("ant", default_score)
+                config.set_build_pattern("ant", default_score)
 
             for name in files:
                 if name.lower() == "cargo.toml" and dirpath == dirn:
-                    self.parse_cargo_toml(os.path.join(dirpath, name), config.os_packages)
+                    self.parse_cargo_toml(os.path.join(dirpath, name), config)
                 if name.lower().startswith("configure."):
-                    self.parse_configure_ac(os.path.join(dirpath, name), config.config_opts.get('32bit'))
-                if name.lower().startswith("rakefile") and buildpattern.default_pattern == "ruby":
+                    self.parse_configure_ac(os.path.join(dirpath, name), config)
+                if name.lower().startswith("rakefile") and config.default_pattern == "ruby":
                     self.rakefile(os.path.join(dirpath, name), config.gems)
-                if name.endswith(".pro") and buildpattern.default_pattern == "qmake":
+                if name.endswith(".pro") and config.default_pattern == "qmake":
                     self.qmake_profile(os.path.join(dirpath, name), config.qt_modules)
                 if name.lower() == "makefile":
-                    buildpattern.set_build_pattern("make", default_score)
+                    config.set_build_pattern("make", default_score)
                 if name.lower() == "autogen.sh":
-                    buildpattern.set_build_pattern("autogen", default_score)
+                    config.set_build_pattern("autogen", default_score)
                 if name.lower() == "cmakelists.txt":
-                    buildpattern.set_build_pattern("cmake", default_score)
+                    config.set_build_pattern("cmake", default_score)
                 if (name.lower() == "cmakelists.txt" or name.endswith(".cmake")) \
-                   and buildpattern.default_pattern == "cmake":
+                   and config.default_pattern == "cmake":
                     self.parse_cmake(os.path.join(dirpath, name), config.cmake_modules, config.config_opts.get('32bit'))
 
         can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
@@ -873,7 +872,7 @@ class Requirements(object):
         else:
             config.autoreconf = False
 
-        if buildpattern.default_pattern == "distutils3":
+        if config.default_pattern == "distutils3":
             # First look for a local override
             pypi_json = ""
             pypi_file = os.path.join(config.download_path, "pypi.json")

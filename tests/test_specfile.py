@@ -58,12 +58,12 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_sources with all Specfile.sources set.
         """
-        self.specfile.sources["unit"] = ["pkg2.service", "pkg1.service"]
-        self.specfile.sources["archive"] = ["archA", "archD", "archB", "archC"]
-        self.specfile.sources["tmpfile"] = ["tmp1", "tmp2"]
-        self.specfile.sources["gcov"] = ["pkg.gcov"]
-        self.specfile.sources["godep"] = ["pkg.godep"]
-        self.specfile.sources["version"] = ["pkg.oldver"]
+        self.specfile.config.sources["unit"] = ["pkg2.service", "pkg1.service"]
+        self.specfile.config.sources["archive"] = ["archA", "archD", "archB", "archC"]
+        self.specfile.config.sources["tmpfile"] = ["tmp1", "tmp2"]
+        self.specfile.config.sources["gcov"] = ["pkg.gcov"]
+        self.specfile.config.sources["godep"] = ["pkg.godep"]
+        self.specfile.config.sources["version"] = ["pkg.oldver"]
         self.specfile.write_sources()
         expect = ["Source1  : archA\n",
                   "Source2  : archB\n",
@@ -284,9 +284,7 @@ class TestSpecfileWrite(unittest.TestCase):
         """
         test write_buildpattern
         """
-        # due to external dependency, this is not easily testable as it
-        # requires testing the entire buildpattern module. This test should be
-        # updated when possible.
+        # Should be doable but probably worth waiting for specfile template rework
         pass
 
     def test_write_scriplets_base(self):
