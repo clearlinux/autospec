@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
+
+
+def pip_env():
+    """Generate a copy of os.environ appropriate for pip."""
+    env = os.environ.copy()
+    env["PYTHON_KEYRING_BACKEND"] = "keyring.backends.null.Keyring"
+    return env
 
 
 def pip_search(name):
     """Run a pip search for name and return True if found."""
     with tempfile.TemporaryFile() as tfile:
         proc = subprocess.run(["pip", "search", name], stdout=tfile.fileno(),
-                              stderr=subprocess.DEVNULL)
+                              stderr=subprocess.DEVNULL, env=pip_env())
         if proc.returncode:
             return False
         tfile.seek(0)
@@ -48,13 +56,15 @@ def get_pypi_metadata(name):
         if proc.returncode != 0:
             return ""
         proc = subprocess.run(f"source bin/activate && pip install {name}", cwd=tdir, shell=True,
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                              env=pip_env())
         if proc.returncode != 0:
             return ""
         with tempfile.TemporaryFile() as tfile:
             proc = subprocess.run(f"source bin/activate &> /dev/null && pip show {name}",
                                   cwd=tdir, shell=True,
-                                  stdout=tfile.fileno(), stderr=subprocess.DEVNULL)
+                                  stdout=tfile.fileno(), stderr=subprocess.DEVNULL,
+                                  env=pip_env())
             if proc.returncode != 0:
                 return ""
             tfile.seek(0)
