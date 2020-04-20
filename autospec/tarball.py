@@ -31,11 +31,12 @@ from util import do_regex, get_sha1sum, print_fatal, write_out
 class Source(object):
     """Holds data and methods for source code or archives management."""
 
-    def __init__(self, url, destination, path):
+    def __init__(self, url, destination, path, pattern=None):
         """Set default values for source file."""
         self.url = url
         self.destination = destination
         self.path = path
+        self.pattern = pattern
         self.type = None
         self.prefix = None
         self.subdir = None
@@ -72,7 +73,7 @@ class Source(object):
                     print_fatal("Tar file doesn't appear to have any content")
                     exit(1)
                 elif len(lines) > 1:
-                    if 'package.xml' in lines and self.config.default_pattern in ['phpize']:
+                    if 'package.xml' in lines and self.pattern in ['phpize']:
                         lines.remove('package.xml')
                     self.prefix = os.path.commonpath(lines)
         else:
@@ -205,7 +206,7 @@ class Content(object):
     def process_main_source(self, url):
         """Download and get important information from main source code."""
         src_path = self.check_or_get_file(url, os.path.basename(url))
-        main_src = Source(url, '', src_path)
+        main_src = Source(url, '', src_path, self.config.default_pattern)
         return main_src
 
     def print_header(self):
@@ -446,7 +447,7 @@ class Content(object):
         for arch_url, destination in zip(full_archives[::2], full_archives[1::2]):
             src_path = self.check_or_get_file(arch_url, os.path.basename(arch_url), mode="a")
             # Create source object and extract archive
-            archive = Source(arch_url, destination, src_path)
+            archive = Source(arch_url, destination, src_path, self.config.default_pattern)
             # Add archive prefix to list
             self.config.archive_details[arch_url + "prefix"] = archive.prefix
             self.prefixes[arch_url] = archive.prefix

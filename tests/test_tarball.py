@@ -1,3 +1,5 @@
+import copy
+import os
 import unittest
 from unittest.mock import MagicMock, Mock, patch
 import build
@@ -8,6 +10,25 @@ import tarball
 
 # Stores all test cases for dynamic tests.
 # In order to add more tests just add more elements to the lists provided below.
+
+CONTENT_PECL = [
+    'package.xml',
+    'common-prefix/',
+    'common-prefix/md5/',
+    'common-prefix/md5/CMakeLists.txt',
+    'common-prefix/md5/md5.h',
+    'common-prefix/md5/md5hl.c',
+    'common-prefix/md5/md5cmp.c',
+    'common-prefix/md5/md5.c',
+    'common-prefix/md5/Makefile.am',
+    'common-prefix/md5/Makefile.in',
+    'common-prefix/jerror.c',
+    'common-prefix/sharedlib/',
+    'common-prefix/sharedlib/CMakeLists.txt',
+    'common-prefix/turbojpeg-mapfile',
+    'common-prefix/jdpostct.c',
+    'common-prefix/turbojpeg-jni.c',
+]
 
 CONTENT_PREFIX = [
     'common-prefix/',
@@ -50,6 +71,8 @@ CONTENT_SUBDIR = [
 # Input for tarball.Source class tests.
 # Structure: (url, destination, path, fake-content, source_type, prefix, subddir)
 SRC_CREATION = [
+    ("https://example/src-PECL.tar", "", "/tmp/src-PECL.tar", CONTENT_PECL, "tar", "common-prefix", None),
+    ("https://example/src-non-PECL.tar", "", "/tmp/src-non-PECL.tar", CONTENT_PECL, "tar", "", "src-non-PECL"),
     ("https://example/src-prefix.zip", "", "/tmp/src-prefix.zip", CONTENT_PREFIX, "zip", "common-prefix", None),
     ("https://example/src-subdir.zip", "", "/tmp/src-subdir.zip", CONTENT_SUBDIR, "zip", "", "src-subdir"),
     ("https://example/src-prefix.tar", "", "/tmp/src-prefix.tar", CONTENT_PREFIX, "tar", "common-prefix", None),
@@ -74,7 +97,8 @@ class MockSrcFile():
 
     @classmethod
     def set_content(cls, content):
-        cls.content = content
+        # deep copy because the content is modified by Source
+        cls.content = copy.deepcopy(content)
 
     def getnames(self):
         return self.content
@@ -94,9 +118,12 @@ def source_test_generator(url, destination, path, content, src_type, prefix, sub
         """Test template."""
         # Set fake content
         MockSrcFile.set_content(content)
-        src = tarball.Source(url, destination, path)
+        if os.path.basename(path) in ['src-PECL.tar']:
+            src = tarball.Source(url, destination, path, 'phpize')
+        else:
+            src = tarball.Source(url, destination, path)
         self.assertEqual(src.type, src_type)
-        self.assertEqual(src.prefix, prefix)
+        self.assertEqual(src.prefix, prefix, f"fail for: {url}")
         self.assertEqual(src.subdir, subdir)
 
     return generator
