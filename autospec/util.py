@@ -89,19 +89,52 @@ def get_sha1sum(filename):
     return sh.hexdigest()
 
 
+
+
+def _print_message(message, level, color=None):
+    prefix = level
+    if color:
+        # FIXME: use terminfo instead
+        if color == 'red':
+            params = '31;1'
+        elif color == 'green':
+            params = '32;1'
+        elif color == 'yellow':
+            params = '33;1'
+        elif color == 'blue':
+            params = '34;1'
+        prefix = f'\033[{params}m{level}\033[0m'
+    print(f'[{prefix}] {message}')
+
+
+def print_error(message):
+    """Print error, color coded for TTYs."""
+    _print_message(message, 'ERROR', 'red')
+
+
 def print_fatal(message):
-    """Print color coded fatal errors."""
-    print("[\033[1m\033[91mFATAL\033[0m] {}".format(message))
+    """Print fatal error, color coded for TTYs."""
+    _print_message(message, 'FATAL', 'red')
 
 
 def print_warning(message):
-    """Print color coded warnings."""
-    print("[\033[31;1mWARNING\033[0m] {}".format(message))
+    """Print warning, color coded for TTYs."""
+    _print_message(message, 'WARNING', 'yellow')
+
+
+def print_info(message):
+    """Print informational message, color coded for TTYs."""
+    _print_message(message, 'INFO', 'yellow')
+
+
+def print_success(message):
+    """Print success message, color coded for TTYs."""
+    _print_message(message, 'SUCCESS', 'green')
 
 
 def print_infile(message):
-    """Print colored INIFILE content."""
-    print("[\033[1;34mINFILE\033[0m] {}".format(message))
+    """Print INFILE content, color coded for TTYs."""
+    _print_message(message, 'INFILE', 'blue')
 
 
 def binary_in_path(binary):
