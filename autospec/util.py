@@ -22,6 +22,7 @@ import os
 import re
 import shlex
 import subprocess
+import sys
 
 dictionary_filename = os.path.dirname(__file__) + "/translate.dic"
 dictionary = [line.strip() for line in open(dictionary_filename, 'r')]
@@ -89,11 +90,14 @@ def get_sha1sum(filename):
     return sh.hexdigest()
 
 
+def _supports_color():
+    # FIXME: check terminfo instead
+    return sys.stdout.isatty()
 
 
 def _print_message(message, level, color=None):
     prefix = level
-    if color:
+    if color and _supports_color():
         # FIXME: use terminfo instead
         if color == 'red':
             params = '31;1'
