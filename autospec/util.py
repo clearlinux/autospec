@@ -123,7 +123,7 @@ def print_fatal(message):
 
 def print_warning(message):
     """Print warning, color coded for TTYs."""
-    _print_message(message, 'WARNING', 'yellow')
+    _print_message(message, 'WARNING', 'red')
 
 
 def print_info(message):
