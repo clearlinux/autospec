@@ -237,10 +237,10 @@ class Verifier(object):
             package_name = os.path.basename(self.url)
         if result:
             msg = "{} verification was successful ({})".format(package_name, EMAIL)
-            print_success(msg)
+            util.print_success(msg)
         else:
             msg = "{} verification failed {}".format(package_name, err_msg)
-            print_error(msg)
+            util.print_error(msg)
 
     def __del__(self):
         """Display partition."""
@@ -276,11 +276,11 @@ def get_signature_file(package_url, package_path):
 def compare_keys(newkey, oldkey):
     """Key comparison to check against key tampering."""
     if newkey != oldkey:
-        print_error('Public key has changed:\n'
-                    '            old key: {}\n'
-                    '            new key: {}\n'
-                    'this is a critical security error, quitting...'
-                    .format(oldkey, newkey))
+        util.print_error('Public key has changed:\n'
+                         '            old key: {}\n'
+                         '            new key: {}\n'
+                         'this is a critical security error, quitting...'
+                         .format(oldkey, newkey))
         exit(1)
 
 
@@ -296,7 +296,7 @@ class ShaSumVerifier(Verifier):
 
     def verify_sum(self, shasum):
         """Verify sha sum."""
-        print_info("Verifying sha{}sum digest".format(self.shalen))
+        util.print_info("Verifying sha{}sum digest".format(self.shalen))
         if shasum is None:
             self.print_result(False, err_msg='Verification requires shasum')
             return None
@@ -329,7 +329,7 @@ class MD5Verifier(Verifier):
 
     def verify_md5(self):
         """Verify MD5."""
-        print_info("Verifying MD5 digest")
+        util.print_info("Verifying MD5 digest")
         if self.md5_digest is None:
             self.print_result(False, err_msg='Verification requires a md5_digest')
             return None
@@ -484,7 +484,7 @@ class PyPiVerifier(MD5Verifier):
     def verify(self):
         """Verify pypi file with MD5."""
         global EMAIL
-        print_info("Searching for package information in pypi")
+        util.print_info("Searching for package information in pypi")
         name, release = self.parse_name()
         info = PyPiVerifier.get_info(name)
         releases_info = info.get('releases', None)
@@ -539,7 +539,7 @@ class GPGVerifier(Verifier):
         """Verify file using gpg signature."""
         global KEYID
         global EMAIL
-        print_info("Verifying GPG signature")
+        util.print_info("Verifying GPG signature")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, err_msg='{} not found'.format(self.package_path))
             return None
@@ -584,7 +584,7 @@ class GPGVerifier(Verifier):
 
 def quit_verify():
     """Halt build due to verification being required."""
-    print_error("Verification required for build (verify_required option set)")
+    util.print_error("Verification required for build (verify_required option set)")
     Verifier.quit()
 
 
@@ -619,7 +619,7 @@ class GEMShaVerifier(Verifier):
     def verify(self):
         """Verify ruby gem based on sha sum."""
         gemname = os.path.basename(self.package_path).replace('.gem', '')
-        print_info("Verifying SHA256 checksum")
+        util.print_info("Verifying SHA256 checksum")
         if os.path.exists(self.package_path) is False:
             self.print_result(False, 'GEM was not found {}'.format(self.package_path))
             return
@@ -707,18 +707,18 @@ def attempt_key_import(keyid, key_fullpath):
     with cli_gpg_ctx() as ctx:
         err, _ = ctx.import_key(keyid)
         if err is not None:
-            print_error(err.strerror)
+            util.print_error(err.strerror)
             return False
         err, key_content = ctx.export_key(keyid)
         if err is not None:
-            print_error(err.strerror)
+            util.print_error(err.strerror)
             return False
         util.write_out(key_fullpath, key_content)
         print('\n')
-        print_success('Public key id: {} was imported'.format(keyid))
+        util.print_success('Public key id: {} was imported'.format(keyid))
         err, content = ctx.display_keyinfo(key_fullpath)
         if err is not None:
-            print_error('Unable to parse {}, will be removed'.format(key_fullpath))
+            util.print_error('Unable to parse {}, will be removed'.format(key_fullpath))
             os.unlink(key_fullpath)
             return False
         print("\n", content)
@@ -809,25 +809,10 @@ def filename_from_url(url):
     return os.path.basename(url)
 
 
-def print_success(msg):
-    """Display success color code."""
-    print("\033[92mSUCCESS:\033[0m {}".format(msg))
-
-
-def print_error(msg):
-    """Display error color code."""
-    print("\033[91mERROR  :\033[0m {}".format(msg))
-
-
-def print_info(msg):
-    """Display info color code."""
-    print("\033[93mINFO   :\033[0m {}".format(msg))
-
-
 def apply_verification(verifier, **kwargs):
     """Attempt to run verification routine."""
     if verifier is None:
-        print_error("Package is not verifiable (yet)")
+        util.print_error("Package is not verifiable (yet)")
     else:
         v = verifier(**kwargs)
         return v.verify()
@@ -864,10 +849,10 @@ def attempt_verification_per_domain(package_path, url):
     }.get(domain, None)
 
     if verifier is None:
-        print_info('Skipping domain verification')
+        util.print_info('Skipping domain verification')
         return None
     else:
-        print_info('Verification based on domain {}'.format(domain))
+        util.print_info('Verification based on domain {}'.format(domain))
         return apply_verification(verifier, **{
                                   'package_path': package_path,
                                   'url': url})
@@ -892,7 +877,7 @@ def check(url, config, interactive=True):
     except ValueError:
         interactive = False
     print(SEPT)
-    print_info('Performing package integrity verification')
+    util.print_info('Performing package integrity verification')
     verified = None
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, config, interactive=interactive)
@@ -900,12 +885,12 @@ def check(url, config, interactive=True):
         signature_file = get_signature_file(url, config.download_path)
         verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
     else:
-        print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, config.download_path))
+        util.print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, config.download_path))
         signature_file = get_signature_file(url, config.download_path)
         if signature_file is not None:
             verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
             if verified is None:
-                print_info('Unable to find a signature')
+                util.print_info('Unable to find a signature')
                 verified = attempt_verification_per_domain(package_path, url)
         else:
             verified = attempt_verification_per_domain(package_path, url)
