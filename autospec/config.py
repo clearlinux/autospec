@@ -551,6 +551,28 @@ class Config(object):
         lines = self.read_file(path, track=track)
         return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
 
+    def process_extras_file(self, fname, name, filemanager):
+        """Process extras type subpackages configuration."""
+        content = {}
+        content['files'] = self.read_conf_file(os.path.join(self.download_path, fname))
+        if not content:
+            print_warning(f"Error reading custom extras file: {fname}")
+            return
+        req_file = os.path.join(self.download_path, f'{fname}_requires')
+        if os.path.isfile(req_file):
+            content['requires'] = self.read_conf_file(req_file)
+
+        filemanager.file_maps[name] = content
+
+    def process_requires_file(self, fname, requirements, req_type, subpkg=None):
+        """Process manual subpackage requirements file."""
+        content = self.read_conf_file(os.path.join(self.download_path, fname))
+        for pkg in content:
+            if req_type == 'add':
+                requirements.add_requires(pkg, self.os_packages, override=True, subpkg=subpkg)
+            else:
+                requirements.ban_requires(pkg, subpkg=subpkg)
+
     def read_script_file(self, path, track=True):
         """Read RPM script snippet file at path.
 
@@ -785,12 +807,6 @@ class Config(object):
             requirements.buildreqs.discard(banned)
             requirements.buildreqs_cache.discard(banned)
 
-        content = self.read_conf_file(os.path.join(self.download_path, "requires_ban"))
-        for banned in content:
-            print("Banning runtime requirement: %s." % banned)
-            requirements.banned_requires.add(banned)
-            requirements.requires.discard(banned)
-
         content = self.read_conf_file(os.path.join(self.download_path, "buildreq_add"))
         for extra in content:
             print("Adding additional build requirement: %s." % extra)
@@ -816,37 +832,31 @@ class Config(object):
             print("Adding additional build requirement: %s." % extra)
             requirements.add_buildreq(extra)
 
-        content = self.read_conf_file(os.path.join(self.download_path, "requires_add"))
-        for extra in content:
-            print("Adding additional runtime requirement: %s." % extra)
-            requirements.add_requires(extra, self.os_packages, override=True)
+        # Handle dynamic configuration files (per subpackage)
+        for fname in os.listdir(self.download_path):
+            if re.search(r'.+_requires_add$', fname):
+                subpkg = fname[:-len("_requires_add")]
+                self.process_requires_file(fname, requirements, 'add', subpkg)
+            elif re.search(r'.+_requires_ban$', fname):
+                subpkg = fname[:-len("_requires_ban")]
+                self.process_requires_file(fname, requirements, 'ban', subpkg)
+            elif fname == 'requires_add':
+                self.process_requires_file(fname, requirements, 'add')
+            elif fname == 'requires_ban':
+                self.process_requires_file(fname, requirements, 'ban')
+            elif re.search(r'.+_extras$', fname):
+                # Prefix all but blessed names with extras-
+                name = fname[:-len("_extras")]
+                if name not in ('dev', 'tests'):
+                    name = f'extras-{name}'
+                self.process_extras_file(fname, name, filemanager)
+            elif fname == 'extras':
+                self.process_extras_file(fname, fname, filemanager)
 
         content = self.read_conf_file(os.path.join(self.download_path, "excludes"))
         for exclude in content:
             print("%%exclude for: %s." % exclude)
         filemanager.excludes += content
-
-        for fname in os.listdir(self.download_path):
-            if re.search(r'.+_extras$', fname):
-                # Prefix all but blessed names with extras-
-                name = fname[:-len("_extras")]
-                if name not in ('dev', 'tests'):
-                    name = f'extras-{name}'
-            elif fname == 'extras':
-                name = 'extras'
-            else:
-                continue
-
-            content = {}
-            content['files'] = self.read_conf_file(os.path.join(self.download_path, fname))
-            if not content:
-                print_warning(f"Error reading custom extras file: {fname}")
-                continue
-            req_file = os.path.join(self.download_path, f'{fname}_requires')
-            if os.path.isfile(req_file):
-                content['requires'] = self.read_conf_file(req_file)
-
-            filemanager.file_maps[name] = content
 
         content = self.read_conf_file(os.path.join(self.download_path, "setuid"))
         for suid in content:

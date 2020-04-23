@@ -105,8 +105,7 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["autostart"] = ["autostart"]
         self.specfile.packages["bin"] = []
         self.specfile.packages["lib"] = ["package.so"]
-        self.specfile.requirements.requires.add("pkg1")
-        self.specfile.requirements.requires.add("pkg2")
+        self.specfile.requirements.requires[None] = set(["pkg1", "pkg2"])
         self.specfile.config.config_opts['no_autostart'] = True
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-bin = %{version}-%{release}\n",
@@ -127,8 +126,7 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["ignore"] = []
         self.specfile.packages["dev"] = []
         self.specfile.packages["active-units"] = []
-        self.specfile.requirements.requires.add("pkg1")
-        self.specfile.requirements.requires.add("pkg2")
+        self.specfile.requirements.requires[None] = set(["pkg1", "pkg2"])
         self.specfile.write_main_subpackage_requires()
         expect = ["Requires: pkg-autostart = %{version}-%{release}\n",
                   "Requires: pkg-bin = %{version}-%{release}\n",
@@ -200,7 +198,6 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.packages["python"] = ["pyfile1", "pyfile2"]
         self.specfile.packages["dev"] = ["dev1", "dev2"]
         self.specfile.packages["pack"] = ["packf1"]
-        self.specfile.requirements.requires = ["pep8", "pylint", "pycurl"]
         self.specfile.requirements.buildreqs = ["pep8", "pycurl"]
         self.specfile.write_files_header()
         expect = ["\n%package data\n",

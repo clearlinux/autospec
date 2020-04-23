@@ -274,17 +274,16 @@ class Requirements(object):
 
     def __init__(self, url):
         """Initialize Default requirements settings."""
-        self.banned_requires = set(["futures",
-                                    "configparser"])
+        self.banned_requires = {None: set(["futures",
+                                           "configparser"])}
         self.buildreqs = set()
         self.buildreqs_cache = set()
-        self.requires = set()
+        self.requires = {None: set(), "pypi": set()}
+        self.provides = {None: set(), "pypi": set()}
         self.extra_cmake = set()
         self.extra_cmake_openmpi = set()
         self.verbose = False
         self.cargo_bin = False
-        self.pypi_provides = None
-        self.pypi_requires = set()
         self.banned_buildreqs = set(["llvm-devel",
                                      "gcj",
                                      "pkgconfig(dnl)",
@@ -323,21 +322,35 @@ class Requirements(object):
             self.buildreqs_cache.add(req)
         return new
 
-    def add_requires(self, req, packages, override=False):
-        """Add req to the global requires set if it is present in buildreqs and packages and is not banned."""
+    def ban_requires(self, ban, subpkg=None):
+        """Add ban to the banned set (and remove it from requires if it was added)."""
+        ban = ban.strip()
+        if (requires := self.requires.get(subpkg)) is None:
+            requires = self.requires[subpkg] = set()
+        if (banned_requires := self.banned_requires.get(subpkg)) is None:
+            banned_requires = self.banned_requires[subpkg] = set()
+        requires.discard(ban)
+        banned_requires.add(ban)
+
+    def add_requires(self, req, packages, override=False, subpkg=None):
+        """Add req to the requires set if it is present in buildreqs and packages and is not banned."""
         new = True
         req = req.strip()
-        if req in self.requires:
+        if (requires := self.requires.get(subpkg)) is None:
+            requires = self.requires[subpkg] = set()
+        if req in requires:
             new = False
-        if req in self.banned_requires:
+        if (banned_requires := self.banned_requires.get(subpkg)) is None:
+            banned_requires = self.banned_requires[subpkg] = set()
+        if req in banned_requires:
             return False
 
         # Try dashes instead of underscores as some ecosystems are inconsistent in their naming
         req2 = req.replace("_", "-")
-        if req not in self.buildreqs and req2 in packages and req2 not in self.requires and req2 not in self.banned_requires:
+        if req not in self.buildreqs and req2 in packages and req2 not in requires and req2 not in banned_requires:
             # Since this is done for python add a buildreq just in case (might not be correct though)
             self.buildreqs.add(req2)
-            self.requires.add(req2)
+            requires.add(req2)
             return True
 
         # Try reversing the case of the first letter as some ecosystems are inconsistent in their naming
@@ -346,10 +359,10 @@ class Requirements(object):
                 req2 = req[0].lower() + req[1:]
             else:
                 req2 = req[0].upper() + req[1:]
-        if req not in self.buildreqs and req2 in packages and req2 not in self.requires and req2 not in self.banned_requires:
+        if req not in self.buildreqs and req2 in packages and req2 not in requires and req2 not in banned_requires:
             # Since this is done for python add a buildreq just in case (might not be correct though)
             self.buildreqs.add(req2)
-            self.requires.add(req2)
+            requires.add(req2)
             return True
 
         if req not in self.buildreqs and req not in packages and not override:
@@ -358,7 +371,7 @@ class Requirements(object):
             return False
         if new:
             # print("Adding requirement:", req)
-            self.requires.add(req)
+            requires.add(req)
         return new
 
     def add_pkgconfig_buildreq(self, preq, conf32, cache=False):
@@ -893,7 +906,8 @@ class Requirements(object):
                 if package_pypi.get("name"):
                     self.pypi_provides = package_pypi["name"]
                 if package_pypi.get("requires"):
-                    self.pypi_requires = set(package_pypi["requires"])
+                    for pkg in package_pypi["requires"]:
+                        self.add_requires(f"pypi({pkg})", config.os_packages, override=True, subpkg="python3")
                 if package_pypi.get("license"):
                     # The license field is freeform, might be worth looking at though
                     print(f"Pypi says the license is: {package_pypi['license']}")
