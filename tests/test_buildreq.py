@@ -33,6 +33,22 @@ class TestBuildreq(unittest.TestCase):
         self.assertFalse(self.reqs.add_buildreq('bannedreq'))
         self.assertNotIn('bannedreq', self.reqs.buildreqs)
 
+    def test_ban_requires(self):
+        """
+        Test ban_requires with req already present in requires
+        """
+        self.reqs.requires[None] = set(['testreq'])
+        self.reqs.ban_requires('testreq')
+        self.assertNotIn('testreq', self.reqs.requires[None])
+
+    def test_ban_requires_subpkg(self):
+        """
+        Test ban_requires on a subpkg with req already present in requires
+        """
+        self.reqs.requires['subpkg'] = set(['testreq'])
+        self.reqs.ban_requires('testreq', subpkg='subpkg')
+        self.assertNotIn('testreq', self.reqs.requires['subpkg'])
+
     def test_add_requires(self):
         """
         Test add_requires with unbanned new req already present in
@@ -40,14 +56,23 @@ class TestBuildreq(unittest.TestCase):
         """
         self.reqs.add_buildreq('testreq')
         self.assertTrue(self.reqs.add_requires('testreq', ['testreq']))
-        self.assertIn('testreq', self.reqs.requires)
+        self.assertIn('testreq', self.reqs.requires[None])
+
+    def test_add_requires_subpkg(self):
+        """
+        Test add_requires on a subpkg with unbanned new req already present in
+        buildreqs but not yet present in requires
+        """
+        self.reqs.add_buildreq('testreq')
+        self.assertTrue(self.reqs.add_requires('testreq', ['testreq'], subpkg='subpkg'))
+        self.assertIn('testreq', self.reqs.requires['subpkg'])
 
     def test_add_requires_not_in_buildreqs(self):
         """
         Test add_requires with unbanned new req not present in buildreqs.
         """
         self.assertFalse(self.reqs.add_requires('testreq', []))
-        self.assertNotIn('testreq', self.reqs.requires)
+        self.assertNotIn('testreq', self.reqs.requires[None])
 
     def test_add_pkgconfig_buildreq(self):
         """
@@ -285,7 +310,7 @@ class TestBuildreq(unittest.TestCase):
         with patch(open_name, m_open, create=True):
             self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req7']))
 
     def test_grab_python_requirements_strange_file(self):
         """
@@ -301,7 +326,7 @@ class TestBuildreq(unittest.TestCase):
         with patch(open_name, m_open, create=True):
             self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
 
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req7']))
 
     def test_add_setup_py_requires(self):
         """
@@ -316,7 +341,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires, set(['req1']))
+        self.assertEqual(self.reqs.requires[None], set(['req1']))
 
     def test_add_setup_py_requires_multiline(self):
         """
@@ -331,7 +356,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
 
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req3']))
 
     def test_add_setup_py_requires_multiline_formatted(self):
         """
@@ -349,7 +374,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
 
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req3']))
 
     def test_add_setup_py_requires_multiline_variable(self):
         """
@@ -367,7 +392,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
 
     def test_add_setup_py_requires_variable(self):
         """
@@ -380,7 +405,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
 
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
 
     def test_add_setup_py_requires_single_variable(self):
         """
@@ -393,7 +418,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.add_setup_py_requires('filename', [])
 
         self.assertEqual(self.reqs.buildreqs, set())
-        self.assertEqual(self.reqs.requires, set())
+        self.assertEqual(self.reqs.requires[None], set())
 
     def test_setup_py3_version_classifier(self):
         """
@@ -443,6 +468,7 @@ class TestBuildreq(unittest.TestCase):
         name = "name"
         requires = ["abc",
                     "def"]
+        pypi_requires = set(f"pypi({x})" for x in requires)
         summary = "summary"
         content = json.dumps({"name": name,
                               "summary": summary,
@@ -462,7 +488,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
 
         self.assertEqual(self.reqs.pypi_provides, name)
-        self.assertEqual(self.reqs.pypi_requires, set(requires))
+        self.assertEqual(self.reqs.requires['python3'], pypi_requires)
         self.assertEqual(ssummary, summary)
 
     def test_scan_for_configure_pypi_override(self):
@@ -476,6 +502,7 @@ class TestBuildreq(unittest.TestCase):
         name = "name"
         summary = "summary"
         requires = ["req"]
+        pypi_requires = set(f"pypi({x})" for x in requires)
         content = json.dumps({"name": name,
                               "summary": summary,
                               "requires": requires})
@@ -493,7 +520,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.specdescription.default_summary_score = orig_sscore
 
         self.assertEqual(self.reqs.pypi_provides, name)
-        self.assertEqual(self.reqs.pypi_requires, set(requires))
+        self.assertEqual(self.reqs.requires['python3'], pypi_requires)
         self.assertEqual(ssummary, summary)
 
     def test_parse_cmake_pkg_check_modules(self):

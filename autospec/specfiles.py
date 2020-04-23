@@ -178,11 +178,11 @@ class Specfile(object):
                        "staticdev32", "tests"]:
                 continue
             # honor requires_ban for manual overrides
-            if "{}-{}".format(self.name, pkg) in self.requirements.banned_requires:
+            if "{}-{}".format(self.name, pkg) in self.requirements.banned_requires.get(None, []):
                 continue
             self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, pkg))
 
-        for pkg in sorted(self.requirements.requires):
+        for pkg in sorted(self.requirements.requires.get(None, [])):
             self._write("Requires: {}\n".format(pkg))
 
     def write_buildreq(self):
@@ -289,8 +289,9 @@ class Specfile(object):
                 self._write("Requires: python3-core\n")
                 if self.requirements.pypi_provides:
                     self._write(f"Provides: pypi({self.requirements.pypi_provides})\n")
-                for req in sorted(self.requirements.pypi_requires):
-                    self._write(f"Requires: pypi({req})\n")
+
+            for req in sorted(self.requirements.requires.get(pkg, [])):
+                self._write(f"Requires: {req}\n")
 
             self._write("\n%description {}\n".format(pkg))
             self._write("{} components for the {} package.\n".format(pkg, self.name))

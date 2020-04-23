@@ -192,6 +192,10 @@ requires_add
   Each line in the file provides the name of a package to add as a runtime
   dependency to the ``.spec``.
 
+${custom}_requires_add
+  Same as "requires_add" above, but instead of the Requires being placed on the
+  ``main`` subpackage, they will be placed on the ``-${custom}`` subpackage.
+
 buildreq_ban
   Each line in the file is a build dependency that under no circumstance should
   be automatically added to the build dependencies. This is useful to block
@@ -209,6 +213,11 @@ requires_ban
   should be automatically added to the runtime dependencies. This is useful to
   block automatic configuration routines adding undesired functionality, or to
   omit any automatically discovered dependencies during tarball scanning.
+
+${custom}_requires_ban
+  Same as "requires_ban" above, but instead of the Requires being removed from
+  the ``main`` subpackage, they will be removed from the ``-${custom}``
+  subpackage.
 
 .. note::
 
