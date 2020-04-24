@@ -319,7 +319,7 @@ class Specfile(object):
                 content = self.config.read_conf_file("{}.{}".format(script, pkg))
                 if content:
                     self._write("\n%{0} {1}\n".format(script, pkg))
-                    content = ['{}\n'.format(l) for l in content]
+                    content = ['{}\n'.format(line) for line in content]
                     self.specfile.writelines(content)
 
     def write_files(self):
