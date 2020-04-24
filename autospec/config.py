@@ -549,7 +549,7 @@ class Config(object):
         in the package git repo, specify 'track=False'.
         """
         lines = self.read_file(path, track=track)
-        return [l.strip() for l in lines if not l.strip().startswith("#") and l.split()]
+        return [line.strip() for line in lines if not line.strip().startswith("#") and line.split()]
 
     def process_extras_file(self, fname, name, filemanager):
         """Process extras type subpackages configuration."""

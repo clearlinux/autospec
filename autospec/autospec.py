@@ -89,9 +89,9 @@ def save_mock_logs(path, iteration):
     """Save Mock build logs to <path>/results/round<iteration>-*.log."""
     basedir = os.path.join(path, "results")
     loglist = ["build", "root", "srpm-build", "srpm-root", "mock_srpm", "mock_build"]
-    for l in loglist:
-        src = "{}/{}.log".format(basedir, l)
-        dest = "{}/round{}-{}.log".format(basedir, iteration, l)
+    for log in loglist:
+        src = "{}/{}.log".format(basedir, log)
+        dest = "{}/round{}-{}.log".format(basedir, iteration, log)
         os.rename(src, dest)
 
 

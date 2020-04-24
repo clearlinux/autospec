@@ -51,7 +51,7 @@ def update_summary(bb_dict, specfile):
 def update_licenses(bb_dict, specfile):
     """Add the bitbake license if it is not included in the specfile."""
     if "LICENSE" in bb_dict:
-        if bb_dict.get("LICENSE").lower() not in [l.lower() for l in specfile.licenses]:
+        if bb_dict.get("LICENSE").lower() not in [license.lower() for license in specfile.licenses]:
             specfile.licenses.append(bb_dict.get("LICENSE"))
             print_infile("License added: {}".format(bb_dict.get("LICENSE")))
 
