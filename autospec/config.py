@@ -555,9 +555,6 @@ class Config(object):
         """Process extras type subpackages configuration."""
         content = {}
         content['files'] = self.read_conf_file(os.path.join(self.download_path, fname))
-        if not content:
-            print_warning(f"Error reading custom extras file: {fname}")
-            return
         req_file = os.path.join(self.download_path, f'{fname}_requires')
         if os.path.isfile(req_file):
             content['requires'] = self.read_conf_file(req_file)
