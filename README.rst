@@ -1,6 +1,3 @@
-.. image:: https://travis-ci.org/clearlinux/autospec.svg?branch=master
-    :target: https://travis-ci.org/clearlinux/autospec
-
 ========
 Autospec
 ========
