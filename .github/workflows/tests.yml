@@ -6,6 +6,7 @@ jobs:
   test_style:
     runs-on: ubuntu-latest
     name: Flake8
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v2.1.0
@@ -16,6 +17,7 @@ jobs:
   test_unit:
     runs-on: ubuntu-latest
     name: Unit
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v2.1.0
