@@ -345,8 +345,6 @@ class TestGPGVerifier(unittest.TestCase):
 
 class TestInputGetter(unittest.TestCase):
 
-    @unittest.skipIf("TRAVIS" in os.environ and os.environ["TRAVIS"] == "true",
-                     "Skipping this test on Travis CI.")
     def test_timput(self):
         ig = pkg_integrity.InputGetter(default='N', timeout=2)
         answer = ig.get_answer()
