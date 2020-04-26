@@ -284,6 +284,7 @@ class Requirements(object):
         self.extra_cmake_openmpi = set()
         self.verbose = False
         self.cargo_bin = False
+        self.pypi_provides = None
         self.banned_buildreqs = set(["llvm-devel",
                                      "gcj",
                                      "pkgconfig(dnl)",
