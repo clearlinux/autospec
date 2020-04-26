@@ -61,6 +61,7 @@
 -lgpg, libgpg-error-dev
 -lgs, ghostscript
 -lgsl, gsl-dev
+-lharfbuzz, pkgconfig(harfbuzz)
 -libverbs, rdma-core-dev
 -licuuc, icu4c-dev
 -lintl, intltool-dev
@@ -521,6 +522,9 @@ Qt5Declarative, qtdeclarative-dev
 Qt5Help, qttools-dev
 Qt5LinguistTools, qttools-dev
 Qt5Network, qtbase-dev
+Qt5QuickControls2, pkgconfig(Qt5QuickControls2)
+Qt5QuickTemplates2, pkgconfig(Qt5QuickTemplates2)
+Qt5QuickTest, pkgconfig(Qt5QuickTest)
 Qt5Script, qtscript-dev
 Qt5SerialPort, qt5serialport-dev
 Qt5Svg, qtsvg-dev
@@ -561,6 +565,7 @@ Tcl configuration, tcl
 TelepathyQt5, telepathy-qt-dev
 The weston executable was, weston-dev weston
 UDev, systemd-dev
+UNWIND, pkgconfig(libunwind)
 UPOWER, upower-dev
 USB, libusb-dev
 VALGRIND, valgrind
@@ -1019,6 +1024,7 @@ libssh2.h, libssh2-dev
 libsystemd, pkgconfig(systemd)
 libtirpc (via pkg-config), pkgconfig(libtirpc)
 libudev.h, systemd-dev
+libunistring, libunistring-dev
 libusb-1.0, libusb-dev
 libusb-1.0/libusb.h, libusb-dev
 libv4l2, pkgconfig(libv4l2)
@@ -1048,6 +1054,7 @@ lxqt-globalkeys, lxqt-globalkeys-dev
 lzma, xz-dev
 lzma.h, xz-dev
 lzo/lzoconf.h, lzo-dev
+magic, file-dev
 magic.h, file-dev
 magic_file in -lmagic, file-dev
 main in -lX11, libX11-dev
@@ -1228,6 +1235,7 @@ repc, qtremoteobjects-dev
 requests, requests
 rest-0.7, rest-dev
 retrying, retrying
+rpm, pkgconfig(rpm)
 rst2man, docutils
 rsvg-convert, librsvg
 ruby, ruby

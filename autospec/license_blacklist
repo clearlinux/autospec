@@ -2,12 +2,14 @@
 # in the form: <blacklisted string>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
+%
 %license
 (LGPL)
 (new)
 (specified
 +
 -
+-MIT
 -or-
 .git
 .mit

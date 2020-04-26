@@ -72,6 +72,7 @@ XATTR_NAME_SMACKEXEC in linux/xattr.h
 XATTR_NOFOLLOW
 XML catalog (/etc/xml/catalog)
 XSI (rather than GNU) prototype for strerror_r
+_ prefix in compiled symbols
 _FILE_OFFSET_BITS value needed for large files
 _FILE_OFFSET_BITS value needed large files
 _LARGEFILE_SOURCE value needed for large files
@@ -160,6 +161,7 @@ directio
 dirfd is a macro
 dl.h
 dlclose
+dld_link in -ldld
 dlerror
 dlltool
 dlopen
@@ -176,6 +178,7 @@ explicit OBJCFLAGS
 external symbol _system_configuration
 extra flags to get ANSI library prototypes
 fabs
+fake locale system (OpenBSD)
 fallocate
 fdatasync
 fdatasync... (cach
@@ -257,6 +260,7 @@ iconv_open
 ieeefp.h
 if -lm is required for maths functions
 if : is a manifest tool
+if GCC is actually Clang
 if X11 header
 if X11 header files implicitly declare return values
 if building for some Win32 platform
@@ -314,6 +318,7 @@ login_tty
 long double and double are the same
 lstat accepts an empty string
 mach-o/dyld.h
+mach/host_info.h
 mach/mach_time.h
 machine/hal_sysinfo.h
 main in -lelf
