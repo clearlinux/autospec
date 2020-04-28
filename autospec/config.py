@@ -238,7 +238,7 @@ class Config(object):
         self.failed_pats = [
             (r"    !  ([a-zA-Z:]+) is not installed", 0, 'perl'),
             (r"    ([a-zA-Z]+\:\:[a-zA-Z]+) not installed", 1, None),
-            (r"(?:Could|Did) (?:NOT|not) find ([a-zA-Z0-9]+)", 0, None),
+            (r"(?:-- )?(?:Could|Did) (?:NOT|not) find ([a-zA-Z0-9_-]+)", 0, None),
             (r" ([a-zA-Z0-9\-]*\.m4) not found", 0, None),
             (r" exec: ([a-zA-Z0-9\-]+): not found", 0, None),
             (r"([a-zA-Z0-9\-\_\.]*)\: command not found", 1, None),
@@ -301,7 +301,6 @@ class Config(object):
             (r"[Dd]ependency (.*) found: NO \(tried pkgconfig(?: and cmake)?\)", 0, 'pkgconfig'),
             (r"[Dd]ependency (.*) found: NO", 0, None),
             (r"[a-zA-Z0-9\-:]* is not installed: cannot load such file -- rdoc/([a-zA-Z0-9\-:]*)", 0, 'ruby'),
-            (r"\-\- Could NOT find ([a-zA-Z0-9]+)", 0, None),
             (r"\/bin\/ld: cannot find (-l[a-zA-Z0-9\_]+)", 0, None),
             (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
             (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),

@@ -5,6 +5,8 @@
  exec: swig: not found|swig
  mate-common.m4 not found|mate-common-dev
 -- Could NOT find swig|swig
+-- Could not find wpa_supplicant|wpa_supplicant
+-- Could not find xdg-open|xdg-utils
 -- swig not found.|swig
 etc etc /usr/bin/swig   not found|swig
 /bin/ld: cannot find -lz|zlib-dev
@@ -24,6 +26,8 @@ Checking for swig development files... No|swig
 Checking for swig...no|swig
 Checking for swig: not found|swig
 Could NOT find swig|swig
+Could not find wpa_supplicant|wpa_supplicant
+Could not find xdg-open|xdg-utils
 Could not find 'swig' (< 4) among 5 total gem|rubygem-swig
 Could not find a package configuration file provided by "swig" etc etc|swig
 Could not find gem 'swig (<= 3) ruby'|rubygem-swig
