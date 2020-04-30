@@ -275,7 +275,8 @@ class Requirements(object):
     def __init__(self, url):
         """Initialize Default requirements settings."""
         self.banned_requires = {None: set(["futures",
-                                           "configparser"])}
+                                           "configparser",
+                                           "typing"])}
         self.buildreqs = set()
         self.buildreqs_cache = set()
         self.requires = {None: set(), "pypi": set()}
@@ -294,7 +295,8 @@ class Requirements(object):
                                      "oslo-python",
                                      "libxml2No-python",
                                      "futures",
-                                     "configparser"])
+                                     "configparser",
+                                     "typing"])
         self.autoreconf_reqs = ["gettext-bin",
                                 "automake-dev",
                                 "automake",
