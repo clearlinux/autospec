@@ -276,7 +276,8 @@ class Requirements(object):
         """Initialize Default requirements settings."""
         self.banned_requires = {None: set(["futures",
                                            "configparser",
-                                           "typing"])}
+                                           "typing",
+                                           "ipaddress"])}
         self.buildreqs = set()
         self.buildreqs_cache = set()
         self.requires = {None: set(), "pypi": set()}
@@ -296,7 +297,8 @@ class Requirements(object):
                                      "libxml2No-python",
                                      "futures",
                                      "configparser",
-                                     "typing"])
+                                     "typing",
+                                     "ipaddress"])
         self.autoreconf_reqs = ["gettext-bin",
                                 "automake-dev",
                                 "automake",
