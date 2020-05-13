@@ -70,10 +70,6 @@ Program swig found: NO|swig
 Target 't' can't be generated as 'swig' could not be found|swig
 Unable to `import swig`|swig
 Unable to find 'swig'|swig
-Unknown package 'swig' in Rd xrefs|R-swig
-Unknown package ‘swig’ in Rd xrefs|R-swig
-Unknown packages 'swig', 'swig2' in Rd xrefs|R-swig
-Unknown packages ‘swig’, ‘swig2’ in Rd xrefs|R-swig
 WARNING:  package dependency on swig (= 5.4) ardilla|rubygem-swig
 Warning: no usable swig found|swig
 Warning: prerequisite swig 8 not found.|perl(swig)
