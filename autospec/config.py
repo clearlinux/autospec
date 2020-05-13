@@ -293,7 +293,6 @@ class Config(object):
             (r"Target '[a-zA-Z0-9\-]' can't be generated as '(.*)' could not be found", 0, None),
             (r"Unable to `import (.*)`", 0, None),
             (r"Unable to find '(.*)'", 0, None),
-            (r"Unknown packages? ['‘]([a-zA-Z0-9\-]*)['’].* in Rd xrefs", 0, 'R'),
             (r"WARNING:  [a-zA-Z\-\_]+ dependency on ([a-zA-Z0-9\-\_:]*) \([<>=~]+ ([0-9.]+).*\) .*", 0, 'ruby'),
             (r"Warning: prerequisite ([a-zA-Z:]+) [0-9\.]+ not found.", 0, 'perl'),
             (r"Warning\: no usable ([a-zA-Z0-9]+) found", 0, None),
