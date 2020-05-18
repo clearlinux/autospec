@@ -26,6 +26,7 @@ CC0, CC0-1.0
 CPL, CPL-1.0
 Expat, MIT
 GFDL1.1, GFDL-1.1
+GPL (> 2), GPL-3.0+
 GPL(==-2), GPL-2.0
 GPL(>=-2), GPL-2.0+
 GPL(>=-2.0), GPL-2.0+
