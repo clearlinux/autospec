@@ -54,6 +54,8 @@
 -lev, libev-dev
 -lexpat, expat-dev
 -lfontconfig, fontconfig-dev
+-lform, ncurses-dev
+-lformw, ncurses-dev
 -lgcrypt, libgcrypt-dev
 -lgmp, gmp-dev
 -lgnutls, gnutls-dev
@@ -76,6 +78,8 @@
 -llzma, xz-dev
 -llzo, lzo-dev
 -lmagic, file-dev
+-lmenu, ncurses-dev
+-lmenuw, ncurses-dev
 -lname-matecorba-server-2, mate-corba-dev
 -lncurses, ncurses-dev
 -lncursesw, ncurses-dev
@@ -86,6 +90,8 @@
 -lodbc, unixODBC-dev
 -lopenblas, openblas
 -lpam, Linux-PAM-dev
+-lpanel, ncurses-dev
+-lpanelw, ncurses-dev
 -lparted, parted-dev
 -lpcap, libpcap-dev
 -lpcre, pcre-dev
@@ -94,9 +100,12 @@
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
 -lsensors, lm-sensors-dev
+-lsqlite3, sqlite-autoconf-dev
 -lssh, libssh-dev
 -lssl, openssl-dev
 -ltermcap, ncurses-dev
+-ltinfo, ncurses-dev
+-ltinfow, ncurses-dev
 -ltirpc, libtirpc-dev
 -luuid, util-linux-dev
 -lvorbisidec, libvorbis-dev
@@ -877,6 +886,8 @@ gs, ghostscript
 gsapi_new_instance in -lgs, ghostscript-dev
 gsapi_new_instance, ghostscript
 gsettings-desktop-schemas, gsettings-desktop-schemas
+gsl-config, gsl-dev
+gsl/gsl_vector.h, gsl-dev
 gsl_rng_uniform_int in -lgsl, gsl-dev
 gsound, gsound-dev
 gspell-1, gspell-dev
