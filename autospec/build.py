@@ -39,6 +39,7 @@ def cleanup_req(s: str) -> str:
     if s[0:4] == 'for ':
         s = s[4:]
     s = s.replace(" works as expected", "")
+    s = s.replace(" and usability", "")
     s = s.replace(" usability", "")
     s = s.replace(" argument", "")
     s = s.replace(" environment variable", "")
