@@ -308,7 +308,7 @@ class Content(object):
                     name = re.sub(r"\d*$", '', name)
                 self.rawname = name
                 version = match.group(3).replace(name, '')
-                if "archive" not in self.url:
+                if "/archive/" not in self.url:
                     version = re.sub(r"^[-_.a-zA-Z]+", "", version)
                 version = convert_version(version, name)
                 if not self.giturl:
