@@ -527,6 +527,7 @@ http://www.greenwoodsoftware.com/less/less-520.tar.gz,less,520
 https://github.com/google/leveldb/archive/v1.20.tar.gz,leveldb,1.20
 https://fedorahosted.org/releases/l/i/libaio/libaio-0.3.110.tar.gz,libaio,0.3.110
 http://www.libarchive.org/downloads/libarchive-3.3.1.tar.gz,libarchive,3.3.1
+https://github.com/libarchive/libarchive/releases/download/v3.4.2/libarchive-3.4.2.tar.xz,libarchive,3.4.2
 http://pypi.debian.net/libarchive-c/libarchive-c-2.7.tar.gz,libarchive-c,2.7
 ftp://ftp.gnupg.org/gcrypt/libassuan/libassuan-2.4.3.tar.bz2,libassuan,2.4.3
 https://github.com/ivmai/libatomic_ops/releases/download/v7.4.6/libatomic_ops-7.4.6.tar.gz,libatomic_ops,7.4.6
