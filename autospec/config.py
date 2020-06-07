@@ -460,13 +460,13 @@ class Config(object):
 
         # default lto to true for new things
         config_f['autospec']['use_lto'] = 'true'
-        
+
         # default ignore missing build ids for new things
         config_f['autospec']['nomissingbuildids'] = 'false'
-        
+
         # default disable automatic requeriments processing for new things
         config_f['autospec']['noautoreq'] = 'false'
-        
+
         # default disable automatic provides processing for new things
         config_f['autospec']['noautoprov'] = 'false'
 
