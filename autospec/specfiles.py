@@ -83,6 +83,9 @@ class Specfile(object):
         self.write_buildreq()
         self.write_strip_command()
         self.write_debug_command()
+        self.write_missing_build_ids_command()
+        self.write_disable_autoreq()
+        self.write_disable_autoprov()
         self.write_patch_header()
 
         # main package extra content
@@ -201,6 +204,24 @@ class Specfile(object):
         if self.config.config_opts['nodebug']:
             self._write("# Suppress generation of debuginfo\n")
             self._write("%global debug_package %{nil}\n")
+
+    def write_missing_build_ids_command(self):
+        """Write commands to prevent failure if there are missing build ids."""
+        if self.config.config_opts['nomissingbuildids']:
+            self._write("# Ignore missing build ids\n")
+            self._write("%undefine _missing_build_ids_terminate_build\n")
+
+    def write_disable_autoreq(self):
+        """Write commands to disable automatic requeriments processing."""
+        if self.config.config_opts['noautoreq']:
+            self._write("# Disable automatic requeriments processing\n")
+            self._write("AutoReq: no\n")
+
+    def write_disable_autoprov(self):
+        """Write commands to disable automatic provides processing."""
+        if self.config.config_opts['noautoprov']:
+            self._write("# Disable automatic provides processing\n")
+            self._write("AutoProv: no\n")
 
     def write_patch_header(self):
         """Write patch list header."""

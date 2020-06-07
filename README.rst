@@ -597,6 +597,17 @@ compat
 
 nodebug
   If this option is set, ``debuginfo`` is not created for this package.
+  
+nomissingbuildids
+  If this option is set, missing build ids will not terminate the build.
+  
+noautoreq
+  If this option is set, ``AutoReq: no`` will be set for this package and 
+  automatic requeriments processing will be disabled
+  
+noautoprov
+  If this option is set, ``AutoProv: no`` will be set for this package and
+  automatic provides processing will be disabled
 
 Name and version resolution
 ===========================

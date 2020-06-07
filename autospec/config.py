@@ -178,7 +178,10 @@ class Config(object):
             "autoupdate": "this package is trusted enough to automatically update (used by other tools)",
             "compat": "this package is a library compatibility package and only ships versioned library files",
             "nodebug": "do not generate debuginfo for this package",
-            "openmpi": "configure build also for openmpi"
+            "openmpi": "configure build also for openmpi",
+            "nomissingbuildids": "ignore missing build ids",
+            "noautoreq": "disable automatic requeriments processing",
+            "noautoprov": "disable automatic provides processing"
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies
@@ -457,6 +460,15 @@ class Config(object):
 
         # default lto to true for new things
         config_f['autospec']['use_lto'] = 'true'
+        
+        # default ignore missing build ids for new things
+        config_f['autospec']['nomissingbuildids'] = 'false'
+        
+        # default disable automatic requeriments processing for new things
+        config_f['autospec']['noautoreq'] = 'false'
+        
+        # default disable automatic provides processing for new things
+        config_f['autospec']['noautoprov'] = 'false'
 
         # renamed options need special care
         if os.path.exists("skip_test_suite"):
