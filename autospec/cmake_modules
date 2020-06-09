@@ -106,6 +106,7 @@ Java, openjdk11
 KChart, kdiagram-dev
 KDED, kded-dev
 KDEExperimentalPurpose, purpose-dev
+KDSoap, kdsoap-dev
 KDecoration2, kdecoration-dev
 KF5Activities, kactivities-dev
 KF5ActivitiesStats, kactivities-stats-dev
@@ -254,6 +255,7 @@ KPimSMTP, ksmtp-dev
 KRunnerAppDBusInterface, plasma-workspace-dev
 KSMServerDBusInterface, plasma-workspace-dev
 KScreenLocker, kscreenlocker-dev
+KSysGuard, libksysguard-dev
 KWinDBusInterface, kwin-dev
 KastenControllers, okteta-dev
 KastenCore, okteta-dev
@@ -297,6 +299,7 @@ OpenCV, opencv-dev
 OpenColorIO, OpenColorIO-data
 OpenEXR, extra-cmake-modules pkgconfig(OpenEXR)
 OpenGL, mesa-dev
+OpenJPEG, openjpeg
 OpenMP, cmake
 OpenSSL, openssl-dev
 PHP4, php-dev
@@ -376,6 +379,8 @@ Qt5Nfc, qtconnectivity-dev
 Qt5OpenGL, qtbase-dev
 Qt5OpenGLExtensions, qtbase-dev
 Qt5PacketProtocol, qtdeclarative-dev
+Qt5Pdf, qtwebengine-dev
+Qt5PdfWidgets, qtwebengine-dev
 Qt5PlatformCompositorSupport, qtbase-dev
 Qt5Positioning, qtlocation-dev
 Qt5PositioningQuick, qtlocation-dev
@@ -427,6 +432,7 @@ Qt5Xml, qtbase-dev
 Qt5XmlPatterns, qtxmlpatterns-dev
 QtTesting, ParaView-dev
 QtWaylandScanner, extra-cmake-modules qtwayland-dev
+QuaZip5, quazip-dev
 RdKafka, librdkafka-dev
 Rinutils, rinutils
 Ruby, ruby
@@ -484,6 +490,7 @@ catkin, catkin-data
 cereal, cereal-data
 clFFT, clFFT-dev
 cmocka, cmocka-dev
+codec2, codec2-dev
 coin, Coin-dev
 cpprestsdk, cpprestsdk-dev
 cppzmq, cppzmq-data
@@ -491,6 +498,7 @@ dbusmenu-qt5, libdbusmenu-qt-dev
 dlib, dlib-dev
 dnnl, mkl-dnn-dev
 double-conversion, double-conversion-dev
+eclipse-paho-mqtt-c, paho.mqtt.c-dev
 embree, embree-dev
 exiv2, exiv2-dev
 fann, fann
@@ -507,6 +515,7 @@ libconfig, libconfig-dev
 libpala, palapeli
 libssh, libssh-dev
 libxml2, libxml2-dev
+lpcnetfreedv, LPCNet-dev
 lxqt, liblxqt-data
 lxqt-build-tools, lxqt-build-tools-data
 lxqt-globalkeys, lxqt-globalkeys-data
