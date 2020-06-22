@@ -1504,8 +1504,6 @@ class Specfile(object):
 
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file."""
-        if self.config.extra_make == "" or self.extra_cmake == " ":
-            self.config.extra_make = "VERBOSE=1"
         self.write_prep()
         self.write_lang_c(export_epoch=True)
 
