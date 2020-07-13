@@ -52,7 +52,7 @@ def get_pypi_metadata(name):
     show = []
     # Create virtenv to do the pip install (needed for pip show)
     with tempfile.TemporaryDirectory() as tdir:
-        proc = subprocess.run(["virtualenv", tdir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        proc = subprocess.run(["virtualenv", "--no-periodic-update", tdir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         if proc.returncode != 0:
             return ""
         proc = subprocess.run(f"source bin/activate && pip install {name}", cwd=tdir, shell=True,
