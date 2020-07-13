@@ -186,6 +186,8 @@ def cli_gpg_ctx(pubkey=None):
         yield GPGCli(pubkey, _gpghome)
     finally:
         if _gpghome is not None:
+            _ = subprocess.run(["gpgconf", "--homedir", _gpghome, "--kill", "all"],
+                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             del os.environ['GNUPGHOME']
             shutil.rmtree(_gpghome, ignore_errors=True)
 
