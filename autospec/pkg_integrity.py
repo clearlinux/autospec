@@ -7,10 +7,10 @@ import os
 import re
 import shutil
 import signal
+import subprocess
 import sys
 import tempfile
 from contextlib import contextmanager
-from subprocess import PIPE, Popen, TimeoutExpired
 from urllib.parse import urlparse
 
 import download
@@ -86,10 +86,10 @@ class GPGCli(object):
     @staticmethod
     def exec_cmd(args):
         """Popen wrapper."""
-        proc = Popen(args, stdout=PIPE, stderr=PIPE)
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         try:
             out, err = proc.communicate(timeout=CMD_TIMEOUT)
-        except TimeoutExpired:
+        except subprocess.TimeoutExpired:
             proc.kill()
             out, err = proc.communicate()
         return out, err, proc.returncode
@@ -731,7 +731,7 @@ def parse_gpg_packets(filename, verbose=True):
     """Return a list with metadata about each packet from a GPG key or signature."""
     args = ["gpg", "--list-packets", filename]
     try:
-        out, err = Popen(args, stdout=PIPE, stderr=PIPE).communicate()
+        out, err = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         if err.decode('utf-8') != '' and verbose is True:
             print(err.decode('utf-8'))
             return None
