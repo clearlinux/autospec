@@ -178,26 +178,22 @@ class GPGCli(object):
 
 
 @contextmanager
-def cli_gpg_ctx(pubkey=None, gpghome=None):
+def cli_gpg_ctx(pubkey=None):
     """Return correctly initialized GPGCli."""
-    if pubkey is None:
-        yield GPGCli()
-    else:
-        try:
-            _gpghome = gpghome
-            if _gpghome is None:
-                _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
-            yield GPGCli(pubkey, _gpghome)
-        finally:
-            if gpghome is None:
-                del os.environ['GNUPGHOME']
-                shutil.rmtree(_gpghome, ignore_errors=True)
+    _gpghome = None
+    try:
+        _gpghome = tempfile.mkdtemp(prefix='tmp.gpghome')
+        yield GPGCli(pubkey, _gpghome)
+    finally:
+        if _gpghome is not None:
+            del os.environ['GNUPGHOME']
+            shutil.rmtree(_gpghome, ignore_errors=True)
 
 
 # Use gpg command line
-def verify_cli(pubkey, tarball, signature, gpghome=None):
+def verify_cli(pubkey, tarball, signature):
     """Validate tarfile with signature."""
-    with cli_gpg_ctx(pubkey, gpghome) as ctx:
+    with cli_gpg_ctx(pubkey) as ctx:
         return ctx.verify(pubkey, tarball, signature)
     raise Exception('Verification did not take place using cli')
 
