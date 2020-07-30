@@ -100,7 +100,7 @@ class TestTest(unittest.TestCase):
 
         check.os.listdir = listdir_backup
         self.assertEqual(check.tests_config,
-                         'make VERBOSE=1 V=1 %{?_smp_mflags} check')
+                         'make %{?_smp_mflags} check')
 
     def test_scan_for_tests_makecheck_am(self):
         """
@@ -118,7 +118,7 @@ class TestTest(unittest.TestCase):
 
         check.os.listdir = listdir_backup
         self.assertEqual(check.tests_config,
-                         'make VERBOSE=1 V=1 %{?_smp_mflags} check')
+                         'make %{?_smp_mflags} check')
 
     def test_scan_for_tests_perlcheck_PL(self):
         """
