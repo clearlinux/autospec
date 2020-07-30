@@ -60,16 +60,16 @@ def scan_for_tests(src_dir, config, requirements, content):
         return
 
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
-    make_check = "make VERBOSE=1 V=1 {}check".format(makeflags)
+    make_check = "make {}check".format(makeflags)
     cmake_check = "make test"
     make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                         "make VERBOSE=1 V=1 {}check\nmodule unload openmpi".format(makeflags)
+                         "make {}check\nmodule unload openmpi".format(makeflags)
     cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
                           "make test\nmodule unload openmpi"
 
     if config.config_opts.get('allow_test_failures'):
         make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                             "make VERBOSE=1 V=1 {}check || :\nmodule unload openmpi".format(makeflags)
+                             "make {}check || :\nmodule unload openmpi".format(makeflags)
         cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
                               "make test || :\nmodule unload openmpi"
 
