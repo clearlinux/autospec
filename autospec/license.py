@@ -169,6 +169,11 @@ def scan_for_licenses(srcdir, config, pkg_name):
             if name.lower() in targets or target_pat.search(name.lower()):
                 license_from_copying_hash(os.path.join(dirpath, name),
                                           srcdir, config, pkg_name)
+            # Also look for files that end with .txt and reside in a LICENSES
+            # directory. This is a convention that KDE is adopting.
+            if os.path.basename(dirpath) == "LICENSES" and re.search(r'\.txt$', name):
+                license_from_copying_hash(os.path.join(dirpath, name),
+                                          srcdir, config, pkg_name)
 
     if not licenses:
         print_fatal(" Cannot find any license or a valid {}.license file!\n".format(pkg_name))
