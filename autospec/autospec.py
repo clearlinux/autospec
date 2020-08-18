@@ -234,6 +234,18 @@ def package(args, url, name, archives, workingdir, infile_dict):
     # Search up one level from here to capture multiple versions
     _dir = content.path
 
+    conf.setup_patterns()
+    conf.config_file = args.config
+    requirements = buildreq.Requirements(content.url)
+    requirements.set_build_req(conf)
+    conf.parse_config_files(args.bump, filemanager, content.version, requirements)
+    conf.setup_patterns(conf.failed_pattern_dir)
+    conf.parse_existing_spec(content.name)
+
+    if args.prep_only:
+        write_prep(conf, workingdir, content)
+        exit(0)
+
     if args.license_only:
         try:
             with open(os.path.join(conf.download_path,
@@ -245,18 +257,6 @@ def package(args, url, name, archives, workingdir, infile_dict):
             pass
         # Start one directory higher so we scan *all* versions for licenses
         license.scan_for_licenses(os.path.dirname(_dir), conf)
-        exit(0)
-
-    conf.setup_patterns()
-    conf.config_file = args.config
-    requirements = buildreq.Requirements(content.url)
-    requirements.set_build_req(conf)
-    conf.parse_config_files(args.bump, filemanager, content.version, requirements)
-    conf.setup_patterns(conf.failed_pattern_dir)
-    conf.parse_existing_spec(content.name)
-
-    if args.prep_only:
-        write_prep(conf, workingdir, content)
         exit(0)
 
     requirements.scan_for_configure(_dir, content.name, conf)
