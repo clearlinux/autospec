@@ -256,7 +256,7 @@ def package(args, url, name, archives, workingdir, infile_dict):
         except Exception:
             pass
         # Start one directory higher so we scan *all* versions for licenses
-        license.scan_for_licenses(os.path.dirname(_dir), conf)
+        license.scan_for_licenses(os.path.dirname(_dir), conf, name)
         exit(0)
 
     requirements.scan_for_configure(_dir, content.name, conf)
