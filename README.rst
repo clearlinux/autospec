@@ -58,10 +58,9 @@ Synopsis
   usage: autospec.py [-h] [-g] [-n NAME] [-v VERSION]
                      [-a [ARCHIVES [ARCHIVES ...]]] [-l] [-b] [-c CONFIG]
                      [-t TARGET] [-i] [-p] [--non_interactive] [-C]
-                     [--infile INFILE] [-m MOCK_CONFIG]
-                     [url]
+                     [-m MOCK_CONFIG] <url>
 
-    url                 (required - unless infile is passed) tarball URL
+    url                 (required) tarball URL
                         (e.g. http://example.com/downloads/mytar.tar.gz)
 
 optional arguments:
@@ -85,8 +84,6 @@ optional arguments:
                         attempt to verify package
   -p, --prep-only       Only perform preparatory work on package
   --non_interactive     Disable interactive mode for package verification
-  --infile INFILE       Additional input to contribute to specfile creation.
-                        Can be a url, directory of files, or a file.
   -C, --cleanup         Clean up mock chroot after building the package
   -m MOCK_CONFIG, --mock-config MOCK_CONFIG
                         Value to pass with Mock's -r option. Defaults to
@@ -111,42 +108,6 @@ constitutes a license definition, for example::
     750b9d9cc986bfc80b47c9672c48ca615cac0c87, BSD-3-Clause
     175e59be229a5bedc6be93e958a970385bb04a62, Apache-2.0
     794a893e510ca5c15c9c97a609ce47b0df74fc1a, BSD-2-Clause
-
-
-Infile option
-=============
-To provide additional build information for a package, a supplementary format
-file may be used with the --infile command. The file is scraped and the data is
-mapped to the appropriate location for the specfile build. A source URL is not
-required when using the ``--infile`` argument, for it can be scraped from the
-additional format file.
-
-Supported format types:
-  Currently autospec supports recipe / bitbake (``.bb``) filetypes, and their
-  include directives (``.inc``)
-
-Input type:
-  The --infile argument can parse a url to a file, a path to a directory of
-  files (that are the same format and support the same packages), or a path
-  to a file.
-
-Variables included:
-  All variables, and commands are scraped from the format file, however not all
-  are added to the specfile build process. The following are incorporated into
-  the specfile build flow, unless they already exist:
-
-    * Source url - If a source url is not passed in, or already found, the tarball
-      used for building the package can be scraped from the infile.
-    * Summary
-    * Licenses
-    * Build dependencies
-    * Commands - These are appended to the associated files as comments
-      * ``configure``
-      * ``prep_prepend``
-      * ``build_prepend``
-      * ``make_prepend``
-      * ``install_prepend``
-      * ``install_append``
 
 
 Control files
@@ -358,7 +319,7 @@ series
   This file contains a list of patches to apply during the build, using the
   ``%patch`` macro. As such it is affected by ``-p1`` style modifiers.
   Arguments to patch can be added after the patch filename.  For example:
-  
+
   ```
   0001-my-awesome-patch.patch -d some/subdir -p1
   ```

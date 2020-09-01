@@ -31,8 +31,6 @@ import commitmessage
 import config
 import files
 import git
-import infile_handler
-import infile_update_spec
 import license
 from logcheck import logcheck
 import pkg_integrity
@@ -40,7 +38,7 @@ import pkg_scan
 import specdescription
 import specfiles
 import tarball
-from util import binary_in_path, print_fatal, print_infile, write_out
+from util import binary_in_path, print_fatal, write_out
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -159,8 +157,6 @@ def main():
     parser.add_argument("-C", "--cleanup", dest="cleanup", action="store_true",
                         default=False,
                         help="Clean up mock chroot after building the package")
-    parser.add_argument("--infile", action="store", dest="infile", default="",
-                        help="type of input file for .specfile creation")
     parser.add_argument("-m", "--mock-config", action="store", default="clear",
                         help="Value to pass with Mock's -r option. Defaults to "
                              "\"clear\", meaning that Mock will use "
@@ -175,21 +171,6 @@ def main():
     name = args.name or name
     url = args.url or url
     archives = args.archives or archives
-    infile_dict = {}
-
-    if args.infile:
-        infile_dict = infile_handler.infile_reader(args.infile, name)
-        if not url:
-            try:
-                url = infile_dict.get('URL')
-            except Exception:
-                pass
-            else:
-                print_infile("Source url found: {}".format(url))
-
-        if infile_dict.get("LICENSE"):
-            license.add_license(infile_dict.get("LICENSE"))
-            print_infile("License added: {}".format(infile_dict.get("LICENSE")))
 
     if not args.target:
         parser.error(argparse.ArgumentTypeError(
@@ -209,13 +190,13 @@ def main():
 
     if args.prep_only:
         os.makedirs("workingdir", exists_ok=True)
-        package(args, url, name, archives, "./workingdir", infile_dict)
+        package(args, url, name, archives, "./workingdir")
     else:
         with tempfile.TemporaryDirectory() as workingdir:
-            package(args, url, name, archives, workingdir, infile_dict)
+            package(args, url, name, archives, workingdir)
 
 
-def package(args, url, name, archives, workingdir, infile_dict):
+def package(args, url, name, archives, workingdir):
     """Entry point for building a package with autospec."""
     conf = config.Config(args.target)
     check_requirements(args.git)
@@ -282,12 +263,6 @@ def package(args, url, name, archives, workingdir, infile_dict):
     filemanager.load_specfile(specfile)
     load_specfile(conf, specfile)
 
-    #
-    # If infile is passed, parse it and overwrite the specfile configurations
-    # with the newly found values.
-    #
-    if args.infile:
-        specfile = infile_update_spec.update_specfile(specfile, infile_dict, args.target)
     print("\n")
 
     if args.integrity:
