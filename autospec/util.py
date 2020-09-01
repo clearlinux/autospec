@@ -136,11 +136,6 @@ def print_success(message):
     _print_message(message, 'SUCCESS', 'green')
 
 
-def print_infile(message):
-    """Print INFILE content, color coded for TTYs."""
-    _print_message(message, 'INFILE', 'blue')
-
-
 def binary_in_path(binary):
     """Determine if the given binary exists in the provided filesystem paths."""
     global os_paths

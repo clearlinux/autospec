@@ -46,9 +46,6 @@ test_check:
 test_util:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_util.py
 
-test_infile_parser:
-	PYTHONPATH=${CURDIR}/autospec python3 -m unittest discover -b -s tests -p 'test_infile_*'
-
 test_general:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_general.py
 
