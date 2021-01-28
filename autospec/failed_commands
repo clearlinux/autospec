@@ -1062,6 +1062,8 @@ lxml, lxml
 lxqt, liblxqt-dev
 lxqt-build-tools, lxqt-build-tools
 lxqt-globalkeys, lxqt-globalkeys-dev
+lxqt-globalkeys-ui, lxqt-globalkeys-dev
+lz4.h, lz4-dev
 lzma, xz-dev
 lzma.h, xz-dev
 lzo/lzoconf.h, lzo-dev
@@ -1125,6 +1127,8 @@ openssl, openssl-dev
 openssl/aes.h, openssl-dev
 openssl/evp.h, openssl-dev
 openssl/hmac.h, openssl-dev
+openssl/md4.h, openssl-dev
+openssl/md5.h, openssl-dev
 openssl/opensslconf.h, openssl-dev
 openssl/opensslv.h, openssl-dev
 openssl/sha.h, openssl-dev
@@ -1302,6 +1306,7 @@ tclConfig.sh, tcl-dev
 tclsh, tcl
 template-glib-1.0, template-glib-dev
 term.h, ncurses-dev
+termcap.h, ncurses-dev
 testrepository, testrepository
 tests, testscenarios
 testscenarios, testscenarios
