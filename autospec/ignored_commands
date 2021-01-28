@@ -170,6 +170,7 @@ dlsym
 dns_sd.h
 dustat.h
 eatmydata
+epydoc
 erf
 erfc
 errno_t

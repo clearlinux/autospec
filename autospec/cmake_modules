@@ -36,6 +36,7 @@ DBus1, dbus-dev
 DigikamCore, digikam-dev
 DigikamDatabase, digikam-dev
 DigikamGui, digikam-dev
+DigikamPlugin, digikam-dev
 DolphinVcs, dolphin-dev
 Doxygen, doxygen
 ECM, extra-cmake-modules-data
@@ -70,6 +71,7 @@ FLEX, flex
 FLTK, fltk-dev
 FindFont, ParaView-dev
 FindPkg, cmake-data
+FreeGLUT, freeglut-dev
 FreeRDP, FreeRDP-dev
 FreeRDP-Client, FreeRDP-dev
 FreeRDP-Server, FreeRDP-dev
@@ -97,6 +99,7 @@ GtkDoc, gtk-doc-data
 HDF5, hdf5-dev
 ICU, icu4c-dev
 Iconv, glibc-dev
+IlmBase, openexr-dev
 InferenceEngine, dldt-dev
 Inotify, extra-cmake-modules
 Intl, glibc-dev
@@ -256,6 +259,7 @@ KRunnerAppDBusInterface, plasma-workspace-dev
 KSMServerDBusInterface, plasma-workspace-dev
 KScreenLocker, kscreenlocker-dev
 KSysGuard, libksysguard-dev
+KWaylandServer, kwayland-server-dev
 KWinDBusInterface, kwin-dev
 KastenControllers, okteta-dev
 KastenCore, okteta-dev
@@ -312,18 +316,20 @@ Phonon4Qt5, phonon-dev
 Phonon4Qt5Experimental, phonon-dev
 PkgConfig, pkg-config
 PlasmaPotdProvider, kdeplasma-addons-dev
+PlasmaWaylandProtocols, plasma-wayland-protocols-dev
 Png2Ico, extra-cmake-modules png2ico
 PolkitQt5-1, polkit-qt-dev
 Poppler, extra-cmake-modules pkgconfig(poppler)
 PostgreSQL, postgresql-dev
 Protobuf, protobuf-dev
 PulseAudio, extra-cmake-modules pkgconfig(libpulse)
+PyIlmBase, openexr-dev
 PySide2, pyside2-setup-dev
 Python, python3
 Python3, python3-dev
 PythonInterp, python3
 PythonLibs, python3-dev
-QGpgme, gpgme-dev
+QGpgme, gpgme-dev gpgme-extras
 QHelpGenerator, extra-cmake-modules qttools-dev
 QMobipocket, kdegraphics-mobipocket-dev
 Qca-qt5, qca-qt5-dev
@@ -432,6 +438,7 @@ Qt5Xml, qtbase-dev
 Qt5XmlPatterns, qtxmlpatterns-dev
 QtTesting, ParaView-dev
 QtWaylandScanner, extra-cmake-modules qtwayland-dev
+QuaZip-Qt5, quazip-dev
 QuaZip5, quazip-dev
 RdKafka, librdkafka-dev
 Rinutils, rinutils
@@ -447,6 +454,7 @@ SPIRV-Tools, SPIRV-Tools-dev
 SPIRV-Tools-link, SPIRV-Tools-dev
 SPIRV-Tools-opt, SPIRV-Tools-dev
 SPIRV-Tools-reduce, SPIRV-Tools-dev
+SUNDIALS, sundials-dev
 SWIG, swig
 Sasl2, extra-cmake-modules pkgconfig(libsasl2)
 Savitar, libSavitar-dev
@@ -461,6 +469,8 @@ TCL, tcl-dev tk-dev
 TIFF, tiff-dev
 TclStub, tcl-dev
 Tclsh, tcl
+TelepathyQt5, telepathy-qt-dev
+TelepathyQt5Service, telepathy-qt-dev
 Threads, glibc-dev
 Torch, pytorch-python3
 UnixCommands, bash coreutils gzip
@@ -486,6 +496,7 @@ ade, ade-data
 arpack-ng, arpack-ng-dev
 assimp, assimp-dev
 bash-completion, bash-completion-data
+cJSON, cJSON-dev
 catkin, catkin-data
 cereal, cereal-data
 clFFT, clFFT-dev
@@ -516,15 +527,17 @@ libpala, palapeli
 libssh, libssh-dev
 libxml2, libxml2-dev
 lpcnetfreedv, LPCNet-dev
-lxqt, liblxqt-data
+lxqt, liblxqt-dev
 lxqt-build-tools, lxqt-build-tools-data
-lxqt-globalkeys, lxqt-globalkeys-data
-lxqt-globalkeys-ui, lxqt-globalkeys-data
+lxqt-globalkeys, lxqt-globalkeys-dev
+lxqt-globalkeys-ui, lxqt-globalkeys-dev
 md4c, md4c-dev
+md4cHtml, md4c-dev
 msgpack, msgpack-c-dev
 nanoflann, nanoflann-dev
 paraview, ParaView-dev
 pugixml, pugixml-dev
+pybind11, pybind11-python3
 qt5xdg, libqtxdg-data
 qt5xdgiconloader, libqtxdg-data
 realsense2, librealsense-dev
