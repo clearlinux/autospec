@@ -1,5 +1,5 @@
 check: autospec/*.py
-	@flake8 --ignore=D100,I201 $^
+	@flake8 --ignore=B902,D100,I201 $^
 
 test_download:
 	PYTHONPATH=${CURDIR}/autospec python3 tests/test_download.py
