@@ -30,7 +30,6 @@
 -lXt, pkgconfig(xt)
 -lXtst, pkgconfig(xtst)
 -lXv, libXv-dev
--lXxf86misc, libXxf86misc-dev
 -lXxf86vm, libXxf86vm-dev
 -lacl, acl-dev
 -lasound, alsa-lib-dev
@@ -621,7 +620,6 @@ XCB, libxcb-dev
 XCB_IMAGE, xcb-util-image-dev
 XCB_RENDERUTIL, xcb-util-renderutil-dev
 XCOMPOSITE extension, libXcomposite-dev
-XF86MiscSetGrabKeysState in -lXxf86misc, libXxf86misc-dev
 XGetEventData, inputproto
 XML, libxml2-dev
 XML::Parser, perl(XML::Parser)
