@@ -175,7 +175,7 @@ class Build(object):
                 self.must_restart += requirements.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
                 self.must_restart += requirements.add_buildreq(s, cache=True)
         except Exception:
-            if s not in self.warned_about and s[:2] != '--':
+            if s.strip() and s not in self.warned_about and s[:2] != '--':
                 print("Unknown pattern match: ", s)
                 self.warned_about.add(s)
 
