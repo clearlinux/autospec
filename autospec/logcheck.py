@@ -84,4 +84,4 @@ def logcheck(pkg_loc):
 
 def write_misses(pkg_loc, misses):
     """Create configure_misses file with automatically disabled configuration options."""
-    write_out(os.path.join(pkg_loc, 'configure_misses'), '\n'.join(misses))
+    write_out(os.path.join(pkg_loc, 'configure_misses'), '\n'.join(sorted(misses)))
