@@ -176,7 +176,7 @@ class Build(object):
                 self.must_restart += requirements.add_buildreq(s, cache=True)
         except Exception:
             if s.strip() and s not in self.warned_about and s[:2] != '--':
-                print("Unknown pattern match: ", s)
+                util.print_warning(f"Unknown pattern match: {s}")
                 self.warned_about.add(s)
 
     def parse_buildroot_log(self, filename, returncode):
