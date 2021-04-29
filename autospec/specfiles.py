@@ -553,7 +553,7 @@ class Specfile(object):
         if self.config.config_opts['security_sensitive']:
             flags.append("-fstack-protector-strong")
             if arch == 'x86_64':
-                flags.append("-mzero-caller-saved-regs=used")
+                flags.append("-fzero-call-used-regs=used")
         if self.need_avx2_flags:
             flags.extend(["-O3", "-march=haswell"])
         if self.need_avx512_flags:
