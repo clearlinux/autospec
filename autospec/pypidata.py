@@ -17,7 +17,7 @@ def pip_env():
 
 
 def pkg_search(name):
-    """Run a pip search for name and return True if found."""
+    """Query the pypi json API for name and return True if found."""
     query = f"https://pypi.org/pypi/{name}/json/"
     resp = download.do_curl(query)
     if resp is not None:
