@@ -6,6 +6,8 @@ import subprocess
 import sys
 import tempfile
 
+import download
+
 
 def pip_env():
     """Generate a copy of os.environ appropriate for pip."""
@@ -14,19 +16,14 @@ def pip_env():
     return env
 
 
-def pip_search(name):
+def pkg_search(name):
     """Run a pip search for name and return True if found."""
-    with tempfile.TemporaryFile() as tfile:
-        proc = subprocess.run(["pip", "search", name], stdout=tfile.fileno(),
-                              stderr=subprocess.DEVNULL, env=pip_env())
-        if proc.returncode:
-            return False
-        tfile.seek(0)
-        data = tfile.read().decode('utf-8', errors='surrogateescape').splitlines()
-        for line in data:
-            if line.lower().startswith(f"{name} "):
-                return True
-    return False
+    query = f"https://pypi.org/pypi/{name}/json/"
+    resp = download.do_curl(query)
+    if resp is not None:
+        return True
+    else:
+        return False
 
 
 def get_pypi_name(name):
@@ -34,13 +31,13 @@ def get_pypi_name(name):
     # normalize the name for matching as pypi is case insensitve for search
     name = name.lower()
     # Common case is the name and the pypi name match
-    if pip_search(name):
+    if pkg_search(name):
         return name
     # Maybe we have a python- prefix
     prefix = "python-"
     if name.startswith(prefix):
         name = name[len(prefix):]
-        if pip_search(name):
+        if pkg_search(name):
             return name
     # Some cases where search fails (Sphinx)
     # Just try the name we were given
