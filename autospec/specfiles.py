@@ -1850,6 +1850,11 @@ class Specfile(object):
                               'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
+        if self.config.config_opts['use_avx512']:
+            self._write_strip('CFLAGS="$CFLAGS -m64 -march=skylake-avx512" CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 " LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512" '
+                              'meson --libdir=lib64/haswell/avx512_1 --prefix=/usr --buildtype=plain {0} '
+                              '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
+            self._write_strip('ninja -v -C builddiravx512')
         if self.config.subdir:
             self._write_strip("popd")
         if self.config.config_opts['32bit']:
@@ -1880,6 +1885,8 @@ class Specfile(object):
             self._write_strip("popd")
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
+        if self.config.config_opts['use_avx512']:
+            self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx512 install')
         if self.config.config_opts['use_avx2']:
             self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx2 install')
 
