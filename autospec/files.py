@@ -295,6 +295,8 @@ class FileManager(object):
             (r"^/usr/lib/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib64/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib32/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev32"),
+            (r"^/usr/lib64/haswell/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
+            (r"^/usr/lib64/haswell/avx512_1/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib/[a-zA-Z0-9._+-]*\.la$", "dev"),
             (r"^/usr/lib64/[a-zA-Z0-9._+-]*\.la$", "dev"),
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.la$", "dev32"),
