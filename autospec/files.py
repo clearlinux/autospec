@@ -290,6 +290,7 @@ class FileManager(object):
             (r"^/usr/lib32/[a-zA-Z0-9._+-]*\.a$", "staticdev32"),
             (r"^/usr/lib/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
             (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
+            (r"^/usr/lib64/haswell/avx512_1/[a-zA-Z0-9._+-]*\.a$", "staticdev"),
             (r"^/usr/lib32/haswell/[a-zA-Z0-9._+-]*\.a$", "staticdev32"),
             (r"^/usr/lib/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
             (r"^/usr/lib64/pkgconfig/[a-zA-Z0-9._+-]*\.pc$", "dev"),
