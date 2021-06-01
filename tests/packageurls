@@ -1122,6 +1122,7 @@ http://pypi.debian.net/PyWavelets/PyWavelets-0.5.2.tar.gz,PyWavelets,0.5.2
 http://pypi.debian.net/pyxdg/pyxdg-0.25.tar.gz,pyxdg,0.25
 http://pypi.debian.net/PyYAML/PyYAML-3.12.tar.gz,PyYAML,3.12
 http://pypi.debian.net/pyzmq/pyzmq-16.0.2.tar.gz,pyzmq,16.0.2
+https://github.com/intel/QAT_Engine/archive/refs/tags/v0.6.5.tar.gz,QAT_Engine,0.6.5
 http://wiki.qemu-project.org/download/qemu-2.10.1.tar.bz2,qemu,2.10.1
 https://github.com/qpdf/qpdf/archive/release-qpdf-7.0.0.tar.gz,qpdf,7.0.0
 http://apache.arvixe.com/qpid/0.32/qpid-python-0.32.tar.gz,qpid-python,0.32
