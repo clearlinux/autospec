@@ -5,7 +5,7 @@ run_flake8() {
 }
 
 run_unittests() {
-	make unittests
+	make unittests-no-coverage
 }
 
 if t=$(type -t "$INPUT_TESTFUNC"); then
