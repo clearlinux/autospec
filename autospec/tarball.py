@@ -375,7 +375,7 @@ class Content(object):
 
         if "gitlab.com" in self.url:
             # https://gitlab.com/leanlabsio/kanban/-/archive/1.7.1/kanban-1.7.1.tar.gz
-            m = re.search(r"gitlab\.com/.*/(.*)/-/archive/(.*)/", self.url)
+            m = re.search(r"gitlab\.com/.*/(.*)/-/archive/[vVrR]?(.*)/", self.url)
             if m:
                 name = m.group(1).strip()
                 version = convert_version(m.group(2), name)
