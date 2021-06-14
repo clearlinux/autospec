@@ -583,7 +583,7 @@ class Specfile(object):
             if self.config.config_opts['use_clang']:
                 flags.extend(["-O3"])
             else:
-                flags.extend(["-O3", "-fno-semantic-interposition", "-falign-functions=32", "-fno-math-errno", "-fno-trapping-math"])
+                flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32", "-mprefer-vector-width=256"])
         if self.config.default_pattern != 'qmake':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
