@@ -802,7 +802,7 @@ class Requirements(object):
                 config.set_build_pattern("golang", default_score)
 
             if "go.mod" in files:
-                if "Makefile" not in files:
+                if "Makefile" not in files and "makefile" not in files:
                     # Go packages usually have make build systems so far
                     # so only use go directly if we can't find a Makefile
                     config.set_build_pattern("golang", default_score)
