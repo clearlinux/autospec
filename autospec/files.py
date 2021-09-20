@@ -230,6 +230,7 @@ class FileManager(object):
             (r"^/usr/share/man/man2", "dev"),
             (r"^/usr/share/man/man3", "dev"),
             (r"^/usr/share/man/", "man"),
+            (r"^/usr/share/pkgconfig/32.*\.pc$", "dev32"),
             (r"^/usr/share/pkgconfig/", "dev"),
             (r"^/usr/share/info/", "info"),
             (r"^/usr/share/abi/", "abi"),
