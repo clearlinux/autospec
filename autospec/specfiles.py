@@ -1920,7 +1920,9 @@ class Specfile(object):
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("phpize")
-        self._write_strip("%configure")
+        self._write_strip("%configure {0} {1}"
+                          .format(self.config.disable_static,
+                                  self.config.extra_configure))
         self.write_make_line()
         self.write_build_append()
         self._write_strip("\n")
