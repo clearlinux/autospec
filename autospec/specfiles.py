@@ -555,7 +555,7 @@ class Specfile(object):
             if arch == 'x86_64':
                 flags.append("-fzero-call-used-regs=used")
         if self.need_avx2_flags:
-            flags.extend(["-O3", "-march=haswell"])
+            flags.extend(["-O3", "-march=x86-64-v3"])
         if self.need_avx512_flags:
             flags.extend(["-O3", "-march=skylake-avx512"])
         if self.config.config_opts['insecure_build']:
@@ -1128,11 +1128,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1161,11 +1161,11 @@ class Specfile(object):
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
             self._write_strip("module load openmpi")
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
             self._write_strip("./configure {0} \\\n{1} {2}"
                               .format(self.config.conf_args_openmpi,
                                       self.config.disable_static,
@@ -1212,11 +1212,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1264,11 +1264,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=haswell\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=haswell\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=haswell\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=haswell\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
             self.write_make_line()
             self._write_strip("popd")
         if self.config.config_opts['use_avx512']:
@@ -1317,11 +1317,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=haswell "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=haswell "')
-            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=haswell "')
-            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=haswell "')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=haswell "')
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1440,9 +1440,9 @@ class Specfile(object):
         self._write_strip("mkdir -p ~/.R")
         self._write_strip("mkdir -p ~/.stash")
 
-        self._write_strip("echo \"CFLAGS = $CFLAGS -march=haswell -ftree-vectorize \" > ~/.R/Makevars")
-        self._write_strip("echo \"FFLAGS = $FFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
-        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=haswell -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v3 -ftree-vectorize \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v3 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v3 -ftree-vectorize \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
@@ -1542,10 +1542,10 @@ class Specfile(object):
             self.write_build_prepend()
             self.write_variables()
             self.need_avx2_flags = saved_avx2flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
-            self._write_strip('export FFLAGS="$FFLAGS -march=haswell -m64"')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=haswell -m64"')
+            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v3 -m64"')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1590,10 +1590,10 @@ class Specfile(object):
             self.write_build_prepend()
             self.write_variables()
             self.need_avx2_flags = saved_avx2flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=haswell -m64"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=haswell -m64"')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=haswell -m64"')
-            self._write_strip('export FFLAGS="$FFLAGS -march=haswell -m64"')
+            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v3 -m64"')
             self.write_cmake_line_openmpi()
             self.write_make_line()
             self._write_strip("module unload openmpi")
@@ -1637,8 +1637,8 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
-            self._write("    QMAKE_CFLAGS+=-march=haswell QMAKE_CXXFLAGS+=-march=haswell \\\n")
-            self._write("    QMAKE_LFLAGS+=-march=haswell {} {}\n".format(extra_qmake_args, self.config.extra_configure))
+            self._write("    QMAKE_CFLAGS+=-march=x86-64-v3 QMAKE_CXXFLAGS+=-march=x86-64-v3 \\\n")
+            self._write("    QMAKE_LFLAGS+=-march=x86-64-v3 {} {}\n".format(extra_qmake_args, self.config.extra_configure))
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1860,8 +1860,8 @@ class Specfile(object):
                                   self.config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
         if self.config.config_opts['use_avx2']:
-            self._write_strip('CFLAGS="$CFLAGS -m64 -march=haswell" CXXFLAGS="$CXXFLAGS -m64 -march=haswell " LDFLAGS="$LDFLAGS -m64 -march=haswell" '
-                              'meson --libdir=lib64/haswell --prefix=/usr --buildtype=plain {0} '
+            self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v3" CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3" '
+                              'meson --libdir=lib64/x86-64-v3 --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
         if self.config.config_opts['use_avx512']:
