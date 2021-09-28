@@ -579,6 +579,8 @@ class Specfile(object):
             self._write_strip("unset LDFLAGS\n")
         if self.config.config_opts['use_clang']:
             self._write_strip("unset LDFLAGS\n")
+        if self.config.config_opts['server']:
+            flags.extend(["-march=x86-64-v3"])
         if self.config.config_opts['funroll-loops']:
             if self.config.config_opts['use_clang']:
                 flags.extend(["-O3"])
