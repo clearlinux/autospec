@@ -178,7 +178,8 @@ class Config(object):
             "autoupdate": "this package is trusted enough to automatically update (used by other tools)",
             "compat": "this package is a library compatibility package and only ships versioned library files",
             "nodebug": "do not generate debuginfo for this package",
-            "openmpi": "configure build also for openmpi"
+            "openmpi": "configure build also for openmpi",
+            "server" : "Package is only used by servers"
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies
