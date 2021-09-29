@@ -662,7 +662,7 @@ class Requirements(object):
             lines = f.readlines()
 
         for line in lines:
-            if "install_requires" in line or "setup_requires" in line:
+            if not multiline and ("install_requires" in line or "setup_requires" in line):
                 req = "install_requires" in line
                 # find the value for *_requires
                 line = line.split("=", 1)
