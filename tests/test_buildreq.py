@@ -394,6 +394,24 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
         self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
 
+    def test_add_setup_py_requires_multiline_install_requires_variable(self):
+        """
+        Test add_setup_py_requires with multiline item in install_requires that
+        contains a non-literal object.
+        """
+        open_name = 'buildreq.util.open_auto'
+        content = "install_requires=[\n"   \
+                  "'req1',\n"              \
+                  "'req2'"                 \
+                  "] + install_requires\n" \
+                  "'bad']\n"
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open, create=True):
+            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
+
+        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
+        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
+
     def test_add_setup_py_requires_variable(self):
         """
         Test add_setup_py_requires that contains a non-literal object.
