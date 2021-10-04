@@ -75,7 +75,7 @@ def scan_for_tests(src_dir, config, requirements, content):
 
     perl_check = "make TEST_VERBOSE=1 test"
     setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
-    meson_check = "meson test -C builddir"
+    meson_check = "meson test -C builddir --print-errorlogs"
     if config.config_opts.get('allow_test_failures'):
         make_check += " || :"
         cmake_check += " || :"
