@@ -204,11 +204,11 @@ def process_git(giturl, oldversion, newversion, name):
         newtag = guessed_newtag
 
     p = run(["git", "-C", "results/" + name, "log", "--no-merges", oldtag + ".." + newtag], stdout=PIPE)
-    fulllog = p.stdout.decode('utf-8').split('\n')
+    fulllog = p.stdout.decode('utf-8', errors='replace').split('\n')
     # 'git shortlog' can accept any 'git log' output over stdin, so make sure
     # it lacks merge commits, too.
     p = run(["git", "-C", "results/" + name, "shortlog"], input=p.stdout, stdout=PIPE)
-    shortlog = p.stdout.decode('utf-8').split('\n')
+    shortlog = p.stdout.decode('utf-8', errors='replace').split('\n')
 
     if len(fulllog) < 15:
         return fulllog
