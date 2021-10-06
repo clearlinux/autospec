@@ -457,6 +457,8 @@ class Requirements(object):
         Set the build requirements for building rust programs using cargo.
         """
         config.set_build_pattern("cargo", 1)
+        if config.default_pattern != "cargo":
+            return
         self.add_buildreq("rustc")
         with util.open_auto(filename, "r") as ctoml:
             cargo = toml.loads(ctoml.read())
