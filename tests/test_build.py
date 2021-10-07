@@ -147,7 +147,7 @@ class TestBuildpattern(unittest.TestCase):
                              0,  # verbose=0
                              buildtool='R')
         self.assertIn('R-testpkg', reqs.buildreqs)
-        self.assertIn('R-testpkg', reqs.requires[None])
+        self.assertNotIn('R-testpkg', reqs.requires[None])
         self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_perl(self):

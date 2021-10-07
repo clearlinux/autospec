@@ -485,11 +485,8 @@ class Requirements(object):
             if dep in r_provides:
                 continue
             pkg = 'R-' + dep
-            if pkg in packages:
-                self.add_buildreq(pkg)
-                self.add_requires(pkg, packages)
-            else:
-                print("CRAN package '{}' not found in os_packages, skipping".format(pkg))
+            self.add_buildreq(pkg)
+            self.add_requires(pkg, packages)
 
     def set_build_req(self, config):
         """Add build requirements based on the build pattern."""
