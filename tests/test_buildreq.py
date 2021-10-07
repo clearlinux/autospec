@@ -797,8 +797,12 @@ find_package(different_name)
         with patch(open_name, m_open):
             self.reqs.parse_r_description('filename', pkgs)
         self.assertTrue('R-pkg1' in self.reqs.buildreqs)
-        self.assertFalse('R-pkg2' in self.reqs.buildreqs)
-        self.assertFalse('R-pkg3' in self.reqs.buildreqs)
+        self.assertTrue('R-pkg1' in self.reqs.requires[None])
+        # Names absent from the os-packages list are also added, because the
+        # DESCRIPTION file is considered authoritative.
+        for pkg in ['R-pkg2', 'R-pkg3']:
+            self.assertTrue(pkg in self.reqs.buildreqs)
+            self.assertTrue(pkg in self.reqs.requires[None])
 
 
 if __name__ == '__main__':

@@ -128,7 +128,6 @@ class Build(object):
             elif buildtool == 'R':
                 if requirements.add_buildreq("R-" + s, cache=True) > 0:
                     self.must_restart += 1
-                    requirements.add_requires("R-" + s, config.os_packages)
             elif buildtool == 'perl':
                 s = s.replace('inc::', '')
                 self.must_restart += requirements.add_buildreq('perl(%s)' % s, cache=True)
