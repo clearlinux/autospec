@@ -1005,16 +1005,16 @@ class Specfile(object):
             self._write_strip("fi")
             self._write_strip("popd")
 
-        if self.config.config_opts['use_avx512']:
-            self._write_strip("pushd clr-build-avx512")
-            self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
-            self._write_strip("popd")
-
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd clr-build-avx2")
             self._write_strip("%s_v3 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd clr-build-avx512")
+            self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
