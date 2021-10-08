@@ -234,11 +234,11 @@ class Specfile(object):
         deps["doc"] = ["man", "info"]
         deps["examples"] = ["dev"]
         deps["dev32"] = ["lib32", "bin", "data", "dev"]
-        deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "services"]
-        deps["lib"] = ["data", "libexec", "license"]
-        deps["libexec"] = ["config", "license"]
+        deps["bin"] = ["data", "libexec", "config", "setuid", "attr", "license", "services", "filemap"]
+        deps["lib"] = ["data", "libexec", "license", "filemap"]
+        deps["libexec"] = ["config", "license", "filemap"]
         deps["lib32"] = ["data", "license"]
-        deps["python"] = ["python3"]
+        deps["python"] = ["python3", "filemap"]
         if self.config.config_opts.get('dev_requires_extras'):
             deps["dev"].append("extras")
         if self.config.config_opts.get('openmpi'):
@@ -555,9 +555,9 @@ class Specfile(object):
             if arch == 'x86_64':
                 flags.append("-fzero-call-used-regs=used")
         if self.need_avx2_flags:
-            flags.extend(["-O3", "-march=x86-64-v3"])
+            flags.extend(["-O3", "-march=x86-64-v3", "-mtune=skylake"])
         if self.need_avx512_flags:
-            flags.extend(["-O3", "-march=skylake-avx512"])
+            flags.extend(["-O3", "-march=x86_64-v4", "-mtune=skylake"])
         if self.config.config_opts['insecure_build']:
             self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
             self._write_strip("unset LDFLAGS\n")
@@ -727,14 +727,16 @@ class Specfile(object):
             self._write_strip("fi")
             self._write_strip("popd")
 
-        if self.config.config_opts['use_avx512']:
-            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
-            self._write_strip("%s_avx512 %s\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip("popd")
-
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-            self._write_strip("%s_avx2 %s\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip("%s_v3 %s\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self._write_strip("%s_v4 %s\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1005,12 +1007,14 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd clr-build-avx512")
-            self._write_strip("%s_avx512 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd clr-build-avx2")
-            self._write_strip("%s_avx2 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip("%s_v3 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1144,11 +1148,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1228,11 +1232,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1274,11 +1278,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=skylake-avx512 -mprefer-vector-width=256\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=skylake-avx512\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1332,11 +1336,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=skylake-avx512 "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 "')
-            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=skylake-avx512 "')
-            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=skylake-avx512 "')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512 "')
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1451,9 +1455,9 @@ class Specfile(object):
                           "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
 
-        self._write_strip("echo \"CFLAGS = $CFLAGS -march=skylake-avx512 -ftree-vectorize \" > ~/.R/Makevars")
-        self._write_strip("echo \"FFLAGS = $FFLAGS -march=skylake-avx512 -ftree-vectorize \" >> ~/.R/Makevars")
-        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=skylake-avx512 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v4 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v4 -ftree-vectorize \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--preclean "
@@ -1558,10 +1562,10 @@ class Specfile(object):
             self.write_build_prepend()
             self.write_variables()
             self.need_avx512_flags = saved_avx512flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip('export FFLAGS="$FFLAGS -march=skylake-avx512 -m64 "')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=skylake-avx512 -m64 "')
+            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v4 -m64 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v4 -m64 "')
+            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v4 -m64 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v4 -m64 "')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1861,12 +1865,12 @@ class Specfile(object):
         self._write_strip("ninja -v -C builddir")
         if self.config.config_opts['use_avx2']:
             self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v3" CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3" '
-                              'meson --libdir=lib64/x86-64-v3 --prefix=/usr --buildtype=plain {0} '
+                              'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx2')
         if self.config.config_opts['use_avx512']:
-            self._write_strip('CFLAGS="$CFLAGS -m64 -march=skylake-avx512" CXXFLAGS="$CXXFLAGS -m64 -march=skylake-avx512 " LDFLAGS="$LDFLAGS -m64 -march=skylake-avx512" '
-                              'meson --libdir=lib64/haswell/avx512_1 --prefix=/usr --buildtype=plain {0} '
+            self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v4" CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4" '
+                              'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                               '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
             self._write_strip('ninja -v -C builddiravx512')
         if self.config.subdir:
@@ -1905,10 +1909,12 @@ class Specfile(object):
             self._write_strip("popd")
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        if self.config.config_opts['use_avx512']:
-            self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx512 install')
         if self.config.config_opts['use_avx2']:
-            self._write_strip('DESTDIR=%{buildroot} ninja -C builddiravx2 install')
+            self._write_strip('DESTDIR=%{buildroot}-v3 ninja -C builddiravx2 install')
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+        if self.config.config_opts['use_avx512']:
+            self._write_strip('DESTDIR=%{buildroot}-v4 ninja -C builddiravx512 install')
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         if self.config.subdir:
