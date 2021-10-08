@@ -730,13 +730,13 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write_strip("%s_v3 %s\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self._write_strip("%s_v4 %s\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1008,13 +1008,13 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd clr-build-avx2")
             self._write_strip("%s_v3 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd clr-build-avx512")
             self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1911,10 +1911,10 @@ class Specfile(object):
             self._write_strip("pushd " + self.config.subdir)
         if self.config.config_opts['use_avx2']:
             self._write_strip('DESTDIR=%{buildroot}-v3 ninja -C builddiravx2 install')
-            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
         if self.config.config_opts['use_avx512']:
             self._write_strip('DESTDIR=%{buildroot}-v4 ninja -C builddiravx512 install')
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/clear/optimized-elf/ %{buildroot}/usr/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         if self.config.subdir:
