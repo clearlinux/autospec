@@ -446,8 +446,8 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.write_exclude_deletes()
         expect = [
             "## Remove excluded files",
-            "rm -f %{buildroot}/usr/bin/bar",
-            "rm -f %{buildroot}/usr/bin/foo",
+            "rm -f %{buildroot}*/usr/bin/bar",
+            "rm -f %{buildroot}*/usr/bin/foo",
         ]
         self.assertEqual(expect, self.WRITES)
 
