@@ -242,6 +242,7 @@ class FileManager(object):
             (r"^/usr/share/clear/optimized-elf/exec", "libexec", "/usr/share/clear/optimized-elf/exec*"),
             (r"^/usr/share/clear/optimized-elf/lib", "lib", "/usr/share/clear/optimized-elf/lib*"),
             (r"^/usr/share/clear/optimized-elf/other", "lib", "/usr/share/clear/optimized-elf/other*"),
+            (r"^/usr/share/clear/optimized-elf/test", "tests", "/usr/share/clear/optimized-elf/test*"),
             (r"^/usr/share/clear/optimized-elf/", "lib"),
             (r"^/usr/share/clear/filemap/", "filemap"),
             (r"^/usr/lib64/openmpi/bin/", "openmpi"),
