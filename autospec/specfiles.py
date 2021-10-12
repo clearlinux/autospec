@@ -1444,9 +1444,9 @@ class Specfile(object):
         self._write_strip("mkdir -p ~/.R")
         self._write_strip("mkdir -p ~/.stash")
 
-        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v3 -ftree-vectorize \" > ~/.R/Makevars")
-        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v3 -ftree-vectorize \" >> ~/.R/Makevars")
-        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v3 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v3 -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v3 -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v3 -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
@@ -1455,9 +1455,9 @@ class Specfile(object):
                           "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
 
-        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize \" > ~/.R/Makevars")
-        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v4 -ftree-vectorize \" >> ~/.R/Makevars")
-        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v4 -ftree-vectorize \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v4 -ftree-vectorize -mno-vzeroupper  \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--preclean "
