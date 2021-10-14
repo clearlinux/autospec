@@ -309,7 +309,6 @@ class Specfile(object):
         self.write_exclude_deletes()
         self.write_install_append()
         self.write_elf_move()
-        self.write_package_name_install()
         # self.write_systemd_units()
 
     def write_scriplets(self):
@@ -930,17 +929,6 @@ class Specfile(object):
             self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
         if self.config.config_opts['use_avx512']:
             self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
-
-    def write_package_name_install(self):
-        """Write out the package name files."""
-        self._write_strip("mkdir -p %{buildroot}/usr/share/clear/packages")
-        self.packages["main"] = set([f"/usr/share/clear/packages/{self.name}"])
-        self._write_strip("touch %{buildroot}/usr/share/clear/packages/" + f"{self.name}")
-        for pkg in sorted(self.packages):
-            if pkg in ["ignore", "main"]:
-                continue
-            self.packages[pkg].add(f"/usr/share/clear/packages/{self.name}-{pkg}")
-            self._write_strip("touch %{buildroot}/usr/share/clear/packages/" + f"{self.name}-{pkg}")
 
     def write_exclude_deletes(self):
         """Write out deletes for excluded files."""
