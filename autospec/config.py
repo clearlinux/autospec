@@ -74,6 +74,7 @@ class Config(object):
         self.extra_configure64 = ""
         self.extra_configure_avx2 = ""
         self.extra_configure_avx512 = ""
+        self.extra_configure_openmpi = ""
         self.config_files = set()
         self.parallel_build = " %{?_smp_mflags} "
         self.urlban = ""
