@@ -879,9 +879,9 @@ class Config(object):
 
         # Parse the version-specific patch lists
         update_security_sensitive = False
-        for version in self.versions:
-            self.verpatches[version] = self.read_conf_file(os.path.join(self.download_path, '.'.join(['series', version])))
-            if any(p.lower().startswith('cve-') for p in self.verpatches[version]):
+        for versionp in self.versions:
+            self.verpatches[versionp] = self.read_conf_file(os.path.join(self.download_path, '.'.join(['series', versionp])))
+            if any(p.lower().startswith('cve-') for p in self.verpatches[versionp]):
                 update_security_sensitive = True
 
         if any(p.lower().startswith('cve-') for p in self.patches):
