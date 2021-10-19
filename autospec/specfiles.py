@@ -1363,6 +1363,8 @@ class Specfile(object):
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 setup.py build  " + self.config.extra_configure)
         self._write_strip("\n")
         if self.tests_config and not self.config.config_opts['skip_tests']:
