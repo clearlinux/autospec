@@ -96,6 +96,7 @@ class Config(object):
         self.install_append = []
         self.service_restart = []
         self.patches = []
+        self.pypi_overrides = []
         self.verpatches = OrderedDict()
         self.extra_sources = []
         self.autoreconf = False
@@ -890,6 +891,8 @@ class Config(object):
         if update_security_sensitive:
             self.config_opts['security_sensitive'] = True
             self.rewrite_config_opts()
+
+        self.pypi_overrides += self.read_conf_file(os.path.join(self.download_path, "pypi_overrides"))
 
         content = self.read_conf_file(os.path.join(self.download_path, "configure"))
         self.extra_configure = " \\\n".join(content)

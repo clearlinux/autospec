@@ -324,6 +324,20 @@ series
   0001-my-awesome-patch.patch -d some/subdir -p1
   ```
 
+pypi_overrides
+  This file contains a list of modules to remove version tests on during the
+  build. It also modifies the requirement of the requires.txt egg if it
+  exists in the package. For example:
+
+  ```
+  colorama
+  ```
+  in the file will cause this modification:
+  ```
+  -    'colorama>=0.2.5,<0.4.4',
+  +    'colorama',
+  ```
+
 golang_libpath
   When building go packages, the go import path will be guessed automatically
   (e.g. building ``https://github.com/go-yaml/yaml/`` would get
