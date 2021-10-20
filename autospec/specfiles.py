@@ -1871,7 +1871,8 @@ class Specfile(object):
         self._write_strip("ninja -v -C builddir")
         if self.config.config_opts['use_avx2']:
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
-                self._write_strip('CFLAGS="$CFLAGS_GENERATE -m64 -march=x86-64-v3 -O3 -Wl,-z,x86-64-v3" CXXFLAGS="$CXXFLAGS_GENERATE -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v3" '
+                self._write_strip('CFLAGS="$CFLAGS_GENERATE -m64 -march=x86-64-v3 -O3 -Wl,-z,x86-64-v3" CXXFLAGS="$CXXFLAGS_GENERATE '
+                                  '-m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v3" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx2')
@@ -1879,18 +1880,21 @@ class Specfile(object):
                 self._write_strip("\n".join(self.config.profile_payload))
                 self._write_strip('popd')
                 self._write_strip('rm -rf builddiravx2')
-                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -O3" CXXFLAGS="$CXXFLAGS_USE -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v3" '
+                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -O3" CXXFLAGS="$CXXFLAGS_USE '
+                                  '-m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v3" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx2')
             else:
-                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -O3" CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3" '
+                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -O3" CXXFLAGS="$CXXFLAGS '
+                                  '-m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx2')
         if self.config.config_opts['use_avx512']:
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
-                self._write_strip('CFLAGS="$CFLAGS_GENERATE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_GENERATE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v4" '
+                self._write_strip('CFLAGS="$CFLAGS_GENERATE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_GENERATE '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
@@ -1898,12 +1902,14 @@ class Specfile(object):
                 self._write_strip("\n".join(self.config.profile_payload))
                 self._write_strip('popd')
                 self._write_strip('rm -rf builddiravx512')
-                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_USE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v4" '
+                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_USE '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
             else:
-                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4" '
+                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
