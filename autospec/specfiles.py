@@ -1387,6 +1387,8 @@ class Specfile(object):
         self._write_strip("python3 -tt setup.py build  install --root=%{buildroot}")
         if self.config.subdir:
             self._write_strip("popd")
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py %{{buildroot}} {module}")
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
