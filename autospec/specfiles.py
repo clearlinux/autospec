@@ -357,6 +357,7 @@ class Specfile(object):
     def write_lang_c(self, export_epoch=False):
         """Write C language pattern."""
         self._write_strip("%build")
+        self.write_build_prepend_once()
         self.write_build_prepend()
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
@@ -892,12 +893,20 @@ class Specfile(object):
             self._write_strip("## prep_prepend end")
 
     def write_build_prepend(self):
-        """Write out any custom supplied commands at the start of the %build section."""
+        """Write out any custom supplied commands at the start of the %build section and every build type."""
         if self.config.build_prepend:
             self._write_strip("## build_prepend content")
             for line in self.config.build_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## build_prepend end")
+
+    def write_build_prepend_once(self):
+        """Write out any custom supplied commands once at the start of the %build section."""
+        if self.config.build_prepend_once:
+            self._write_strip("## build_prepend_once content")
+            for line in self.config.build_prepend_once:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## build_prepend_once end")
 
     def write_build_append(self):
         """Write out any custom supplied commands at the end of the %build section."""
