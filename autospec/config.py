@@ -90,6 +90,7 @@ class Config(object):
         self.disable_static = "--disable-static"
         self.prep_prepend = []
         self.build_prepend = []
+        self.build_prepend_once = []
         self.build_append = []
         self.make_prepend = []
         self.install_prepend = []
@@ -997,6 +998,7 @@ class Config(object):
             os.rename(os.path.join(self.download_path, "prep_append"), os.path.join(self.download_path, "build_prepend"))
         self.make_prepend = self.read_script_file(os.path.join(self.download_path, "make_prepend"))
         self.build_prepend = self.read_script_file(os.path.join(self.download_path, "build_prepend"))
+        self.build_prepend_once = self.read_script_file(os.path.join(self.download_path, "build_prepend_once"))
         self.build_append = self.read_script_file(os.path.join(self.download_path, "build_append"))
         self.install_prepend = self.read_script_file(os.path.join(self.download_path, "install_prepend"))
         if os.path.isfile(os.path.join(self.download_path, "make_install_append")):

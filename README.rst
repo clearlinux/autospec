@@ -246,12 +246,19 @@ prep_prepend
   control is required.
 
 build_prepend
+  Additional actions that should take place after ``%build`` and before
+  the ``%configure`` macro or equivalent (``%cmake``, etc.). If autospec
+  is creating AVX2, AVX-512 or 32-bit, these actions will be repeated for
+  each of those builds, This will be placed in the resulting ``.spec``,
+  and is used for situations where fine-grained control is required.
+
+build_prepend_once
   Additional actions that should take place directly after ``%build``
-  and before the ``%configure`` macro or equivalent (``%cmake``,
-  etc.). If autospec is creating AVX2, AVX-512 or 32-bit, these
-  actions will be repeated for each of those builds, This will be
-  placed in the resulting ``.spec``, and is used for situations where
-  fine-grained control is required.
+  and before the ``%configure`` macro or equivalent (``%cmake``, etc.).
+  If autospec is creating AVX2, AVX-512 or 32-bit, these action will
+  not be repeated for each of those builds, This will be placed in the
+  resulting ``.spec``, and is used for situations where fine-grained
+  control is required.
 
 make_prepend
   Additional actions that should take place directly after the
