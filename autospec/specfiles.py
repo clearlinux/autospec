@@ -1670,27 +1670,15 @@ class Specfile(object):
     def write_cargo_pattern(self):
         """Write cargo build pattern to spec file."""
         self.write_prep()
-        src_dir = "/usr/share/rust/src/{0}".format(self.name)
         self._write_strip("%build")
         self.write_build_prepend()
         self.write_proxy_exports()
-        self._write_strip("mkdir .cargo")
-        self._write("echo \"[source.crates-io]\nreplace-with = 'vendored-sources'\n[source.vendored-sources]\ndirectory = '{}'\" > .cargo/config\n".format(os.path.dirname(src_dir)))
-        self._write_strip('echo \'{"files":{},"package":""}\' > .cargo-checksum.json')
-        # Don't let cargo get outside
-        self._write_strip("export http_proxy=http://127.0.0.1:9/")
-        self._write_strip("export https_proxy=http://127.0.0.1:9/")
-        self._write_strip("export no_proxy=localhost,127.0.0.1,0.0.0.0")
         self._write_strip("cargo build --release")
         self.write_build_append()
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
-        if self.requirements.cargo_bin:
-            self._write_strip("cargo install --frozen --root /")
-        self._write_strip("cargo clean")
-        self._write_strip("install -d -p %{buildroot}" + src_dir)
-        self._write_strip("cp -a . %{buildroot}" + src_dir)
+        self.write_license_files()
 
     def write_cpan_pattern(self):
         """Write cpan build pattern to spec file."""
