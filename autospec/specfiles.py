@@ -380,10 +380,14 @@ class Specfile(object):
             for line in self.config.make_prepend:
                 self._write_strip("{}\n".format(line))
             self._write_strip("## make_prepend end")
-        if build32:
-            self._write_strip("make {} {} {}".format(self.config.parallel_build, self.config.extra_make, self.config.extra32_make))
+        if self.config.make_command:
+            make = self.config.make_command
         else:
-            self._write_strip("make {} {}".format(self.config.parallel_build, self.config.extra_make))
+            make = "make"
+        if build32:
+            self._write_strip("{} {} {} {}".format(make, self.config.parallel_build, self.config.extra_make, self.config.extra32_make))
+        else:
+            self._write_strip("{} {} {}".format(make, self.config.parallel_build, self.config.extra_make))
 
     def write_install_openmpi(self):
         """Write make install line (openmpi) to spec file."""
@@ -697,7 +701,8 @@ class Specfile(object):
             self._write_strip("popd")
         self._write_strip("\n")
         self._write_strip("\n".join(self.config.profile_payload))
-        self._write_strip("\nmake clean\n")
+        if not self.config.make_command:
+            self._write_strip("\nmake clean\n")
         if post:
             self._write_strip(post)
 

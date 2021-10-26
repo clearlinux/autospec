@@ -78,6 +78,7 @@ class Config(object):
         self.config_files = set()
         self.parallel_build = " %{?_smp_mflags} "
         self.urlban = ""
+        self.make_command = ""
         self.extra_make = ""
         self.extra32_make = ""
         self.extra_make_install = ""
@@ -917,6 +918,10 @@ class Config(object):
             self.disable_static = ""
         if self.config_opts['broken_parallel_build']:
             self.parallel_build = ""
+
+        content = self.read_conf_file(os.path.join(self.download_path, "make_command"))
+        if content and content[0]:
+            self.make_command = content[0]
 
         content = self.read_conf_file(os.path.join(self.download_path, "make_args"))
         if content:
