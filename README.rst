@@ -221,6 +221,11 @@ cmake_args_openmpi
   This file contains arguments that should be passed to the ``%cmake`` macro for
   CMake based tarballs for openmpi builds.
 
+make_command
+  The contents of this file will be used instead of the ``make``
+  command, i.e. use this if ``make`` should be replace with another build tool
+  like ``ninja``.
+
 make_args
   The contents of this file are appended to the ``make`` invocation. This may be
   useful for passing arguments to ``make``, i.e. ``make TOOLDIR=/usr``
