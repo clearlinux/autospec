@@ -1369,6 +1369,45 @@ class Specfile(object):
         self.write_check()
         self.write_make_install()
 
+    def write_pyproject_pattern(self):
+        """Write build pattern for python packages using pyproject."""
+        self.write_prep()
+        self.write_lang_c(export_epoch=True)
+        self.write_variables()
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py . {module}")
+        self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+        self._write_strip("\n")
+        if self.tests_config and not self.config.config_opts['skip_tests']:
+            self._write_strip("%check")
+            # Prevent setuptools from hitting the internet
+            self.write_proxy_exports()
+            self._write_strip(self.tests_config)
+        if self.config.subdir:
+            self._write_strip("popd")
+        self.write_build_append()
+        self._write_strip("%install")
+        self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
+        self._write_strip("rm -rf %{buildroot}")
+        self.write_install_prepend()
+
+        self.write_license_files()
+
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("python3 -m install --destdir=%{buildroot} dist/*.whl")
+        if self.config.subdir:
+            self._write_strip("popd")
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py %{{buildroot}} {module}")
+        self._write_strip("echo ----[ mark ]----")
+        self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
+        self._write_strip("echo ----[ mark ]----")
+        self.write_find_lang()
+
     def write_distutils3_pattern(self):
         """Write build pattern for python packages using distutils3."""
         self.write_prep()
