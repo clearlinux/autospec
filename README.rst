@@ -320,6 +320,7 @@ build_pattern
     that this is the fallback build pattern in case no other build patterns are
     autodetected
   * distutils3: Only build the Pythonic package with Python 3
+  * pyproject: Build the Pythonic package using the PEP 516 method
   * meson: Build package with Meson/Ninja
   * golang: Build Go package
   * godep: A go dependency-only package

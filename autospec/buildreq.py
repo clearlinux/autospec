@@ -20,6 +20,7 @@
 #
 
 import ast
+import configparser
 import json
 import os
 import re
@@ -635,6 +636,29 @@ class Requirements(object):
                 continue
             self.add_requires(clean_python_req(line), packages)
 
+    def add_pyproject_requires(self, filename):
+        """Detect build requirements listed in pyproject.toml in the build-system's requires lists."""
+        with util.open_auto(filename) as pfile:
+            pyproject = toml.loads(pfile.read())
+        if not (buildsys := pyproject.get("build-system")):
+            return
+
+        if not (requires := buildsys.get("requires")):
+            return
+
+        for require in requires:
+            dep = clean_python_req(require, False)
+            self.add_buildreq(dep)
+
+    def add_setup_cfg_requires(self, filename, packages):
+        """Detect install requirements listed in setup.cfg in the build-system's requires lists."""
+        setup_f = configparser.ConfigParser(interpolation=None, allow_no_value=True)
+        setup_f.read(filename)
+        if 'options' in setup_f.sections() and (install_reqs := setup_f['options'].get('install_requires')):
+            for req in install_reqs.splitlines():
+                dep = clean_python_req(req, False)
+                self.add_requires(dep, packages)
+
     def add_setup_py_requires(self, filename, packages):
         """Detect build requirements listed in setup.py in the install_requires and setup_requires lists.
 
@@ -840,6 +864,13 @@ class Requirements(object):
                 self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
                 python_pattern = get_python_build_version_from_classifier(dirpath + '/setup.py')
                 config.set_build_pattern(python_pattern, default_score)
+
+            if "pyproject.toml" in files:
+                self.add_buildreq("buildreq-distutils3")
+                self.add_pyproject_requires(dirpath + '/pyproject.toml')
+                if "setup.cfg" in files:
+                    self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
+                config.set_build_pattern("pyproject", default_score)
 
             if "Makefile.PL" in files or "Build.PL" in files:
                 config.set_build_pattern("cpan", default_score)
