@@ -298,6 +298,7 @@ class Requirements(object):
                                      "libxml2No-python",
                                      "futures",
                                      "configparser",
+                                     "setuptools_scm[toml]",
                                      "typing",
                                      "ipaddress"])
         self.autoreconf_reqs = ["gettext-bin",
