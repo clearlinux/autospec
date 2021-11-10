@@ -921,7 +921,7 @@ class Requirements(object):
         else:
             config.autoreconf = False
 
-        if config.default_pattern == "distutils3":
+        if config.default_pattern in ("distutils3", "pyproject"):
             # First look for a local override
             pypi_json = ""
             pypi_file = os.path.join(config.download_path, "pypi.json")
