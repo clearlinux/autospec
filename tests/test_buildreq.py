@@ -6,6 +6,12 @@ import json
 import io
 import buildreq
 import config
+import pypidata
+
+bak_get_pypi_name = pypidata.get_pypi_name
+def get_pypi_name_wrapper(name, miss=None):
+    """Ignore missing packags in pypi"""
+    return bak_get_pypi_name(name)
 
 
 class TestBuildreq(unittest.TestCase):
@@ -274,6 +280,7 @@ class TestBuildreq(unittest.TestCase):
 
         self.assertEqual(self.reqs.buildreqs, set(['rubygem-rubygems-tasks']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_clean_python_req(self):
         """
         Test clean_python_req with a common python requirements string
@@ -282,52 +289,65 @@ class TestBuildreq(unittest.TestCase):
                          'requirement')
         self.assertEqual(buildreq.clean_python_req('requirement ; python_version > 1.1.2'),
                          'requirement')
+        self.assertEqual(buildreq.clean_python_req('requirement <= 1.1.2'),
+                         'requirement')
+        self.assertEqual(buildreq.clean_python_req('requirement = 1.1.2'),
+                         'requirement')
+        self.assertEqual(buildreq.clean_python_req('requirement \n ; rsa>= 1.1.2'),
+                         'requirement')
+        self.assertEqual(buildreq.clean_python_req('requirement != 1.1.2'),
+                         'requirement')
+        self.assertEqual(buildreq.clean_python_req('[:python > 2]'),
+                         '')
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_clean_python_req_comment(self):
         """
         Test clean_python_req with a comment
         """
         self.assertEqual(buildreq.clean_python_req('# hello'), '')
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_clean_python_req_whitespace(self):
         """
         Test clean_python_req with strange whitespaced string
         """
         self.assertEqual(buildreq.clean_python_req('   requirement    < 1.1'),
-                         'requirement')
+                        'requirement')
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_grab_python_requirements(self):
         """
         Test grab_python_requirements with a reasonable requirements file
         """
         # buildreqs must include the requires also
-        self.reqs.buildreqs = set(['req1', 'req2', 'req7'])
         open_name = 'buildreq.util.open_auto'
         content = 'req1 <= 1.2.3\n' \
                   'req2 >= 1.55\n'  \
                   'req7 == 3.3.3\n'
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
+            self.reqs.grab_python_requirements('filename', [])
 
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_grab_python_requirements_strange_file(self):
         """
         Test grab_python_requirements with a poorly written file
         """
         # buildreqs must include the requires also
-        self.reqs.buildreqs = set(['req1', 'req2', 'req7'])
         open_name = 'buildreq.util.open_auto'
         content = '    req1 <= 1.2.3\n   ' \
                   'req2    >= 1.55   \n'   \
                   '   req7 == 3.3.3\n    '
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.grab_python_requirements('filename', ['req1', 'req2', 'req3'])
+            self.reqs.grab_python_requirements('filename', [])
 
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req7']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires(self):
         """
         Test add_setup_py_requires with a single item in install_requires and
@@ -338,11 +358,12 @@ class TestBuildreq(unittest.TestCase):
                   "setup_requires=['req2']"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires[None], set(['req1']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_multiline(self):
         """
         Test add_setup_py_requires with a multiline item in install_requires
@@ -350,14 +371,15 @@ class TestBuildreq(unittest.TestCase):
         open_name = 'buildreq.util.open_auto'
         content = "install_requires=['req1',\n" \
                   "'req2',\n"                   \
-                  "'req3']\n"
+                  "'req7']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_multiline_formatted(self):
         """
         Test add_setup_py_requires with a multiline item in install_requires
@@ -367,15 +389,16 @@ class TestBuildreq(unittest.TestCase):
         content = "install_requires=[\n "  \
                   "'req1',\n"              \
                   "'req2',\n"              \
-                  "'req3',\n"              \
+                  "'req7',\n"              \
                   "]\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2', 'req3'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2', 'req3']))
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2', 'req3']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)', 'pypi(req7)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_multiline_variable(self):
         """
         Test add_setup_py_requires with multiline item in install_requires that
@@ -389,15 +412,16 @@ class TestBuildreq(unittest.TestCase):
                   "]\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_multiline_install_requires_variable(self):
         """
         Test add_setup_py_requires with multiline item in install_requires that
-        contains a non-literal object.
+        contains an extra bit of content that shouldn't be parsed as install_requires.
         """
         open_name = 'buildreq.util.open_auto'
         content = "install_requires=[\n"   \
@@ -407,11 +431,12 @@ class TestBuildreq(unittest.TestCase):
                   "'bad']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_variable(self):
         """
         Test add_setup_py_requires that contains a non-literal object.
@@ -420,11 +445,12 @@ class TestBuildreq(unittest.TestCase):
         content = "install_requires=[reqname, 'req1', 'req2']\n"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
-            self.reqs.add_setup_py_requires('filename', ['req1', 'req2'])
+            self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set(['req1', 'req2']))
-        self.assertEqual(self.reqs.requires[None], set(['req1', 'req2']))
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(req1)', 'pypi(req2)']))
+        self.assertEqual(self.reqs.requires["python3"], set(['pypi(req1)', 'pypi(req2)']))
 
+    @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_add_setup_py_requires_single_variable(self):
         """
         Test add_setup_py_requires with a single non-literal object
@@ -437,22 +463,6 @@ class TestBuildreq(unittest.TestCase):
 
         self.assertEqual(self.reqs.buildreqs, set())
         self.assertEqual(self.reqs.requires[None], set())
-
-    def test_setup_py3_version_classifier(self):
-        """
-        test detection of python version from setup.py classifier
-        """
-
-        open_name = 'buildreq.util.open_auto'
-        content = """classifiers = [
-                    'Programming Language :: Python :: 3 :: Only',
-                ]"""
-
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            build_pattern = buildreq.get_python_build_version_from_classifier("filename")
-
-        self.assertEqual(build_pattern, "distutils3")
 
     def test_scan_for_configure(self):
         """

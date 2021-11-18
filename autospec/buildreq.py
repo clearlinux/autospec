@@ -36,55 +36,63 @@ def is_qmake_pro(f):
     return f.endswith(".pro") and not f.startswith(".")
 
 
-def get_python_build_version_from_classifier(filename):
-    """Detect if setup should use distutils3 only.
-
-    Uses "Programming Language :: Python :: [2,3] :: Only" classifiers in the
-    setup.py file.  Defaults to distutils3 if no such classifiers are found.
-    """
-    with util.open_auto(filename) as setup_file:
-        data = setup_file.read()
-
-    if "Programming Language :: Python :: 3 :: Only" in data:
-        return "distutils3"
-
-    return "distutils3"
-
-
-def clean_python_req(req, add_python=True):
+def clean_python_req(req):
     """Strip version information from req."""
-    if req.find("#") == 0:
+    if not req:
+        return ""
+    if req[0] == "#":
         return ""
     ret = req.rstrip("\n\r").strip()
     i = ret.find(";")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find("<")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find("\n")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find(">")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find("=")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find("#")
-    if i > 0:
+    if i >= 0:
         ret = ret[:i]
     i = ret.find("!")
-    if i > 0:
+    if i >= 0:
+        ret = ret[:i]
+    i = ret.find("[")
+    if i >= 0:
         ret = ret[:i]
 
     ret = ret.strip()
-    # is ret actually a valid (non-empty) string?
-    if ret and add_python:
-        ret = ret.strip()
     # use the dictionary to translate funky names to our current pgk names
     ret = util.translate(ret)
+    if ret:
+        # normalize to pypi name
+        ret = pypidata.get_pypi_name(ret, miss=True)
     return ret
+
+
+def python_req_in_filtered_path(path):
+    """Return True if the python requirement file is in a path we don't want to look at."""
+    if "/demo/" in path:
+        return True
+    if "/doc/" in path:
+        return True
+    if "/docs/" in path:
+        return True
+    if "/example/" in path:
+        return True
+    if "/test/" in path:
+        return True
+    if "/tests/" in path:
+        return True
+
+    return False
 
 
 def is_number(num_str):
@@ -316,6 +324,8 @@ class Requirements(object):
     def add_buildreq(self, req, cache=False):
         """Add req to the global buildreqs set if req is not banned."""
         new = True
+        if not req:
+            return False
         req.strip()
         if req in self.banned_buildreqs:
             return False
@@ -351,26 +361,6 @@ class Requirements(object):
             banned_requires = self.banned_requires[subpkg] = set()
         if req in banned_requires:
             return False
-
-        # Try dashes instead of underscores as some ecosystems are inconsistent in their naming
-        req2 = req.replace("_", "-")
-        if req not in self.buildreqs and req2 in packages and req2 not in requires and req2 not in banned_requires:
-            # Since this is done for python add a buildreq just in case (might not be correct though)
-            self.buildreqs.add(req2)
-            requires.add(req2)
-            return True
-
-        # Try reversing the case of the first letter as some ecosystems are inconsistent in their naming
-        if len(req) > 1:
-            if req[0].isupper():
-                req2 = req[0].lower() + req[1:]
-            else:
-                req2 = req[0].upper() + req[1:]
-        if req not in self.buildreqs and req2 in packages and req2 not in requires and req2 not in banned_requires:
-            # Since this is done for python add a buildreq just in case (might not be correct though)
-            self.buildreqs.add(req2)
-            requires.add(req2)
-            return True
 
         if req not in self.buildreqs and req not in packages and not override:
             if req:
@@ -603,39 +593,27 @@ class Requirements(object):
 
     def grab_python_requirements(self, descfile, packages):
         """Add python requirements from requirements.txt file."""
-        if "/demo/" in descfile:
-            return
-        if "/doc/" in descfile:
-            return
-        if "/docs/" in descfile:
-            return
-        if "/example/" in descfile:
-            return
-        if "/test/" in descfile:
-            return
-        if "/tests/" in descfile:
-            return
-
         with util.open_auto(descfile, "r") as f:
             lines = f.readlines()
 
         for line in lines:
+            clean_line = clean_python_req(line)
             # don't add the test section
-            if clean_python_req(line) == '[test]':
+            if clean_line == '[test]':
                 break
-            if clean_python_req(line) == '[testing]':
+            if clean_line == '[testing]':
                 break
-            if clean_python_req(line) == '[dev]':
+            if clean_line == '[dev]':
                 break
-            if clean_python_req(line) == '[doc]':
+            if clean_line == '[doc]':
                 break
-            if clean_python_req(line) == '[docs]':
+            if clean_line == '[docs]':
                 break
             if 'pytest' in line:
                 continue
-            if clean_python_req(line) == 'mock':
-                continue
-            self.add_requires(clean_python_req(line), packages)
+            if clean_line:
+                if self.add_buildreq(f"pypi({clean_line})", packages):
+                    self.add_requires(f"pypi({clean_line})", packages, override=True, subpkg="python3")
 
     def add_pyproject_requires(self, filename):
         """Detect build requirements listed in pyproject.toml in the build-system's requires lists."""
@@ -648,8 +626,8 @@ class Requirements(object):
             return
 
         for require in requires:
-            dep = clean_python_req(require, False)
-            self.add_buildreq(dep)
+            if dep := clean_python_req(require):
+                self.add_buildreq(f"pypi({dep})")
 
     def add_setup_cfg_requires(self, filename, packages):
         """Detect install requirements listed in setup.cfg in the build-system's requires lists."""
@@ -657,8 +635,8 @@ class Requirements(object):
         setup_f.read(filename)
         if 'options' in setup_f.sections() and (install_reqs := setup_f['options'].get('install_requires')):
             for req in install_reqs.splitlines():
-                dep = clean_python_req(req, False)
-                self.add_requires(dep, packages)
+                if dep := clean_python_req(req):
+                    self.add_requires(f"pypi({dep})", packages, subpkg="python3")
 
     def add_setup_py_requires(self, filename, packages):
         """Detect build requirements listed in setup.py in the install_requires and setup_requires lists.
@@ -705,10 +683,10 @@ class Requirements(object):
                         item = item.strip()
                         try:
                             # eval the string and add requirements
-                            dep = clean_python_req(ast.literal_eval(item), False)
-                            self.add_buildreq(dep)
-                            if req:
-                                self.add_requires(dep, packages)
+                            if dep := clean_python_req(ast.literal_eval(item)):
+                                dep = f"pypi({dep})"
+                                if self.add_buildreq(dep) and req:
+                                    self.add_requires(dep, packages, subpkg="python3")
 
                         except Exception:
                             # do not fail, the line contained a variable and
@@ -729,10 +707,10 @@ class Requirements(object):
                 else:
                     line = line.strip()
                     try:
-                        dep = clean_python_req(ast.literal_eval(line), False)
-                        self.add_buildreq(dep)
-                        if req:
-                            self.add_requires(dep, packages)
+                        if dep := clean_python_req(ast.literal_eval(line)):
+                            dep = f"pypi({dep})"
+                            if self.add_buildreq(dep) and req:
+                                self.add_requires(dep, packages, subpkg="python3")
 
                     except Exception:
                         # Do not fail, just keep looking
@@ -751,10 +729,10 @@ class Requirements(object):
 
                 try:
                     dep = ast.literal_eval(line.split('#')[0].strip(' ,\n'))
-                    dep = clean_python_req(dep)
-                    self.add_buildreq(dep)
-                    if req:
-                        self.add_requires(dep, packages)
+                    if dep := clean_python_req(dep):
+                        dep = f"pypi({dep})"
+                        if self.add_buildreq(dep) and req:
+                            self.add_requires(dep, packages, subpkg="python3")
 
                 except Exception:
                     # do not fail, the line contained a variable and had to
@@ -858,20 +836,22 @@ class Requirements(object):
                 config.set_build_pattern("qmake", default_score)
 
             if "requires.txt" in files:
-                self.grab_python_requirements(dirpath + '/requires.txt', config.os_packages)
+                if not python_req_in_filtered_path(dirpath):
+                    self.grab_python_requirements(dirpath + '/requires.txt', config.os_packages)
 
             if "setup.py" in files:
-                self.add_buildreq("buildreq-distutils3")
-                self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
-                python_pattern = get_python_build_version_from_classifier(dirpath + '/setup.py')
-                config.set_build_pattern(python_pattern, default_score)
+                if not python_req_in_filtered_path(dirpath):
+                    self.add_buildreq("buildreq-distutils3")
+                    self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
+                    config.set_build_pattern("distutils3", default_score)
 
             if "pyproject.toml" in files:
-                self.add_buildreq("buildreq-distutils3")
-                self.add_pyproject_requires(dirpath + '/pyproject.toml')
-                if "setup.cfg" in files:
-                    self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
-                config.set_build_pattern("pyproject", default_score)
+                if not python_req_in_filtered_path(dirpath):
+                    self.add_buildreq("buildreq-distutils3")
+                    self.add_pyproject_requires(dirpath + '/pyproject.toml')
+                    if "setup.cfg" in files:
+                        self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
+                    config.set_build_pattern("pyproject", default_score)
 
             if "Makefile.PL" in files or "Build.PL" in files:
                 config.set_build_pattern("cpan", default_score)
@@ -882,7 +862,8 @@ class Requirements(object):
                 config.set_build_pattern("scons", default_score)
 
             if "requirements.txt" in files:
-                self.grab_python_requirements(dirpath + '/requirements.txt', config.os_packages)
+                if not python_req_in_filtered_path(dirpath):
+                    self.grab_python_requirements(dirpath + '/requirements.txt', config.os_packages)
 
             if "meson.build" in files:
                 self.add_buildreq("buildreq-meson")

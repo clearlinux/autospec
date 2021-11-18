@@ -26,21 +26,23 @@ def pkg_search(name):
         return False
 
 
-def get_pypi_name(name):
+def get_pypi_name(name, miss=False):
     """Try and verify the pypi name for a given package name."""
     # normalize the name for matching as pypi is case insensitve for search
-    name = name.lower()
+    name = name.lower().replace('-', '_')
     # Common case is the name and the pypi name match
     if pkg_search(name):
         return name
-    # Maybe we have a python- prefix
-    prefix = "python-"
+    # Maybe we have a python_ prefix
+    prefix = "python_"
     if name.startswith(prefix):
         name = name[len(prefix):]
         if pkg_search(name):
             return name
     # Some cases where search fails (Sphinx)
     # Just try the name we were given
+    if miss:
+        return ""
     return name
 
 

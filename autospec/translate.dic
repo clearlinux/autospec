@@ -37,7 +37,6 @@ keystonemiddleware-python=keystonemiddleware
 lazy_object_proxy=lazy-object-proxy
 manilaclient-python=python-manilaclient
 mistralclient.api.v2-python=python-mistralclient
-mock=python-mock
 netaddr-python=netaddr
 Opcodes=opcodes
 openstackclient.tests-python=python-openstackclient
