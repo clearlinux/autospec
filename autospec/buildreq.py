@@ -91,6 +91,10 @@ def python_req_in_filtered_path(path):
         return True
     if "/tests/" in path:
         return True
+    if "/plugin/" in path:
+        return True
+    if "/plugins/" in path:
+        return True
 
     return False
 
@@ -597,18 +601,9 @@ class Requirements(object):
             lines = f.readlines()
 
         for line in lines:
+            if '[' in line:
+                break
             clean_line = clean_python_req(line)
-            # don't add the test section
-            if clean_line == '[test]':
-                break
-            if clean_line == '[testing]':
-                break
-            if clean_line == '[dev]':
-                break
-            if clean_line == '[doc]':
-                break
-            if clean_line == '[docs]':
-                break
             if 'pytest' in line:
                 continue
             if clean_line:
@@ -839,12 +834,6 @@ class Requirements(object):
                 if not python_req_in_filtered_path(dirpath):
                     self.grab_python_requirements(dirpath + '/requires.txt', config.os_packages)
 
-            if "setup.py" in files:
-                if not python_req_in_filtered_path(dirpath):
-                    self.add_buildreq("buildreq-distutils3")
-                    self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
-                    config.set_build_pattern("distutils3", default_score)
-
             if "pyproject.toml" in files:
                 if not python_req_in_filtered_path(dirpath):
                     self.add_buildreq("buildreq-distutils3")
@@ -852,6 +841,11 @@ class Requirements(object):
                     if "setup.cfg" in files:
                         self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
                     config.set_build_pattern("pyproject", default_score)
+            elif "setup.py" in files:
+                if not python_req_in_filtered_path(dirpath):
+                    self.add_buildreq("buildreq-distutils3")
+                    self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
+                    config.set_build_pattern("distutils3", default_score)
 
             if "Makefile.PL" in files or "Build.PL" in files:
                 config.set_build_pattern("cpan", default_score)
