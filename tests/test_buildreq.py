@@ -299,6 +299,8 @@ class TestBuildreq(unittest.TestCase):
                          'requirement')
         self.assertEqual(buildreq.clean_python_req('[:python > 2]'),
                          '')
+        self.assertEqual(buildreq.clean_python_req('requirement ~= 1.1.2'),
+                         'requirement')
 
     @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_clean_python_req_comment(self):

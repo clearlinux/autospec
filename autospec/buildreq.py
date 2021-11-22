@@ -67,6 +67,9 @@ def clean_python_req(req):
     i = ret.find("[")
     if i >= 0:
         ret = ret[:i]
+    i = ret.find("~")
+    if i >= 0:
+        ret = ret[:i]
 
     ret = ret.strip()
     # use the dictionary to translate funky names to our current pgk names
