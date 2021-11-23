@@ -834,20 +834,23 @@ class Requirements(object):
                 config.set_build_pattern("qmake", default_score)
 
             if "requires.txt" in files:
-                if not python_req_in_filtered_path(dirpath):
-                    self.grab_python_requirements(dirpath + '/requires.txt', config.os_packages)
+                req_path = os.path.join(dirpath, "requires.txt")
+                if not python_req_in_filtered_path(req_path):
+                    self.grab_python_requirements(req_path, config.os_packages)
 
             if "pyproject.toml" in files:
-                if not python_req_in_filtered_path(dirpath):
+                req_path = os.path.join(dirpath, "pyproject.toml")
+                if not python_req_in_filtered_path(req_path):
                     self.add_buildreq("buildreq-distutils3")
-                    self.add_pyproject_requires(dirpath + '/pyproject.toml')
+                    self.add_pyproject_requires(req_path)
                     if "setup.cfg" in files:
                         self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
                     config.set_build_pattern("pyproject", default_score)
             elif "setup.py" in files:
-                if not python_req_in_filtered_path(dirpath):
+                req_path = os.path.join(dirpath, "setup.py")
+                if not python_req_in_filtered_path(req_path):
                     self.add_buildreq("buildreq-distutils3")
-                    self.add_setup_py_requires(dirpath + '/setup.py', config.os_packages)
+                    self.add_setup_py_requires(req_path, config.os_packages)
                     config.set_build_pattern("distutils3", default_score)
 
             if "Makefile.PL" in files or "Build.PL" in files:
@@ -859,8 +862,9 @@ class Requirements(object):
                 config.set_build_pattern("scons", default_score)
 
             if "requirements.txt" in files:
-                if not python_req_in_filtered_path(dirpath):
-                    self.grab_python_requirements(dirpath + '/requirements.txt', config.os_packages)
+                req_path = os.path.join(dirpath, "requirements.txt")
+                if not python_req_in_filtered_path(req_path):
+                    self.grab_python_requirements(req_path, config.os_packages)
 
             if "meson.build" in files:
                 self.add_buildreq("buildreq-meson")
