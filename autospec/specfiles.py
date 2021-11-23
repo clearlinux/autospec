@@ -1398,7 +1398,7 @@ class Specfile(object):
 
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip("python3 -m install --destdir=%{buildroot} dist/*.whl")
+        self._write_strip("pip install --root=%{buildroot} --no-deps --ignore-installed dist/*.whl")
         if self.config.subdir:
             self._write_strip("popd")
         for module in self.config.pypi_overrides:
