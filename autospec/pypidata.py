@@ -33,12 +33,12 @@ def get_pypi_name(name, miss=False):
     # Common case is the name and the pypi name match
     if pkg_search(name):
         return name
-    # Maybe we have a python_ prefix
-    prefix = "python_"
-    if name.startswith(prefix):
-        name = name[len(prefix):]
-        if pkg_search(name):
-            return name
+    # Maybe we have a prefix
+    for prefix in ["pypi_", "python_"]:
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+            if pkg_search(name):
+                return name
     # Some cases where search fails (Sphinx)
     # Just try the name we were given
     if miss:
