@@ -1009,8 +1009,9 @@ class Specfile(object):
 
         if self.config.config_opts['32bit']:
             self._write_strip("pushd clr-build32")
-            self._write_strip("%make_install32 {} {}".format(self.config.extra_make_install,
-                                                             self.config.extra_make32_install))
+            self._write_strip("{}32 {} {}".format(self.config.install_macro,
+                                                  self.config.extra_make_install,
+                                                  self.config.extra_make32_install))
             self._write_strip("if [ -d  %{buildroot}/usr/lib32/pkgconfig ]")
             self._write_strip("then")
             self._write_strip("    pushd %{buildroot}/usr/lib32/pkgconfig")
