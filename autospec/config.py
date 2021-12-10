@@ -322,7 +322,7 @@ class Config(object):
             (r"configure: error: Cannot find (.*)\. Make sure", 0, None),
             (r"fatal error\: (.*)\: No such file or directory", 0, None),
             (r"make: ([a-zA-Z0-9].+): (?:Command not found|No such file or directory)", 0, None),
-            (r"meson\.build\:[\d]+\:[\d]+\: ERROR: C library \'(.*)\' not found", 0, None),
+            (r"meson\.build\:[\d]+\:[\d]+\: ERROR: C(?: shared or static)? library \'(.*)\' not found", 0, None),
             (r"there is no package called ['‘]([a-zA-Z0-9\-\.]*)['’]", 0, 'R'),
             (r"unable to execute '([a-zA-Z\-]*)': No such file or directory", 0, None),
             (r"warning: failed to load external entity " r"\"(/usr/share/sgml/docbook/xsl-stylesheets)/.*\"", 0, None),
