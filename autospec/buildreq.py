@@ -70,6 +70,9 @@ def clean_python_req(req):
     i = ret.find("~")
     if i >= 0:
         ret = ret[:i]
+    i = ret.find(" ")
+    if i >= 0:
+        ret = ret[:i]
 
     ret = ret.strip()
     # use the dictionary to translate funky names to our current pgk names
@@ -77,6 +80,10 @@ def clean_python_req(req):
     if ret:
         # normalize to pypi name
         ret = pypidata.get_pypi_name(ret, miss=True)
+        if ret and ret[0] == '_':
+            # These tend to be leftover junk
+            # ignore them
+            ret = ""
     return ret
 
 
