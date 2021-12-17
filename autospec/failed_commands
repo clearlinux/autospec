@@ -1389,6 +1389,7 @@ yacc, bison
 yajl/yajl_tree.h, yajl-dev
 yaml, PyYAML
 yaml-0.1, yaml-dev
+yaml-cpp, yaml-cpp-dev
 yarg, yarg
 yasm, yasm
 yytext is a pointer, flex
