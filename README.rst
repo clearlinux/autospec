@@ -308,7 +308,6 @@ build_pattern
   * R: R language package
   * cpan: perl language package
   * ruby: ruby language package
-  * maven: Java language package
   * configure: Traditional ``%configure`` autotools route
   * configure_ac: Like ``configure``, but performs ``%reconfigure`` to
     regenerate ``./configure``
@@ -326,7 +325,6 @@ build_pattern
   * godep: A go dependency-only package
   * \[WIP\] cargo: Build Rust package with Cargo
   * \[WIP\] scons: Build package with Scons
-  * \[WIP\] ant: Build package with Apache Ant
 
 series
   This file contains a list of patches to apply during the build, using the

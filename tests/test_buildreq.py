@@ -233,17 +233,6 @@ class TestBuildreq(unittest.TestCase):
         self.assertTrue(self.reqs.cargo_bin)
         self.assertEqual(conf.default_pattern, 'cargo')
 
-    def test_set_build_req_maven(self):
-        """
-        Test set_build_req with default_pattern set to maven.
-        This is just a simple test for the inclusion of a single package, in
-        case the overall package list changes in the future.
-        """
-        conf = config.Config("")
-        conf.default_pattern = "maven"
-        self.reqs.set_build_req(conf)
-        self.assertIn('apache-maven', self.reqs.buildreqs)
-
     def test_set_build_req_ruby(self):
         """
         Test set_build_req with default_pattern set to ruby.

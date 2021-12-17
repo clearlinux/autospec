@@ -146,30 +146,6 @@ class Build(object):
                     self.must_restart += requirements.add_buildreq(config.gems[s], cache=True)
                 else:
                     print("Unknown ruby gem match", s)
-            elif buildtool == 'maven' or buildtool == 'gradle':
-                group_count = len(match.groups())
-                if group_count == 2:
-                    # Add fully qualified versioned mvn() dependency
-                    name = match.group(1)
-                    # Hyphens are disallowed for version strings, so use dots instead
-                    ver = match.group(2).replace('-', '.')
-                    mvn_provide = f'mvn({name}) = {ver}'
-                    self.must_restart += requirements.add_buildreq(mvn_provide, cache=True)
-                elif s in config.maven_jars:
-                    # Overrides for dependencies with custom grouping
-                    self.must_restart += requirements.add_buildreq(config.maven_jars[s], cache=True)
-                elif group_count == 3:
-                    org = match.group(1)
-                    name = match.group(2)
-                    ver = match.group(3).replace('-', '.')
-                    if re.search("-(parent|pom|bom)$", name):
-                        mvn_provide = f'mvn({org}:{name}:pom) = {ver}'
-                    else:
-                        mvn_provide = f'mvn({org}:{name}:jar) = {ver}'
-                    self.must_restart += requirements.add_buildreq(mvn_provide, cache=True)
-                else:
-                    # Fallback to mvn-ARTIFACTID package name
-                    self.must_restart += requirements.add_buildreq('mvn-%s' % s, cache=True)
             elif buildtool == 'catkin':
                 self.must_restart += requirements.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
                 self.must_restart += requirements.add_buildreq(s, cache=True)
