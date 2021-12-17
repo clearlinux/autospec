@@ -604,7 +604,9 @@ class Requirements(object):
         if 'options' in setup_f.sections() and (install_reqs := setup_f['options'].get('install_requires')):
             for req in install_reqs.splitlines():
                 if dep := clean_python_req(req):
-                    self.add_requires(f"pypi({dep})", packages, subpkg="python3")
+                    req = f"pypi({dep})"
+                    self.add_buildreq(req)
+                    self.add_requires(req, packages, subpkg="python3")
 
     def add_setup_py_requires(self, filename, packages):
         """Detect build requirements listed in setup.py in the install_requires and setup_requires lists.
