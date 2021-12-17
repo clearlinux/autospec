@@ -489,36 +489,6 @@ class Requirements(object):
 
     def set_build_req(self, config):
         """Add build requirements based on the build pattern."""
-        if config.default_pattern == "maven":
-            maven_reqs = ["apache-maven",
-                          "openjdk-dev",
-                          "mvn-aether-core",
-                          "mvn-aopalliance",
-                          "mvn-cdi-api",
-                          "mvn-commons-cli",
-                          "mvn-commons-codec",
-                          "mvn-commons-io",
-                          "mvn-commons-lang",
-                          "mvn-commons-lang3",
-                          "mvn-commons-logging",
-                          "mvn-guice",
-                          "mvn-guava",
-                          "mvn-httpcomponents-client",
-                          "mvn-httpcomponents-core",
-                          "mvn-jsoup",
-                          "mvn-jsr305",
-                          "mvn-wagon",
-                          "mvn-sisu",
-                          "mvn-plexus-cipher",
-                          "mvn-plexus-classworlds",
-                          "mvn-plexus-containers",
-                          "mvn-plexus-interpolation",
-                          "mvn-sonatype-plexus-sec-dispatcher",
-                          "mvn-plexus-utils",
-                          "mvn-slf4j"]
-            for req in maven_reqs:
-                self.add_buildreq(req)
-
         if config.default_pattern == "ruby":
             self.add_buildreq("ruby")
             self.add_buildreq("rubygem-rdoc")
@@ -869,10 +839,6 @@ class Requirements(object):
             if "meson.build" in files:
                 self.add_buildreq("buildreq-meson")
                 config.set_build_pattern("meson", default_score)
-
-            if "build.xml" in files:
-                self.add_buildreq("apache-ant")
-                config.set_build_pattern("ant", default_score)
 
             for name in files:
                 if name.lower() == "cargo.toml" and dirpath == dirn:

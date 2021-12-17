@@ -120,7 +120,6 @@ class Config(object):
         self.alias = None
         self.failed_commands = {}
         self.ignored_commands = {}
-        self.maven_jars = {}
         self.gems = {}
         self.license_hashes = {}
         self.license_translations = {}
@@ -355,10 +354,6 @@ class Config(object):
         if "rubygems.org/" in url:
             self.set_build_pattern("ruby", 10)
 
-        # maven
-        if ".maven." in url:
-            self.set_build_pattern("maven", 10)
-
         # rust crate
         if "crates.io" in url:
             self.set_build_pattern("cargo", 10)
@@ -592,7 +587,6 @@ class Config(object):
         """Read each pattern configuration file and assign to the appropriate variable."""
         read_pattern_conf("ignored_commands", self.ignored_commands, list_format=True, path=path)
         read_pattern_conf("failed_commands", self.failed_commands, path=path)
-        read_pattern_conf("maven_jars", self.maven_jars, path=path)
         read_pattern_conf("gems", self.gems, path=path)
         read_pattern_conf("license_hashes", self.license_hashes, path=path)
         read_pattern_conf("license_translations", self.license_translations, path=path)

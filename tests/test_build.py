@@ -253,42 +253,6 @@ class TestBuildpattern(unittest.TestCase):
         self.assertEqual(reqs.buildreqs, set())
         self.assertEqual(pkg.must_restart, 0)
 
-    def test_failed_pattern_maven(self):
-        """
-        Test failed_pattern with buildtool set to maven, but no match in
-        config.maven_jars, it should just prepend 'mvn-' to the package name.
-        """
-        conf = config.Config('')
-        reqs = buildreq.Requirements("")
-        pkg = build.Build()
-        pkg.failed_pattern('line to test for failure: testpkg',
-                             conf,
-                             reqs,
-                             r'(testpkg)',
-                             0,  # verbose=0
-                             buildtool='maven')
-        self.assertIn('mvn-testpkg', reqs.buildreqs)
-        self.assertEqual(pkg.must_restart, 1)
-
-    def test_failed_pattern_maven_match(self):
-        """
-        Test failed_pattern with buildtool set to maven with a match in
-        config.maven_jars. In the particular case of aether, the corresponding
-        maven jar is 'mvn-aether-core'
-        """
-        conf = config.Config('')
-        conf.setup_patterns()
-        reqs = buildreq.Requirements("")
-        pkg = build.Build()
-        pkg.failed_pattern('line to test for failure: aether',
-                             conf,
-                             reqs,
-                             r'(aether)',
-                             0,  # verbose=0
-                             buildtool='maven')
-        self.assertIn('mvn-aether-core', reqs.buildreqs)
-        self.assertEqual(pkg.must_restart, 1)
-
     def test_parse_buildroot_log_fail(self):
         """
         Test parse_buildroot_log with a test log indicating failure due to
