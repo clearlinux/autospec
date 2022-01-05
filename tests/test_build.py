@@ -453,7 +453,8 @@ class TestBuildpattern(unittest.TestCase):
                               '/usr/testdir/file1',
                               '/usr/testdir/file2']))
         # one for each file added
-        self.assertEqual(pkg.must_restart, 3)
+        self.assertEqual(pkg.must_restart, 0)
+        self.assertEqual(pkg.file_restart, 3)
 
     def test_parse_build_results_banned_files(self):
         """

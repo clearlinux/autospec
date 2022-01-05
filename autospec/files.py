@@ -79,7 +79,7 @@ class FileManager(object):
             g = self.attrs[filename][2]
             filename = "%attr({0},{1},{2}) {3}".format(mod, u, g, filename)
         self.packages[package].add(filename)
-        self.package.must_restart += 1
+        self.package.file_restart += 1
         if not self.newfiles_printed:
             print("  New %files content found")
             self.newfiles_printed = True
@@ -141,6 +141,7 @@ class FileManager(object):
             if lang not in self.locales:
                 self.locales.append(lang)
                 print("  New locale:", lang)
+                self.package.must_restart += 1
                 if "locales" not in self.packages:
                     self.packages["locales"] = set()
 
