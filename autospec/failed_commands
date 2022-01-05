@@ -641,6 +641,7 @@ XpmCreatePixmapFromData in -lXpm, libXpm-dev
 XpmReadFileToXpmImage in -lXpm, pkgconfig(xpm)
 XvQueryExtension in -lXv, libXv-dev
 ZLIB, zlib-dev
+Zstd, zstd-dev
 _XdmcpAuthDoIt in -lXdmcp, libXdmcp-dev
 __gmpz_add in -lgmp, gmp-dev
 __gmpz_init in -lgmp, gmp-dev
