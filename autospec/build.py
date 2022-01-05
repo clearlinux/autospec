@@ -88,6 +88,7 @@ class Build(object):
         self.success = 0
         self.round = 0
         self.must_restart = 0
+        self.file_restart = 0
         self.uniqueext = ''
         self.warned_about = set()
 
@@ -175,6 +176,7 @@ class Build(object):
         """Handle build log contents."""
         requirements.verbose = 1
         self.must_restart = 0
+        self.file_restart = 0
         infiles = 0
 
         # Flush the build-log to disk, before reading it
@@ -255,11 +257,12 @@ class Build(object):
             "--buildsrpm",
             "--sources=./",
             f"--spec={content.name}.spec",
-            f"--uniqueext={self.uniqueext}",
+            f"--uniqueext={self.uniqueext}-src",
             "--result=results/",
             cleanup_flag,
             mockopts,
         ]
+
         util.call(" ".join(cmd_args),
                   logfile=f"{config.download_path}/results/mock_srpm.log",
                   cwd=config.download_path)
@@ -280,6 +283,11 @@ class Build(object):
             cleanup_flag,
             mockopts,
         ]
+
+        if not cleanup and self.must_restart == 0 and self.file_restart > 0:
+            cmd_args.append("--no-clean")
+            cmd_args.append("--short-circuit=binary")
+
         ret = util.call(" ".join(cmd_args),
                         logfile=f"{config.download_path}/results/mock_build.log",
                         check=False,

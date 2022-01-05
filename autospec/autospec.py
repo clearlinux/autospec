@@ -285,7 +285,7 @@ def package(args, url, name, archives, workingdir):
             # directories added to the blacklist, need to re-run
             package.must_restart += 1
 
-        if package.round > 20 or package.must_restart == 0:
+        if package.round > 20 or (package.must_restart == 0 and package.file_restart == 0):
             break
 
         save_mock_logs(conf.download_path, package.round)
