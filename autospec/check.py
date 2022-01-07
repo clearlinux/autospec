@@ -163,11 +163,11 @@ def scan_for_tests(src_dir, config, requirements, content):
                 break
 
     if "tox.ini" in files:
-        requirements.add_buildreq("tox")
-        requirements.add_buildreq("pytest")
-        requirements.add_buildreq("virtualenv")
-        requirements.add_buildreq("pluggy")
-        requirements.add_buildreq("py-python")
+        requirements.add_buildreq("pypi-tox")
+        requirements.add_buildreq("pypi-pytest")
+        requirements.add_buildreq("pypi-virtualenv")
+        requirements.add_buildreq("pypi-pluggy")
+        requirements.add_buildreq("pypi(py)")
 
 
 def load_specfile(specfile):
