@@ -146,14 +146,14 @@ def description_from_pkginfo(pkginfo, translations, blacklist):
             splits = line.split(":")[1:]
             words = ":".join(splits).strip()
             if words in translations:
-                print("Adding license from PKG-INFO:", words)
-                license.add_license(words, translations, blacklist)
+                if license.add_license(words, translations, blacklist):
+                    print("Added license from PKG-INFO:", words)
             else:
                 words = clean_license_string(words).split()
                 for word in words:
                     if ":" not in word:
-                        print("Adding license from PKG-INFO:", word)
-                        license.add_license(word, translations, blacklist)
+                        if license.add_license(word, translations, blacklist):
+                            print("Added license from PKG-INFO:", word)
 
         for sub in ["Summary: ", "abstract: "]:
             if line.startswith(sub):

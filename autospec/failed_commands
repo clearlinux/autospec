@@ -2,9 +2,9 @@
 # in the form: <pattern>, <package>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
-'nose', nose
-'numpy', numpy
-'pexpect', pexpect
+'nose', pypi(nose)
+'numpy', pypi(numpy)
+'pexpect', pypi(pexpect)
 -lEGL, mesa-dev
 -lGL, pkgconfig(gl)
 -lGLESv2, mesa-dev
@@ -245,7 +245,7 @@ FindStrigi, strigi-dev
 FindTaglib, kdelibs4support-dev
 FindTelepathyQt5, telepathy-qt-dev
 Findexpat, expat-dev
-Flask, Flask
+Flask, pypi(flask)
 Fontconfig, pkgconfig(fontconfig)
 FreeType 2, freetype-dev
 Freetype, freetype-dev
@@ -1072,7 +1072,7 @@ magic_file in -lmagic, file-dev
 main in -lX11, libX11-dev
 makedepend, makedepend
 makeinfo, texinfo
-markdown, Markdown
+markdown, pypi-markdown
 mate-autogen, mate-common-dev
 mate-common.m4, mate-common-dev
 mate-compiler-flags.m4, mate-common-dev
@@ -1197,22 +1197,21 @@ ps, procps-ng
 pth-config, pth-dev
 pulse/pulseaudio.h, pulseaudio-dev
 pwquality, libpwquality-dev
-py.test, pytest
-pyasn1, pyasn1
-pyasn1_modules, pyasn1-modules
-pycparser, pycparser
-pycrypto, pycrypto
-pycurl, pycurl
-pylint, pylint
-pyperclip, pyperclip
-pytest, pytest
-pytest-cov, pytest-cov
-python lxml, lxml
+py.test, pypi-pytest
+pyasn1, pypi(pyasn1)
+pyasn1_modules, pypi(pyasn1_modules)
+pycparser, pypi(pycparser)
+pycurl, pypi(pycurl)
+pylint, pypi(pylint)
+pyperclip, pypi(pyperclip)
+pytest, pypi-pytest
+pytest-cov, pypi(pytest_cov)
+python lxml, pypi(lxml)
 python, python3-dev
 python-config, python3-dev
 python-pcre, python-pcre
-python-subunit, python-subunit
-pytz, pytz
+python-subunit, pypi(python_subunit)
+pytz, pypi(pytz)
 pyyaml, PyYAML
 qcollectiongenerator, qttools-dev
 qdbuscpp2xml, qtbase-dev

@@ -136,7 +136,7 @@ class Build(object):
                 s = util.translate(s)
                 if not s:
                     return
-                self.must_restart += requirements.add_buildreq(util.translate('%s-python' % s), cache=True)
+                self.must_restart += requirements.add_buildreq(f"pypi({s.lower().replace('-', '_')})", cache=True)
             elif buildtool == 'ruby':
                 if s in config.gems:
                     self.must_restart += requirements.add_buildreq(config.gems[s], cache=True)
