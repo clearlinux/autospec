@@ -1277,7 +1277,7 @@ sndfile, libsndfile-dev
 sndfile.h, libsndfile-dev
 sox.h, sox-dev
 sphinx, pypi-sphinx
-sphinx-build, pypi-phinx
+sphinx-build, pypi-sphinx
 sqlalchemy, SQLAlchemy
 sqlext.h usability, unixODBC-dev
 sqlext.h, unixODBC-dev
