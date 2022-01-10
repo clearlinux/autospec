@@ -562,7 +562,7 @@ SharedMimeInfo, shared-mime-info
 Snappy, snappy-dev
 Soprano, soprano-dev
 SpatialIndex, libspatialindex-dev
-Sphinx, Sphinx
+Sphinx, pypi-sphinx
 Sqlite, sqlite-autoconf-dev
 Startup notification library, libnotify-dev
 TBB, tbb-dev
@@ -1276,8 +1276,8 @@ sm, libSM-dev
 sndfile, libsndfile-dev
 sndfile.h, libsndfile-dev
 sox.h, sox-dev
-sphinx, Sphinx
-sphinx-build, Sphinx
+sphinx, pypi-sphinx
+sphinx-build, pypi-phinx
 sqlalchemy, SQLAlchemy
 sqlext.h usability, unixODBC-dev
 sqlext.h, unixODBC-dev
