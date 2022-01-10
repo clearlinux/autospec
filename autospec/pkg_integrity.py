@@ -879,10 +879,10 @@ def check(url, config, interactive=True):
     verified = None
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, config, interactive=interactive)
-    elif package_path[-4:] == '.gem':
+    if not verified and package_path[-4:] == '.gem':
         signature_file = get_signature_file(url, config.download_path)
         verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
-    else:
+    if not verified and package_path[-4:] != '.gem':
         util.print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, config.download_path))
         signature_file = get_signature_file(url, config.download_path)
         if signature_file is not None:
