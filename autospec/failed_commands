@@ -1271,7 +1271,7 @@ sfcgal-config, SFCGAL-dev
 sgemm_ in -lopenblas, openblas
 shared-mime-info, shared-mime-info-dev
 sipconfig, sip-dev
-six, six
+six, pypi-six
 sm, libSM-dev
 sndfile, libsndfile-dev
 sndfile.h, libsndfile-dev
