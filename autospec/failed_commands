@@ -817,7 +817,7 @@ fuse (via pkg-config), compat-fuse-soname2-dev fuse-dev
 fuse, fuse-dev
 fuse.h, fuse-dev
 fuse3, fuse-dev
-future, python-future
+future, pypi-future
 futurist, futurist
 g-ir-scanner, gobject-introspection
 gabbi, gabbi
@@ -1083,7 +1083,7 @@ mimeparse, python-mimeparse
 mkfontdir, mkfontdir-bin
 mkfontscale, mkfontscale-bin
 moc, qtbase-dev
-mock, python-mock
+mock, pypi-mock
 more, util-linux
 mpfr.h, mpfr-dev
 mpg123.h, mpg123-dev
@@ -1286,7 +1286,7 @@ sqlite3, sqlite-autoconf-dev
 sqlite3.h, sqlite-autoconf-dev
 stestr, stestr
 stevedore, stevedore
-subunit, python-subunit
+subunit, subunit
 suitable libmagic, file-dev
 suitesparse/ccolamd.h, SuiteSparse-dev
 svn_client.h, subversion-dev
