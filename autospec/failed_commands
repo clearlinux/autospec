@@ -722,7 +722,7 @@ cap_init, libcap-dev
 cap_rights_init, libcap-ng-dev
 cargo, cargo
 ccolamd.h, SuiteSparse-dev
-cffi, cffi
+cffi, pypi-cffi
 champlain-0.12, libchamplain-dev
 cifsidmap.h, samba-dev
 clang, llvm
