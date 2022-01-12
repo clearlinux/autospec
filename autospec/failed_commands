@@ -797,11 +797,11 @@ expat, expat-dev
 expat-config, expat-dev
 expat.h, expat-dev
 extras, extras
-ez_setup, setuptools
+ez_setup, pypi-setuptools
 ffi.h, libffi-dev
 ffi_call, libffi-dev
 fftw3.h, fftw-dev
-find_packages, setuptools
+find_packages, pypi-setuptools
 flatbuffers/flatbuffers.h, FlatBuffers-dev
 flatpak, flatpak-dev
 flex, flex
@@ -1181,7 +1181,7 @@ pixeltool, qttools-dev
 pixman, pkgconfig(pixman-1)
 pkg-config, pkg-config
 pkg.m4, pkg-config-dev
-pkg_resources, setuptools
+pkg_resources, pypi-setuptools
 pkill, psmisc
 png_read_info in -lpng, pkgconfig(libpng)
 polkit-gobject-1, polkit-dev
@@ -1245,7 +1245,7 @@ readline.h, readline-dev
 readline/history.h, readline-dev
 readline/readline.h, readline-dev
 repc, qtremoteobjects-dev
-requests, requests
+requests, pypi-requests
 rest-0.7, rest-dev
 retrying, retrying
 rpm, pkgconfig(rpm)
@@ -1265,8 +1265,8 @@ security/pam_appl.h, Linux-PAM-dev
 selenium, selenium
 setcap, libcap-dev
 setterm, util-linux
-setup, setuptools
-setuptools, setuptools
+setup, pypi-setuptools
+setuptools, pypi-setuptools
 sfcgal-config, SFCGAL-dev
 sgemm_ in -lopenblas, openblas
 shared-mime-info, shared-mime-info-dev
