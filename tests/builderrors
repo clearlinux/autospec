@@ -35,7 +35,7 @@ Could not find suitable distribution for Requirement.parse('swig')|swig
 Dependency swig found: NO|swig
 Dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
 Dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
-Download error on https://pypi.python.org/simple/swig/|swig-python
+Download error on https://pypi.python.org/simple/swig/|pypi(swig)
 Downloading https://test.python.org/packages/pkg/t/swig/1.23|swig
 ERROR:  Could not find a valid gem 'swig' (= 8) in any repository|rubygem-swig
 ERROR:  Could not find a valid gem 'swig' (= 8), here is why:|rubygem-swig
@@ -49,17 +49,17 @@ Error: Unable to find swig|swig
 Error: package 'swig' required by|R-swig
 Error: package ‘swig’ required by|R-swig
 Gem::LoadError: Could not find 'swig'|rubygem-swig
-ImportError: No module named 'swig'|swig-python
+ImportError: No module named 'swig'|pypi(swig)
 ImportError: No module named swig|swig
-ImportError: No module named swig|swig-python
+ImportError: No module named swig|pypi(swig)
 ImportError: cannot import name swig|swig
 ImportError: swig module missing|swig
-ImportError:..*: No module named swig|swig-python
+ImportError:..*: No module named swig|pypi(swig)
 LoadError: cannot load such file -- swig/pkg|rubygem-swig
 ModuleNotFoundError: No module named swig|swig
 Native dependency 'swig' not found|pkgconfig(swig)
-No local packages or working download links found for swig|swig-python
-No matching distribution found for swig|swig-python
+No local packages or working download links found for swig|pypi(swig)
+No matching distribution found for swig|pypi(swig)
 No package 'swig' found|pkgconfig(swig)
 No rule to make target `swig', etc|swig
 Package 'swig', required by 'something', not found|pkgconfig(swig)
