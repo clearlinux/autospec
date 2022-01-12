@@ -284,7 +284,7 @@ class Build(object):
             mockopts,
         ]
 
-        if not cleanup and self.must_restart == 0 and self.file_restart > 0:
+        if not cleanup and self.must_restart == 0 and self.file_restart > 0 and len(filemanager.excludes) == 0:
             cmd_args.append("--no-clean")
             cmd_args.append("--short-circuit=binary")
 
