@@ -204,11 +204,11 @@ class TestTest(unittest.TestCase):
         check.scan_for_tests('pkgdir', conf, reqs, tcontent)
         check.os.listdir = listdir_backup
         self.assertEqual(reqs.buildreqs,
-                         set(['tox',
-                              'pytest',
-                              'virtualenv',
-                              'pluggy',
-                              'py-python']))
+                         set(['pypi-tox',
+                              'pypi-pytest',
+                              'pypi-virtualenv',
+                              'pypi-pluggy',
+                              'pypi(py)']))
 
 
 if __name__ == "__main__":

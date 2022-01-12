@@ -52,7 +52,7 @@ class TestUtil(unittest.TestCase):
         Spot-test the translate function with a package defined in
         translate.dic
         """
-        self.assertEqual(util.translate('dateutil-python'), 'python-dateutil')
+        self.assertEqual(util.translate('dateutil-python'), 'pypi-python_dateutil')
 
     def test_binary_in_path(self):
         """

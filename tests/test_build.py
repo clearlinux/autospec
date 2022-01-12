@@ -174,12 +174,12 @@ class TestBuildpattern(unittest.TestCase):
         reqs = buildreq.Requirements("")
         pkg = build.Build()
         pkg.failed_pattern('line to test for failure: testpkg.py',
-                             conf,
-                             reqs,
-                             r'(testpkg)',
-                             0,  # verbose=0
-                             buildtool='pypi')
-        self.assertIn('testpkg-python', reqs.buildreqs)
+                           conf,
+                           reqs,
+                           r'(testpkg)',
+                           0,  # verbose=0
+                           buildtool='pypi')
+        self.assertIn('pypi(testpkg)', reqs.buildreqs)
         self.assertEqual(pkg.must_restart, 1)
 
     def test_failed_pattern_ruby(self):
