@@ -169,9 +169,17 @@ def scan_for_licenses(srcdir, config, pkg_name):
             if name.lower() in targets or target_pat.search(name.lower()):
                 license_from_copying_hash(os.path.join(dirpath, name),
                                           srcdir, config, pkg_name)
-            # Also look for files that end with .txt and reside in a LICENSES
-            # directory. This is a convention that KDE is adopting.
-            if os.path.basename(dirpath) == "LICENSES" and re.search(r'\.txt$', name):
+            # Also search for license texts in project trees that are
+            # REUSE-compliant, or are in process of adopting this standard (for
+            # example, KDE ecosystem packages). See https://reuse.software for
+            # details. At a basic level, this layout requires a toplevel
+            # `LICENSES` directory that includes separate files (with .txt
+            # extension) for each license text that covers source code, data,
+            # etc elsewhere in the project tree. A variant layout is currently
+            # seen in the DPDK 20.11.3 tree, where the `LICENSES` directory is
+            # named `license` instead.
+            dirbase = os.path.basename(dirpath)
+            if re.search(r'^(LICENSES|license)$', dirbase) and re.search(r'\.txt$', name):
                 license_from_copying_hash(os.path.join(dirpath, name),
                                           srcdir, config, pkg_name)
 
