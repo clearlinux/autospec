@@ -28,12 +28,17 @@ import util
 tests_config = ""
 
 
-def check_regression(pkg_dir, skip_tests):
+def check_regression(pkg_dir, skip_tests, test_round):
     """Check the build log for test regressions using the count module."""
     if skip_tests:
         return
 
-    result = count.parse_log(os.path.join(pkg_dir, "results/build.log"))
+    log_path = os.path.join(pkg_dir, 'results', 'build.log')
+    result = count.parse_log(log_path)
+    if len(result) == 0:
+        log_path = os.path.join(pkg_dir, 'results', f"round{test_round}-build.log")
+        result = count.parse_log(log_path)
+
     titles = [('Package', 'package name', 1),
               ('Total', 'total tests', 1),
               ('Pass', 'total passing', 1),

@@ -290,8 +290,6 @@ def package(args, url, name, archives, workingdir):
 
         save_mock_logs(conf.download_path, package.round)
 
-    check.check_regression(conf.download_path, conf.config_opts['skip_tests'])
-
     if package.success == 0:
         conf.create_buildreq_cache(content.version, requirements.buildreqs_cache)
         print_fatal("Build failed, aborting")
@@ -306,6 +304,8 @@ def package(args, url, name, archives, workingdir):
             print("*********************\n")
         except Exception:
             pass
+
+    check.check_regression(conf.download_path, conf.config_opts['skip_tests'], package.round - 1)
 
     examine_abi(conf.download_path, content.name)
     if os.path.exists("/var/lib/rpm"):

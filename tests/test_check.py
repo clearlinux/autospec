@@ -42,7 +42,7 @@ class TestTest(unittest.TestCase):
         m_open = mock_open()
         open_name = 'util.open'
         with patch(open_name, m_open, create=True):
-            check.check_regression('pkgdir', False)
+            check.check_regression('pkgdir', False, -1)
 
         check.count.parse_log = parse_log_backup
 
@@ -65,7 +65,7 @@ class TestTest(unittest.TestCase):
         m_open = mock_open()
         open_name = 'util.open'
         with patch(open_name, m_open, create=True):
-            check.check_regression('pkgdir', False)
+            check.check_regression('pkgdir', False, -1)
 
         check.count.parse_log = parse_log_backup
 
