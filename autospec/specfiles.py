@@ -307,8 +307,8 @@ class Specfile(object):
         self.write_source_installs()
         self.write_service_restart()
         self.write_exclude_deletes()
-        self.write_install_append()
         self.write_elf_move()
+        self.write_install_append()
         # self.write_systemd_units()
 
     def write_scriplets(self):
