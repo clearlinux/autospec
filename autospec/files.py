@@ -374,3 +374,4 @@ class FileManager(object):
         specfile.excludes = self.excludes
         specfile.locales = self.locales
         specfile.file_maps = self.file_maps
+        specfile.setuid = self.setuid

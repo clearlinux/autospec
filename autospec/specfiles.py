@@ -61,6 +61,7 @@ class Specfile(object):
         self.email = ""
         self.extra_cmake = config.extra_cmake + " " + " ".join(requirements.extra_cmake)
         self.extra_cmake_openmpi = config.extra_cmake_openmpi + " " + " ".join(requirements.extra_cmake_openmpi)
+        self.setuid = []
 
     def write_spec(self):
         """Write spec file."""
@@ -809,10 +810,13 @@ class Specfile(object):
 
     def write_elf_move(self):
         """Write out elf-move for alternate build roots."""
+        skips = ""
+        for setuid in self.setuid:
+            skips = f"{skips} --skip-path {setuid}"
         if self.config.config_opts['use_avx2']:
-            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
         if self.config.config_opts['use_avx512']:
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}')
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
 
     def write_exclude_deletes(self):
         """Write out deletes for excluded files."""
