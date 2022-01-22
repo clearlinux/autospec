@@ -308,9 +308,12 @@ class Specfile(object):
         self.write_source_installs()
         self.write_service_restart()
         self.write_exclude_deletes()
-        self.write_elf_move()
         self.write_install_append()
-        # self.write_systemd_units()
+        # elf move is last is copying content already
+        # installed bits to their individual buildroots
+        # maybe need a new install_append_last file
+        # eventually though
+        self.write_elf_move()
 
     def write_scriplets(self):
         """Write post and pre scripts to spec file."""
