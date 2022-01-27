@@ -202,7 +202,13 @@ class FileManager(object):
                 return
 
         if filename in self.setuid:
-            newfn = "%attr(4755, root, root) " + filename
+            if filename in self.attrs:
+                mod = self.attrs[filename][0]
+                u = self.attrs[filename][1]
+                g = self.attrs[filename][2]
+                newfn = "%attr({0},{1},{2}) {3}".format(mod, u, g, filename)
+            else:
+                newfn = "%attr(4755, root, root) " + filename
             self.push_package_file(newfn, "setuid")
             return
 
