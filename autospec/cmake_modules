@@ -3,7 +3,7 @@
 # Format: <cmake modulename>, <pkg name(s)>
 ALSA, alsa-lib-dev
 ASPELL, aspell-dev
-ATen, pytorch-python3
+ATen, pypi(pytorch)
 Alembic, scene-alembic-dev
 Analitza5, analitza-dev
 AppStreamQt, appstream-dev
@@ -24,7 +24,7 @@ CGAL_ImageIOLib, CGAL-dev
 CGAL_Qt5Lib, CGAL-dev
 CLucene, clucene-core
 CURL, curl-dev
-Caffe2, pytorch-python3
+Caffe2, pypi(pytorch)
 Cantor, cantor-dev
 CapnProto, capnproto-dev
 Clang, llvm-dev
@@ -88,7 +88,7 @@ GTest, googletest-dev
 Gcrypt, libgcrypt-dev
 Gettext, gettext-dev
 Git, git
-Gloo, pytorch-python3
+Gloo, pypi(pytorch)
 Gmic, gmic-dev
 GnuTLS, gnutls-dev
 Gnuplot, gnuplot-dev
@@ -472,7 +472,7 @@ Tclsh, tcl
 TelepathyQt5, telepathy-qt-dev
 TelepathyQt5Service, telepathy-qt-dev
 Threads, glibc-dev
-Torch, pytorch-python3
+Torch, pypi(pytorch)
 UnixCommands, bash coreutils gzip
 UsePkg, cmake-data
 VPP, vpp-dev
@@ -537,7 +537,7 @@ msgpack, msgpack-c-dev
 nanoflann, nanoflann-dev
 paraview, ParaView-dev
 pugixml, pugixml-dev
-pybind11, pybind11-python3
+pybind11, pypi(pybind11)
 qt5xdg, libqtxdg-data
 qt5xdgiconloader, libqtxdg-data
 realsense2, librealsense-dev
