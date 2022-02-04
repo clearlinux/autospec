@@ -868,7 +868,7 @@ class Config(object):
 
         self.patches += self.read_conf_file(os.path.join(self.download_path, "series"))
         pfiles = [("%s/%s" % (self.download_path, x.split(" ")[0])) for x in self.patches]
-        cmd = "egrep \"(\+\+\+|\-\-\-).*((Makefile.am)|(aclocal.m4)|(configure.ac|configure.in))\" %s" % " ".join(pfiles)  # noqa: W605
+        cmd = "grep -E \"(\+\+\+|\-\-\-).*((Makefile.am)|(aclocal.m4)|(configure.ac|configure.in))\" %s" % " ".join(pfiles)  # noqa: W605
         if self.patches and call(cmd,
                                  check=False,
                                  stdout=subprocess.DEVNULL,
