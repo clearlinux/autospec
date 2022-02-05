@@ -35,7 +35,7 @@ def check_regression(pkg_dir, skip_tests, test_round):
 
     log_path = os.path.join(pkg_dir, 'results', 'build.log')
     result = count.parse_log(log_path)
-    if len(result) == 0:
+    if len(result) == 0 or result[0:2] == ',0':
         log_path = os.path.join(pkg_dir, 'results', f"round{test_round}-build.log")
         result = count.parse_log(log_path)
 
