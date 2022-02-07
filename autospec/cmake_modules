@@ -298,7 +298,6 @@ OktetaKastenGui, okteta-dev
 Okular5, okular-dev
 OpenAL, openal-soft-dev
 OpenBLAS, openblas-dev
-OpenCL, beignet-dev
 OpenCV, opencv-dev
 OpenColorIO, OpenColorIO-data
 OpenEXR, extra-cmake-modules pkgconfig(OpenEXR)
