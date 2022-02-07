@@ -268,6 +268,8 @@ class TestBuildpattern(unittest.TestCase):
         content = "line1\nDEBUG util.py:399:  No matching package to install: 'foobar'\nDEBUG util.py:399:  No matching package to install: 'foobarbaz'\nline 4"
         m_open = mock_open(read_data=content)
         pkg = build.Build()
+        pkg.must_restart = 1
+        pkg.file_restart = 1
 
         result = True
         with patch(open_name, m_open, create=True):
@@ -277,6 +279,7 @@ class TestBuildpattern(unittest.TestCase):
 
         self.assertFalse(result)
         self.assertEqual(pkg.must_restart, 0)
+        self.assertEqual(pkg.file_restart, 0)
 
     def test_parse_buildroot_log_pass(self):
         """
