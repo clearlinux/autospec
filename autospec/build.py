@@ -160,6 +160,7 @@ class Build(object):
         if returncode == 0:
             return True
         self.must_restart = 0
+        self.file_restart = 0
         is_clean = True
         util.call("sync")
         with util.open_auto(filename, "r") as rootlog:
