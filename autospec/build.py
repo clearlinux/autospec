@@ -299,9 +299,10 @@ class Build(object):
             util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
             exit(1)
 
-        is_clean = self.parse_buildroot_log(config.download_path + "/results/root.log", ret)
-        if is_clean:
-            self.parse_build_results(config.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
+        if not self.parse_buildroot_log(config.download_path + "/results/root.log", ret):
+            exit(1)
+
+        self.parse_build_results(config.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
             exit(1)
