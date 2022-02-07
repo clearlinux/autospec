@@ -587,7 +587,7 @@ class Requirements(object):
             if 'pytest' in line:
                 continue
             if clean_line:
-                if self.add_buildreq(f"pypi({clean_line})", packages):
+                if self.add_buildreq(f"pypi({clean_line})"):
                     self.add_requires(f"pypi({clean_line})", packages, override=True, subpkg="python3")
 
     def add_pyproject_requires(self, filename):
