@@ -36,6 +36,18 @@ def is_qmake_pro(f):
     return f.endswith(".pro") and not f.startswith(".")
 
 
+def old_python_module(req):
+    """Check if the req is only for old python versions."""
+    # Format for the line is expected to be:
+    #  'module_name >= x.y.z; python_version<"x.y"'
+    for block in req.split(';'):
+        if 'python_version' in block:
+            loc = block.find('python_version')
+            if '<' in block[loc:]:
+                return True
+    return False
+
+
 def clean_python_req(req):
     """Strip version information from req."""
     if not req:
@@ -45,7 +57,10 @@ def clean_python_req(req):
     ret = req.rstrip("\n\r").strip()
     i = ret.find(";")
     if i >= 0:
-        ret = ret[:i]
+        if old_python_module(ret):
+            return ""
+        else:
+            ret = ret[:i]
     i = ret.find("<")
     if i >= 0:
         ret = ret[:i]
