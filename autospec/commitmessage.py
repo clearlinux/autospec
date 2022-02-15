@@ -186,16 +186,22 @@ def process_git(giturl, oldversion, newversion, name):
     p = run(["git", "-C", "results/" + name, "tag"], stdout=PIPE)
     tags = p.stdout.decode('utf-8').split('\n')
 
+    # Version strings will sometimes have a leading 'v', 'V', or
+    # '<packagename>-' prefix, or possibly a combination of these.
+    regex_template = r'^({}-)?[vV]?{{}}$'.format(re.escape(name))
+
     for t in tags:
         i = t.find(oldversion)
         if i != -1:
             guessed_oldtag = t
-        if t == oldversion or t == "v" + oldversion:
+        pat = regex_template.format(re.escape(oldversion))
+        if re.search(pat, t):
             oldtag = t
         i = t.find(newversion)
         if i != -1:
             guessed_newtag = t
-        if t == newversion or t == "v" + newversion:
+        pat = regex_template.format(re.escape(newversion))
+        if re.search(pat, t):
             newtag = t
 
     if oldtag == "":
