@@ -331,13 +331,13 @@ def parse_log(log, pkgname=''):
             continue
 
         # ========================== 43 passed in 2.90 seconds ===========================
-        match = re.search(r"== ([0-9]+) passed in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) passed in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_pass += convert_int(match.group(1))
             continue
 
         # =============== 1 failed, 407 passed, 10 skipped in 4.71 seconds ===============
-        match = re.search(r"== ([0-9]+) failed, ([0-9]+) passed, ([0-9]+) skipped in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) failed, ([0-9]+) passed, ([0-9]+) skipped in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_pass += convert_int(match.group(2))
             total_fail += convert_int(match.group(1))
@@ -345,25 +345,25 @@ def parse_log(log, pkgname=''):
             continue
 
         # ========================== 1 skipped in 0.79 seconds ===========================
-        match = re.search(r"== ([0-9]+) skipped in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) skipped in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_skip += convert_int(match.group(1))
             continue
 
         # =========================== 3 error in 0.41 seconds ============================
-        match = re.search(r"== ([0-9]+) error in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) error in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_fail += convert_int(match.group(1))
             continue
 
         # ================= 68 passed, 1 pytest-warnings in 0.09 seconds =================
-        match = re.search(r"== ([0-9]+) passed\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) passed\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_pass += convert_int(match.group(1))
             continue
 
         # ===== 21 failed, 73 passed, 5 skipped, 2 pytest-warnings in 34.81 seconds ======
-        match = re.search(r"== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) skipped\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+ seconds ====", line)
+        match = re.search(r"== ([0-9]+) failed\, ([0-9]+) passed\, ([0-9]+) skipped\, [0-9]+ [A-Za-z0-9]+\-warnings? in [0-9\.]+(?:s| seconds) ====", line)
         if match and incheck:
             total_fail += convert_int(match.group(1))
             total_pass += convert_int(match.group(2))
