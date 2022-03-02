@@ -1,6 +1,7 @@
 import copy
 import os
 import unittest
+from collections import OrderedDict
 from unittest.mock import MagicMock, Mock, patch
 import build
 import config
@@ -210,6 +211,22 @@ class TestTarball(unittest.TestCase):
         self.content.name = 'test'
         self.content.set_gcov()
         self.assertEqual(self.content.gcov_file, 'test.gcov')
+
+    def test_set_multi_version_no_ver(self):
+        versions = OrderedDict()
+        self.content.config.parse_config_versions = lambda: versions
+        self.content.config.default_pattern = ""
+        latest = self.content.set_multi_version("")
+        self.assertEqual(latest, "1")
+        self.assertNotEqual(id(self.content.multi_version), id(versions))
+
+    def test_set_multi_version_with_ver(self):
+        versions = OrderedDict()
+        self.content.config.parse_config_versions = lambda: versions
+        self.content.config.default_pattern = ""
+        latest = self.content.set_multi_version("3")
+        self.assertEqual(latest, "3")
+        self.assertNotEqual(id(self.content.multi_version), id(versions))
 
     def test_process_go_archives(self):
         """Test for tarball.process_go_archives method."""

@@ -243,8 +243,9 @@ class Content(object):
         elif not self.multi_version:
             # Fall back to ensure a version is always set
             # (otherwise the last known version will be used)
-            self.multi_version["1"] = ""
+            self.multi_version = {"1": ""}
         latest = sorted(self.multi_version.keys())[-1]
+
         return latest
 
     def name_and_version(self, filemanager):
