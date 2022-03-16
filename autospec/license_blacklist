@@ -25,6 +25,7 @@
 3BSD
 @CPACK_RPM_PACKAGE_LICENSE@
 ALv2
+AND
 APL-2.0
 ASL
 Artistic
@@ -49,7 +50,6 @@ Expat/MIT
 Foundation
 FreeBSD
 GENERAL
-General
 GFDL
 GNU
 GPL
@@ -57,13 +57,14 @@ GPL+
 GPL/BSD
 GPL/BSD/CPL
 GPLv2.1
+General
 IBM
 LESSER
-Lesser
 LGPL
 LGPL+BSD
 LGPL/MIT
 LICENCE
+Lesser
 Licences
 License
 License(2.0)
