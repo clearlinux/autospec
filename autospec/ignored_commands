@@ -209,6 +209,7 @@ gcc option to accept ANSI C
 gcc option to accept ISO C89
 gcc option to accept ISO C99
 gcc option to enable C11 features
+gcc options needed to detect all undeclared functions
 gcc understands --disable-instructions
 gcc understands --omg-optimized
 gcc understands -Wold-style-definition
@@ -216,6 +217,7 @@ gcc understands -Wstrict-prototypes
 gccgo
 gccs -Wall
 gccs -mpower8-vector
+gdiff
 getaddrinfo
 getattrat
 getcwd
@@ -249,7 +251,9 @@ gettimeofday clobbers localtime buffer
 gm4
 gnatbind
 gnatmake
+gnudiff
 gnum4
+gtar
 history.h
 how to do getaddrinfo, freeaddrinfo and getnameinfo... checking for getaddrinfo
 how to run the C preprocessor
@@ -268,6 +272,7 @@ if building for some Win32 platform
 if building the Windows installer
 if character set is EBCDIC
 if compiler needs -Werror to reject unknown flags
+if compiler supports -R
 if compiling for Mac OS X
 if compiling for Win32
 if compiling with clang

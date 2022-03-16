@@ -49,6 +49,7 @@
 -lcups, cups-dev
 -lcurl, curl-dev
 -lcurses, ncurses-dev
+-ledit, libedit-dev
 -lelf, elfutils-dev
 -lev, libev-dev
 -lexpat, expat-dev
@@ -98,6 +99,7 @@
 -lproxy, pacrunner-dev
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
+-lsecret, libsecret-dev
 -lsensors, lm-sensors-dev
 -lsqlite3, sqlite-autoconf-dev
 -lssh, libssh-dev
@@ -106,6 +108,7 @@
 -ltinfo, ncurses-dev
 -ltinfow, ncurses-dev
 -ltirpc, libtirpc-dev
+-ludev, systemd-dev
 -luuid, util-linux-dev
 -lvorbisidec, libvorbis-dev
 -lvulkan, Vulkan-Loader-dev
@@ -177,6 +180,7 @@ Expat XML Parser, expat-dev
 Expat, expat-dev
 ExtUtils::Depends, perl(ExtUtils::Depends)
 ExtUtils::PkgConfig, perl(ExtUtils::PkgConfig)
+FFTW3, fftw-dev
 FLEX, flex
 FcInit in -lfontconfig, pkgconfig(fontconfig)
 FcPatternCreate in -lfontconfig, pkgconfig(fontconfig)
@@ -459,6 +463,7 @@ LensFun, lensfun-dev
 LevelDB, leveldb
 LibArchive, libarchive-dev
 LibAttica, attica-dev
+LibExiv2, pkgconfig(exiv2)
 LibKEduVocDocument, libkeduvocdocument-dev
 LibKWorkspace, plasma-workspace-dev
 LibKrb5, krb5-dev
@@ -529,12 +534,13 @@ Qt5Core, qtbase-dev
 Qt5Declarative, qtdeclarative-dev
 Qt5Help, qttools-dev
 Qt5LinguistTools, qttools-dev
+Qt5Multimedia, qtmultimedia-dev
 Qt5Network, qtbase-dev
 Qt5QuickControls2, pkgconfig(Qt5QuickControls2)
 Qt5QuickTemplates2, pkgconfig(Qt5QuickTemplates2)
 Qt5QuickTest, pkgconfig(Qt5QuickTest)
 Qt5Script, qtscript-dev
-Qt5SerialPort, qt5serialport-dev
+Qt5SerialPort, qtserialport-dev
 Qt5Svg, qtsvg-dev
 Qt5WebEngine, qtwebengine-dev
 Qt5WebEngineWidgets, qtwebengine-dev
@@ -552,6 +558,7 @@ SFML, SFML-dev
 SLANG, slang-dev
 SNDFILE, libsndfile-dev
 SQLAlchemy, SQLAlchemy
+SQLite3, sqlite-autoconf-dev
 SVG, librsvg-dev
 SYSTEMD, systemd-dev
 Samplerate, libsamplerate-dev
@@ -641,6 +648,7 @@ XpmCreatePixmapFromData in -lXpm, libXpm-dev
 XpmReadFileToXpmImage in -lXpm, pkgconfig(xpm)
 XvQueryExtension in -lXv, libXv-dev
 ZLIB, zlib-dev
+ZSTD, zstd-dev
 Zstd, zstd-dev
 _XdmcpAuthDoIt in -lXdmcp, libXdmcp-dev
 __gmpz_add in -lgmp, gmp-dev
@@ -981,6 +989,7 @@ libassuan-config, libassuan-dev
 libcanberra-gtk, libcanberra-dev
 libcanberra-gtk3, libcanberra-dev
 libcap, libcap-dev
+libcryptsetup, cryptsetup-dev
 libcurl is usable, curl-dev
 libcurl, curl-dev
 libdazzle-1.0, libdazzle-dev
@@ -1037,6 +1046,7 @@ libudev.h, systemd-dev
 libunistring, libunistring-dev
 libusb-1.0, libusb-dev
 libusb-1.0/libusb.h, libusb-dev
+libuv, pkgconfig(libuv)
 libv4l2, pkgconfig(libv4l2)
 libva, libva-dev
 libwacom, libwacom-dev
@@ -1189,7 +1199,9 @@ popt.h, popt-dev
 poptConfigFileToString in -lpopt, popt-dev
 poptStrippedArgv, popt-dev
 potrace, potrace
+prcpucfg.h, nspr-dev
 prefix by checking for jags, JAGS-dev
+prerror.h, nspr-dev
 prettytable, prettytable
 proj_api.h, proj-dev
 protoc, protobuf-dev
@@ -1325,6 +1337,7 @@ udisks2, udisks2-dev
 udunits2.h, udunits-dev
 uic, qtbase-dev
 ukpostcodeparser, UkPostcodeParser
+unistr.h, libunistring-dev
 unittest, unittest2
 unittest2, unittest2
 unzip, unzip
@@ -1335,6 +1348,7 @@ uuid.h, util-linux-dev
 uuid/uuid.h, pkgconfig(uuid)
 uuid/uuid.h, util-linux-dev
 uuid_generate, util-linux-dev
+uuidgen, util-linux
 v8.h, nodejs-dev
 vala, vala
 valac, vala
@@ -1345,6 +1359,7 @@ valgrind/valgrind.h, valgrind
 vapigen, vala
 vdpau, libvdpau-dev
 vim, vim
+virtualenv, virtualenv
 voluptuous, voluptuous
 vorbis/codec.h, libvorbis-dev
 vorbis/vorbisenc.h, libvorbis-dev
@@ -1361,6 +1376,7 @@ which, which
 with Java, openjdk-dev
 wpa_supplicant, wpa_supplicant
 wx-config, wxGTK-dev
+wxWidgets, wxWidgets-dev
 x11, pkgconfig(x11)
 xauth, xauth
 xbkcomp, xkbcomp
