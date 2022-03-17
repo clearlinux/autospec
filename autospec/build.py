@@ -300,7 +300,7 @@ class Build(object):
             exit(1)
 
         if not self.parse_buildroot_log(config.download_path + "/results/root.log", ret):
-            exit(1)
+            return
 
         self.parse_build_results(config.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
         if filemanager.has_banned:
