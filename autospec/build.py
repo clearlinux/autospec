@@ -91,6 +91,8 @@ class Build(object):
         self.file_restart = 0
         self.uniqueext = ''
         self.warned_about = set()
+        self.patch_name_line = re.compile(r'^Patch #[0-9]+ \((.*)\):$')
+        self.patch_fail_line = re.compile(r'^Skipping patch.$')
 
     def simple_pattern_pkgconfig(self, line, pattern, pkgconfig, conf32, requirements):
         """Check for pkgconfig patterns and restart build as needed."""
@@ -179,12 +181,18 @@ class Build(object):
         self.must_restart = 0
         self.file_restart = 0
         infiles = 0
+        patch_name = ""
 
         # Flush the build-log to disk, before reading it
         util.call("sync")
         with util.open_auto(filename, "r") as buildlog:
             loglines = buildlog.readlines()
         for line in loglines:
+            if patch_name_match := self.patch_name_line.search(line):
+                patch_name = patch_name_match.groups()[0]
+            if patch_name:
+                if self.patch_fail_line.search(line):
+                    self.must_restart += config.remove_backport_patch(patch_name)
             for pat in config.pkgconfig_pats:
                 self.simple_pattern_pkgconfig(line, *pat, config.config_opts.get('32bit'), requirements)
 
