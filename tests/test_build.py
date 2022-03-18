@@ -329,6 +329,40 @@ class TestBuildpattern(unittest.TestCase):
 
         self.assertTrue(result)
 
+    def test_parse_build_results_patch(self):
+        """
+        Test parse_build_results with a test log indicating failure due to a
+        a backport patch no longer applying
+        """
+        def mock_util_call(cmd):
+            del cmd
+
+        def mock_conf_remove_backport_patch(patch):
+            del patch
+            return 1
+
+        conf = config.Config('')
+        conf.setup_patterns()
+        conf.remove_backport_patch = mock_conf_remove_backport_patch
+        conf.patches = ['backport-test.patch']
+        reqs = buildreq.Requirements("")
+        tcontent = tarball.Content("", "", "", [], conf, "/")
+        call_backup = build.util.call
+        build.util.call = mock_util_call
+        pkg = build.Build()
+        fm = files.FileManager(conf, pkg)
+
+        open_name = 'build.util.open_auto'
+        content = 'line 1\nPatch #1 (backport-test.patch):\nSkipping patch.'
+        m_open = mock_open(read_data=content)
+
+        with patch(open_name, m_open, create=True):
+            pkg.parse_build_results('testname', 0, fm, conf, reqs, tcontent)
+
+        build.util.call = call_backup
+
+        self.assertEqual(pkg.must_restart, 1)
+
     def test_parse_build_results_pkgconfig(self):
         """
         Test parse_build_results with a test log indicating failure due to a

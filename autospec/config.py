@@ -527,6 +527,11 @@ class Config(object):
             for k in keys:
                 self.transforms.pop(k)
 
+    def write_file(self, path, content):
+        """Write the conf file name's content."""
+        with open(path, 'w') as conffile:
+            conffile.writelines(content)
+
     def read_file(self, path, track=True):
         """Read full file at path.
 
@@ -692,6 +697,21 @@ class Config(object):
             return
 
         write_out(filename, wrapper.fill(description) + "\n")
+
+    def remove_backport_patch(self, patch_name):
+        """Remove backport patch from patch set."""
+        if not patch_name.startswith('backport-'):
+            return 0
+        series_file = os.path.join(self.download_path, 'series')
+        series_content = self.read_file(series_file)
+        new_content = []
+        for line in series_content:
+            if line.strip() == patch_name:
+                continue
+            new_content.append(line)
+        self.write_file(series_file, new_content)
+        self.patches.remove(patch_name)
+        return 1
 
     def parse_config_files(self, bump, filemanager, version, requirements):
         """Parse the various configuration files that may exist in the package directory."""
