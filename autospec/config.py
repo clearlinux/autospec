@@ -759,7 +759,7 @@ class Config(object):
             print("Warning: Set [autospec][license_show] uri for license link check support")
         if not self.yum_conf:
             print("Warning: Set [autospec][yum_conf] path to yum.conf file for whatrequires validation")
-            self.yum_conf = os.path.join(os.path.dirname(self.config_file), "image-creator/yum.conf")
+            self.yum_conf = os.path.join(os.path.dirname(self.config_file), "dnf.conf")
 
         if packages_file:
             self.os_packages = set(self.read_conf_file(packages_file, track=False))
