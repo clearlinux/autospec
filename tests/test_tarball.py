@@ -130,31 +130,40 @@ def source_test_generator(url, destination, path, content, src_type, prefix, sub
     return generator
 
 
-def name_and_version_test_generator(url, name, version, state):
+def name_and_version_test_generator(url, name, version):
     """Create test for tarball.name_and_version method."""
     def generator(self):
         """Test template."""
         conf = config.Config('/download/path')
         conf.parse_config_versions = Mock(return_value={})
-        name_arg = ""
-        version_arg = ""
-        if state == 1 or state == 3:
-            name_arg = f"state.{name}"
-        if state == 2 or state == 3:
-            version_arg = f"state.{version}"
-        content = tarball.Content(url, name_arg, version_arg, [], conf, '/tmp')
-        content.config = conf
-        pkg = build.Build()
-        mgr = files.FileManager(conf, pkg)
-        content.name_and_version(mgr)
-        name_cmp = name
-        version_cmp = version
-        if state == 1 or state == 3:
-            name_cmp = name_arg
-        if state == 2 or state == 3:
-            version_cmp = version_arg
-        self.assertEqual(name_cmp, content.name)
-        self.assertEqual(version_cmp, content.version)
+        # Test four different name/version states for tarball.Content, each in
+        # a subtest. Test failures will print these state numbers for easy
+        # identification:
+        # 0 - no state
+        # 1 - name only
+        # 2 - version only
+        # 3 - name and version
+        for state in range(4):
+            with self.subTest(state=state):
+                name_arg = ""
+                version_arg = ""
+                if state == 1 or state == 3:
+                    name_arg = f"state.{name}"
+                if state == 2 or state == 3:
+                    version_arg = f"state.{version}"
+                content = tarball.Content(url, name_arg, version_arg, [], conf, '/tmp')
+                content.config = conf
+                pkg = build.Build()
+                mgr = files.FileManager(conf, pkg)
+                content.name_and_version(mgr)
+                name_cmp = name
+                version_cmp = version
+                if state == 1 or state == 3:
+                    name_cmp = name_arg
+                if state == 2 or state == 3:
+                    version_cmp = version_arg
+                self.assertEqual(name_cmp, content.name)
+                self.assertEqual(version_cmp, content.version)
         # redo without args and verify giturl is set correctly
         content.name = ""
         content.version = ""
@@ -175,20 +184,13 @@ def create_dynamic_tests():
 
     # Create tests for tarball.name_and_version method.
     with open('tests/packageurls', 'r') as pkgurls:
-        # add count to test if content state is used
-        # 0 - no state
-        # 1 - name only
-        # 2 - version only
-        # 3 - name and version
-        c = 0
         for urlline in pkgurls.read().split('\n'):
             if not urlline or urlline.startswith('#'):
                 continue
             (url, name, version) = urlline.split(',')
             test_name = 'test_name_ver_{}'.format(url)
-            test = name_and_version_test_generator(url, name, version, c)
+            test = name_and_version_test_generator(url, name, version)
             setattr(TestTarball, test_name, test)
-            c = (c + 1) % 4
 
 
 class TestTarball(unittest.TestCase):
