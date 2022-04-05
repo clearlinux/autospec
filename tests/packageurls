@@ -520,6 +520,7 @@ https://pypi.python.org/packages/source/l/ldappool/ldappool-1.0.tar.gz,ldappool,
 https://sourceforge.net/projects/lensfun/files/0.3.2/lensfun-0.3.2.tar.gz,lensfun,0.3.2
 http://www.greenwoodsoftware.com/less/less-520.tar.gz,less,520
 https://github.com/google/leveldb/archive/v1.20.tar.gz,leveldb,1.20
+https://gitlab.com/accounts-sso/libaccounts-qt/-/archive/VERSION_1.16/libaccounts-qt-VERSION_1.16.tar.gz,libaccounts-qt,1.16
 https://fedorahosted.org/releases/l/i/libaio/libaio-0.3.110.tar.gz,libaio,0.3.110
 http://www.libarchive.org/downloads/libarchive-3.3.1.tar.gz,libarchive,3.3.1
 https://github.com/libarchive/libarchive/releases/download/v3.4.2/libarchive-3.4.2.tar.xz,libarchive,3.4.2
@@ -1630,6 +1631,7 @@ http://freedesktop.org/~hadess/shared-mime-info-1.9.tar.xz,shared-mime-info,1.9
 ftp://ftp.gnu.org/gnu/sharutils/sharutils-4.15.2.tar.xz,sharutils,4.15.2
 https://github.com/clearcontainers/shim/archive/3.0.2.tar.gz,shim,3.0.2
 http://pkgs.fedoraproject.org/repo/pkgs/siege/siege-2.78.tar.gz/e165dcab18ae27026f09c2b23dcca322/siege-2.78.tar.gz,siege,2.78
+https://gitlab.com/accounts-sso/signond/-/archive/VERSION_8.61/signond-VERSION_8.61.tar.gz,signond,8.61
 http://pypi.debian.net/simplegeneric/simplegeneric-0.8.1.zip,simplegeneric,0.8.1
 https://github.com/simplejson/simplejson/archive/v3.11.1.tar.gz,simplejson,3.11.1
 http://pypi.debian.net/six/six-1.11.0.tar.gz,six,1.11.0
