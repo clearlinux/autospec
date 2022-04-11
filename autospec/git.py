@@ -29,7 +29,7 @@ from util import call, write_out
 def commit_to_git(config, name, success):
     """Update package's git tree for autospec managed changes."""
     path = config.download_path
-    call("git init", stdout=subprocess.DEVNULL, cwd=path)
+    call("git init -b main", stdout=subprocess.DEVNULL, cwd=path)
 
     # This config is used for setting the remote URI, so it is optional.
     if config.git_uri:
