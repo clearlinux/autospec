@@ -782,7 +782,7 @@ dnsmasq, dnsmasq
 docbook manpages stylesheet, docbook-xml
 docbook2html, docbook-utils
 docbook2man, docbook-utils
-docutils, docutils
+docutils, pypi-docutils
 dot, graphviz
 doxygen, doxygen
 dummy main to link with Fortran 77 libraries, gfortran
@@ -1261,7 +1261,7 @@ requests, pypi-requests
 rest-0.7, rest-dev
 retrying, retrying
 rpm, pkgconfig(rpm)
-rst2man, docutils
+rst2man, pypi-docutils
 rsvg-convert, librsvg
 ruby, ruby
 runtest, dejagnu
