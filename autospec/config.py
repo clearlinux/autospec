@@ -29,7 +29,7 @@ from collections import OrderedDict
 
 import check
 import license
-from util import call, print_warning, write_out
+from util import call, print_info, print_warning, write_out
 from util import open_auto
 
 
@@ -702,6 +702,8 @@ class Config(object):
         """Remove backport patch from patch set."""
         if not patch_name.startswith('backport-'):
             return 0
+        if patch_name not in self.patches:
+            return 0
         series_file = os.path.join(self.download_path, 'series')
         series_content = self.read_file(series_file)
         new_content = []
@@ -711,6 +713,7 @@ class Config(object):
             new_content.append(line)
         self.write_file(series_file, new_content)
         self.patches.remove(patch_name)
+        print_info(f'Removed patch: {patch_name}')
         return 1
 
     def parse_config_files(self, bump, filemanager, version, requirements):
