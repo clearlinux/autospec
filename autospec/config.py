@@ -874,6 +874,7 @@ class Config(object):
         content = self.read_conf_file(os.path.join(self.download_path, "excludes"))
         for exclude in content:
             print("%%exclude for: %s." % exclude)
+        filemanager.manual_excludes += content
         filemanager.excludes += content
 
         content = self.read_conf_file(os.path.join(self.download_path, "setuid"))

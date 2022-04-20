@@ -37,6 +37,7 @@ class FileManager(object):
         self.files = set()  # global file set to weed out dupes
         self.files_blacklist = set()
         self.excludes = []
+        self.manual_excludes = []
         self.file_maps = {}  # Filename-to-package mapping
         self.setuid = []
         self.attrs = {}
@@ -110,7 +111,7 @@ class FileManager(object):
         """Search for pattern in filename.
 
         Attempt to find pattern in filename, if pattern matches push package file.
-        If that file is also in the excludes list, prepend "%exclude " before pushing the filename.
+        If that file is also in the excludes list, don't push the file.
         Returns True if a file was pushed, False otherwise.
         """
         if not replacement:
