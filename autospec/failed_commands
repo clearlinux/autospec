@@ -147,7 +147,7 @@ CURL, curl-dev
 CU_initialize_registry in -lcunit, CUnit-dev
 CUnit/CUnit.h, CUnit-dev
 Canberra, libcanberra-dev
-CommonMark, commonmark
+CommonMark, pypi-commonmark
 Curses, ncurses-dev
 D-Bus .pc file, dbus-dev
 DBI, perl(Bundle::DBI)
@@ -291,7 +291,7 @@ HSPELL, hunspell-dev
 ICU, icu4c-dev
 IDN, libidn-dev
 IMAGEMAGICK, ImageMagick-dev
-IPython, ipython
+IPython, pypi-ipython
 IT_PROG_INTLTOOL, intltool-dev
 IVORBIS, libvorbis-dev
 IceConnectionNumber in -lICE, pkgconfig(ice)
@@ -483,7 +483,7 @@ NETTLE, nettle-dev
 NUMA, numactl-dev
 Nepomuk, nepomuk-core-dev
 NetworkManager, NetworkManager-dev
-NumPy, numpy
+NumPy, pypi-numpy
 Numa, numactl-dev
 OPENEXR, openexr-dev
 Octave, octave-dev
@@ -512,10 +512,10 @@ Phonon4Qt5, phonon-dev
 PolkitQt5-1, polkit-qt-dev
 Poppler, poppler-dev
 PopplerQt4, poppler-dev
-PrettyTable, prettytable
+PrettyTable, pypi-prettytable
 PulseAudio, pulseaudio-dev
 PyEnchant, pyenchant
-PyJWT, PyJWT
+PyJWT, pypi-pyjwt
 PyQt5, PyQt5
 PyYAML, PyYAML
 Python, python3-dev
@@ -551,13 +551,13 @@ Qt5XmlPatterns, qtxmlpatterns-dev
 R, R
 READLINE, readline-dev
 RSVG, librsvg-dev
-Routes, Routes
+Routes, pypi-routes
 SDL, pkgconfig(sdl)
 SDL2/SDL.h, SDL2-dev
 SFML, SFML-dev
 SLANG, slang-dev
 SNDFILE, libsndfile-dev
-SQLAlchemy, SQLAlchemy
+SQLAlchemy, pypi-sqlalchemy
 SQLite3, sqlite-autoconf-dev
 SVG, librsvg-dev
 SYSTEMD, systemd-dev
@@ -592,7 +592,7 @@ WEBPMUX, libwebp-dev
 WSME, WSME
 Wayland, wayland-dev
 WaylandScanner, wayland
-WebOb, WebOb
+WebOb, pypi-webob
 X, pkgconfig(x11)
 X11, pkgconfig(x11)
 X11/Intrinsic.h, pkgconfig(xt)
@@ -671,7 +671,7 @@ acl_get_file in -lacl, acl-dev
 acl_init, acl-dev
 acl_to_short_text, acl-dev
 aio_fork in dynamic library aio, libaio-dev
-aiohttp, aiohttp
+aiohttp, pypi-aiohttp
 akonadi/private/imapparser_p.h, akonadi-dev
 alsa >= 1.0.18, alsa-dev
 alsa, pkgconfig(alsa)
@@ -690,7 +690,7 @@ asn1Parser, libtasn1-dev
 aspell headers and libraries, aspell-dev
 aspell, aspell-dev
 aspell.h, aspell-dev
-astral, astral
+astral, pypi-astral
 atomic_ops.h, libatomic_ops-dev
 atspi-2, at-spi2-core-dev
 attr/libattr.h, attr-dev
@@ -703,7 +703,7 @@ autoreconf, autoconf
 bash-completion, bash-completion-dev
 bc, bc
 bison, bison
-blinker, blinker
+blinker, pypi-blinker
 blkid/blkid.h, util-linux-dev
 bluetooth/bluetooth.h, bluez-dev
 boost shared ptr, boost-dev
@@ -716,7 +716,7 @@ boost/cstdint.hpp, boost-dev
 boost/intrusive_ptr.hpp, boost-dev
 boost/spirit/include/qi.hpp, boost-dev
 boost/unordered_map.hpp, boost-dev
-bs4, beautifulsoup4
+bs4, pypi-beautifulsoup4
 building gtk3 engine, gtk3-dev
 byacc, bison
 bzlib.h, bzip2-dev
@@ -756,7 +756,7 @@ curl.h, curl-dev
 curl/curl.h, curl-dev
 curl_easy_init in -lcurl, curl-dev
 curses.h, pkgconfig(ncurses)
-cython, Cython
+cython, pypi-cython
 cython.py, Cython-dev
 db.h, db-dev
 dbus, dbus-dev
@@ -768,7 +768,7 @@ dbusmenu-qt5, libdbusmenu-qt-dev
 dconf, dconf-dev
 ddt, ddt
 debtcollector, debtcollector
-decorator, decorator
+decorator, pypi-decorator
 deflate, zlib-dev
 deflateBound in -lz, zlib-dev
 designer, qttools-dev
@@ -776,7 +776,7 @@ desktop-file-install, desktop-file-utils
 desktop-file-validate, desktop-file-utils
 dialog, dialog
 diff, diffutils
-django, Django
+django, pypi-django
 dm-tool, lightdm
 dnsmasq, dnsmasq
 docbook manpages stylesheet, docbook-xml
@@ -804,7 +804,7 @@ exo-1, pkgconfig(exo-1)
 expat, expat-dev
 expat-config, expat-dev
 expat.h, expat-dev
-extras, extras
+extras, pypi-extras
 ez_setup, pypi-setuptools
 ffi.h, libffi-dev
 ffi_call, libffi-dev
@@ -846,7 +846,7 @@ geocode-glib-1.0, geocode-glib-dev
 geos-config, geos-dev
 get_mempolicy, numactl-dev
 getopt, util-linux
-gevent, gevent
+gevent, pypi-gevent
 gflags, gflags-dev
 gfortran, gfortran
 gi, pygobject
@@ -919,7 +919,7 @@ hacking, hacking
 hdf5.h, hdf5-dev
 header readline/readline.h, readline-dev
 help2man, help2man
-hypothesis, hypothesis
+hypothesis, pypi-hypothesis
 ibus-1.0, ibus-dev
 ibverbs, libibverbs-dev
 ice, libICE-dev
@@ -934,7 +934,7 @@ install-info, texinfo
 intltool-merge, intltool
 intltool-update, intltool
 intltool.m4, intltool-dev
-ipython, ipython
+ipython, pypi-ipython
 iso-codes, pkgconfig(iso-codes)
 itstool, itstool
 jade, openjade-dev
@@ -948,10 +948,10 @@ jpeglib.h, libjpeg-turbo-dev
 jquery_ui, XStatic-jquery-ui
 json-glib-1.0, json-glib-dev
 json/json.h, jsoncpp-dev
-jsonpatch, jsonpatch
-jsonpointer, jsonpointer
+jsonpatch, pypi-jsonpatch
+jsonpointer, pypi-jsonpointer
 jsonrpc-glib-1.0, jsonrpc-glib-dev
-jsonschema, jsonschema
+jsonschema, pypi-jsonschema
 kde4-config, kdelibs-dev
 key_serial_t, keyutils-dev
 keyctl_read in -lkeyutils, keyutils-dev
@@ -1067,7 +1067,7 @@ ltdl.h, libtool-dev
 lua, lua-dev
 lupdate, qttools-dev
 lvm2app.h, LVM2-dev
-lxml, lxml
+lxml, pypi-lxml
 lxqt, liblxqt-dev
 lxqt-build-tools, lxqt-build-tools
 lxqt-globalkeys, lxqt-globalkeys-dev
@@ -1113,21 +1113,21 @@ ncursesw, ncurses-dev
 ncursesw.h, ncurses-dev
 ncursesw/curses.h, ncurses-dev
 neon-config, neon-dev
-netifaces, netifaces
+netifaces, pypi-netifaces
 nettle/md5.h, nettle-dev nettle-lib
 new_aspell_speller in -laspell, aspell-dev
 nfsidmap.h, libnfsidmap-dev
 nghttp, nghttp2-dev
 nl_handle_alloc, libnl-dev
 node, nodejs
-nose, nose
+nose, pypi-nose
 nosexcover, nosexcover
 notmuch.h, notmuch-dev
 nroff, groff
 nspr.h, nspr-dev
 nsupdate, bind-utils
 numa.h, numactl-dev
-numpy, numpy
+numpy, pypi-numpy
 oauth, liboauth-dev
 olsotest, oslotest
 oniguruma.h, onig-dev
@@ -1164,10 +1164,10 @@ pam/pam_modules.h, Linux-PAM-dev
 pam_authenticate, Linux-PAM-dev
 pandoc, pandoc
 pango/pangocairo.h, pkgconfig(pangocairo)
-paramiko, paramiko
+paramiko, pypi-paramiko
 parted, parted-dev
 patch, patch
-pbr, pbr
+pbr, pypi-pbr
 pcap-config, libpcap-dev
 pcap.h, libpcap-dev
 pcap_compile in -lpcap, libpcap-dev
@@ -1177,16 +1177,16 @@ pcre-config, pcre-dev
 pcre.h, pcre-dev
 pcre2.h, pcre2-dev
 pcre_exec, pcre-dev
-pecan, pecan
-pep8, pep8
+pecan, pypi-pecan
+pep8, pypi-pep8
 perl module URI::URL, URI
 perl, perl
 perl5, perl
-pexpect, pexpect
+pexpect, pypi-pexpect
 pg_config, postgresql-dev
 php, php
 php-config7, php
-pip, pip
+pip, pypi-pip
 pixeltool, qttools-dev
 pixman, pkgconfig(pixman-1)
 pkg-config, pkg-config
@@ -1202,7 +1202,7 @@ potrace, potrace
 prcpucfg.h, nspr-dev
 prefix by checking for jags, JAGS-dev
 prerror.h, nspr-dev
-prettytable, prettytable
+prettytable, pypi-prettytable
 proj_api.h, proj-dev
 protoc, protobuf-dev
 ps, procps-ng
@@ -1274,7 +1274,7 @@ scrollkeeper-config, rarian
 scrollkeeper-preinstall, rarian
 sdl2, SDL2-dev
 security/pam_appl.h, Linux-PAM-dev
-selenium, selenium
+selenium, pypi-selenium
 setcap, libcap-dev
 setterm, util-linux
 setup, pypi-setuptools
@@ -1290,7 +1290,7 @@ sndfile.h, libsndfile-dev
 sox.h, sox-dev
 sphinx, pypi-sphinx
 sphinx-build, pypi-sphinx
-sqlalchemy, SQLAlchemy
+sqlalchemy, pypi-sqlalchemy
 sqlext.h usability, unixODBC-dev
 sqlext.h, unixODBC-dev
 sqlite.h, sqlite-autoconf-dev
@@ -1320,7 +1320,7 @@ termcap.h, ncurses-dev
 testrepository, testrepository
 tests, testscenarios
 testscenarios, testscenarios
-testtools, testtools
+testtools, pypi-testtools
 tgetent, ncurses-dev
 the MariaDB/MySQL Connector extension, mariadb-dev
 tiff.h, tiff-dev
@@ -1331,7 +1331,7 @@ tk.h, tk-dev
 tkConfig.sh, tk-dev
 to use gnutls, gnutls-dev
 tooz, tooz
-tox, tox
+tox, pypi-tox
 udev_new in -ludev, systemd-dev
 udisks2, udisks2-dev
 udunits2.h, udunits-dev
@@ -1359,17 +1359,17 @@ valgrind/valgrind.h, valgrind
 vapigen, vala
 vdpau, libvdpau-dev
 vim, vim
-virtualenv, virtualenv
-voluptuous, voluptuous
+virtualenv, pypi-virtualenv
+voluptuous, pypi-voluptuous
 vorbis/codec.h, libvorbis-dev
 vorbis/vorbisenc.h, libvorbis-dev
 vorbis/vorbisfile.h, libvorbis-dev
 vte-2.91, vte-dev
 vulkan/vulkan.h, Vulkan-Headers-dev
 webkit2gtk-4.0, webkitgtk-dev
-webob, WebOb
+webob, pypi-webob
 webp/decode.h, libwebp-dev
-wheel, wheel
+wheel, pypi-wheel
 wheter libtiff works, tiff-dev
 whether your system's regexp library is broken, readline-dev
 which, which
@@ -1406,7 +1406,7 @@ yajl/yajl_tree.h, yajl-dev
 yaml, PyYAML
 yaml-0.1, yaml-dev
 yaml-cpp, yaml-cpp-dev
-yarg, yarg
+yarg, pypi-yarg
 yasm, yasm
 yytext is a pointer, flex
 zenity, zenity
