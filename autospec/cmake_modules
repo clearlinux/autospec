@@ -29,7 +29,7 @@ Cantor, cantor-dev
 CapnProto, capnproto-dev
 Clang, llvm-dev
 Codec2, codec2-dev
-CommonCMake, bro-data
+CommonCMake, zeek-data
 Cups, cups-dev
 Curses, ncurses-dev
 DBus1, dbus-dev
@@ -440,7 +440,7 @@ QtWaylandScanner, extra-cmake-modules qtwayland-dev
 QuaZip-Qt5, quazip-dev
 QuaZip5, quazip-dev
 RdKafka, librdkafka-dev
-Rinutils, rinutils
+Rinutils, rinutils-dev
 Ruby, ruby
 SDL, SDL-dev
 SDL_image, SDL_image-dev
@@ -448,7 +448,7 @@ SDL_mixer, SDL_mixer-dev
 SDL_net, SDL_net-dev
 SDL_ttf, SDL_ttf-dev
 SFML, SFML-dev
-SPIRV-Headers, SPIRV-Headers-dev
+SPIRV-Headers, llvm-data
 SPIRV-Tools, SPIRV-Tools-dev
 SPIRV-Tools-link, SPIRV-Tools-dev
 SPIRV-Tools-opt, SPIRV-Tools-dev
@@ -497,7 +497,7 @@ assimp, assimp-dev
 bash-completion, bash-completion-data
 cJSON, cJSON-dev
 catkin, catkin-data
-cereal, cereal-data
+cereal, cereal-dev
 clFFT, clFFT-dev
 cmocka, cmocka-dev
 codec2, codec2-dev
@@ -511,7 +511,7 @@ double-conversion, double-conversion-dev
 eclipse-paho-mqtt-c, paho.mqtt.c-dev
 embree, embree-dev
 exiv2, exiv2-dev
-fann, fann
+fann, fann-dev
 fm-qt, libfm-qt-data
 fmt, fmt-dev
 gflags, gflags-dev
