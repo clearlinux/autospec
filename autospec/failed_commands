@@ -1099,7 +1099,7 @@ mpfr.h, mpfr-dev
 mpg123.h, mpg123-dev
 msgfmt, gettext
 msgmerge, gettext
-msgpack, msgpack-python
+msgpack, pypi(msgpack)
 mutter-clutter-4, mutter-dev
 mysql_config, mariadb-dev
 nasm, nasm-bin
@@ -1179,7 +1179,7 @@ pcre2.h, pcre2-dev
 pcre_exec, pcre-dev
 pecan, pypi-pecan
 pep8, pypi-pep8
-perl module URI::URL, URI
+perl module URI::URL, perl-URI
 perl, perl
 perl5, perl
 pexpect, pypi-pexpect
