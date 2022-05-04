@@ -73,11 +73,11 @@ pats = [
     # swift
     ('========= 1 failed, 1287 passed, 1 warnings, 62 error in 35.77 seconds =========',
      [1351, 1287, 64, 0, 0, 0, 0, 0, 0, 0]),
-    (' 487 failed, 4114 passed, 32 skipped, 1 pytest-warnings, 34 error in 222.82 seconds',
+    ('===== 487 failed, 4114 passed, 32 skipped, 1 pytest-warnings, 34 error in 222.82 seconds =====',
      [4667, 4114, 521, 0, 32, 0, 0, 0, 0, 0]),
     # tox
     ('======== 199 passed, 38 skipped, 1 xpassed, 1 warnings in 5.76 seconds =========',
-     [239, 199, 1, 1, 38, 0, 0, 0, 0, 0]),
+     [239, 200, 1, 0, 38, 0, 0, 0, 0, 0]),
     # augeas
     ('# TOTAL: 215\n'
      '# PASS:  212\n'
@@ -316,7 +316,7 @@ pats = [
     ('dfa with non-print regex chars ... pass',
      [0, 0, 0, 0, 0, 1, 1, 0, 0, 0]),
     # keyring
-    ('76 passed, 62 skipped, 50 xfailed, 14 xpassed, 2 warnings, 32 error in 2.13 seconds',
+    ('==== 76 passed, 62 skipped, 50 xfailed, 14 xpassed, 2 warnings, 32 error in 2.13 seconds ====',
      [236, 90, 34, 50, 62, 0, 0, 0, 0, 0]),
     # openblas
     ('  ----- PASS -----',
