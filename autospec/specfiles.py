@@ -239,7 +239,8 @@ class Specfile(object):
         deps["lib"] = ["data", "libexec", "license", "filemap"]
         deps["libexec"] = ["config", "license", "filemap"]
         deps["lib32"] = ["data", "license"]
-        deps["python"] = ["python3", "filemap"]
+        deps["python"] = ["python3"]
+        deps["python3"] = ["filemap"]
         if self.config.config_opts.get('dev_requires_extras'):
             deps["dev"].append("extras")
         if self.config.config_opts.get('openmpi'):
@@ -504,7 +505,11 @@ class Specfile(object):
                                           self.content.tarball_prefix,
                                           destination))
         self.apply_patches()
-        if self.config.default_pattern != 'cmake':
+        if self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
+            self._write_strip("popd")
+        elif self.config.default_pattern != 'cmake':
             if self.config.config_opts['32bit']:
                 self._write_strip("pushd ..")
                 self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
@@ -816,7 +821,7 @@ class Specfile(object):
         skips = ""
         for setuid in self.setuid:
             skips = f"{skips} --skip-path {setuid}"
-        if self.config.config_opts['use_avx2']:
+        if self.config.config_opts['use_avx2'] or self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
             self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
         if self.config.config_opts['use_avx512']:
             self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
@@ -1258,6 +1263,19 @@ class Specfile(object):
         for module in self.config.pypi_overrides:
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+
+        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py . {module}")
+        self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+        self._write_strip("\n")
+        self._write_strip("popd")
+
         self._write_strip("\n")
         if self.tests_config and not self.config.config_opts['skip_tests']:
             self._write_strip("%check")
@@ -1284,6 +1302,16 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
+
+        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip("pip install --root=%{buildroot}-v3 --no-deps --ignore-installed dist/*.whl")
+        self._write_strip("popd")
+
         self.write_find_lang()
 
     def write_distutils3_pattern(self):
@@ -1305,6 +1333,19 @@ class Specfile(object):
             self._write_strip(self.tests_config)
         if self.config.subdir:
             self._write_strip("popd")
+
+        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        for module in self.config.pypi_overrides:
+            self._write_strip(f"pypi-dep-fix.py . {module}")
+        self._write_strip("python3 setup.py build  " + self.config.extra_configure)
+        self._write_strip("\n")
+        self._write_strip("popd")
+
         self.write_build_append()
         self._write_strip("%install")
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
@@ -1323,6 +1364,16 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
+
+        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v3")
+        self._write_strip("popd")
+
         self.write_find_lang()
 
     def write_distutils36_pattern(self):
