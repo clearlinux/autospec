@@ -2,6 +2,7 @@
 # in the form: <blacklisted string>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
+# For strings that start with '#', escape the '#' as '\#'.
 %
 %license
 (LGPL)
