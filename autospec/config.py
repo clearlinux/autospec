@@ -53,6 +53,8 @@ def read_pattern_conf(filename, dest, list_format=False, path=None):
             for line in patfile:
                 if line.startswith("#"):
                     continue
+                if line.startswith(r"\#"):
+                    line = line[1:]
                 # Make list format a dict for faster lookup times
                 if list_format:
                     dest[line.strip()] = True

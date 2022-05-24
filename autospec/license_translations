@@ -2,6 +2,7 @@
 # with in the form: <license string>: <license>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
+# For strings that start with '#', escape the '#' as '\#'.
 2-clause, BSD-2-Clause
 AGPL-3, AGPL-3.0
 APL-2.0, Apache-2.0

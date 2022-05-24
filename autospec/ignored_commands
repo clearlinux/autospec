@@ -2,6 +2,7 @@
 # in the form: <configure line>
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
+# For patterns that start with '#', escape the '#' as '\#'.
 -Wmissing-braces
 -Wparentheses-equality
 -Wtypedef-redefinition
