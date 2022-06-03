@@ -108,10 +108,10 @@ Imath, Imath-dev
 InferenceEngine, dldt-dev
 Inotify, extra-cmake-modules
 Intl, glibc-dev
-JNI, openjdk11-dev
+JNI, openjdk-dev
 JPEG, libjpeg-turbo-dev
-Java, openjdk11
 KAccounts, kaccounts-integration-dev
+Java, openjdk
 KChart, kdiagram-dev
 KDED, kded-dev
 KDEExperimentalPurpose, purpose-dev
