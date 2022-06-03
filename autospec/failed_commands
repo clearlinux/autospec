@@ -534,6 +534,7 @@ Qt4, qt-everywhere-opensource-src-dev
 Qt5Core, qtbase-dev
 Qt5Declarative, qtdeclarative-dev
 Qt5Help, qttools-dev
+Qt5Keychain, qtkeychain-dev
 Qt5LinguistTools, qttools-dev
 Qt5Multimedia, qtmultimedia-dev
 Qt5Network, qtbase-dev
@@ -828,6 +829,7 @@ fuse.h, fuse-dev
 fuse3, fuse-dev
 future, pypi-future
 futurist, futurist
+g-ir-compiler, gobject-introspection-dev
 g-ir-scanner, gobject-introspection
 gabbi, gabbi
 gawk, gawk
@@ -1027,6 +1029,7 @@ libpipewire-0.2, pipewire-dev
 libpng, pkgconfig(libpng)
 libpng-config, pkgconfig(libpng)
 libpng/png.h, pkgconfig(libpng)
+libportal, libportal-dev
 libproxy-1.0 pkg-config data, pacrunner-dev
 libproxy-1.0, pacrunner-dev
 libpsl, libpsl-dev
