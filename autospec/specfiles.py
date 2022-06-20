@@ -822,9 +822,9 @@ class Specfile(object):
         for setuid in self.setuid:
             skips = f"{skips} --skip-path {setuid}"
         if self.config.config_opts['use_avx2'] or self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
-            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
+            self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
         if self.config.config_opts['use_avx512']:
-            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot}/usr/share/clear/optimized-elf/ %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
+            self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
 
     def write_exclude_deletes(self):
         """Write out deletes for excluded files."""
