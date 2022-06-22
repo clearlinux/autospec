@@ -7,6 +7,7 @@ import sys
 import tempfile
 
 import download
+import util
 
 
 def pip_env():
@@ -46,28 +47,37 @@ def get_pypi_name(name, miss=False):
     return name
 
 
+def _print_command_error(cmd, proc):
+    if isinstance(cmd, list):
+        cmd = " ".join(cmd)
+    util.print_error(f"Command `{cmd}` failed:")
+    for line in proc.stderr.decode('utf-8', errors='surrogateescape').splitlines():
+        util.print_error(line)
+
+
 def get_pypi_metadata(name):
     """Get metadata for a pypi package."""
     show = []
     # Create virtenv to do the pip install (needed for pip show)
     with tempfile.TemporaryDirectory() as tdir:
-        proc = subprocess.run(["virtualenv", "--no-periodic-update", tdir], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cmd = ["virtualenv", "--no-periodic-update", tdir]
+        proc = subprocess.run(cmd, capture_output=True)
         if proc.returncode != 0:
+            _print_command_error(cmd, proc)
             return ""
-        proc = subprocess.run(f"source bin/activate && pip install {name}", cwd=tdir, shell=True,
-                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+        cmd = f"source bin/activate && pip install {name}"
+        proc = subprocess.run(cmd, cwd=tdir, shell=True, capture_output=True,
                               env=pip_env())
         if proc.returncode != 0:
+            _print_command_error(cmd, proc)
             return ""
-        with tempfile.TemporaryFile() as tfile:
-            proc = subprocess.run(f"source bin/activate &> /dev/null && pip show {name}",
-                                  cwd=tdir, shell=True,
-                                  stdout=tfile.fileno(), stderr=subprocess.DEVNULL,
-                                  env=pip_env())
-            if proc.returncode != 0:
-                return ""
-            tfile.seek(0)
-            show = tfile.read().decode('utf-8', errors='surrogateescape').splitlines()
+        cmd = f"source bin/activate &> /dev/null && pip show {name}"
+        proc = subprocess.run(cmd, cwd=tdir, shell=True, capture_output=True,
+                              env=pip_env())
+        if proc.returncode != 0:
+            _print_command_error(cmd, proc)
+            return ""
+        show = proc.stdout.decode('utf-8', errors='surrogateescape').splitlines()
     # Parse pip show for relevent information
     metadata = {}
     for line in show:
