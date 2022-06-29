@@ -319,6 +319,7 @@ class Requirements(object):
         self.buildreqs = set()
         self.buildreqs_cache = set()
         self.requires = {None: set(), "pypi": set()}
+        self.banned_provides = {None: set()}
         self.provides = {None: set(), "pypi": set()}
         self.extra_cmake = set()
         self.extra_cmake_openmpi = set()
@@ -398,6 +399,32 @@ class Requirements(object):
         if new:
             # print("Adding requirement:", req)
             requires.add(req)
+        return new
+
+    def ban_provides(self, ban, subpkg=None):
+        """Add ban to the banned set (and remove it from provides if it was added)."""
+        ban = ban.strip()
+        if (provides := self.provides.get(subpkg)) is None:
+            provides = self.provides[subpkg] = set()
+        if (banned_provides := self.banned_provides.get(subpkg)) is None:
+            banned_provides = self.banned_provides[subpkg] = set()
+        provides.discard(ban)
+        banned_provides.add(ban)
+
+    def add_provides(self, prov, subpkg=None):
+        """Add prov to the provides set if it is not banned."""
+        new = True
+        prov = prov.strip()
+        if (provides := self.provides.get(subpkg)) is None:
+            provides = self.provides[subpkg] = set()
+        if prov in provides:
+            new = False
+        if (banned_provides := self.banned_provides.get(subpkg)) is None:
+            banned_provides = self.banned_provides[subpkg] = set()
+        if prov in banned_provides:
+            return False
+        if new:
+            provides.add(prov)
         return new
 
     def add_pkgconfig_buildreq(self, preq, conf32, cache=False):

@@ -80,6 +80,36 @@ class TestBuildreq(unittest.TestCase):
         self.assertFalse(self.reqs.add_requires('testreq', []))
         self.assertNotIn('testreq', self.reqs.requires[None])
 
+    def test_ban_provides(self):
+        """
+        Test ban_provides with prov already present in provides
+        """
+        self.reqs.provides[None] = set(['testreq'])
+        self.reqs.ban_provides('testreq')
+        self.assertNotIn('testreq', self.reqs.provides[None])
+
+    def test_ban_provides_subpkg(self):
+        """
+        Test ban_provides on a subpkg with prov already present in provides
+        """
+        self.reqs.provides['subpkg'] = set(['testreq'])
+        self.reqs.ban_provides('testreq', subpkg='subpkg')
+        self.assertNotIn('testreq', self.reqs.provides['subpkg'])
+
+    def test_add_provides(self):
+        """
+        Test add_provides with unbanned new prov
+        """
+        self.assertTrue(self.reqs.add_provides('testreq'))
+        self.assertIn('testreq', self.reqs.provides[None])
+
+    def test_add_provides_subpkg(self):
+        """
+        Test add_provides on a subpkg with unbanned new prov
+        """
+        self.assertTrue(self.reqs.add_provides('testreq', subpkg='subpkg'))
+        self.assertIn('testreq', self.reqs.provides['subpkg'])
+
     def test_add_pkgconfig_buildreq(self):
         """
         Test add_pkgconfig_buildreq with config_opts['32bit'] set to False
