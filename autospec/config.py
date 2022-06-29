@@ -576,6 +576,15 @@ class Config(object):
             else:
                 requirements.ban_requires(pkg, subpkg=subpkg)
 
+    def process_provides_file(self, fname, requirements, prov_type, subpkg=None):
+        """Process manual subpackage provides file."""
+        content = self.read_conf_file(os.path.join(self.download_path, fname))
+        for pkg in content:
+            if prov_type == 'add':
+                requirements.add_provides(pkg, subpkg=subpkg)
+            else:
+                requirements.ban_provides(pkg, subpkg=subpkg)
+
     def read_script_file(self, path, track=True):
         """Read RPM script snippet file at path.
 
@@ -864,6 +873,16 @@ class Config(object):
                 self.process_requires_file(fname, requirements, 'add')
             elif fname == 'requires_ban':
                 self.process_requires_file(fname, requirements, 'ban')
+            elif fname == 'provides_add':
+                self.process_provides_file(fname, requirements, 'add')
+            elif fname == 'provides_ban':
+                self.process_provides_file(fname, requirements, 'ban')
+            elif re.search(r'.+_provides_add$', fname):
+                subpkg = fname[:-len("_requires_add")]
+                self.process_provides_file(fname, requirements, 'add', subpkg)
+            elif re.search(r'.+_provides_ban$', fname):
+                subpkg = fname[:-len("_provides_ban")]
+                self.process_provides_file(fname, requirements, 'ban', subpkg)
             elif re.search(r'.+_extras$', fname):
                 # Prefix all but blessed names with extras-
                 name = fname[:-len("_extras")]
