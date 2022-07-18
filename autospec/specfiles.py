@@ -1280,14 +1280,10 @@ class Specfile(object):
         self._write_strip("popd")
 
         self._write_strip("\n")
-        if self.tests_config and not self.config.config_opts['skip_tests']:
-            self._write_strip("%check")
-            # Prevent setuptools from hitting the internet
-            self.write_proxy_exports()
-            self._write_strip(self.tests_config)
         if self.config.subdir:
             self._write_strip("popd")
         self.write_build_append()
+        self.write_check()
         self._write_strip("%install")
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
@@ -1329,11 +1325,6 @@ class Specfile(object):
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 setup.py build  " + self.config.extra_configure)
         self._write_strip("\n")
-        if self.tests_config and not self.config.config_opts['skip_tests']:
-            self._write_strip("%check")
-            # Prevent setuptools from hitting the internet
-            self.write_proxy_exports()
-            self._write_strip(self.tests_config)
         if self.config.subdir:
             self._write_strip("popd")
 
@@ -1350,6 +1341,7 @@ class Specfile(object):
         self._write_strip("popd")
 
         self.write_build_append()
+        self.write_check()
         self._write_strip("%install")
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
@@ -1388,14 +1380,10 @@ class Specfile(object):
             self._write_strip("pushd " + self.config.subdir)
         self._write_strip("python3.6 setup.py build -b py3 " + self.config.extra_configure)
         self._write_strip("\n")
-        if self.tests_config and not self.config.config_opts['skip_tests']:
-            self._write_strip("%check")
-            # Prevent setuptools from hitting the internet
-            self.write_proxy_exports()
-            self._write_strip(self.tests_config)
         if self.config.subdir:
             self._write_strip("popd")
         self.write_build_append()
+        self.write_check()
         self._write_strip("%install")
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
