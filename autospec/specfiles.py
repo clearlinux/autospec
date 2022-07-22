@@ -1411,6 +1411,7 @@ class Specfile(object):
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
+        self.write_license_files()
         self._write_strip("export LANG=C.UTF-8")
         self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
         self._write_strip('export FCFLAGS="$FFLAGS -O3 -flto -fno-semantic-interposition "\n')
@@ -1849,6 +1850,7 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
+        self.write_license_files()
         self._write_strip("%make_install")
         self._write_strip("\n")
 
@@ -1864,6 +1866,7 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("%install")
         self.write_install_prepend()
+        self.write_license_files()
         self._write_strip("nginx-module install %{buildroot}")
         self._write_strip("\n")
 
