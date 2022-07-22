@@ -667,10 +667,11 @@ class Specfile(object):
         """Install all license files for this package."""
         if len(self.license_files) > 0:
             self._write_strip("mkdir -p %{buildroot}/usr/share/package-licenses/" + self.name)
-            for file in self.license_files:
-                file2 = self.hashes[file]
+            for lfile in self.license_files:
+                file2 = self.hashes[lfile]
                 # Use the absolute path to the source license file b/c we don't know for sure where we are
-                self._write_strip("cp " + "%{_builddir}/" + file + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+                lfile = lfile.replace(self.version, "%{version}")
+                self._write_strip("cp " + "%{_builddir}/" + lfile + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
 
     def write_profile_payload(self, pattern=None):
         """Write the profile_payload specified for this package."""
