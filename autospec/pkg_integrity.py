@@ -443,12 +443,13 @@ class QtIoVerifier(ShaSumVerifier):
 
 
 # PyPi Verifier
-class PyPiVerifier(MD5Verifier):
-    """Verify MD5 signature for pypi."""
+class PyPiVerifier(ShaSumVerifier):
+    """Verify SHA256 digest for pypi."""
 
     def __init__(self, **kwargs):
-        """Passthrough initialization to MD5."""
-        MD5Verifier.__init__(self, **kwargs)
+        """Initialize with sha256."""
+        kwargs.update({'shalen': 256})
+        ShaSumVerifier.__init__(self, **kwargs)
 
     def parse_name(self):
         """Get pypi package name and release number."""
@@ -480,7 +481,7 @@ class PyPiVerifier(MD5Verifier):
         return None
 
     def verify(self):
-        """Verify pypi file with MD5."""
+        """Verify pypi file with SHA256."""
         global EMAIL
         util.print_info("Searching for package information in pypi")
         name, release = self.parse_name()
@@ -498,8 +499,10 @@ class PyPiVerifier(MD5Verifier):
         package_info = info.get('info', None)
         if package_info is not None:
             EMAIL = package_info.get('author_email', '')
-        self.md5_digest = release_info.get('md5_digest', '')
-        return self.verify_md5()
+        sha256 = ''
+        if digests := release_info.get('digests', ''):
+            sha256 = digests.get('sha256', '')
+        return self.verify_sum(sha256)
 
 
 # GPG Verification
