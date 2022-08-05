@@ -21,7 +21,7 @@ GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL_BAD = "http://gnu.mirrors.pair.com/savannah/savannah/quagga/bad_quagga-1.1.0.tar.gz"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
-PYPI_MD5_ONLY_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
+PYPI_SHA256_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
 GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-3.24.0.tar.xz"
 QT_SHA256_PKG = "https://download.qt.io/official_releases/qt/5.12/5.12.4/submodules/qtspeech-everywhere-src-5.12.4.tar.xz"
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
@@ -85,8 +85,11 @@ class TestDomainBasedVerifiers(unittest.TestCase):
                 "0.9.0": [],
                 "0.9.2": [
                     {
-                        "filename": "tappy-0.9.2.tar.gz",
-                        "md5_digest": "82e7f161746987b4da64c3347a2a2959"
+                        "digests": {
+                            "md5": "82e7f161746987b4da64c3347a2a2959",
+                            "sha256": "c0a53bd9309c5bd5296bf1747b6127551f14f617dfed218c2f3fa2714c5f695f"
+                        },
+                        "filename": "tappy-0.9.2.tar.gz"
                     }
                 ]
             }
@@ -106,7 +109,7 @@ class TestDomainBasedVerifiers(unittest.TestCase):
 
     @patch('pkg_integrity.PyPiVerifier.get_info', _mock_pypi_get_info)
     def test_pypi(self):
-        result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_MD5_ONLY_PKG)
+        result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_SHA256_PKG)
         self.assertTrue(result)
 
     def _mock_fetch_shasum(url):
