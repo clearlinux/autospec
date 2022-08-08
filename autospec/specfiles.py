@@ -428,7 +428,7 @@ class Specfile(object):
                 prefix = self.content.prefixes[self.url]
                 if self.config.default_pattern == 'R':
                     prefix = self.content.tarball_prefix
-                    self._write_strip("%setup -q -c -n " + prefix)
+                    self._write_strip("%setup -q -n " + prefix)
                 elif prefix:
                     self._write_strip("%setup -q -n " + prefix)
                 else:
@@ -1435,7 +1435,7 @@ class Specfile(object):
                           "--install-tests "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
+                          "%{buildroot}/usr/lib64/R/library .")
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
@@ -1448,7 +1448,7 @@ class Specfile(object):
                           "--no-test-load "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
+                          "%{buildroot}/usr/lib64/R/library .")
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx512 ; mv $i.avx512 ~/.stash/; done\n")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
@@ -1460,7 +1460,7 @@ class Specfile(object):
                           "--install-tests "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library " + self.content.rawname)
+                          "%{buildroot}/usr/lib64/R/library .")
         self._write_strip("cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :")
 
         self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
