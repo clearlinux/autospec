@@ -149,8 +149,8 @@ def scan_for_tests(src_dir, config, requirements, content):
 
     elif config.default_pattern == "R":
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
-                       "R CMD check --no-manual --no-examples --no-codoc "    \
-                       + content.rawname + " || :"
+                       "R CMD check --no-manual --no-examples --no-codoc . "    \
+                       "|| :"
     elif config.default_pattern == "meson":
         found_tests = False
         makefile_path = os.path.join(src_dir, "meson.build")
