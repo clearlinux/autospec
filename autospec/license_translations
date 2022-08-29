@@ -21,12 +21,14 @@ Apachev2, Apache-2.0
 Artistic-1.0+GPL-1.0, Artistic-1.0 GPL-1.0
 Artistic_2, Artistic-2.0
 BSD(3-clause), BSD-3-Clause
+BSD-2-clause, BSD-2-Clause
 BSD-3-clause, BSD-3-Clause
 BSD_2_clause, BSD-2-Clause
 BSD_3_clause, BSD-3-Clause
 Boost, BSL-1.0
 CC0, CC0-1.0
 CPL, CPL-1.0
+Common Public License Version 1.0, CPL-1.0
 Expat, MIT
 GFDL1.1, GFDL-1.1
 GPL (> 2), GPL-3.0+
@@ -35,6 +37,7 @@ GPL(>=-2), GPL-2.0+
 GPL(>=-2.0), GPL-2.0+
 GPL(>=-2.1), GPL-2.0
 GPL(>=-3), GPL-3.0
+GPL(>=-3.0), GPL-3.0+
 GPL(>=2), GPL-2.0+
 GPL(>=3), GPL-3.0+
 GPL-2+, GPL-2.0+
@@ -57,7 +60,8 @@ GPLv3+, GPL-3.0+
 GPLv3, GPL-3.0
 ISCL, ISC
 LGPL(>=-2), LGPL-2.0+
-LGPL(>=-2.1), LGPL-2.1
+LGPL(>=-2.1), LGPL-2.1+
+LGPL(>=-3), LGPL-3.0+
 LGPL(>=2), LGPL-2.0+
 LGPL-2, LGPL-2.0
 LGPL-2.0+, LGPL-2.0+
@@ -65,7 +69,7 @@ LGPL-2.1+, LGPL-2.1+
 LGPL-2.1-or-later, LGPL-2.1+
 LGPL-3+, LGPL-3.0+
 LGPL-3, LGPL-3.0
-LGPLv2+, LGPL-2.1+
+LGPLv2+, LGPL-2.0+
 LGPLv2, LGPL-2.0
 LGPLv2.1+, LGPL-2.1+
 LGPLv2.1, LGPL-2.1

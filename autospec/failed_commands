@@ -730,7 +730,7 @@ cap-ng.h, libcap-ng-dev
 cap_init in -lcap, libcap-dev
 cap_init, libcap-dev
 cap_rights_init, libcap-ng-dev
-cargo, cargo
+cargo, rustc
 ccolamd.h, SuiteSparse-dev
 cffi, pypi-cffi
 champlain-0.12, libchamplain-dev
@@ -803,6 +803,7 @@ evince-document-3.0, evince-dev
 exempi-2.0, exempi-dev
 exiv2, exiv2-dev
 exo-1, pkgconfig(exo-1)
+exo-2, pkgconfig(exo-2)
 expat, expat-dev
 expat-config, expat-dev
 expat.h, expat-dev
