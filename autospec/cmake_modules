@@ -73,7 +73,7 @@ Evas, efl-dev
 EvasCxx, efl-dev
 FLEX, flex
 FLTK, fltk-dev
-FindFont, ParaView-dev
+FindFont, VTK-dev
 FindPkg, cmake-data
 FreeGLUT, freeglut-dev
 FreeRDP, FreeRDP-dev
@@ -110,8 +110,8 @@ Inotify, extra-cmake-modules
 Intl, glibc-dev
 JNI, openjdk-dev
 JPEG, libjpeg-turbo-dev
-KAccounts, kaccounts-integration-dev
 Java, openjdk
+KAccounts, kaccounts-integration-dev
 KChart, kdiagram-dev
 KDED, kded-dev
 KDEExperimentalPurpose, purpose-dev
@@ -263,6 +263,7 @@ KPimPkPass, kpkpass-dev
 KPimSMTP, ksmtp-dev
 KRunnerAppDBusInterface, plasma-workspace-dev
 KSMServerDBusInterface, plasma-workspace-dev
+KSaneCore, ksanecore-dev
 KScreenLocker, kscreenlocker-dev
 KSysGuard, libksysguard-dev
 KWaylandServer, kwayland-server-dev
@@ -841,6 +842,7 @@ Threads, glibc-dev
 Torch, pypi(pytorch)
 UnixCommands, bash coreutils gzip
 UsePkg, cmake-data
+VPL, oneVPL-dev
 VPP, vpp-dev
 VTK, VTK-dev
 Vc, Vc-dev
@@ -891,9 +893,13 @@ gflags, gflags-dev
 glfw3, glfw-dev
 glm, glm-dev
 glog, glog-dev
+glslang, glslang-data
 harfbuzz, harfbuzz-dev
 hiredis, hiredis-c-data
+igsc, igsc-dev
 json-c, json-c-dev
+kColorPicker, kcolorpicker-dev
+kImageAnnotator, kimageannotator-dev
 kim-api, kim-api-data
 leveldb, leveldb-dev
 libavif, libavif-dev
@@ -904,6 +910,7 @@ libjpeg-turbo, libjpeg-turbo-dev
 libpala, palapeli
 libssh, libssh-dev
 libxml2, libxml2-dev
+libzip, libzip-dev
 lpcnetfreedv, LPCNet-dev
 lxqt, liblxqt-dev
 lxqt-build-tools, lxqt-build-tools-data
@@ -918,11 +925,13 @@ pugixml, pugixml-dev
 pybind11, pypi(pybind11)
 qt5xdg, libqtxdg-data
 qt5xdgiconloader, libqtxdg-data
+qtxdg-tools, qtxdg-tools-data
 rabbitmq-c, rabbitmq-c-dev
 realsense2, librealsense-dev
 realsense2-gl, librealsense-dev
 rttr, rttr-data
 sdl2, SDL2-dev
+sdl2_ttf, SDL2_ttf-dev
 spdlog, spdlog-dev
 spirv_cross_c, SPIRV-Cross-data
 spirv_cross_c_shared, SPIRV-Cross-data
@@ -939,6 +948,7 @@ tsl-robin-map, robin-map-data
 utf8cpp, utf8cpp-dev
 uwac, FreeRDP-dev
 vtk, ParaView-dev
+vtk, VTK-dev
 x86-64, cmake
 xapian, xapian-core-dev
 yaml-cpp, yaml-cpp-dev
