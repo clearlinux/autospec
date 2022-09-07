@@ -573,9 +573,9 @@ class Specfile(object):
             if arch == 'x86_64':
                 flags.append("-fzero-call-used-regs=used")
         if self.need_avx2_flags:
-            flags.extend(["-O3", "-march=x86-64-v3", "-mtune=skylake", "-Wl,-z,x86-64-v3", "-msse2avx"])
+            flags.extend(["-O3", "-march=x86-64-v3", "-mtune=skylake", "-Wl,-z,x86-64-v3"])
         if self.need_avx512_flags:
-            flags.extend(["-O3", "-march=x86_64-v4", "-mtune=skylake", "-Wl,-z,x86-64-v4", "-msse2avx"])
+            flags.extend(["-O3", "-march=x86_64-v4", "-mtune=skylake", "-Wl,-z,x86-64-v4"])
         if self.config.config_opts['insecure_build']:
             self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
             self._write_strip("unset LDFLAGS\n")
@@ -1269,8 +1269,8 @@ class Specfile(object):
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx"')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx "')
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
