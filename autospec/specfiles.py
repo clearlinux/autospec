@@ -1269,6 +1269,7 @@ class Specfile(object):
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self.write_build_prepend()
         self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
@@ -1330,6 +1331,7 @@ class Specfile(object):
             self._write_strip("popd")
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+        self.write_build_prepend()
         self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
