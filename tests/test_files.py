@@ -113,6 +113,15 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main', 'testfn'))
         self.fm.push_package_file.assert_called_with('testfn', 'main')
 
+    def test_file_pat_match_replacement_no_glob(self):
+        """
+        Test file_pat_match with replacement provided but no glob set
+        """
+        self.fm.push_package_file = MagicMock()
+        self.fm.config.config_opts['no_glob'] = True
+        self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main', 'testfn'))
+        self.fm.push_package_file.assert_called_with('test-fn', 'main')
+
     def test_file_pat_match_no_match(self):
         """
         Test file_pat_match with no match
