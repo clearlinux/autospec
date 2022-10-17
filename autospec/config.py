@@ -184,7 +184,8 @@ class Config(object):
             "compat": "this package is a library compatibility package and only ships versioned library files",
             "nodebug": "do not generate debuginfo for this package",
             "openmpi": "configure build also for openmpi",
-            "server": "Package is only used by servers"
+            "server": "Package is only used by servers",
+            "no_glob": "Do not use the replacement pattern for file matching"
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies

@@ -114,7 +114,7 @@ class FileManager(object):
         If that file is also in the excludes list, don't push the file.
         Returns True if a file was pushed, False otherwise.
         """
-        if not replacement:
+        if not replacement or self.config.config_opts.get("no_glob"):
             replacement = prefix + filename
 
         # compat files should always be excluded
