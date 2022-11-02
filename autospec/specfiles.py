@@ -584,14 +584,14 @@ class Specfile(object):
                               "-fexceptions -fstack-protector "
                               "--param=ssp-buffer-size=32 -Wformat "
                               "-Wformat-security -Wno-error "
-                              "-Wl,-z,max-page-size=0x1000 "
+                              "-Wl,-z,max-page-size=0x4000 "
                               '-march=westmere -mtune=haswell"\n')
             self._write_strip("export CXXFLAGS=$CFLAGS\n")
             self._write_strip('export FFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
                               "-fexceptions -fstack-protector "
                               "--param=ssp-buffer-size=32 "
                               "-Wno-error "
-                              "-Wl,-z,max-page-size=0x1000 "
+                              "-Wl,-z,max-page-size=0x4000 "
                               '-march=westmere -mtune=haswell"\n')
             self._write_strip("export FCFLAGS=$FFLAGS\n")
             self._write_strip("unset LDFLAGS\n")
@@ -671,7 +671,7 @@ class Specfile(object):
                 file2 = self.hashes[lfile]
                 # Use the absolute path to the source license file b/c we don't know for sure where we are
                 lfile = lfile.replace(self.version, "%{version}")
-                self._write_strip("cp " + "%{_builddir}/" + lfile + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + "\n")
+                self._write_strip("cp " + "%{_builddir}/" + lfile + " %{buildroot}/usr/share/package-licenses/" + self.name + "/" + file2 + " || :\n")
 
     def write_profile_payload(self, pattern=None):
         """Write the profile_payload specified for this package."""
@@ -1435,7 +1435,10 @@ class Specfile(object):
 
         self._write_strip("R CMD INSTALL "
                           "--install-tests "
+                          "--use-LTO "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                          "--data-compress=none "
+                          "--compress=none "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library .")
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
@@ -1447,7 +1450,10 @@ class Specfile(object):
         self._write_strip("R CMD INSTALL "
                           "--preclean "
                           "--install-tests "
+                          "--use-LTO "
                           "--no-test-load "
+                          "--data-compress=none "
+                          "--compress=none "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library .")
@@ -1459,7 +1465,10 @@ class Specfile(object):
 
         self._write_strip("R CMD INSTALL "
                           "--preclean "
+                          "--use-LTO "
                           "--install-tests "
+                          "--data-compress=none "
+                          "--compress=none "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library .")
