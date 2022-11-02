@@ -575,7 +575,7 @@ class Specfile(object):
         if self.need_avx2_flags:
             flags.extend(["-O3", "-march=x86-64-v3", "-mtune=skylake", "-Wl,-z,x86-64-v3"])
         if self.need_avx512_flags:
-            flags.extend(["-O3", "-march=x86_64-v4", "-mtune=skylake", "-Wl,-z,x86-64-v4"])
+            flags.extend(["-O3", "-march=x86_64-v4", "-mtune=sapphirerapids", "-Wl,-z,x86-64-v4", "-mprefer-vector-width=512"])
         if self.config.config_opts['insecure_build']:
             self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
             self._write_strip("unset LDFLAGS\n")
@@ -603,7 +603,7 @@ class Specfile(object):
             if self.config.config_opts['use_clang']:
                 flags.extend(["-O3"])
             else:
-                flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32", "-mprefer-vector-width=256"])
+                flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32"])
         if self.config.default_pattern != 'qmake':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
@@ -1053,10 +1053,10 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512\"")
+            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
@@ -1137,9 +1137,9 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4\"")
             self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self._write_strip("%reconfigure {0} {1} {2} "
@@ -1183,9 +1183,9 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 -Wl,-z,x86-64-v4\"")
+            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 -mtune=sapphirerapids \"")
+            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4\"")
             self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
             self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
             self.write_make_line()
@@ -1241,8 +1241,8 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mtune=sapphirerapids -mprefer-vector-width=512"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mtune=sapphirerapids -mprefer-vector-width=512"')
             self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
             self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
             self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
@@ -1443,9 +1443,9 @@ class Specfile(object):
                           "%{buildroot}/usr/lib64/R/library .")
         self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
 
-        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
-        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper \" >> ~/.R/Makevars")
-        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v4 -ftree-vectorize -mno-vzeroupper  \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CFLAGS = $CFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper -mprefer-vector-width=512 \" > ~/.R/Makevars")
+        self._write_strip("echo \"FFLAGS = $FFLAGS -march=x86-64-v4 -ftree-vectorize  -mno-vzeroupper -mprefer-vector-width=512 \" >> ~/.R/Makevars")
+        self._write_strip("echo \"CXXFLAGS = $CXXFLAGS -march=x86-64-v4 -ftree-vectorize -mno-vzeroupper -mprefer-vector-width=512  \" >> ~/.R/Makevars")
 
         self._write_strip("R CMD INSTALL "
                           "--preclean "
@@ -1556,9 +1556,9 @@ class Specfile(object):
             self.write_build_prepend()
             self.write_variables()
             self.need_avx512_flags = saved_avx512flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 "')
-            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
             self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v4 -m64 "')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
@@ -1782,7 +1782,7 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
                 self._write_strip('CFLAGS="$CFLAGS_GENERATE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_GENERATE '
-                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v4" '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mprefer-vector-width=512" LDFLAGS="$LDFLAGS_GENERATE -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
@@ -1790,14 +1790,14 @@ class Specfile(object):
                 self._write_strip("\n".join(self.config.profile_payload))
                 self._write_strip('popd')
                 self._write_strip('rm -rf builddiravx512')
-                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS_USE '
-                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v4" '
+                self._write_strip('CFLAGS="$CFLAGS_USE -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3 -mprefer-vector-width=512" CXXFLAGS="$CXXFLAGS_USE '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mprefer-vector-width=512" LDFLAGS="$LDFLAGS_USE -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
             else:
-                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3" CXXFLAGS="$CXXFLAGS '
-                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 " LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4" '
+                self._write_strip('CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -O3 -mprefer-vector-width=512" CXXFLAGS="$CXXFLAGS '
+                                  '-m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -mprefer-vector-width=512" LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4" '
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
