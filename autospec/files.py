@@ -187,6 +187,33 @@ class FileManager(object):
 
         return removed
 
+    def globlike_match(self, filename, match_name):
+        """Compare the filename to the match_name in a way that simulates the shell glob '*'."""
+        fsplit = filename.split('/')
+        if len(fsplit) != len(match_name):
+            return False
+        match = True
+        for fpart, mpart in zip(fsplit, match_name):
+            if fpart != mpart:
+                if '*' not in mpart:
+                    match = False
+                    break
+                if len(mpart) > len(fpart) + 1:
+                    match = False
+                    break
+                mpl, mpr = mpart.split('*')
+                try:
+                    if fpart.index(mpl) != 0:
+                        match = False
+                        break
+                    if fpart.rindex(mpr) != len(fpart) - len(mpr):
+                        match = False
+                        break
+                except ValueError:
+                    match = False
+                    break
+        return match
+
     def push_file(self, filename, pkg_name):
         """Perform a number of checks against the filename and push the filename if appropriate."""
         if filename in self.files or filename in self.files_blacklist:
@@ -198,9 +225,17 @@ class FileManager(object):
 
         # Explicit file packaging
         for k, v in self.file_maps.items():
-            if filename in v['files']:
-                self.push_package_file(filename, k)
-                return
+            for match_name in v['files']:
+                if isinstance(match_name, str):
+                    if filename == match_name:
+                        self.push_package_file(filename, k)
+                        return
+                elif len('/'.join(match_name)) <= (len(filename) + 1):
+                    # the match name may be 1 longer due to a glob
+                    # being able to match an empty string
+                    if self.globlike_match(filename, match_name):
+                        self.push_package_file(filename, k)
+                        return
 
         if filename in self.setuid:
             if filename in self.attrs:

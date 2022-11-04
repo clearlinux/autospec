@@ -176,6 +176,60 @@ class TestFiles(unittest.TestCase):
         calls = [call('foobar', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
+    def test_push_package_file_glob_empty(self):
+        """
+        Test push_file with glob extras empty match
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
+        self.fm.push_file('leftglobrightglob', '')
+        calls = [call('leftglobrightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+
+    def test_push_package_file_glob_left_match(self):
+        """
+        Test push_file with glob extras left content matching
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*']]}}
+        self.fm.push_file('leftglobrightglob', '')
+        calls = [call('leftglobrightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+
+    def test_push_package_file_glob_right_match(self):
+        """
+        Test push_file with glob extras right content matching
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.file_maps = {'foobar-extras': {'files': [['*rightglob']]}}
+        self.fm.push_file('leftglobrightglob', '')
+        calls = [call('leftglobrightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+
+    def test_push_package_file_glob_leftright_match(self):
+        """
+        Test push_file with glob extras leftright content matching
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
+        self.fm.push_file('leftglobstuffrightglob', '')
+        calls = [call('leftglobstuffrightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+
+    def test_push_package_file_glob_multi_match(self):
+        """
+        Test push_file with multiple globs extras content matching
+        """
+        self.fm.file_is_locale = MagicMock(return_value=False)
+        self.fm.push_package_file = MagicMock()
+        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*', '*rightglob']]}}
+        self.fm.push_file('leftglobstuff/stuffrightglob', '')
+        calls = [call('leftglobstuff/stuffrightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_file_setuid(self):
         """

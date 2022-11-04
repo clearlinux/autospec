@@ -395,6 +395,9 @@ extras
   one to keep the main package slim and split out optional functionality or
   files.
 
+  Files paths can contain a single '*' per directory such that
+  a line of ``/foo*/bar*`` is allowed but ``/foo*bar*`` is not.
+
 dev_extras
   Same as "extras" above, but instead of the files being placed in an
   ``-extras`` subpackage, they will be placed in the ``-dev`` one. Use this

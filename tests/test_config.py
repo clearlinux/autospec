@@ -56,6 +56,33 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(conf.default_pattern, "make")
         self.assertEqual(conf.pattern_strength, 2)
 
+    def test_validate_extras_content_bad_glob(self):
+        """
+        Test validate_extras_content with more than one glob in a directory
+        """
+        conf = config.Config("")
+        lines = ['/bad*path*/file']
+        new_lines = conf.validate_extras_content(lines, 'bad_glob')
+        self.assertEqual(len(new_lines), 0)
+
+    def test_validate_extras_content_good_single_glob(self):
+        """
+        Test validate_extras_content with a single glob in a directory
+        """
+        conf = config.Config("")
+        lines = ['/good*/file']
+        new_lines = conf.validate_extras_content(lines, 'good_single_glob')
+        self.assertEqual(new_lines, [lines[0].split('/')])
+
+    def test_validate_extras_content_good_multi_glob(self):
+        """
+        Test validate_extras_content with a multiple valid globs
+        """
+        conf = config.Config("")
+        lines = ['/path1', '/good*/glob*/file', '/path3']
+        new_lines = conf.validate_extras_content(lines, 'good_multi_glob')
+        self.assertEqual(new_lines, ['/path1', lines[1].split('/'), '/path3'])
+
 # Create dynamic tests
 create_dynamic_tests()
 
