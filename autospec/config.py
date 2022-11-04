@@ -558,10 +558,30 @@ class Config(object):
         lines = self.read_file(path, track=track)
         return [line.strip() for line in lines if not line.strip().startswith("#") and line.split()]
 
+    def validate_extras_content(self, lines, fname):
+        """Verify extras file contents are valid match strings."""
+        newlines = []
+        for line in lines:
+            if '*' not in line:
+                newlines.append(line)
+                continue
+            nline = line.split('/')
+            invalid = False
+            for itm in nline:
+                if itm.count('*') > 1:
+                    invalid = True
+                    break
+            if invalid:
+                print_warning(f"Ignoring '{line}' from {fname} (can only use a single '*' between each '/')")
+            else:
+                newlines.append(nline)
+        return newlines
+
     def process_extras_file(self, fname, name, filemanager):
         """Process extras type subpackages configuration."""
         content = {}
-        content['files'] = self.read_conf_file(os.path.join(self.download_path, fname))
+        data = self.read_conf_file(os.path.join(self.download_path, fname))
+        content['files'] = self.validate_extras_content(data, fname)
         req_file = os.path.join(self.download_path, f'{fname}_requires')
         if os.path.isfile(req_file):
             content['requires'] = self.read_conf_file(req_file)
