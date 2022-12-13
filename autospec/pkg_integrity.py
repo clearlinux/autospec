@@ -470,7 +470,7 @@ class PyPiVerifier(ShaSumVerifier):
         if data:
             return json.loads(data.getvalue().decode('utf-8'))
         else:
-            return None
+            return {}
 
     @staticmethod
     def get_source_release(package_fullname, releases):
@@ -478,7 +478,7 @@ class PyPiVerifier(ShaSumVerifier):
         for release in releases:
             if release.get('filename', 'not_found') == package_fullname:
                 return release
-        return None
+        return {}
 
     def verify(self):
         """Verify pypi file with SHA256."""
@@ -488,7 +488,7 @@ class PyPiVerifier(ShaSumVerifier):
         info = PyPiVerifier.get_info(name)
         releases_info = info.get('releases', None)
         if releases_info is None:
-            self.print_result(False, err_msg='Error in package info from {}'.format(PYPIORG_API))
+            self.print_result(False, err_msg=f"Error in package info from {PYPIORG_API.format(name)}")
             return None
         release_info = releases_info.get(release, None)
         if release_info is None:
