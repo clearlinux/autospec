@@ -58,6 +58,8 @@ PYPI_DOMAINS = [
     'pypi.io',
 ]
 
+KEY_CACHE_DIR = os.path.expanduser('~/.cache/clr-pkg-key-cache')
+
 
 def update_gpg_conf(proxy_value):
     """Set GNUPGCONF with http_proxy value."""
@@ -558,12 +560,17 @@ class GPGVerifier(Verifier):
         keyid = get_keyid(self.package_sign_path)
         # default location first
         pubkey_loc = self.pubkey_path.format(keyid)
-        if not os.path.exists(pubkey_loc):
+        cache_key = os.path.join(KEY_CACHE_DIR, pubkey_loc)
+        if os.path.exists(cache_key) and not os.path.exists(pubkey_loc):
+            shutil.copyfile(cache_key, pubkey_loc)
+        elif os.path.exists(pubkey_loc) and not os.path.exists(cache_key):
+            shutil.copyfile(pubkey_loc, cache_key)
+        elif not os.path.exists(pubkey_loc):
             # attempt import the key interactively if set to do so
             self.print_result(False, 'Public key {} not found'.format(keyid))
             if not self.interactive or recursion:
                 return None
-            if attempt_key_import(keyid, self.pubkey_path.format(keyid)):
+            if attempt_key_import(keyid, pubkey_loc):
                 return self.verify(recursion=True)
             return None
         # public key exists or is imported, verify
@@ -726,6 +733,11 @@ def attempt_key_import(keyid, key_fullpath):
         ig = InputGetter(message='\nDo you want to keep this key: (Y/n) ', default='y')
         if ig.get_answer() is True:
             IMPORTED = content
+            cache_key = os.path.join(KEY_CACHE_DIR, key_fullpath)
+            if not os.path.isfile(cache_key):
+                shutil.copyfile(key_fullpath, cache_key)
+            else:
+                util.print_warning(f"Re-imported key in cache: {cache_key}")
             return True
         else:
             os.unlink(key_fullpath)
