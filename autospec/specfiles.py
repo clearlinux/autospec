@@ -511,6 +511,7 @@ class Specfile(object):
         if self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
             self._write_strip("pushd ..")
             self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
+            self._write_strip("cp -a {} buildavx512".format(self.content.tarball_prefix))
             self._write_strip("popd")
         elif self.config.default_pattern != 'cmake':
             if self.config.config_opts['32bit']:
@@ -603,7 +604,7 @@ class Specfile(object):
             if self.config.config_opts['use_clang']:
                 flags.extend(["-O3"])
             else:
-                flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32", "-mprefer-vector-width=256"])
+                flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32", "-mprefer-vector-width=512"])
         if self.config.default_pattern != 'qmake':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
@@ -1270,7 +1271,7 @@ class Specfile(object):
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
         self.write_build_prepend()
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx "')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
@@ -1280,6 +1281,20 @@ class Specfile(object):
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
         self._write_strip("\n")
         self._write_strip("popd")
+
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -msse2avx "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
 
         self._write_strip("\n")
         if self.config.subdir:
@@ -1313,6 +1328,16 @@ class Specfile(object):
         self._write_strip("pip install --root=%{buildroot}-v3 --no-deps --ignore-installed dist/*.whl")
         self._write_strip("popd")
 
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip("pip install --root=%{buildroot}-v4 --no-deps --ignore-installed dist/*.whl")
+            self._write_strip("popd")
+
         self.write_find_lang()
 
     def write_distutils3_pattern(self):
@@ -1332,8 +1357,8 @@ class Specfile(object):
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
         self.write_build_prepend()
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx "')
+        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx"')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
@@ -1342,6 +1367,20 @@ class Specfile(object):
         self._write_strip("python3 setup.py build  " + self.config.extra_configure)
         self._write_strip("\n")
         self._write_strip("popd")
+
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 setup.py build  " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
 
         self.write_build_append()
         self.write_check()
@@ -1364,13 +1403,25 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 -msse2avx "')
         self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v3")
         self._write_strip("popd")
+
+
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
+            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -msse2avx "')
+            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v4")
+            self._write_strip("popd")
+
 
         self.write_find_lang()
 
