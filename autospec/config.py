@@ -1,5 +1,4 @@
 #!/bin/true
-#
 # config.py - part of autospec
 # Copyright (C) 2015 Intel Corporation
 #
@@ -168,6 +167,7 @@ class Config(object):
             "no_autostart": "do not require autostart subpackage",
             "optimize_size": "optimize build for size over speed",
             "funroll-loops": "optimize build for speed over size",
+            "full-debug-info": "compile full (traditional) debug info",
             "fast-math": "pass -ffast-math to compiler",
             "insecure_build": "set flags to smallest -02 flags possible",
             "conservative_flags": "set conservative build flags",
