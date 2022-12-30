@@ -590,8 +590,11 @@ class Config(object):
 
     def process_requires_file(self, fname, requirements, req_type, subpkg=None):
         """Process manual subpackage requirements file."""
+        requires_re = re.compile(r'^Requires:[ ]*')
         content = self.read_conf_file(os.path.join(self.download_path, fname))
         for pkg in content:
+            # Allow for copy paste of requires lines by stripping out Requires: prefix
+            pkg = requires_re.sub('', pkg)
             if req_type == 'add':
                 requirements.add_requires(pkg, self.os_packages, override=True, subpkg=subpkg)
             else:
@@ -842,15 +845,19 @@ class Config(object):
             self.config_files.add(os.path.basename(fields[0]))
             self.extra_sources.append(fields)
 
+        buildreq_re = re.compile(r'^BuildRequires:[ ]*')
         content = self.read_conf_file(os.path.join(self.download_path, "buildreq_ban"))
         for banned in content:
+            banned = buildreq_re.sub('', banned)
             print("Banning build requirement: %s." % banned)
             requirements.banned_buildreqs.add(banned)
             requirements.buildreqs.discard(banned)
             requirements.buildreqs_cache.discard(banned)
 
+        pkgconfig_re = re.compile(r'^pkgconfig\((.*?)\)')
         content = self.read_conf_file(os.path.join(self.download_path, "pkgconfig_ban"))
         for banned in content:
+            banned = pkgconfig_re.sub(r'\1', banned)
             banned = "pkgconfig(%s)" % banned
             print("Banning build requirement: %s." % banned)
             requirements.banned_buildreqs.add(banned)
@@ -859,6 +866,7 @@ class Config(object):
 
         content = self.read_conf_file(os.path.join(self.download_path, "buildreq_add"))
         for extra in content:
+            extra = buildreq_re.sub('', extra)
             print("Adding additional build requirement: %s." % extra)
             requirements.add_buildreq(extra)
 
@@ -878,6 +886,7 @@ class Config(object):
 
         content = self.read_conf_file(os.path.join(self.download_path, "pkgconfig_add"))
         for extra in content:
+            extra = pkgconfig_re.sub(r'\1', extra)
             extra = "pkgconfig(%s)" % extra
             print("Adding additional build requirement: %s." % extra)
             requirements.add_buildreq(extra)
