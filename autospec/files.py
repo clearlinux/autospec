@@ -281,6 +281,8 @@ class FileManager(object):
             (r"^/usr/share/omf", "main", "/usr/share/omf/*"),
             (r"^/usr/share/installed-tests/", "tests"),
             (r"^/usr/libexec/installed-tests/", "tests"),
+            (r"^/usr/lib/rustlib/x86_64-unknown-linux-gnu/lib/[a-zA-Z0-9._+-]+\.rlib", "lib", "/usr/lib/rustlib/x86_64-unknown-linux-gnu/lib/*.rlib"),
+            (r"^/usr/lib/rustlib/x86_64-unknown-linux-gnu/analysis/[a-zA-Z0-9._+-]+\.json", "lib", "/usr/lib/rustlib/x86_64-unknown-linux-gnu/analysis/*.json"),
             (r"^/usr/share/clear/optimized-elf/bin", "bin", "/usr/share/clear/optimized-elf/bin*"),
             (r"^/usr/share/clear/optimized-elf/exec", "libexec", "/usr/share/clear/optimized-elf/exec*"),
             (r"^/usr/share/clear/optimized-elf/lib", "lib", "/usr/share/clear/optimized-elf/lib*"),
