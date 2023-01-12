@@ -130,8 +130,8 @@ class FileManager(object):
 
             self.push_package_file(replacement, package)
             return True
-        else:
-            return False
+
+        return False
 
     def file_is_locale(self, filename):
         """If a file is a locale, appends to self.locales and returns True, returns False otherwise."""
