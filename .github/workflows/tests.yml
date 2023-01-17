@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.1.0
+        uses: actions/checkout@v3.3.0
       - name: Run Tests
         uses: ./.github/actions/clearlinux-latest-action
         with:
@@ -20,7 +20,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.1.0
+        uses: actions/checkout@v3.3.0
       - name: Run Tests
         uses: ./.github/actions/clearlinux-latest-action
         with:
