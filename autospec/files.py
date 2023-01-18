@@ -234,7 +234,7 @@ class FileManager(object):
                     # the match name may be 1 longer due to a glob
                     # being able to match an empty string
                     if self.globlike_match(filename, match_name):
-                        self.push_package_file(filename, k)
+                        self.push_package_file(os.path.join('/', *match_name), k)
                         return
 
         if filename in self.setuid:

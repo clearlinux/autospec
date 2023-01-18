@@ -184,7 +184,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
         self.fm.push_file('leftglobrightglob', '')
-        calls = [call('leftglobrightglob', 'foobar-extras')]
+        calls = [call('/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_left_match(self):
@@ -195,7 +195,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*']]}}
         self.fm.push_file('leftglobrightglob', '')
-        calls = [call('leftglobrightglob', 'foobar-extras')]
+        calls = [call('/leftglob*', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_right_match(self):
@@ -206,7 +206,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.file_maps = {'foobar-extras': {'files': [['*rightglob']]}}
         self.fm.push_file('leftglobrightglob', '')
-        calls = [call('leftglobrightglob', 'foobar-extras')]
+        calls = [call('/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_leftright_match(self):
@@ -217,7 +217,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
         self.fm.push_file('leftglobstuffrightglob', '')
-        calls = [call('leftglobstuffrightglob', 'foobar-extras')]
+        calls = [call('/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_multi_match(self):
@@ -228,7 +228,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*', '*rightglob']]}}
         self.fm.push_file('leftglobstuff/stuffrightglob', '')
-        calls = [call('leftglobstuff/stuffrightglob', 'foobar-extras')]
+        calls = [call('/leftglob*/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_file_setuid(self):
