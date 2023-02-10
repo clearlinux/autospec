@@ -1915,3 +1915,5 @@ https://pypi.debian.net/zope.security/zope.security-4.1.1.tar.gz,zope.security,4
 https://pypi.debian.net/zope.testing/zope.testing-4.6.2.tar.gz,zope.testing,4.6.2
 https://pypi.debian.net/zope.testrunner/zope.testrunner-4.7.0.zip,zope.testrunner,4.7.0
 http://sourceforge.net/projects/zsh/files/zsh/5.4.2/zsh-5.4.2.tar.gz,zsh,5.4.2
+https://pigeonhole.dovecot.org/releases/2.3/dovecot-2.3.11-pigeonhole-0.5.11.tar.gz,pigeonhole,0.5.11
+https://pigeonhole.dovecot.org/releases/2.3/dovecot-2.3-pigeonhole-0.5.20.tar.gz,pigeonhole,0.5.20
