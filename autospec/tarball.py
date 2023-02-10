@@ -388,6 +388,12 @@ class Content(object):
                 name = m.group(1).strip()
                 version = convert_version(m.group(2), name)
 
+        if "pigeonhole.dovecot.org" in self.url:
+            # https://pigeonhole.dovecot.org/releases/2.3/dovecot-2.3-pigeonhole-0.5.20.tar.gz
+            if m := re.search(r"pigeonhole\.dovecot\.org/releases/.*/dovecot-[\d\.]+-(\w+)-([\d\.]+)\.[^\d]", self.url):
+                name = m.group(1).strip()
+                version = convert_version(m.group(2), name)
+
         # override name and version from commandline
         self.name = self.name if self.name else name
         self.version = self.version if self.version else version
