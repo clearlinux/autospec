@@ -65,13 +65,13 @@ def get_pypi_metadata(name):
         if proc.returncode != 0:
             _print_command_error(cmd, proc)
             return ""
-        cmd = f"source bin/activate && pip install {name}"
+        cmd = f"source bin/activate && pip install {name.removeprefix('pypi_')}"
         proc = subprocess.run(cmd, cwd=tdir, shell=True, capture_output=True,
                               env=pip_env())
         if proc.returncode != 0:
             _print_command_error(cmd, proc)
             return ""
-        cmd = f"source bin/activate &> /dev/null && pip show {name}"
+        cmd = f"source bin/activate &> /dev/null && pip show {name.removeprefix('pypi_')}"
         proc = subprocess.run(cmd, cwd=tdir, shell=True, capture_output=True,
                               env=pip_env())
         if proc.returncode != 0:
