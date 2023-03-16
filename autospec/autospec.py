@@ -210,7 +210,6 @@ def package(args, url, name, archives, workingdir):
     filemanager = files.FileManager(conf, package)
     content = tarball.Content(url, name, args.version, archives, conf, workingdir)
     content.process(filemanager)
-    conf.create_versions(content.multi_version)
     conf.content = content  # hack to avoid recursive dependency on init
     # Search up one level from here to capture multiple versions
     _dir = content.path

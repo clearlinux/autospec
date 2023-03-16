@@ -844,7 +844,6 @@ gdesktop-enums.h, gsettings-desktop-schemas-dev
 gdk-pixbuf-xlib-2.0, gdk-pixbuf-dev
 gdm, gdm-dev
 gee-0.8, libgee-dev
-gem, ruby
 geoclue-2.0, geoclue-dev
 geocode-glib-1.0, geocode-glib-dev
 geos-config, geos-dev
@@ -1252,7 +1251,6 @@ qtattributionsscanner, qttools-dev
 qtplugininfo, qttools-dev
 qtwaylandscanner, qtwayland-dev
 qvkgen, qtbase-dev
-rake, rubygem-rake
 raptor, raptor2-dev
 rasqal, rasqal-dev
 rcc, qtbase-dev

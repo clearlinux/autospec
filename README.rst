@@ -325,7 +325,6 @@ build_pattern
 
   * R: R language package
   * cpan: perl language package
-  * ruby: ruby language package
   * configure: Traditional ``%configure`` autotools route
   * configure_ac: Like ``configure``, but performs ``%reconfigure`` to
     regenerate ``./configure``
@@ -339,9 +338,6 @@ build_pattern
   * distutils3: Only build the Pythonic package with Python 3
   * pyproject: Build the Pythonic package using the PEP 516 method
   * meson: Build package with Meson/Ninja
-  * golang: Build Go package
-  * godep: A go dependency-only package
-  * \[WIP\] cargo: Build Rust package with Cargo
   * \[WIP\] scons: Build package with Scons
 
 series
@@ -366,14 +362,6 @@ pypi_overrides
   -    'colorama>=0.2.5,<0.4.4',
   +    'colorama',
   ```
-
-golang_libpath
-  When building go packages, the go import path will be guessed automatically
-  (e.g. building ``https://github.com/go-yaml/yaml/`` would get
-  ``github.com/go-yaml/yaml``). While this is handy, it's not always correct (in
-  the previous example, the correct import path should be ``gopkg.in/yaml.v2``).
-  This could be easily fixed by placing ``gopkg.in/yaml.v`` in this file,
-  changing where the go bits will be placed.
 
 service_restart
   Each line in the file specifies the full path to a systemd unit file
@@ -616,8 +604,8 @@ For websites such as ``bitbucket`` or ``GitHub``, using ``get$`` and
 ``v$.tar.*`` style links, the project name itself is used from the URL and the
 version is determined by stripping down the tag.
 
-CPAN Perl packages, R packages, and rubygems.org rubygems are automatically
-prefixed with their language name: ``perl-``, ``R-`` and ``rubygem-``
+CPAN Perl packages, pypi ecosystem packages and R packages are automatically
+prefixed with their respective names: ``perl-``, ``pypi-`` and ``R-``
 respectively.
 
 When these automated detections are not desirable, it is possible to override

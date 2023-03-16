@@ -17,7 +17,6 @@ TESTKEYDIR = os.path.join(TESTDIR, "testkeys")
 PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"
 XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz"
-GEM_PKT = "https://rubygems.org/downloads/hoe-debugging-1.2.1.gem"
 NOSIGN_PKT_URL_BAD = "http://gnu.mirrors.pair.com/savannah/savannah/quagga/bad_quagga-1.1.0.tar.gz"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
@@ -129,50 +128,6 @@ class TestDomainBasedVerifiers(unittest.TestCase):
         test_fetch.return_value = "2ff9660fb3f5663c9161f491d1a304db62691720136ae22c145ef6a1c94b90ec  qtspeech-everywhere-src-5.12.4.tar.xz\n"
         result = self.run_test_for_domain(pkg_integrity.QtIoVerifier, QT_SHA256_PKG)
         self.assertTrue(result)
-
-
-@patch('download.do_curl', mock_download_do_curl)
-class TestGEMShaVerifier(unittest.TestCase):
-
-    def _mock_get_gem_info(pkg):
-        info = '''
-        [
-            {
-                "number": "2.0.0",
-                "sha": "2ac86b58bd2d0b4164c6d82e6d46381c987c47b0eb76428fd6e616370af2cc67"
-            },
-            {
-                "number": "1.2.1",
-                "sha": "b391da81ea5efb96d648e69c852e386a269129f543e371c8db64ada80342ac5f"
-            }
-        ]
-        '''
-        return json.loads(info)
-
-    @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
-    def test_from_url(self):
-        with tempfile.TemporaryDirectory() as tmpd:
-            conf = config.Config(tmpd)
-            conf.rewrite_config_opts = unittest.mock.Mock()
-            conf.config_opts['verify_required'] = False
-            filen = os.path.basename(GEM_PKT)
-            shutil.copy(os.path.join(TESTDIR, filen), tmpd)
-            result = pkg_integrity.check(GEM_PKT, conf)
-            self.assertTrue(result)
-
-    @patch('pkg_integrity.GEMShaVerifier.get_rubygems_info', _mock_get_gem_info)
-    def test_non_matchingsha(self):
-        with tempfile.TemporaryDirectory() as tmpd:
-            conf = config.Config(tmpd)
-            conf.rewrite_config_opts = unittest.mock.Mock()
-            conf.config_opts['verify_required'] = False
-            out_file = os.path.join(tmpd, os.path.basename(GEM_PKT))
-            f = open(out_file, 'wb')
-            f.write(b'this is made up data that will force a failure')
-            f.close()
-            with self.assertRaises(SystemExit) as a:
-                pkg_integrity.check(GEM_PKT, conf)
-            self.assertEqual(a.exception.code, 1)
 
 
 @patch('download.do_curl', mock_download_do_curl)
@@ -369,12 +324,6 @@ class TestUtils(unittest.TestCase):
                 package_check='http://ftp.gnu.org/gnu/xorriso/xorriso-1.4.6.tar.gz.asc'
                 )
         self.assertTrue(isinstance(y, pkg_integrity.GPGVerifier))
-
-        z = pkg_integrity.get_verifier('jeweler-2.1.1.gem')(
-                package_path='',
-                url='https://rubygems.org/downloads/jeweler-2.1.1.gem'
-                )
-        self.assertTrue(isinstance(z, pkg_integrity.GEMShaVerifier))
 
     def test_parse_gpg_packets_for_keyid(self):
         """Test parse_gpg_packets() to retrieve keyid info."""

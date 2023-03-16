@@ -51,7 +51,6 @@ class Specfile(object):
         self.default_desc = ""
         self.locales = []
         self.build_dirs = dict()  # Build directories, indexed by source URL
-        self.golibpath = ""
         self.need_avx2_flags = False
         self.need_avx512_flags = False
         self.tests_config = ""
@@ -130,8 +129,7 @@ class Specfile(object):
         self._write("Version  : {}\n".format(self.version))
         self._write("Release  : {}\n".format(str(self.release)))
         self._write("URL      : {}\n".format(self.url))
-        if not self.config.default_pattern == "godep":
-            self._write("Source0  : {}\n".format(self.url))
+        self._write("Source0  : {}\n".format(self.url))
 
     def write_sources(self):
         """Append additional source files.
@@ -139,9 +137,8 @@ class Specfile(object):
         Append systemd unit files, gcov, and additional source tarballs are the currently supported file types.
         """
         count = 0
-        for source in sorted(self.config.sources["version"] + self.config.sources["unit"] + self.config.sources["archive"]
-                             + self.config.sources["tmpfile"] + self.config.sources["sysuser"] + self.config.sources["gcov"] # NOQA
-                             + self.config.sources["godep"]): # NOQA
+        for source in sorted(self.config.sources["unit"] + self.config.sources["archive"]
+                             + self.config.sources["tmpfile"] + self.config.sources["sysuser"] + self.config.sources["gcov"]): # NOQA
             count += 1
             self.source_index[source] = count
             if self.config.urlban:
@@ -413,79 +410,16 @@ class Specfile(object):
                        '-DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \\\n'
         self._write_strip("{} {} {}".format(cmake_string, self.config.cmake_srcdir, self.extra_cmake_openmpi))
 
-    def write_prep(self, ruby_pattern=False):
+    def write_prep(self):
         """Write prep section to spec file."""
         self._write_strip("%prep")
         self.write_prep_prepend()
-        if ruby_pattern:
-            self._write_strip("gem unpack %{SOURCE0}")
-            self._write_strip("%setup -q -D -T -n " + self.content.tarball_prefix)
-            self._write_strip("gem spec %{{SOURCE0}} -l --ruby > {}.gemspec".format(self.name))
+        prefix = self.content.prefixes[self.url]
+        if self.config.default_pattern == 'R':
+            prefix = self.content.tarball_prefix
+            self._write_strip("%setup -q -n " + prefix)
         else:
-            if self.config.default_pattern == "godep":
-                # No setup needed each source is installed as is
-                pass
-            else:
-                prefix = self.content.prefixes[self.url]
-                if self.config.default_pattern == 'R':
-                    prefix = self.content.tarball_prefix
-                    self._write_strip("%setup -q -n " + prefix)
-                elif prefix:
-                    self._write_strip("%setup -q -n " + prefix)
-                else:
-                    # Have to make up a path and create it
-                    prefix = os.path.splitext(os.path.basename(self.url))[0]
-                    self._write_strip("%setup -q -c -n " + prefix)
-
-                # Keep track of this build dir
-                self.build_dirs[self.url] = prefix
-
-                for archive in self.config.sources["archive"]:
-                    # Skip POM files - they don't need to be extracted
-                    if archive.endswith('.pom'):
-                        continue
-                    # Also JAR files
-                    if archive.endswith('.jar'):
-                        continue
-                    # Patch files
-                    if archive.endswith('.patch'):
-                        continue
-                    # Handle various archive types
-                    extract_cmd = 'tar xf {}'
-                    if archive.endswith('.zip'):
-                        extract_cmd = 'unzip -q {}'
-                    self._write_strip('cd %{_builddir}')
-                    archive_file = os.path.basename(archive)
-                    if self.config.archive_details.get(archive + "prefix"):
-                        self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
-                    else:
-                        # The archive doesn't have a prefix inside, so we have
-                        # to create it, then extract the archive under the
-                        # created directory, itself beneath BUILD
-                        fake_prefix = os.path.splitext(os.path.basename(archive))[0]
-                        self._write_strip("mkdir -p {}".format(fake_prefix))
-                        self._write_strip("cd {}".format(fake_prefix))
-                        self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
-
-                self._write_strip('cd %{_builddir}/' + prefix)
-
-                # Now handle extra versions, indexed by SOURCE
-                for url in self.config.sources["version"]:
-                    prefix = self.content.prefixes[url]
-                    if prefix:
-                        self._write_strip("cd ..")
-                        self._write_strip("%setup -q -T -n {0} -b {1}"
-                                          .format(prefix,
-                                                  self.source_index[url]))
-                    else:
-                        # Have to make up a path and create it
-                        prefix = os.path.splitext(os.path.basename(url))[0]
-                        self._write_strip("cd ..")
-                        self._write_strip("%setup -q -T -c -n {0} -b {1}"
-                                          .format(prefix,
-                                                  self.source_index[url]))
-                    # Keep track of this build dir
-                    self.build_dirs[url] = prefix
+            self._write_strip("%setup -q -n " + prefix)
 
         for archive, destination in zip(self.config.sources["archive"], self.config.sources["destination"]):
             if destination.startswith(':'):
@@ -560,9 +494,6 @@ class Specfile(object):
             lto = "-flto"
         else:
             lto = "-flto=auto"
-
-        if not self.config.set_gopath:
-            self._write_strip("export GOPROXY=file:///usr/share/goproxy")
 
         if self.config.config_opts['optimize_size']:
             if self.config.config_opts['use_clang']:
@@ -1481,42 +1412,6 @@ class Specfile(object):
         self.write_find_lang()
         self.write_check()
 
-    def write_ruby_pattern(self):
-        """Write build pattern for ruby packages."""
-        self.write_prep(ruby_pattern=True)
-        self._write_strip("%build")
-        self.write_build_prepend()
-        self.write_proxy_exports()
-        self._write_strip("export LANG=C.UTF-8")
-        self._write_strip("gem build {}.gemspec".format(self.name))
-        self.write_build_append()
-        self._write_strip("\n")
-
-        self._write_strip("%install")
-        self.write_install_prepend()
-        self._write_strip("%global gem_dir $(ruby -e'puts Gem.default_dir')")
-        self._write_strip("gem install -V \\")
-        self._write_strip("  --local \\")
-        self._write_strip("  --force \\")
-        self._write_strip("  --install-dir .%{gem_dir} \\")
-        self._write_strip("  --bindir .%{_bindir} \\")
-        self._write_strip(" {}.gem".format(self.content.tarball_prefix))
-        self._write_strip("\n")
-
-        self._write_strip("mkdir -p %{buildroot}%{gem_dir}")
-        self._write_strip("cp -pa .%{gem_dir}/* \\")
-        self._write_strip("        %{buildroot}%{gem_dir}")
-        self._write_strip("\n")
-
-        self._write_strip("if [ -d .%{_bindir} ]; then")
-        self._write_strip("    mkdir -p %{buildroot}%{_bindir}")
-        self._write_strip("    cp -pa .%{_bindir}/* \\")
-        self._write_strip("        %{buildroot}%{_bindir}/")
-        self._write_strip("fi")
-        self._write_strip("\n")
-        self.write_find_lang()
-        self.write_check()
-
     def write_cmake_pattern(self):
         """Write cmake pattern to spec file."""
         self.write_prep()
@@ -1647,19 +1542,6 @@ class Specfile(object):
         self._write_strip("\n")
         self.write_make_install()
 
-    def write_cargo_pattern(self):
-        """Write cargo build pattern to spec file."""
-        self.write_prep()
-        self._write_strip("%build")
-        self.write_build_prepend()
-        self.write_proxy_exports()
-        self._write_strip("cargo build --release")
-        self.write_build_append()
-        self._write_strip("\n")
-        self._write_strip("%install")
-        self.write_install_prepend()
-        self.write_license_files()
-
     def write_cpan_pattern(self):
         """Write cpan build pattern to spec file."""
         self.write_prep()
@@ -1707,47 +1589,6 @@ class Specfile(object):
         self.write_install_prepend()
         self._write_strip("scons install " + self.config.extra_make_install)
         self.write_license_files()
-
-    def write_golang_pattern(self):
-        """Write build pattern for go packages."""
-        self.write_prep()
-        self._write_strip("%build")
-        self.write_build_prepend()
-        self.write_proxy_exports()
-        self._write_strip("export LANG=C.UTF-8")
-        if self.config.set_gopath:
-            self._write_strip("export GOPATH=\"$PWD\"")
-            self._write_strip("go build {}".format(self.config.extra_make))
-        else:
-            self._write_strip("export GOPROXY=file:///usr/share/goproxy")
-            self._write_strip("go mod vendor")
-            self._write_strip("go build -mod=vendor {}".format(self.config.extra_make))
-        self.write_build_append()
-        self._write_strip("\n")
-        self._write_strip("%install")
-        self._write_strip("rm -rf %{buildroot}")
-        self.write_install_prepend()
-        self.write_license_files()
-        self._write_strip("\n")
-
-    def write_godep_pattern(self):
-        """Write godep build pattern to spec file."""
-        self.write_prep()
-        self._write_strip("%install")
-        self.write_install_prepend()
-        self._write_strip("rm -fr %{buildroot}")
-        # Remove golang default proxy prefix and filename to get proxy path for the install
-        proxy_path = os.path.join("%{buildroot}/usr/share/goproxy",
-                                  os.path.dirname(self.url[len("https://proxy.golang.org/"):]))
-        self._write_strip(f"mkdir -p {proxy_path}")
-        list_file = os.path.join(proxy_path, "list")
-        self._write_strip("# Create list file using packaged versions")
-        for ver in list(self.content.multi_version.keys()):
-            self._write_strip(f"echo {ver} >> {list_file}")
-        for idx, source in enumerate(sorted(self.config.sources["godep"])):
-            file_path = os.path.join(proxy_path, os.path.basename(source))
-            self._write_strip(f"install -m 0644 %{{SOURCE{idx+1}}} {file_path}")
-        self._write_strip("\n")
 
     def write_meson_pattern(self):
         """Write meson build pattern to spec file."""

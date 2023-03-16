@@ -382,7 +382,7 @@ class FileManager(object):
             (r"^/usr/share/", "data"),
             (r"^/usr/lib/perl5/", "perl", "/usr/lib/perl5/*"),
             # finally move any dynamically loadable plugins (not
-            # perl/python/ruby/etc.. extensions) into lib package
+            # perl/python/etc.. extensions) into lib package
             (r"^/usr/lib/.*/[a-zA-Z0-9._+-]*\.so", "lib"),
             (r"^/usr/lib64/.*/[a-zA-Z0-9._+-]*\.so", "lib"),
             (r"^/usr/lib32/.*/[a-zA-Z0-9._+-]*\.so", "lib32"),

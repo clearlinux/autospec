@@ -105,7 +105,6 @@ class Config(object):
         self.autoreconf = False
         self.custom_desc = ""
         self.custom_summ = ""
-        self.set_gopath = True
         self.license_fetch = None
         self.license_show = None
         self.git_uri = None
@@ -131,16 +130,12 @@ class Config(object):
         self.download_path = download_path
         self.default_pattern = "make"
         self.pattern_strength = 0
-        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "sysuser": [], "archive": [], "destination": [], "godep": [], "version": []}
+        self.sources = {"unit": [], "gcov": [], "tmpfile": [], "sysuser": [], "archive": [], "destination": []}
         self.archive_details = {}
         self.conf_args_openmpi = '--program-prefix=  --exec-prefix=$MPI_ROOT \\\n' \
             '--libdir=$MPI_LIB --bindir=$MPI_BIN --sbindir=$MPI_BIN --includedir=$MPI_INCLUDE \\\n' \
             '--datarootdir=$MPI_ROOT/share --mandir=$MPI_MAN -exec-prefix=$MPI_ROOT --sysconfdir=$MPI_SYSCONFIG \\\n' \
             '--build=x86_64-generic-linux-gnu --host=x86_64-generic-linux-gnu --target=x86_64-clr-linux-gnu '
-        # Keep track of the package versions
-        self.versions = OrderedDict()
-        # Only parse the versions file once, and save the result for later
-        self.parsed_versions = OrderedDict()
         # defines which files to rename and copy to autospec directory,
         # used in commitmessage.py
         self.transforms = {
@@ -257,8 +252,6 @@ class Config(object):
             (r".*\.go:.*cannot find package \"(.*)\" in any of:", 0, 'go'),
             (r"/usr/bin/env\: (.*)\: No such file or directory", 0, None),
             (r"/usr/bin/python.*\: No module named (.*)", 0, None),
-            (r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:\/]+)", 0, 'ruby table'),
-            (r":in `require': cannot load such file -- ([a-zA-Z0-9\-\_:]+) ", 0, 'ruby'),
             (r"Add the installation prefix of \"(.*)\" to CMAKE_PREFIX_PATH", 0, None),
             (r"By not providing \"([a-zA-Z0-9]+).cmake\" in CMAKE_MODULE_PATH this project", 0, None),
             (r"C library '(.*)' not found", 0, None),
@@ -268,24 +261,18 @@ class Config(object):
             (r"Checking for (.*?)\.\.\.no", 0, None),
             (r"Checking for (.*?)\s*: not found", 0, None),
             (r"Checking for (.*?)\s>=.*\s*: not found", 0, None),
-            (r"Could not find '([a-zA-Z0-9\-\_]*)' \([~<>=]+ ([0-9.]+).*\) among [0-9]+ total gem", 0, 'ruby'),
-            (r"Could not find gem '([a-zA-Z0-9\-\_]+) \([~<>=0-9\.\, ]+\) ruby'", 0, 'ruby'),
             (r"Could not find suitable distribution for Requirement.parse\('([a-zA-Z\-\.]*)", 0, None),
             (r"Download error on https://pypi.python.org/simple/([a-zA-Z0-9\-\._:]+)/", 0, 'pypi'),
             (r"Downloading https?://.*\.python\.org/packages/.*/.?/([A-Za-z]*)/.*", 0, None),
-            (r"ERROR:  Could not find a valid gem '([a-zA-Z0-9\-\_\:]*)' \([>=]+ ([0-9.]+).*\)", 0, 'ruby'),
             (r"ERROR: dependencies ['‘]([a-zA-Z0-9\-\.]*)['’].* are not available for package ['‘].*['’]", 0, 'R'),
             (r"ERROR: dependencies ['‘].*['’], ['‘]([a-zA-Z0-9\-\.]*)['’],.* are not available for package ['‘].*['’]", 0, 'R'),
             (r"ERROR: dependencies.*['‘]([a-zA-Z0-9\-\.]*)['’] are not available for package ['‘].*['’]", 0, 'R'),
             (r"ERROR: dependency ['‘]([a-zA-Z0-9\-\.]*)['’] is not available for package ['‘].*['’]", 0, 'R'),
             (r"Error: Unable to find (.*)", 0, None),
             (r"Error: package ['‘]([a-zA-Z0-9\-\.]*)['’] required by", 0, 'R'),
-            (r"Gem::LoadError: Could not find '([a-zA-Z0-9\-\_]*)'", 0, 'ruby'),
             (r"ImportError:.* No module named '?([a-zA-Z0-9\-\._]+)'?", 0, 'pypi'),
             (r"ImportError\: ([a-zA-Z]+) module missing", 0, None),
             (r"ImportError\: (?:No module|cannot import) named? (.*)", 0, None),
-            (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:\/\_]+)", 0, 'ruby table'),
-            (r"LoadError: cannot load such file -- ([a-zA-Z0-9\-:]+)/.*", 0, 'ruby'),
             (r"ModuleNotFoundError.*No module named (.*)", 0, None),
             (r"Native dependency '(.*)' not found", 0, "pkgconfig"),
             (r"No library found for -l([a-zA-Z\-])", 0, None),
@@ -300,13 +287,11 @@ class Config(object):
             (r"Target '[a-zA-Z0-9\-]' can't be generated as '(.*)' could not be found", 0, None),
             (r"Unable to `import (.*)`", 0, None),
             (r"Unable to find '(.*)'", 0, None),
-            (r"WARNING:  [a-zA-Z\-\_]+ dependency on ([a-zA-Z0-9\-\_:]*) \([<>=~]+ ([0-9.]+).*\) .*", 0, 'ruby'),
             (r"Warning: prerequisite ([a-zA-Z:]+) [0-9\.]+ not found.", 0, 'perl'),
             (r"Warning\: no usable ([a-zA-Z0-9]+) found", 0, None),
             (r"You need ([a-zA-Z0-9\-\_]*) to build this program.", 1, None),
             (r"[Dd]ependency (.*) found: NO \(tried pkgconfig(?: and cmake)?\)", 0, 'pkgconfig'),
             (r"[Dd]ependency (.*) found: NO", 0, None),
-            (r"[a-zA-Z0-9\-:]* is not installed: cannot load such file -- rdoc/([a-zA-Z0-9\-:]*)", 0, 'ruby'),
             (r"\/bin\/ld: cannot find (-l[a-zA-Z0-9\_]+)", 0, None),
             (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
             (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
@@ -353,18 +338,6 @@ class Config(object):
         # cpan
         if ".cpan.org/" in url or ".metacpan.org/" in url:
             self.set_build_pattern("cpan", 10)
-
-        # ruby
-        if "rubygems.org/" in url:
-            self.set_build_pattern("ruby", 10)
-
-        # rust crate
-        if "crates.io" in url:
-            self.set_build_pattern("cargo", 10)
-
-        # go dependency
-        if "proxy.golang.org" in url:
-            self.set_build_pattern("godep", 10)
 
         # php modules from PECL
         if "pecl.php.net" in url:
@@ -486,16 +459,6 @@ class Config(object):
         with open(os.path.join(self.download_path, 'buildreq_cache'), "w") as cachefile:
             cachefile.write("\n".join([version] + pkgs))
         self.config_files.add('buildreq_cache')
-
-    def create_versions(self, versions):
-        """Make versions file."""
-        with open(os.path.join(self.download_path, "versions"), 'w') as vfile:
-            for version in versions:
-                vfile.write(version)
-                if versions[version]:
-                    vfile.write('\t' + versions[version])
-                vfile.write('\n')
-        self.config_files.add("versions")
 
     def read_config_opts(self):
         """Read config options from path/options.conf."""
@@ -689,40 +652,6 @@ class Config(object):
             patch = patch.lower()
             if patch not in self.old_patches and patch.endswith(".patch") and patch.startswith("cve-"):
                 self.cves.append(patch.upper().split(".PATCH")[0])
-
-    def parse_config_versions(self):
-        """Parse the versions configuration file."""
-        # Only actually parse it the first time around
-        if not self.parsed_versions:
-            for line in self.read_conf_file(os.path.join(self.download_path, "versions")):
-                # Simply whitespace-separated fields
-                fields = line.split()
-                version = fields.pop(0)
-                if len(fields):
-                    url = fields.pop(0)
-                else:
-                    url = ""
-                # Catch and report duplicate URLs in the versions file. Don't stop,
-                # but assume only the first one is valid and drop the rest.
-                if version in self.parsed_versions and url != self.parsed_versions[version]:
-                    print_warning("Already have a URL defined for {}: {}"
-                                  .format(version, self.parsed_versions[version]))
-                    print_warning("Dropping {}, but you should check my work"
-                                  .format(url))
-                else:
-                    self.parsed_versions[version] = url
-                if len(fields):
-                    print_warning("Extra fields detected in `versions` file entry:\n{}"
-                                  .format(line))
-                    print_warning("I'll delete them, but you should check my work")
-
-        # We'll combine what we just parsed from the versions file with any other
-        # versions that have already been defined, most likely the version actually
-        # provided in the Makefile's URL variable, so we don't drop any.
-        for version in self.parsed_versions:
-            self.versions[version] = self.parsed_versions[version]
-
-        return self.versions
 
     def write_default_conf_file(self, name, wrapper, description):
         """Write default configuration file with description to file name."""
@@ -950,12 +879,7 @@ class Config(object):
                                  stderr=subprocess.DEVNULL) == 0:
             self.autoreconf = True
 
-        # Parse the version-specific patch lists
         update_security_sensitive = False
-        for versionp in self.versions:
-            self.verpatches[versionp] = self.read_conf_file(os.path.join(self.download_path, '.'.join(['series', versionp])))
-            if any(p.lower().startswith('cve-') for p in self.verpatches[versionp]):
-                update_security_sensitive = True
 
         if any(p.lower().startswith('cve-') for p in self.patches):
             update_security_sensitive = True
@@ -1045,11 +969,6 @@ class Config(object):
                 if word.find(":") < 0:
                     if not license.add_license(word, self.license_translations, self.license_blacklist):
                         print_warning("{}: blacklisted license {} ignored.".format(self.content.name + ".license", word))
-
-        content = self.read_conf_file(os.path.join(self.download_path, "golang_libpath"))
-        if content and content[0]:
-            self.content.golibpath = content[0]
-            print("golibpath   : {}".format(self.content.golibpath))
 
         if self.config_opts['use_clang']:
             self.config_opts['funroll-loops'] = False

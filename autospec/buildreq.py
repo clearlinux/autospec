@@ -174,50 +174,6 @@ def parse_modules_list(modules_string, is_cmake=False):
     return res
 
 
-def parse_go_mod(path):
-    """Parse go.mod file for build requirements.
-
-    File content looks as follows:
-
-    module example.com/foo/bar
-
-    require (
-        github.com/BurntSushi/toml v0.3.1
-        git.apache.org/thrift.git v0.0.0-20180902110319-2566ecd5d999
-        github.com/inconshreveable/mousetrap v1.0.0 // indirect
-        "github.com/spf13/cobra" v0.0.3
-        github.com/spf13/pflag v1.0.3 // indirect
-    )
-
-    Need to handle all require lines including //indirect.
-    Skip requires that use .git for now. May need to be handled
-    differently.
-    """
-    reqs = []
-    with open(path, "r") as gfile:
-        dep_start = False
-        for line in gfile.readlines():
-            # Ideally the mod file is generated and the format is
-            # always correct but add a few defenses just in case
-            line = line.strip()
-            if line.startswith("//"):
-                # Skip comments
-                continue
-            if dep_start:
-                # End of the require section
-                if line.startswith(")"):
-                    break
-                req = line.split()[:2]
-                req[0] = req[0].replace('"', '')
-                if req[0].endswith(".git"):
-                    continue
-                reqs.append(req)
-                continue
-            if line.startswith("require ("):
-                dep_start = True
-    return reqs
-
-
 def _get_desc_field(field, desc):
     """Get a field value from an R package DESCRIPTION file.
 
@@ -324,7 +280,6 @@ class Requirements(object):
         self.extra_cmake = set()
         self.extra_cmake_openmpi = set()
         self.verbose = False
-        self.cargo_bin = False
         self.pypi_provides = None
         self.banned_buildreqs = set(["llvm-devel",
                                      "gcj",
@@ -499,25 +454,6 @@ class Requirements(object):
         self.configure_ac_line(buf, config.config_opts.get('32bit'))
         f.close()
 
-    def parse_cargo_toml(self, filename, config):
-        """Update build requirements using Cargo.toml.
-
-        Set the build requirements for building rust programs using cargo.
-        """
-        config.set_build_pattern("cargo", 1)
-        if config.default_pattern != "cargo":
-            return
-        self.add_buildreq("rustc")
-        with util.open_auto(filename, "r") as ctoml:
-            cargo = toml.loads(ctoml.read())
-        if cargo.get("bin") or os.path.exists(os.path.join(os.path.dirname(filename), "src/main.rs")):
-            self.cargo_bin = True
-        if not cargo.get("dependencies"):
-            return
-        for cdep in cargo["dependencies"]:
-            if self.add_buildreq(cdep):
-                self.add_requires(cdep, config.os_packages)
-
     def parse_r_description(self, filename, packages):
         """Update build/runtime requirements according to the R package description."""
         deps = []
@@ -538,27 +474,6 @@ class Requirements(object):
 
     def set_build_req(self, config):
         """Add build requirements based on the build pattern."""
-        if config.default_pattern == "ruby":
-            self.add_buildreq("ruby")
-            self.add_buildreq("rubygem-rdoc")
-        if config.default_pattern == "cargo":
-            self.add_buildreq("rustc")
-
-    def rakefile(self, filename, gems):
-        """Scan Rakefile for build requirements."""
-        with util.open_auto(filename, "r") as f:
-            lines = f.readlines()
-
-        pat = re.compile(r"^require '(.*)'$")
-        for line in lines:
-            match = pat.search(line)
-            if match:
-                s = match.group(1)
-                if s != "rubygems" and s in gems:
-                    print("Rakefile-dep: " + gems[s])
-                    self.add_buildreq(gems[s])
-                else:
-                    print("Rakefile-new: rubygem-" + s)
 
     def parse_cmake(self, filename, cmake_modules, conf32):
         """Scan a .cmake or CMakeLists.txt file for what's it's actually looking for."""
@@ -794,8 +709,6 @@ class Requirements(object):
             self.add_buildreq("buildreq-distutils36")
         elif config.default_pattern == "distutils3":
             self.add_buildreq("buildreq-distutils3")
-        elif config.default_pattern == "golang":
-            self.add_buildreq("buildreq-golang")
         elif config.default_pattern == "cmake":
             self.add_buildreq("buildreq-cmake")
         elif config.default_pattern == "configure":
@@ -818,27 +731,8 @@ class Requirements(object):
         for dirpath, _, files in os.walk(dirn):
             default_score = 2 if dirpath == dirn else 1
 
-            if any(f.endswith(".go") for f in files):
-                self.add_buildreq("buildreq-golang")
-                config.set_build_pattern("golang", default_score)
-
             if "go.mod" in files:
-                if "Makefile" not in files and "makefile" not in files:
-                    # Go packages usually have make build systems so far
-                    # so only use go directly if we can't find a Makefile
-                    config.set_build_pattern("golang", default_score)
                 self.add_buildreq("buildreq-golang")
-                if config.default_pattern == "golang-mod" or config.default_pattern == "godep":
-                    config.set_gopath = False
-                    mod_path = os.path.join(dirpath, "go.mod")
-                    reqs = parse_go_mod(mod_path)
-                    for req in reqs:
-                        # req[0] is a SCM url segment in the form, repo/XXX/dependency-name
-                        # req[1] is the version of the dependency
-                        pkg = "go-" + req[0].replace("/", "-")
-                        self.add_buildreq(pkg)
-                        if config.default_pattern == "godep":
-                            self.add_requires(pkg, config.os_packages)
 
             if "CMakeLists.txt" in files and "configure.ac" not in files:
                 self.add_buildreq("buildreq-cmake")
@@ -892,12 +786,8 @@ class Requirements(object):
                 config.set_build_pattern("meson", default_score)
 
             for name in files:
-                if name.lower() == "cargo.toml" and dirpath == dirn:
-                    self.parse_cargo_toml(os.path.join(dirpath, name), config)
                 if name.lower().startswith("configure."):
                     self.parse_configure_ac(os.path.join(dirpath, name), config)
-                if name.lower().startswith("rakefile") and config.default_pattern == "ruby":
-                    self.rakefile(os.path.join(dirpath, name), config.gems)
                 if name.endswith(".pro") and config.default_pattern == "qmake":
                     self.qmake_profile(os.path.join(dirpath, name), config.qt_modules)
                 if name.lower() == "makefile":
