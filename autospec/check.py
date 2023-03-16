@@ -93,8 +93,6 @@ def scan_for_tests(src_dir, config, requirements, content):
         "perlcheck": perl_check,
         "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
-        "rakefile": "pushd %{buildroot}%{gem_dir}/gems/" + content.tarball_prefix + "\nrake --trace test TESTOPTS=\"-v\"\npopd",
-        "rspec": "pushd %{buildroot}%{gem_dir}/gems/" + content.tarball_prefix + "\nrspec -I.:lib spec/\npopd",
         "meson": meson_check,
     }
     if config.config_opts.get('32bit'):

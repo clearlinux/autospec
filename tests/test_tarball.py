@@ -79,7 +79,6 @@ SRC_CREATION = [
     ("https://example/src-prefix.tar", "", "/tmp/src-prefix.tar", CONTENT_PREFIX, "tar", "common-prefix", None),
     ("https://example/src-subdir.tar", "", "/tmp/src-subdir.tar", CONTENT_SUBDIR, "tar", "", "src-subdir"),
     ("https://example/src-no-extractable.tar", ":", "/tmp/src-no-extractable.tar", None, None, None, None),
-    ("https://example/go-src/list", "", "/tmp/list", None, "go", "", "list"),
 ]
 
 
@@ -213,66 +212,6 @@ class TestTarball(unittest.TestCase):
         self.content.name = 'test'
         self.content.set_gcov()
         self.assertEqual(self.content.gcov_file, 'test.gcov')
-
-    def test_set_multi_version_no_ver(self):
-        versions = OrderedDict()
-        self.content.config.parse_config_versions = lambda: versions
-        self.content.config.default_pattern = ""
-        latest = self.content.set_multi_version("")
-        self.assertEqual(latest, "1")
-        self.assertNotEqual(id(self.content.multi_version), id(versions))
-
-    def test_set_multi_version_with_ver(self):
-        versions = OrderedDict()
-        self.content.config.parse_config_versions = lambda: versions
-        self.content.config.default_pattern = ""
-        latest = self.content.set_multi_version("3")
-        self.assertEqual(latest, "3")
-        self.assertNotEqual(id(self.content.multi_version), id(versions))
-
-    def test_process_go_archives(self):
-        """Test for tarball.process_go_archives method."""
-        # Set up input values
-        self.content.url = 'https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/list'
-        self.content.multi_version = ['v0.3.1', 'v0.3.0', 'v0.2.0']
-        go_archives = []
-        go_archives_expected = [
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.info", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.mod", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.1.zip", "",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.info", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.mod", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.3.0.zip", "",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.info", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.mod", ":",
-            "https://proxy.golang.org/github.com/!burnt!sushi/toml/@v/v0.2.0.zip", "",
-        ]
-        self.content.process_go_archives(go_archives)
-        self.assertEqual(go_archives, go_archives_expected)
-
-    def test_process_multiver_archives(self):
-        """Test for tarball.process_multiver_archives method."""
-        # Set up input values
-        main_src = tarball.Source('https://example/src-5.0.tar', ':', '/tmp/src.tar')
-        multiver_archives = []
-        config_versions = {
-            '5.0': 'https://example/src-5.0.tar',
-            '4.0': 'https://example/src-4.0.tar',
-            '3.5': 'https://example/src-3.5.tar',
-            '3.0': 'https://example/src-3.0.tar',
-        }
-        expected_multiver_archives = [
-            'https://example/src-4.0.tar', '',
-            'https://example/src-3.5.tar', '',
-            'https://example/src-3.0.tar', '',
-        ]
-        # Set up a return value for parse_config_versions method
-        attrs = {'parse_config_versions.return_value': config_versions}
-        conf = MagicMock()
-        conf.configure_mock(**attrs)
-        self.content.config = conf
-        self.content.process_multiver_archives(main_src, multiver_archives)
-        self.assertEqual(multiver_archives, expected_multiver_archives)
 
     @patch('tarball.Source.set_prefix', Mock())
     @patch('tarball.Source.extract', Mock())

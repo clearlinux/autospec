@@ -201,104 +201,6 @@ class TestBuildreq(unittest.TestCase):
                               'intltool',
                               'sed']))
 
-    def test_parse_go_mod(self):
-        """
-        Test parse_go_mod
-        """
-        open_name = 'buildreq.open'
-        content = """module example.com/foo/bar
-
-        require (
-        github.com/example/foo v1.0.0
-        git.apache.org/skip.git v0.0.0-20180101111111-barf0000000d
-        github.com/redirect/bar v2.0.0 // indirect
-        "github.com/quote/baz" v0.0.3
-        "github.com/qdirect/raz" v1.0.3 // indirect
-        )"""
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            result = buildreq.parse_go_mod('filename')
-        self.assertEqual(len(result), 4)
-        self.assertEqual(len(result[0]), 2)
-        self.assertEqual(result[0][0], "github.com/example/foo")
-        self.assertEqual(result[0][1], "v1.0.0")
-        self.assertEqual(len(result[1]), 2)
-        self.assertEqual(result[1][0], "github.com/redirect/bar")
-        self.assertEqual(result[1][1], "v2.0.0")
-        self.assertEqual(len(result[2]), 2)
-        self.assertEqual(result[2][0], "github.com/quote/baz")
-        self.assertEqual(result[2][1], "v0.0.3")
-        self.assertEqual(len(result[3]), 2)
-        self.assertEqual(result[3][0], "github.com/qdirect/raz")
-        self.assertEqual(result[3][1], "v1.0.3")
-
-    def test_parse_cargo_toml(self):
-        """
-        Test parse_cargo_toml
-        """
-        def mock_loads(loadstr):
-            return {'dependencies': ['dep1', 'dep2', 'dep3'], 'bin': True}
-
-        def mock_exists(path):
-            return True
-
-        exists_backup = buildreq.os.path.exists
-        loads_backup = buildreq.toml.loads
-
-        buildreq.os.path.exists = mock_exists
-        buildreq.toml.loads = mock_loads
-
-        open_name = 'buildreq.util.open_auto'
-        content = 'does not matter, let us mock'
-        m_open = mock_open(read_data=content)
-        conf = config.Config("")
-        with patch(open_name, m_open, create=True):
-            self.reqs.parse_cargo_toml('filename', conf)
-
-        buildreq.os.path.exists = exists_backup
-        buildreq.toml.loads = loads_backup
-
-        self.assertEqual(self.reqs.buildreqs,
-                         set(['rustc', 'dep1', 'dep2', 'dep3']))
-        self.assertTrue(self.reqs.cargo_bin)
-        self.assertEqual(conf.default_pattern, 'cargo')
-
-    def test_set_build_req_ruby(self):
-        """
-        Test set_build_req with default_pattern set to ruby.
-        This is just a simple test for the inclusion of a single package, in
-        case the overall package list changes in the future.
-        """
-        conf = config.Config("")
-        conf.default_pattern = "ruby"
-        self.reqs.set_build_req(conf)
-        self.assertIn('ruby', self.reqs.buildreqs)
-
-    def test_set_build_req_cargo(self):
-        """
-        Test set_build_req with default_pattern set to cargo.
-        This is just a simple test for the inclusion of a single package, in
-        case the overall package list changes in the future.
-        """
-        conf = config.Config("")
-        conf.default_pattern = "cargo"
-        self.reqs.set_build_req(conf)
-        self.assertIn('rustc', self.reqs.buildreqs)
-
-    def test_rakefile(self):
-        """
-        Test rakefile parsing with both configured gems and unconfigured gems
-        """
-        conf = config.Config("")
-        conf.setup_patterns()
-        open_name = 'buildreq.util.open_auto'
-        content = "line1\nrequire 'bundler/gem_tasks'\nline3\nrequire 'nope'"
-        m_open = mock_open(read_data=content)
-        with patch(open_name, m_open, create=True):
-            self.reqs.rakefile('filename', conf.gems)
-
-        self.assertEqual(self.reqs.buildreqs, set(['rubygem-rubygems-tasks']))
-
     @patch('buildreq.pypidata.get_pypi_name', get_pypi_name_wrapper)
     def test_clean_python_req(self):
         """
@@ -496,7 +398,6 @@ class TestBuildreq(unittest.TestCase):
         conf = config.Config("")
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
-            open(os.path.join(tmpd, 'subdir', 'test.go'), 'w').close()
             open(os.path.join(tmpd, 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'CMakeLists.txt'), 'w').close()
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
@@ -505,7 +406,7 @@ class TestBuildreq(unittest.TestCase):
             self.reqs.scan_for_configure(tmpd, "", conf)
 
         self.assertEqual(self.reqs.buildreqs,
-                         set(['buildreq-golang', 'buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
+                         set(['buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
 
     def test_scan_for_configure_pypi(self):
         """

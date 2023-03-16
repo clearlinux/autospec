@@ -78,20 +78,16 @@ class TestSpecfileWrite(unittest.TestCase):
         self.specfile.config.sources["archive"] = ["archA", "archD", "archB", "archC"]
         self.specfile.config.sources["tmpfile"] = ["tmp1", "tmp2"]
         self.specfile.config.sources["gcov"] = ["pkg.gcov"]
-        self.specfile.config.sources["godep"] = ["pkg.godep"]
-        self.specfile.config.sources["version"] = ["pkg.oldver"]
         self.specfile.write_sources()
         expect = ["Source1  : archA\n",
                   "Source2  : archB\n",
                   "Source3  : archC\n",
                   "Source4  : archD\n",
                   "Source5  : pkg.gcov\n",
-                  "Source6  : pkg.godep\n",
-                  "Source7  : pkg.oldver\n",
-                  "Source8  : pkg1.service\n",
-                  "Source9  : pkg2.service\n",
-                  "Source10  : tmp1\n",
-                  "Source11  : tmp2\n"]
+                  "Source6  : pkg1.service\n",
+                  "Source7  : pkg2.service\n",
+                  "Source8  : tmp1\n",
+                  "Source9  : tmp2\n"]
         self.assertEqual(expect, self.WRITES)
 
     def test_write_summary(self):

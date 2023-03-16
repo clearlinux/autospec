@@ -20,15 +20,16 @@
 import configparser
 import os
 import re
+import sys
 import tarfile
 import zipfile
-from collections import OrderedDict
 
 import download
+
 from util import do_regex, get_sha1sum, print_fatal, write_out
 
 
-class Source(object):
+class Source():
     """Holds data and methods for source code or archives management."""
 
     def __init__(self, url, destination, path, pattern=None):
@@ -50,8 +51,6 @@ class Source(object):
         """Determine compression type."""
         if self.url.lower().endswith(('.zip', 'jar')):
             self.type = 'zip'
-        elif self.url.lower().endswith('list'):
-            self.type = 'go'
         else:
             self.type = 'tar'
 
@@ -71,14 +70,14 @@ class Source(object):
                 # When tarball is not empty
                 if len(lines) == 0:
                     print_fatal("Tar file doesn't appear to have any content")
-                    exit(1)
+                    sys.exit(1)
                 elif len(lines) > 1:
                     if 'package.xml' in lines and self.pattern in ['phpize']:
                         lines.remove('package.xml')
                     self.prefix = os.path.commonpath(lines)
         else:
             print_fatal("Not a valid tar file.")
-            exit(1)
+            sys.exit(1)
 
     def set_zip_prefix(self):
         """Determine prefix folder name of zip file."""
@@ -90,14 +89,10 @@ class Source(object):
                     self.prefix = os.path.commonpath(lines)
                 else:
                     print_fatal("Zip file doesn't appear to have any content")
-                    exit(1)
+                    sys.exit(1)
         else:
             print_fatal("Not a valid zip file.")
-            exit(1)
-
-    def set_go_prefix(self):
-        """Set empty prefix for go packages (*.list)."""
-        self.prefix = ''
+            sys.exit(1)
 
     def extract(self, base_path):
         """Prepare extraction path and call specific extraction method."""
@@ -118,10 +113,6 @@ class Source(object):
         """Extract zip in path."""
         with zipfile.ZipFile(self.path, 'r') as content:
             content.extractall(path=extraction_path)
-
-    def extract_go(self, extraction_path):
-        """Pretend to do something."""
-        return
 
 
 def convert_version(ver_str, name):
@@ -159,7 +150,7 @@ def convert_version(ver_str, name):
     return ver_str.strip(".")
 
 
-class Content(object):
+class Content():
     """Detect static information about the project."""
 
     def __init__(self, url, name, version, archives, config, base_path):
@@ -167,7 +158,6 @@ class Content(object):
         self.name = name
         self.rawname = ""
         self.version = version
-        self.multi_version = OrderedDict()
         self.release = "1"
         self.url = url
         self.path = ""
@@ -230,24 +220,6 @@ class Content(object):
                 if "domain" in config_f["package"]:
                     self.domain = config_f["package"].get("domain")
 
-    def set_multi_version(self, ver):
-        """Add ver to multi_version set and return latest version."""
-        self.multi_version = self.config.parse_config_versions()
-        if ver:
-            # Some build patterns put multiple versions in the same package.
-            # For those patterns add to the multi_version list
-            if self.config.default_pattern in ["godep"]:
-                self.multi_version[ver] = ""
-            else:
-                self.multi_version = {ver: ""}
-        elif not self.multi_version:
-            # Fall back to ensure a version is always set
-            # (otherwise the last known version will be used)
-            self.multi_version = {"1": ""}
-        latest = sorted(self.multi_version.keys())[-1]
-
-        return latest
-
     def name_and_version(self, filemanager):
         """Parse the url for the package name and version."""
         tarfile = os.path.basename(self.url)
@@ -262,7 +234,7 @@ class Content(object):
         if self.name and self.version:
             # rawname == name in this case
             self.rawname = self.name
-            self.version = convert_version(self.set_multi_version(self.version), self.name)
+            self.version = convert_version(self.version, self.name)
             return
 
         name = self.name
@@ -354,26 +326,6 @@ class Content(object):
                 name = match.group(1).strip()
                 version = convert_version(match.group(2), name)
 
-        # ruby
-        if "rubygems.org/" in self.url:
-            m = re.search(r"(.*?)[\-_](v*[0-9]+[a-zA-Z0-9\+_\.\-\~]*)\.gem", tarfile)
-            if m:
-                name = "rubygem-" + m.group(1).strip()
-                # remove release candidate tag from the package name
-                # https://rubygems.org/downloads/ruby-rc4-0.1.5.gem
-                b = name.find("-rc")
-                if b > 0:
-                    name = name[:b]
-                self.rawname = m.group(1).strip()
-                version = convert_version(m.group(2), name)
-
-        # rust crate
-        if "crates.io" in self.url:
-            m = re.search(r"/crates.io/api/v[0-9]+/crates/(.*)/(.*)/download.*\.crate", self.url)
-            if m:
-                name = m.group(1).strip()
-                version = convert_version(m.group(2), name)
-
         if "gitlab.com" in self.url:
             # https://gitlab.com/leanlabsio/kanban/-/archive/1.7.1/kanban-1.7.1.tar.gz
             m = re.search(r"gitlab\.com/.*/(.*)/-/archive/(?:VERSION_|[vVrR])?(.*)/", self.url)
@@ -397,7 +349,6 @@ class Content(object):
         # override name and version from commandline
         self.name = self.name if self.name else name
         self.version = self.version if self.version else version
-        self.version = self.set_multi_version(self.version)
 
     def set_gcov(self):
         """Set the gcov file name."""
@@ -405,52 +356,11 @@ class Content(object):
         if os.path.isfile(gcov_path):
             self.gcov_file = self.name + ".gcov"
 
-    def process_go_archives(self, go_archives):
-        """Set up extra archives required by go packages."""
-        base_url = os.path.dirname(self.url)
-        for ver in self.multi_version:
-            url_info = os.path.join(base_url, f"{ver}.info")
-            url_mod = os.path.join(base_url, f"{ver}.mod")
-            url_zip = os.path.join(base_url, f"{ver}.zip")
-            # Append elements in pairs url and destination if doesn't exist
-            if url_info not in self.archives:
-                go_archives.extend([url_info, ':'])
-            if url_mod not in self.archives:
-                go_archives.extend([url_mod, ':'])
-            if url_zip not in self.archives:
-                go_archives.extend([url_zip, ''])
-            self.config.sources["godep"] += [url_info, url_mod, url_zip]
-
-    def process_multiver_archives(self, main_src, multiver_archives):
-        """Set up multiversion archives."""
-        config_versions = self.config.parse_config_versions()
-        # Check if exist more than one version.
-        if len(config_versions) > 1:
-            for extraver in config_versions:
-                extraurl = config_versions[extraver]
-                if extraurl and extraurl != main_src.url:
-                    self.config.sources["version"].append(extraurl)
-                    multiver_archives.append(extraurl)
-                    multiver_archives.append('')
-                    self.set_multi_version(None)
-
-    def process_archives(self, main_src):
-        """Process extra sources needed by package.
-
-        This sources include: archives, go archives and multiversion.
-        """
-        go_archives = []
-        multiver_archives = []
+    def process_archives(self):
+        """Process extra sources needed by package."""
         src_objects = []
 
-        if os.path.basename(main_src.url) == "list":
-            # Add extra archives and multiversion for Go packages
-            self.process_go_archives(go_archives)
-        else:
-            # Add multiversion for the rest of the patterns
-            self.process_multiver_archives(main_src, multiver_archives)
-
-        full_archives = self.archives + go_archives + multiver_archives
+        full_archives = self.archives
         # Download and extract full list
         for arch_url, destination in zip(full_archives[::2], full_archives[1::2]):
             src_path = self.check_or_get_file(arch_url, os.path.basename(arch_url), mode="a")
@@ -470,8 +380,6 @@ class Content(object):
         self.set_giturl_and_domain()
         # determine name and version of package
         self.name_and_version(filemanager)
-        # Store the top-level version
-        self.config.versions[self.version] = self.url
         # set gcov file information, must be done after name is set since the gcov
         # name is created by adding ".gcov" to the package name (if a gcov file
         # exists)
@@ -485,8 +393,7 @@ class Content(object):
         self.path = os.path.join(self.base_path, self.tarball_prefix)
         # Now that the metadata has been collected print the header
         self.print_header()
-        # Download and process extra sources: archives, go archives and
-        # multiversion
-        archives_src = self.process_archives(main_src)
+        # Download and process extra sources: archives
+        archives_src = self.process_archives()
         # Extract all sources
         self.extract_sources(main_src, archives_src)

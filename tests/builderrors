@@ -28,17 +28,13 @@ Checking for swig: not found|swig
 Could NOT find swig|swig
 Could not find wpa_supplicant|wpa_supplicant
 Could not find xdg-open|xdg-utils
-Could not find 'swig' (< 4) among 5 total gem|rubygem-swig
 Could not find a package configuration file provided by "swig" etc etc|swig
-Could not find gem 'swig (<= 3) ruby'|rubygem-swig
 Could not find suitable distribution for Requirement.parse('swig')|swig
 Dependency swig found: NO|swig
 Dependency testpkg found: NO (tried pkgconfig and cmake)|pkgconfig(testpkg)
 Dependency testpkg found: NO (tried pkgconfig)|pkgconfig(testpkg)
 Download error on https://pypi.python.org/simple/swig/|pypi(swig)
 Downloading https://test.python.org/packages/pkg/t/swig/1.23|swig
-ERROR:  Could not find a valid gem 'swig' (= 8) in any repository|rubygem-swig
-ERROR:  Could not find a valid gem 'swig' (= 8), here is why:|rubygem-swig
 ERROR: dependencies 'swig' are not available for package 'something'|R-swig
 ERROR: dependencies 'swig', 'swig2' are not available for package 'something'|R-swig
 ERROR: dependencies ‘swig’ are not available for package ‘something’|R-swig
@@ -48,14 +44,12 @@ ERROR: dependency ‘swig’ is not available for package ‘something’|R-swig
 Error: Unable to find swig|swig
 Error: package 'swig' required by|R-swig
 Error: package ‘swig’ required by|R-swig
-Gem::LoadError: Could not find 'swig'|rubygem-swig
 ImportError: No module named 'swig'|pypi(swig)
 ImportError: No module named swig|swig
 ImportError: No module named swig|pypi(swig)
 ImportError: cannot import name swig|swig
 ImportError: swig module missing|swig
 ImportError:..*: No module named swig|pypi(swig)
-LoadError: cannot load such file -- swig/pkg|rubygem-swig
 ModuleNotFoundError: No module named swig|swig
 Native dependency 'swig' not found|pkgconfig(swig)
 No local packages or working download links found for swig|pypi(swig)
@@ -70,7 +64,6 @@ Program swig found: NO|swig
 Target 't' can't be generated as 'swig' could not be found|swig
 Unable to `import swig`|swig
 Unable to find 'swig'|swig
-WARNING:  package dependency on swig (= 5.4) ardilla|rubygem-swig
 Warning: no usable swig found|swig
 Warning: prerequisite swig 8 not found.|perl(swig)
 You need swig to build this program.|swig
@@ -98,7 +91,6 @@ fatal error: swig: No such file or directory|swig
 make: swig: Command not found|swig
 make: help2man: No such file or directory|help2man
 swig 8 is required to configure this module; please install it or upgrade your CPAN/CPANPLUS shell.|swig
-swig is not installed: cannot load such file -- rdoc/swig|rubygem-swig
 swig tool not found or not executable|swig
 swig validation tool not found or not executable|swig
 swig: command not found|swig

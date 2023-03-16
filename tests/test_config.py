@@ -10,7 +10,6 @@ BUILD_PAT_URL = [
     ("https://pypi.python.org/packages/source/T/Tempita/Tempita-0.5.2.tar.gz", "distutils3"),
     ("https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-Tty-1.14.tar.gz", "cpan"),
     ("http://search.cpan.org/CPAN/authors/id/D/DS/DSKOLL/IO-stringy-2.111.tar.gz", "cpan"),
-    ("https://proxy.golang.org/github.com/spf13/pflag/@v/list", "godep"),
     ("https://pecl.php.net//get/lua-2.0.6.tgz", "phpize"),
 ]
 

@@ -39,7 +39,6 @@ pubkey --gnupghome /opt/pki/gpghome
 """.format(fn=__file__)
 
 SEPT = "-------------------------------------------------------------------------------"
-RUBYORG_API = "https://rubygems.org/api/v1/versions/{}.json"
 PYPIORG_API = "https://pypi.python.org/pypi/{}/json"
 KEYID_TRY = ""
 KEYID = ""
@@ -596,57 +595,6 @@ def quit_verify():
     Verifier.quit()
 
 
-# GEM Verifier
-class GEMShaVerifier(Verifier):
-    """Verify signatures for ruby gems."""
-
-    def __init__(self, **kwargs):
-        """Initialize gem verification."""
-        self.package_path = kwargs.get('package_path', None)
-        Verifier.__init__(self, **kwargs)
-
-    @staticmethod
-    def get_rubygems_info(package_name):
-        """Get json dump of ruby gem."""
-        url = RUBYORG_API.format(package_name)
-        data = download.do_curl(url)
-        if data:
-            return json.loads(data.getvalue().decode('utf-8'))
-        else:
-            return None
-
-    @staticmethod
-    def get_gemnumber_sha(gems, number):
-        """Get sha for a gem based on the gem's number."""
-        mygem = [gem for gem in gems if gem.get('number', -100) == number]
-        if len(mygem) == 1:
-            return mygem[0].get('sha', None)
-        else:
-            return None
-
-    def verify(self):
-        """Verify ruby gem based on sha sum."""
-        gemname = os.path.basename(self.package_path).replace('.gem', '')
-        util.print_info("Verifying SHA256 checksum")
-        if os.path.exists(self.package_path) is False:
-            self.print_result(False, 'GEM was not found {}'.format(self.package_path))
-            return
-        name, _ = re.split(r'-\d+\.', gemname)
-        number = gemname.replace(name + '-', '')
-        geminfo = GEMShaVerifier.get_rubygems_info(name)
-        gemsha = GEMShaVerifier.get_gemnumber_sha(geminfo, number)
-
-        if geminfo is None:
-            self.print_result(False, "unable to parse info for gem {}".format(gemname))
-        else:
-            calcsha = self.calc_sum(self.package_path, hashlib.sha256)
-            self.print_result(gemsha == calcsha)
-            result = gemsha == calcsha
-            if result is False:
-                self.quit()
-            return result
-
-
 VERIFIER_TYPES = {
     '.gz': GPGVerifier,
     '.tgz': GPGVerifier,
@@ -654,7 +602,6 @@ VERIFIER_TYPES = {
     '.bz2': GPGVerifier,
     '.xz': GPGVerifier,
     '.zip': GPGVerifier,
-    '.gem': GEMShaVerifier,
 }
 
 
@@ -894,10 +841,7 @@ def check(url, config, interactive=True):
     verified = None
     if package_check is not None:
         verified = from_disk(url, package_path, package_check, config, interactive=interactive)
-    if not verified and package_path[-4:] == '.gem':
-        signature_file = get_signature_file(url, config.download_path)
-        verified = from_disk(url, package_path, signature_file, config, interactive=interactive)
-    if not verified and package_path[-4:] != '.gem':
+    if not verified:
         util.print_info('None of {}.(asc|sig|sign|sha256) is found in {}'.format(package_name, config.download_path))
         signature_file = get_signature_file(url, config.download_path)
         if signature_file is not None:

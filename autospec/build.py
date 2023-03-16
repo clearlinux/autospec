@@ -139,16 +139,6 @@ class Build(object):
                 if not s:
                     return
                 self.must_restart += requirements.add_buildreq(f"pypi({s.lower().replace('-', '_')})", cache=True)
-            elif buildtool == 'ruby':
-                if s in config.gems:
-                    self.must_restart += requirements.add_buildreq(config.gems[s], cache=True)
-                else:
-                    self.must_restart += requirements.add_buildreq('rubygem-%s' % s, cache=True)
-            elif buildtool == 'ruby table':
-                if s in config.gems:
-                    self.must_restart += requirements.add_buildreq(config.gems[s], cache=True)
-                else:
-                    print("Unknown ruby gem match", s)
             elif buildtool == 'catkin':
                 self.must_restart += requirements.add_pkgconfig_buildreq(s, config.config_opts.get('32bit'), cache=True)
                 self.must_restart += requirements.add_buildreq(s, cache=True)
