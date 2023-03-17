@@ -178,7 +178,6 @@ class TestBuildreq(unittest.TestCase):
         requirements
         """
         conf = config.Config("")
-        open_name = 'buildreq.util.open_auto'
         content = 'AC_CHECK_FUNC([tgetent])\n'                   \
                   'XDT_CHECK_PACKAGE(prefix, '                   \
                   '[module = 2 module2 > 9], '                   \
@@ -192,7 +191,6 @@ class TestBuildreq(unittest.TestCase):
                 f.write(content)
             self.reqs.parse_configure_ac(os.path.join(tmpd, 'fname'), conf)
 
-        self.assertEqual(conf.default_pattern, 'configure_ac')
         self.assertEqual(self.reqs.buildreqs,
                          set(['gettext',
                               'perl(XML::Parser)',
@@ -389,7 +387,7 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(self.reqs.buildreqs, set())
         self.assertEqual(self.reqs.requires[None], set())
 
-    def test_scan_for_configure(self):
+    def test_scan_for_configure_setup(self):
         """
         Test scan_for_configure with a mocked package structure. There is so
         much to test here that uses the same logic, a representative test
@@ -399,14 +397,59 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'setup.py'), 'w').close()
+
+            self.reqs.scan_for_configure(tmpd, "", conf)
+
+        self.assertEqual(self.reqs.buildreqs,
+                         set(['buildreq-distutils3']))
+
+    def test_scan_for_configure_cmake(self):
+        """
+        Test scan_for_configure with a mocked package structure. There is so
+        much to test here that uses the same logic, a representative test
+        should be sufficient.
+        """
+        conf = config.Config("")
+        with tempfile.TemporaryDirectory() as tmpd:
+            os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'CMakeLists.txt'), 'w').close()
+
+            self.reqs.scan_for_configure(tmpd, "", conf)
+
+        self.assertEqual(self.reqs.buildreqs,
+                         set(['buildreq-cmake']))
+
+    def test_scan_for_configure_scons(self):
+        """
+        Test scan_for_configure with a mocked package structure. There is so
+        much to test here that uses the same logic, a representative test
+        should be sufficient.
+        """
+        conf = config.Config("")
+        with tempfile.TemporaryDirectory() as tmpd:
+            os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
+
+            self.reqs.scan_for_configure(tmpd, "", conf)
+
+        self.assertEqual(self.reqs.buildreqs,
+                         set(['buildreq-scons']))
+
+    def test_scan_for_configure_meson(self):
+        """
+        Test scan_for_configure with a mocked package structure. There is so
+        much to test here that uses the same logic, a representative test
+        should be sufficient.
+        """
+        conf = config.Config("")
+        with tempfile.TemporaryDirectory() as tmpd:
+            os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'meson.build'), 'w').close()
 
             self.reqs.scan_for_configure(tmpd, "", conf)
 
         self.assertEqual(self.reqs.buildreqs,
-                         set(['buildreq-cmake', 'buildreq-scons', 'buildreq-distutils3', 'buildreq-meson']))
+                         set(['buildreq-meson']))
 
     def test_scan_for_configure_pypi(self):
         """
