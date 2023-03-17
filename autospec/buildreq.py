@@ -436,7 +436,6 @@ class Requirements(object):
         buf = ""
         depth = 0
         # print("Configure parse: ", filename)
-        config.set_build_pattern("configure_ac", 1)
         f = util.open_auto(filename, "r")
         while 1:
             c = f.read(1)
@@ -673,123 +672,108 @@ class Requirements(object):
                     # be skipped
                     pass
 
-    def parse_catkin_deps(self, cmakelists_file, conf32):
-        """Determine requirements for catkin packages."""
-        f = util.open_auto(cmakelists_file, "r")
-        lines = f.readlines()
-        pat = re.compile(r"^find_package.*\(.*(catkin)(?: REQUIRED *)?(?:COMPONENTS (?P<comp>.*))?\)$")
-        catkin = False
-        for line in lines:
-            match = pat.search(line)
-            if not match:
-                continue
+    def get_data_from_pypi(self, name, config):
+        """Use pypi for getting package requires and metadata."""
+        # First look for a local override
+        pypi_json = ""
+        pypi_file = os.path.join(config.download_path, "pypi.json")
+        if os.path.isfile(pypi_file):
+            with open(pypi_file, "r") as pfile:
+                pypi_json = pfile.read()
+        else:
+            # Try and grab the pypi details for the package
+            if config.alias:
+                name = config.alias
+            pypi_name = pypidata.get_pypi_name(name)
+            pypi_json = pypidata.get_pypi_metadata(pypi_name)
+        if pypi_json:
+            try:
+                package_pypi = json.loads(pypi_json)
+            except json.JSONDecodeError:
+                package_pypi = {}
+            if package_pypi.get("name"):
+                self.pypi_provides = package_pypi["name"]
+            if package_pypi.get("requires"):
+                for pkg in package_pypi["requires"]:
+                    self.add_requires(f"pypi({pkg})", config.os_packages, override=True, subpkg="python3")
+            if package_pypi.get("license"):
+                # The license field is freeform, might be worth looking at though
+                print(f"Pypi says the license is: {package_pypi['license']}")
+            if package_pypi.get("summary"):
+                specdescription.assign_summary(package_pypi["summary"], 4)
 
-            # include catkin's required components
-            comp = match.group("comp")
-            if comp:
-                for curr in comp.split(" "):
-                    self.add_pkgconfig_buildreq(curr, conf32)
-
-            catkin = True
-
-        # catkin find_package() function will always rely on CMAKE_PREFIX_PATH
-        # make sure we keep it consistent with CMAKE_INSTALL_PREFIX otherwise
-        # it'll never be able to find its modules
-        if catkin:
-            for curr in ["catkin", "catkin_pkg", "empy", "googletest"]:
-                self.add_buildreq(curr)
-
-            self.extra_cmake.add("-DCMAKE_PREFIX_PATH=/usr")
-            self.extra_cmake.add("-DCATKIN_BUILD_BINARY_PACKAGE=ON")
-            self.extra_cmake.add("-DSETUPTOOLS_DEB_LAYOUT=OFF")
+    def setup_autoreconf(self, config, spath):
+        """Configure for autoreconf (or not)."""
+        can_reconf = os.path.exists(os.path.join(spath, "configure.ac"))
+        if not can_reconf:
+            can_reconf = os.path.exists(os.path.join(spath, "configure.in"))
+        if can_reconf and config.autoreconf:
+            print("Patches touch configure.*, adding autoreconf stage")
+            for breq in self.autoreconf_reqs:
+                self.add_buildreq(breq)
+        else:
+            config.autoreconf = False
 
     def scan_for_configure(self, dirn, tname, config):
         """Scan the package directory for build files to determine build pattern."""
-        if config.default_pattern == "distutils36":
-            self.add_buildreq("buildreq-distutils36")
-        elif config.default_pattern == "distutils3":
-            self.add_buildreq("buildreq-distutils3")
-        elif config.default_pattern == "cmake":
-            self.add_buildreq("buildreq-cmake")
-        elif config.default_pattern == "configure":
-            self.add_buildreq("buildreq-configure")
-        elif config.default_pattern == "qmake":
-            self.add_buildreq("buildreq-qmake")
-        elif config.default_pattern == "cpan":
-            self.add_buildreq("buildreq-cpan")
-        elif config.default_pattern == "scons":
-            self.add_buildreq("buildreq-scons")
-        elif config.default_pattern == "R":
-            self.add_buildreq("buildreq-R")
-            self.parse_r_description(os.path.join(dirn, "DESCRIPTION"), config.os_packages)
-        elif config.default_pattern == "phpize":
-            self.add_buildreq("buildreq-php")
-        elif config.default_pattern == "nginx":
-            self.add_buildreq("buildreq-nginx")
-
         count = 0
+        requires_path = ""
+        requirements_path = ""
+        setup_path = ""
+        configure_ac_files = []
+        qmake_profiles = []
+        cmake_files = []
         for dirpath, _, files in os.walk(dirn):
             default_score = 2 if dirpath == dirn else 1
 
-            if "go.mod" in files:
-                self.add_buildreq("buildreq-golang")
-
             if "CMakeLists.txt" in files and "configure.ac" not in files:
-                self.add_buildreq("buildreq-cmake")
                 config.set_build_pattern("cmake", default_score)
-
-                srcdir = os.path.abspath(os.path.join(dirn, "clr-build", config.cmake_srcdir or ".."))
-                if os.path.samefile(dirpath, srcdir):
-                    self.parse_catkin_deps(os.path.join(srcdir, "CMakeLists.txt"), config.config_opts.get('32bit'))
 
             if "configure" in files and os.access(dirpath + '/configure', os.X_OK):
                 config.set_build_pattern("configure", default_score)
             elif any(is_qmake_pro(f) for f in files):
-                self.add_buildreq("buildreq-qmake")
                 config.set_build_pattern("qmake", default_score)
 
-            if "requires.txt" in files:
-                req_path = os.path.join(dirpath, "requires.txt")
-                if not python_req_in_filtered_path(req_path):
-                    self.grab_python_requirements(req_path, config.os_packages)
-
-            if "pyproject.toml" in files:
+            if "pyproject.toml" in files and not requires_path:
                 req_path = os.path.join(dirpath, "pyproject.toml")
-                if not python_req_in_filtered_path(req_path):
-                    self.add_buildreq("buildreq-distutils3")
-                    self.add_pyproject_requires(req_path)
-                    if "setup.cfg" in files:
-                        self.add_setup_cfg_requires(dirpath + '/setup.cfg', config.os_packages)
+                if "setup.cfg" in files:
+                    s_path = os.path.join(dirpath, 'setup.cfg')
+                    if not python_req_in_filtered_path(s_path):
+                        setup_path = s_path
+                if not python_req_in_filtered_path(requires_path):
+                    requires_path = req_path
                     config.set_build_pattern("pyproject", default_score)
-            elif "setup.py" in files:
-                req_path = os.path.join(dirpath, "setup.py")
-                if not python_req_in_filtered_path(req_path):
-                    self.add_buildreq("buildreq-distutils3")
-                    self.add_setup_py_requires(req_path, config.os_packages)
+            elif "setup.py" in files and not setup_path:
+                s_path = os.path.join(dirpath, "setup.py")
+                if not python_req_in_filtered_path(s_path):
+                    setup_path = s_path
                     config.set_build_pattern("distutils3", default_score)
 
-            if "Makefile.PL" in files or "Build.PL" in files:
-                config.set_build_pattern("cpan", default_score)
-                self.add_buildreq("buildreq-cpan")
-
-            if "SConstruct" in files:
-                self.add_buildreq("buildreq-scons")
-                config.set_build_pattern("scons", default_score)
+            if "requires.txt" in files and not requires_path:
+                req_path = os.path.join(dirpath, "requires.txt")
+                if not python_req_in_filtered_path(req_path):
+                    requires_path = req_path
 
             if "requirements.txt" in files:
                 req_path = os.path.join(dirpath, "requirements.txt")
                 if not python_req_in_filtered_path(req_path):
-                    self.grab_python_requirements(req_path, config.os_packages)
+                    requirements_path = req_path
+
+            if "Makefile.PL" in files or "Build.PL" in files:
+                config.set_build_pattern("cpan", default_score)
+
+            if "SConstruct" in files:
+                config.set_build_pattern("scons", default_score)
 
             if "meson.build" in files:
-                self.add_buildreq("buildreq-meson")
                 config.set_build_pattern("meson", default_score)
 
             for name in files:
                 if name.lower().startswith("configure."):
-                    self.parse_configure_ac(os.path.join(dirpath, name), config)
+                    config.set_build_pattern("configure_ac", 1)
+                    configure_ac_files.append(os.path.join(dirpath, name))
                 if name.endswith(".pro") and config.default_pattern == "qmake":
-                    self.qmake_profile(os.path.join(dirpath, name), config.qt_modules)
+                    qmake_profiles.append(os.path.join(dirpath, name))
                 if name.lower() == "makefile":
                     config.set_build_pattern("make", default_score)
                 if name.lower() == "autogen.sh":
@@ -798,46 +782,44 @@ class Requirements(object):
                     config.set_build_pattern("cmake", default_score)
                 if (name.lower() == "cmakelists.txt" or name.endswith(".cmake")) \
                    and config.default_pattern == "cmake":
-                    self.parse_cmake(os.path.join(dirpath, name), config.cmake_modules, config.config_opts.get('32bit'))
+                    cmake_files.append(os.path.join(dirpath, name))
 
-        can_reconf = os.path.exists(os.path.join(dirn, "configure.ac"))
-        if not can_reconf:
-            can_reconf = os.path.exists(os.path.join(dirn, "configure.in"))
-        if can_reconf and config.autoreconf:
-            print("Patches touch configure.*, adding autoreconf stage")
-            for breq in self.autoreconf_reqs:
-                self.add_buildreq(breq)
-        else:
-            config.autoreconf = False
-
-        if config.default_pattern in ("distutils3", "pyproject"):
-            # First look for a local override
-            pypi_json = ""
-            pypi_file = os.path.join(config.download_path, "pypi.json")
-            if os.path.isfile(pypi_file):
-                with open(pypi_file, "r") as pfile:
-                    pypi_json = pfile.read()
-            else:
-                # Try and grab the pypi details for the package
-                if config.alias:
-                    tname = config.alias
-                pypi_name = pypidata.get_pypi_name(tname)
-                pypi_json = pypidata.get_pypi_metadata(pypi_name)
-            if pypi_json:
-                try:
-                    package_pypi = json.loads(pypi_json)
-                except json.JSONDecodeError:
-                    package_pypi = {}
-                if package_pypi.get("name"):
-                    self.pypi_provides = package_pypi["name"]
-                if package_pypi.get("requires"):
-                    for pkg in package_pypi["requires"]:
-                        self.add_requires(f"pypi({pkg})", config.os_packages, override=True, subpkg="python3")
-                if package_pypi.get("license"):
-                    # The license field is freeform, might be worth looking at though
-                    print(f"Pypi says the license is: {package_pypi['license']}")
-                if package_pypi.get("summary"):
-                    specdescription.assign_summary(package_pypi["summary"], 4)
+        if config.default_pattern in ('distutils3', 'pyproject'):
+            if requires_path:
+                self.grab_python_requirements(requires_path, config.os_packages)
+            if setup_path:
+                self.add_setup_py_requires(setup_path, config.os_packages)
+            if requirements_path:
+                self.grab_python_requirements(requirements_path, config.os_packages)
+            self.get_data_from_pypi(tname, config)
+            self.add_buildreq("buildreq-distutils3")
+        elif config.default_pattern == "cmake":
+            self.add_buildreq("buildreq-cmake")
+            for cfile in cmake_files:
+                self.parse_cmake(cfile, config.cmake_modules, config.config_opts.get('32bit'))
+        elif config.default_pattern == "configure":
+            self.add_buildreq("buildreq-configure")
+        elif config.default_pattern in ("autogen", "configure_ac"):
+            for cfile in configure_ac_files:
+                self.parse_configure_ac(cfile, config)
+            self.setup_autoreconf(config, dirn)
+        elif config.default_pattern == "qmake":
+            self.add_buildreq("buildreq-qmake")
+            for qfile in qmake_profiles:
+                self.qmake_profile(qfile, config.qt_modules)
+        elif config.default_pattern == "cpan":
+            self.add_buildreq("buildreq-cpan")
+        elif config.default_pattern == "scons":
+            self.add_buildreq("buildreq-scons")
+        elif config.default_pattern == "meson":
+            self.add_buildreq("buildreq-meson")
+        elif config.default_pattern == "R":
+            self.add_buildreq("buildreq-R")
+            self.parse_r_description(os.path.join(dirn, "DESCRIPTION"), config.os_packages)
+        elif config.default_pattern == "phpize":
+            self.add_buildreq("buildreq-php")
+        elif config.default_pattern == "nginx":
+            self.add_buildreq("buildreq-nginx")
 
         print("Buildreqs   : ", end="")
         for lic in sorted(self.buildreqs):
