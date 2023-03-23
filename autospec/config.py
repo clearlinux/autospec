@@ -152,6 +152,7 @@ class Config(object):
         self.config_opts = {}
         self.config_options = {
             "broken_c++": "extend flags with '-std=gnu++98",
+            "cargo_vendor": "create vendor archive with cargo",
             "use_lto": "configure build for lto",
             "use_avx2": "configure build for avx2",
             "use_avx512": "configure build for avx512",
