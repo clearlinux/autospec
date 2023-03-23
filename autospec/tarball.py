@@ -346,6 +346,12 @@ class Content():
                 name = m.group(1).strip()
                 version = convert_version(m.group(2), name)
 
+        if ".ezix.org" in self.url:
+            # https://www.ezix.org/software/files/lshw-B.02.19.2.tar.gz
+            if m := re.search(r"(\w+)-[A-Z]\.(\d+(?:\.\d+)+)", self.url):
+                name = m.group(1).strip()
+                version = convert_version(m.group(2), name)
+
         # override name and version from commandline
         self.name = self.name if self.name else name
         self.version = self.version if self.version else version
