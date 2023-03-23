@@ -726,6 +726,9 @@ class Requirements(object):
         for dirpath, _, files in os.walk(dirn):
             default_score = 2 if dirpath == dirn else 1
 
+            if "Cargo.toml" in files:
+                config.set_build_pattern('cargo', default_score)
+
             if "CMakeLists.txt" in files and "configure.ac" not in files:
                 config.set_build_pattern("cmake", default_score)
 
@@ -809,6 +812,8 @@ class Requirements(object):
                 self.qmake_profile(qfile, config.qt_modules)
         elif config.default_pattern == "cpan":
             self.add_buildreq("buildreq-cpan")
+        elif config.default_pattern == "cargo":
+            self.add_buildreq("rustc")
         elif config.default_pattern == "scons":
             self.add_buildreq("buildreq-scons")
         elif config.default_pattern == "meson":

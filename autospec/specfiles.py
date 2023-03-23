@@ -420,6 +420,25 @@ class Specfile(object):
             self._write_strip("%setup -q -n " + prefix)
         else:
             self._write_strip("%setup -q -n " + prefix)
+            for archive in self.config.sources["archive"]:
+                # Handle various archive types
+                extract_cmd = 'tar xf {}'
+                if archive.endswith('.zip'):
+                    extract_cmd = 'unzip -q {}'
+                self._write_strip('cd %{_builddir}')
+                archive_file = os.path.basename(archive)
+                if self.config.archive_details.get(archive + "prefix"):
+                    self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
+                else:
+                    # The archive doesn't have a prefix inside, so we have
+                    # to create it, then extract the archive under the
+                    # created directory, itself beneath BUILD
+                    fake_prefix = os.path.splitext(os.path.basename(archive))[0]
+                    self._write_strip("mkdir -p {}".format(fake_prefix))
+                    self._write_strip("cd {}".format(fake_prefix))
+                    self._write_strip(extract_cmd.format('%{_sourcedir}/' + archive_file))
+
+            self._write_strip('cd %{_builddir}/' + prefix)
 
         for archive, destination in zip(self.config.sources["archive"], self.config.sources["destination"]):
             if destination.startswith(':'):
@@ -1660,6 +1679,40 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("popd")
         self.write_find_lang()
+
+    def write_cargo_pattern(self):
+        """Write cargo build pattern to spec file."""
+        self.write_prep()
+
+        self._write_strip("%build")
+        self.write_build_prepend()
+        self.write_proxy_exports()
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("mkdir -p .cargo")
+        self._write_strip("echo '[source.crates-io]' >> .cargo/config.toml")
+        self._write_strip("""echo 'replace-with = "vendored-sources"' >> .cargo/config.toml""")
+        self._write_strip("echo '[source.vendored-sources]' >> .cargo/config.toml")
+        self._write_strip("""echo 'directory = "vendor"' >> .cargo/config.toml""")
+        self._write_strip("cargo build --release")
+        if self.config.subdir:
+            self._write_strip("popd")
+        self.write_build_append()
+        self._write_strip("\n")
+
+        self._write_strip("%install")
+        self.write_install_prepend()
+        self.write_license_files()
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("cargo install --path .")
+        self._write_strip("mkdir -p %{buildroot}/usr/bin")
+        self._write_strip('pushd "${HOME}/.cargo/bin/"')
+        self._write_strip("mv * %{buildroot}/usr/bin/")
+        self._write_strip("popd")
+        if self.config.subdir:
+            self._write_strip("popd")
+        self.write_install_append()
 
     def write_phpize_pattern(self):
         """Write phpize build pattern to spec file."""
