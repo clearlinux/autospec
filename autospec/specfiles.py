@@ -1702,11 +1702,6 @@ class Specfile(object):
         self.write_proxy_exports()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip("mkdir -p .cargo")
-        self._write_strip("echo '[source.crates-io]' >> .cargo/config.toml")
-        self._write_strip("""echo 'replace-with = "vendored-sources"' >> .cargo/config.toml""")
-        self._write_strip("echo '[source.vendored-sources]' >> .cargo/config.toml")
-        self._write_strip("""echo 'directory = "vendor"' >> .cargo/config.toml""")
         self._write_strip("cargo build --release")
         if self.config.subdir:
             self._write_strip("popd")
