@@ -381,6 +381,12 @@ class Specfile(object):
 
     def write_make_line(self, build32=False):
         """Write make line to spec file."""
+        if self.config.config_opts['cargo_vendor']:
+            self._write_strip("mkdir -p .cargo")
+            self._write_strip("echo '[source.crates-io]' >> .cargo/config.toml")
+            self._write_strip("""echo 'replace-with = "vendored-sources"' >> .cargo/config.toml""")
+            self._write_strip("echo '[source.vendored-sources]' >> .cargo/config.toml")
+            self._write_strip("""echo 'directory = "vendor"' >> .cargo/config.toml""")
         if self.config.make_prepend:
             self._write_strip("## make_prepend content")
             for line in self.config.make_prepend:
