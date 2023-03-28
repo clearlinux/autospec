@@ -801,6 +801,8 @@ class Requirements(object):
             for cfile in cmake_files:
                 self.parse_cmake(cfile, config.cmake_modules, config.config_opts.get('32bit'))
         elif config.default_pattern == "configure":
+            for cfile in configure_ac_files:
+                self.parse_configure_ac(cfile, config)
             self.add_buildreq("buildreq-configure")
         elif config.default_pattern in ("autogen", "configure_ac"):
             for cfile in configure_ac_files:
