@@ -50,7 +50,8 @@ ImportError: No module named swig|pypi(swig)
 ImportError: cannot import name swig|swig
 ImportError: swig module missing|swig
 ImportError:..*: No module named swig|pypi(swig)
-ModuleNotFoundError: No module named swig|swig
+ModuleNotFoundError: No module named swig|pypi(swig)
+ModuleNotFoundError: No module named 'foo-bar'|pypi(foo_bar)
 Native dependency 'swig' not found|pkgconfig(swig)
 No local packages or working download links found for swig|pypi(swig)
 No matching distribution found for swig|pypi(swig)

@@ -274,7 +274,7 @@ class Config(object):
             (r"ImportError:.* No module named '?([a-zA-Z0-9\-\._]+)'?", 0, 'pypi'),
             (r"ImportError\: ([a-zA-Z]+) module missing", 0, None),
             (r"ImportError\: (?:No module|cannot import) named? (.*)", 0, None),
-            (r"ModuleNotFoundError.*No module named (.*)", 0, None),
+            (r"ModuleNotFoundError.*No module named '?(.*)'?", 0, 'pypi'),
             (r"Native dependency '(.*)' not found", 0, "pkgconfig"),
             (r"No library found for -l([a-zA-Z\-])", 0, None),
             (r"No (?:matching distribution|local packages or working download links) found for ([a-zA-Z0-9\-\.\_]+)", 0, 'pypi'),
