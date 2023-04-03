@@ -293,7 +293,7 @@ class Config(object):
             (r"You need ([a-zA-Z0-9\-\_]*) to build this program.", 1, None),
             (r"[Dd]ependency (.*) found: NO \(tried pkgconfig(?: and cmake)?\)", 0, 'pkgconfig'),
             (r"[Dd]ependency (.*) found: NO", 0, None),
-            (r"\/bin\/ld: cannot find (-l[a-zA-Z0-9\_]+)", 0, None),
+            (r"(?:\/usr)?\/bin\/ld: cannot find (-l[a-zA-Z0-9\_]+)", 0, None),
             (r"^.*By not providing \"Find(.*).cmake\" in CMAKE_MODULE_PATH this.*$", 0, None),
             (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
             (r"^.*\"(.*)\" with any of the following names.*$", 0, None),
