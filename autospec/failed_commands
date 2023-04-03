@@ -105,6 +105,7 @@
 -lsqlite3, sqlite-autoconf-dev
 -lssh, libssh-dev
 -lssl, openssl-dev
+-lTerminfo, ncurses-dev
 -ltermcap, ncurses-dev
 -ltinfo, ncurses-dev
 -ltinfow, ncurses-dev
