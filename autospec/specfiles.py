@@ -239,6 +239,11 @@ class Specfile(object):
         deps["lib32"] = ["data", "license"]
         deps["python"] = ["python3"]
         deps["python3"] = ["filemap"]
+        if "services" in self.packages:
+            if service_reqs := self.requirements.requires.get("services"):
+                service_reqs.add("systemd")
+            else:
+                self.requirements.requires["services"] = set(["systemd"])
         if self.config.config_opts.get('dev_requires_extras'):
             deps["dev"].append("extras")
         if self.config.config_opts.get('openmpi'):
