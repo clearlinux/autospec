@@ -31,6 +31,8 @@ class TestFiles(unittest.TestCase):
         """
         bad_paths = ["/etc/one",
                      "/opt/two",
+                     "/V3/opt/two",
+                     "/V4/opt/two",
                      "/usr/etc/three",
                      "/usr/local/four",
                      "/usr/src/five",
@@ -54,6 +56,8 @@ class TestFiles(unittest.TestCase):
         """
         self.assertFalse(self.fm.newfiles_printed)
         self.fm.push_package_file('/etc/test-fn')
+        self.fm.push_package_file('/V3/etc/test-fn')
+        self.fm.push_package_file('/V4/etc/test-fn')
         self.assertTrue(self.fm.has_banned)
         self.assertFalse(self.fm.newfiles_printed)
 
@@ -78,6 +82,8 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.config.config_opts['compat'] = True
         self.assertTrue(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
+        self.assertTrue(self.fm.compat_exclude('/V3/usr/lib64/libfoo.so'))
+        self.assertTrue(self.fm.compat_exclude('/V4/usr/lib64/libfoo.so'))
 
     def test_compat_exclude_not_compat_mode(self):
         """
@@ -86,6 +92,8 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.config.config_opts['compat'] = False
         self.assertFalse(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
+        self.assertFalse(self.fm.compat_exclude('/V3/usr/lib64/libfoo.so'))
+        self.assertFalse(self.fm.compat_exclude('/V4/usr/lib64/libfoo.so'))
 
     def test_file_pat_match(self):
         """
@@ -93,16 +101,22 @@ class TestFiles(unittest.TestCase):
         specified.
         """
         self.fm.push_package_file = MagicMock()
-        self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main'))
-        self.fm.push_package_file.assert_called_with('test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/test-fn', r'^/test-fn', 'main'))
+        self.fm.push_package_file.assert_called_with('/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V3/test-fn', r'^/test-fn', 'main'))
+        self.fm.push_package_file.assert_called_with('/V3/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main'))
+        self.fm.push_package_file.assert_called_with('/V4/test-fn', 'main')
 
     def test_file_pat_match_exclude(self):
         """
         Test file_pat_match with good match and filename in excludes list.
         """
         self.fm.push_package_file = MagicMock()
-        self.fm.excludes.append('test-fn')
-        self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main'))
+        self.fm.excludes.append('/test-fn')
+        self.assertTrue(self.fm.file_pat_match('/test-fn', r'^/test-fn', 'main'))
+        self.assertTrue(self.fm.file_pat_match('/V3/test-fn', r'^/test-fn', 'main'))
+        self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main'))
         self.fm.push_package_file.assert_not_called()
 
     def test_file_pat_match_replacement(self):
@@ -110,8 +124,12 @@ class TestFiles(unittest.TestCase):
         Test file_pat_match with replacement provided
         """
         self.fm.push_package_file = MagicMock()
-        self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main', 'testfn'))
-        self.fm.push_package_file.assert_called_with('testfn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/test-fn', r'^/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/testfn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V3/test-fn', r'/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/V3/testfn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/V4/testfn', 'main')
 
     def test_file_pat_match_replacement_no_glob(self):
         """
@@ -119,8 +137,12 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.push_package_file = MagicMock()
         self.fm.config.config_opts['no_glob'] = True
-        self.assertTrue(self.fm.file_pat_match('test-fn', r'test-fn', 'main', 'testfn'))
-        self.fm.push_package_file.assert_called_with('test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/test-fn', r'^/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V3/test-fn', r'^/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/V3/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/V4/test-fn', 'main')
 
     def test_file_pat_match_no_match(self):
         """
@@ -171,9 +193,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': ["foobar"]}}
-        self.fm.push_file('foobar', '')
-        calls = [call('foobar', 'foobar-extras')]
+        self.fm.file_maps = {'foobar-extras': {'files': ["/foobar"]}}
+        self.fm.push_file('/foobar', '')
+        calls = [call('/foobar', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/foobar', '')
+        calls = [call('/V3/foobar', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/foobar', '')
+        calls = [call('/V4/foobar', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_empty(self):
@@ -182,9 +210,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
-        self.fm.push_file('leftglobrightglob', '')
+        self.fm.file_maps = {'foobar-extras': {'files': [['', 'leftglob*rightglob']]}}
+        self.fm.push_file('/leftglobrightglob', '')
         calls = [call('/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/leftglobrightglob', '')
+        calls = [call('/V3/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/leftglobrightglob', '')
+        calls = [call('/V4/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_left_match(self):
@@ -193,9 +227,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*']]}}
-        self.fm.push_file('leftglobrightglob', '')
+        self.fm.file_maps = {'foobar-extras': {'files': [['', 'leftglob*']]}}
+        self.fm.push_file('/leftglobrightglob', '')
         calls = [call('/leftglob*', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/leftglobrightglob', '')
+        calls = [call('/V3/leftglob*', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/leftglobrightglob', '')
+        calls = [call('/V4/leftglob*', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_right_match(self):
@@ -204,9 +244,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': [['*rightglob']]}}
-        self.fm.push_file('leftglobrightglob', '')
+        self.fm.file_maps = {'foobar-extras': {'files': [['', '*rightglob']]}}
+        self.fm.push_file('/leftglobrightglob', '')
         calls = [call('/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/leftglobrightglob', '')
+        calls = [call('/V3/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/leftglobrightglob', '')
+        calls = [call('/V4/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_leftright_match(self):
@@ -215,9 +261,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*rightglob']]}}
-        self.fm.push_file('leftglobstuffrightglob', '')
+        self.fm.file_maps = {'foobar-extras': {'files': [['', 'leftglob*rightglob']]}}
+        self.fm.push_file('/leftglobstuffrightglob', '')
         calls = [call('/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/leftglobstuffrightglob', '')
+        calls = [call('/V3/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/leftglobstuffrightglob', '')
+        calls = [call('/V4/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_multi_match(self):
@@ -226,9 +278,15 @@ class TestFiles(unittest.TestCase):
         """
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
-        self.fm.file_maps = {'foobar-extras': {'files': [['leftglob*', '*rightglob']]}}
-        self.fm.push_file('leftglobstuff/stuffrightglob', '')
+        self.fm.file_maps = {'foobar-extras': {'files': [['', 'leftglob*', '*rightglob']]}}
+        self.fm.push_file('/leftglobstuff/stuffrightglob', '')
         calls = [call('/leftglob*/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V3/leftglobstuff/stuffrightglob', '')
+        calls = [call('/V3/leftglob*/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/V4/leftglobstuff/stuffrightglob', '')
+        calls = [call('/V4/leftglob*/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_file_setuid(self):
@@ -251,6 +309,10 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.push_file('/usr/bin/test', '')
         self.fm.push_package_file.assert_called_once_with('/usr/bin/test', 'bin')
+        self.fm.push_file('/V3/usr/bin/test', '')
+        self.fm.push_package_file.assert_has_calls([call('/V3/usr/bin/test', 'bin')])
+        self.fm.push_file('/V4/usr/bin/test', '')
+        self.fm.push_package_file.assert_has_calls([call('/V4/usr/bin/test', 'bin')])
 
     def test_push_file_match_pkg_name_dependency(self):
         """
@@ -261,6 +323,10 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file = MagicMock()
         self.fm.push_file('/usr/share/doc/testball/', 'testball')
         self.fm.push_package_file.assert_called_once_with('%doc /usr/share/doc/testball/*', 'doc')
+        self.fm.push_file('/V3/usr/share/doc/testball/', 'testball')
+        self.fm.push_package_file.assert_has_calls([call('%doc /V3/usr/share/doc/testball/*', 'doc')])
+        self.fm.push_file('/V4/usr/share/doc/testball/', 'testball')
+        self.fm.push_package_file.assert_has_calls([call('%doc /V4/usr/share/doc/testball/*', 'doc')])
 
     def test_push_file_no_match(self):
         """

@@ -52,14 +52,14 @@ class FileManager(object):
     @staticmethod
     def banned_path(path):
         """Check if the path is either banned or in a banned subdirectory."""
-        banned_paths = ["/etc",
-                        "/opt",
-                        "/usr/local",
-                        "/usr/etc",
-                        "/usr/src",
-                        "/var"]
+        banned_paths = [r"/etc.*",
+                        r"/opt.*",
+                        r"/usr/local.*",
+                        r"/usr/etc.*",
+                        r"/usr/src.*",
+                        r"/var.*"]
         for bpath in banned_paths:
-            if path.startswith(bpath):
+            if re.search(r"^(/V3|/V4)?" + bpath, path):
                 return True
         return False
 
@@ -91,16 +91,17 @@ class FileManager(object):
             return False
 
         patterns = [
-            re.compile(r"^/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\."),
-            re.compile(r"^/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\."),
-            re.compile(r"^/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\."),
-            re.compile(r"^/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so"),
-            re.compile(r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so"),
-            re.compile(r"^/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so\."),
-            re.compile(r"^/usr/share/package-licenses/")]
+            r"/usr/lib/[a-zA-Z0-9\.\_\-\+]*\.so\.",
+            r"/usr/lib64/[a-zA-Z0-9\.\_\-\+]*\.so\.",
+            r"/usr/lib32/[a-zA-Z0-9\.\_\-\+]*\.so\.",
+            r"/usr/lib64/lib(asm|dw|elf)-[0-9.]+\.so",
+            r"/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so",
+            r"/usr/lib64/haswell/[a-zA-Z0-9\.\_\-\+]*\.so\.",
+            r"/usr/share/package-licenses/"]
 
         exclude = True
         for pat in patterns:
+            pat = re.compile(r"^(/V3|/V4)?" + pat)
             if pat.search(filename):
                 exclude = False
                 break
@@ -122,10 +123,22 @@ class FileManager(object):
             self.excludes.append(filename)
             return True
 
-        pat = re.compile(pattern)
+        # All patterns at this time and should always be prefixed by '^'
+        # but just in case add the following to strip just the '^'
+        pattern = pattern if not pattern.startswith('^') else pattern[1:]
+        pat = re.compile(r"^(/V3|/V4)?" + pattern)
         match = pat.search(filename)
         if match:
-            if filename in self.excludes:
+            if len(match.groups()) > 0 and match.groups()[0] in ['/V3', '/V4']:
+                norm_filename = filename.removeprefix(match.groups()[0])
+                if replacement != filename:
+                    if replacement.startswith('%doc '):
+                        replacement = '%doc ' + match.groups()[0] + replacement.removeprefix('%doc ')
+                    else:
+                        replacement = match.groups()[0] + replacement
+            else:
+                norm_filename = filename
+            if norm_filename in self.excludes:
                 return True
 
             self.push_package_file(replacement, package)
@@ -226,15 +239,18 @@ class FileManager(object):
         # Explicit file packaging
         for k, v in self.file_maps.items():
             for match_name in v['files']:
+                match = re.search(r"^/(V3|V4)", filename)
+                norm_filename = filename if not match else filename.removeprefix(match.group())
                 if isinstance(match_name, str):
-                    if filename == match_name:
+                    if norm_filename == match_name:
                         self.push_package_file(filename, k)
                         return
-                elif len('/'.join(match_name)) <= (len(filename) + 1):
+                elif len('/'.join(match_name)) <= (len(norm_filename) + 1):
                     # the match name may be 1 longer due to a glob
                     # being able to match an empty string
-                    if self.globlike_match(filename, match_name):
-                        self.push_package_file(os.path.join('/', *match_name), k)
+                    if self.globlike_match(norm_filename, match_name):
+                        path_prefix = '/' if not match else match.group()
+                        self.push_package_file(os.path.join(path_prefix, *match_name), k)
                         return
 
         if filename in self.setuid:
