@@ -322,11 +322,11 @@ class TestFiles(unittest.TestCase):
         self.fm.file_is_locale = MagicMock(return_value=False)
         self.fm.push_package_file = MagicMock()
         self.fm.push_file('/usr/share/doc/testball/', 'testball')
-        self.fm.push_package_file.assert_called_once_with('%doc /usr/share/doc/testball/*', 'doc')
+        self.fm.push_package_file.assert_called_once_with('/usr/share/doc/testball/*', 'doc')
         self.fm.push_file('/V3/usr/share/doc/testball/', 'testball')
-        self.fm.push_package_file.assert_has_calls([call('%doc /V3/usr/share/doc/testball/*', 'doc')])
+        self.fm.push_package_file.assert_has_calls([call('/V3/usr/share/doc/testball/*', 'doc')])
         self.fm.push_file('/V4/usr/share/doc/testball/', 'testball')
-        self.fm.push_package_file.assert_has_calls([call('%doc /V4/usr/share/doc/testball/*', 'doc')])
+        self.fm.push_package_file.assert_has_calls([call('/V4/usr/share/doc/testball/*', 'doc')])
 
     def test_push_file_no_match(self):
         """
