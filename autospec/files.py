@@ -107,7 +107,7 @@ class FileManager(object):
 
         return exclude
 
-    def file_pat_match(self, filename, pattern, package, replacement="", prefix=""):
+    def file_pat_match(self, filename, pattern, package, replacement=""):
         """Search for pattern in filename.
 
         Attempt to find pattern in filename, if pattern matches push package file.
@@ -115,7 +115,7 @@ class FileManager(object):
         Returns True if a file was pushed, False otherwise.
         """
         if not replacement or self.config.config_opts.get("no_glob"):
-            replacement = prefix + filename
+            replacement = filename
 
         # compat files should always be excluded
         if self.compat_exclude(filename):
