@@ -132,10 +132,7 @@ class FileManager(object):
             if len(match.groups()) > 0 and match.groups()[0] in ['/V3', '/V4']:
                 norm_filename = filename.removeprefix(match.groups()[0])
                 if replacement != filename:
-                    if replacement.startswith('%doc '):
-                        replacement = '%doc ' + match.groups()[0] + replacement.removeprefix('%doc ')
-                    else:
-                        replacement = match.groups()[0] + replacement
+                    replacement = match.groups()[0] + replacement
             else:
                 norm_filename = filename
             if norm_filename in self.excludes:
@@ -380,11 +377,11 @@ class FileManager(object):
             (r"^/usr/share/aclocal/[a-zA-Z0-9._+-]*\.m4$", "dev", "/usr/share/aclocal/*.m4"),
             (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9._+-]*\.ac$", "dev", "/usr/share/aclocal-1.*/*.ac"),
             (r"^/usr/share/aclocal-1.[0-9]+/[a-zA-Z0-9._+-]*\.m4$", "dev", "/usr/share/aclocal-1.*/*.m4"),
-            (r"^/usr/share/doc/" + re.escape(pkg_name) + "/", "doc", "%doc /usr/share/doc/" + re.escape(pkg_name) + "/*"),
+            (r"^/usr/share/doc/" + re.escape(pkg_name) + "/", "doc", "/usr/share/doc/" + re.escape(pkg_name) + "/*"),
             (r"^/usr/share/doc/", "doc"),
             (r"^/usr/share/gtk-doc/html", "doc"),
             (r"^/usr/share/help", "doc"),
-            (r"^/usr/share/info/", "doc", "%doc /usr/share/info/*"),
+            (r"^/usr/share/info/", "doc", "/usr/share/info/*"),
             # now a set of catch-all rules
             (r"^/lib/systemd/system/", "services"),
             (r"^/lib/systemd/user/", "services"),
