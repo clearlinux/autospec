@@ -574,7 +574,7 @@ class Specfile(object):
             else:
                 flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32"])
         if not self.config.config_opts['full-debug-info'] and not self.config.config_opts['use_clang']:
-            flags.extend(["-gno-variable-location-views", "-gno-column-info", "-femit-struct-debug-baseonly", "-fdebug-types-section", "-gz", "-g1"])
+            flags.extend(["-gno-variable-location-views", "-gno-column-info", "-femit-struct-debug-baseonly", "-fdebug-types-section", "-gz=zstd", "-g1"])
         if self.config.default_pattern != 'qmake':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
