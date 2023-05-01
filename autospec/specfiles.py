@@ -1557,7 +1557,7 @@ class Specfile(object):
         self.write_proxy_exports()
         self._write_strip("export LANG=C.UTF-8")
         self._write_strip("if test -f Makefile.PL; then")
-        self._write_strip("%{__perl} Makefile.PL")
+        self._write_strip("%{__perl} -I. Makefile.PL")
         self.write_make_line()
         self._write_strip("else")
         self._write_strip("%{__perl} Build.PL")
