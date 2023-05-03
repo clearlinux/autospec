@@ -743,7 +743,7 @@ class Requirements(object):
                     s_path = os.path.join(dirpath, 'setup.cfg')
                     if not python_req_in_filtered_path(s_path):
                         setup_path = s_path
-                if not python_req_in_filtered_path(requires_path):
+                if not python_req_in_filtered_path(req_path):
                     requires_path = req_path
                     config.set_build_pattern("pyproject", default_score)
             elif "setup.py" in files and not setup_path:
@@ -789,7 +789,7 @@ class Requirements(object):
 
         if config.default_pattern in ('distutils3', 'pyproject'):
             if requires_path:
-                self.grab_python_requirements(requires_path, config.os_packages)
+                self.add_pyproject_requires(requires_path)
             if setup_path:
                 self.add_setup_py_requires(setup_path, config.os_packages)
             if requirements_path:
