@@ -717,7 +717,7 @@ class Requirements(object):
     def scan_for_configure(self, dirn, tname, config):
         """Scan the package directory for build files to determine build pattern."""
         count = 0
-        requires_path = ""
+        pyproject_path = ""
         requirements_path = ""
         setup_path = ""
         configure_ac_files = []
@@ -737,14 +737,14 @@ class Requirements(object):
             elif any(is_qmake_pro(f) for f in files):
                 config.set_build_pattern("qmake", default_score)
 
-            if "pyproject.toml" in files and not requires_path:
+            if "pyproject.toml" in files and not pyproject_path:
                 req_path = os.path.join(dirpath, "pyproject.toml")
                 if "setup.cfg" in files:
                     s_path = os.path.join(dirpath, 'setup.cfg')
                     if not python_req_in_filtered_path(s_path):
                         setup_path = s_path
                 if not python_req_in_filtered_path(req_path):
-                    requires_path = req_path
+                    pyproject_path = req_path
                     config.set_build_pattern("pyproject", default_score)
             elif "setup.py" in files and not setup_path:
                 s_path = os.path.join(dirpath, "setup.py")
@@ -752,12 +752,12 @@ class Requirements(object):
                     setup_path = s_path
                     config.set_build_pattern("distutils3", default_score)
 
-            if "requires.txt" in files and not requires_path:
+            if "requires.txt" in files and not pyproject_path:
                 req_path = os.path.join(dirpath, "requires.txt")
                 if not python_req_in_filtered_path(req_path):
-                    requires_path = req_path
+                    requirements_path = req_path
 
-            if "requirements.txt" in files:
+            if "requirements.txt" in files and not requirements_path:
                 req_path = os.path.join(dirpath, "requirements.txt")
                 if not python_req_in_filtered_path(req_path):
                     requirements_path = req_path
@@ -788,8 +788,8 @@ class Requirements(object):
                     cmake_files.append(os.path.join(dirpath, name))
 
         if config.default_pattern in ('distutils3', 'pyproject'):
-            if requires_path:
-                self.add_pyproject_requires(requires_path)
+            if pyproject_path:
+                self.add_pyproject_requires(pyproject_path)
             if setup_path:
                 self.add_setup_py_requires(setup_path, config.os_packages)
             if requirements_path:

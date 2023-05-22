@@ -379,13 +379,13 @@ class TestBuildreq(unittest.TestCase):
         Test add_setup_py_requires with a single non-literal object
         """
         open_name = 'buildreq.util.open_auto'
-        content = "install_requires=reqname"
+        content = "install_requires='reqname'"
         m_open = mock_open(read_data=content)
         with patch(open_name, m_open, create=True):
             self.reqs.add_setup_py_requires('filename', [])
 
-        self.assertEqual(self.reqs.buildreqs, set())
-        self.assertEqual(self.reqs.requires[None], set())
+        self.assertEqual(self.reqs.buildreqs, set(['pypi(reqname)']))
+        self.assertEqual(self.reqs.requires['python3'], set(['pypi(reqname)']))
 
     def test_scan_for_configure_setup(self):
         """
@@ -473,7 +473,7 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             conf = config.Config(tmpd)
             os.mkdir(os.path.join(tmpd, 'subdir'))
-            open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
+            open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
             self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
 
         ssummary = buildreq.specdescription.default_summary
@@ -505,7 +505,7 @@ class TestBuildreq(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpd:
             conf = config.Config(tmpd)
             os.mkdir(os.path.join(tmpd, 'subdir'))
-            open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
+            open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
             open(os.path.join(tmpd, 'pypi.json'), 'w').close()
             with patch(open_name, m_open, create=True):
                 self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
@@ -517,6 +517,26 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(self.reqs.pypi_provides, name)
         self.assertEqual(self.reqs.requires['python3'], pypi_requires)
         self.assertEqual(ssummary, summary)
+
+    def test_scan_for_configure_setup_with_requires(self):
+        """
+        Test scan_for_configure when distutils is being used for the build
+        pattern to test requires.txt handling.
+        """
+        self.reqs.add_pyproject_requires = MagicMock()
+        self.reqs.add_setup_py_requires = MagicMock()
+        self.reqs.grab_python_requirements = MagicMock()
+
+        with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
+            os.mkdir(os.path.join(tmpd, 'subdir'))
+            open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
+            open(os.path.join(tmpd, 'subdir', 'requires.txt'), 'w').close()
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
+
+        self.reqs.add_pyproject_requires.assert_not_called()
+        self.reqs.add_setup_py_requires.assert_called_once()
+        self.reqs.grab_python_requirements.assert_called_once()
 
     def test_parse_cmake_pkg_check_modules(self):
         """
