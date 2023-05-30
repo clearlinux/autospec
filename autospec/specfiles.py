@@ -1777,7 +1777,7 @@ class Specfile(object):
             else:
                 options = p.split(None, 1)[1]
             if not p.split()[0].endswith(".nopatch"):
-                self._write("%patch{} {}\n".format(counter, options))
+                self._write("%patch -P {} {}\n".format(counter, options))
             counter = counter + 1
 
         # Write version-specific patch commands
@@ -1791,7 +1791,7 @@ class Specfile(object):
                 else:
                     options = p.split(None, 1)[1]
                 if not p.split()[0].endswith(".nopatch"):
-                    self._write("%patch{} {}\n".format(counter, options))
+                    self._write("%patch -P {} {}\n".format(counter, options))
                 counter = counter + 1
 
     def _write(self, string):
