@@ -15,12 +15,10 @@ TESTDIR = os.path.join(os.getcwd(), "tests/testfiles/pkg_integrity")
 TESTKEYDIR = os.path.join(TESTDIR, "testkeys")
 
 PACKAGE_URL = "http://pkgconfig.freedesktop.org/releases/pkg-config-0.29.1.tar.gz"
-XATTR_PKT_URL = "http://pypi.debian.net/xattr/xattr-0.9.1.tar.gz"
 NO_SIGN_PKT_URL = "http://www.ferzkopp.net/Software/SDL_gfx-2.0/SDL_gfx-2.0.25.tar.gz"
 NOSIGN_PKT_URL_BAD = "http://gnu.mirrors.pair.com/savannah/savannah/quagga/bad_quagga-1.1.0.tar.gz"
 NOSIGN_PKT_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz"
 NOSIGN_SIGN_URL = "http://download.savannah.gnu.org/releases/quagga/quagga-1.1.0.tar.gz.asc"
-PYPI_SHA256_PKG = "http://pypi.debian.net/tappy/tappy-0.9.2.tar.gz"
 GNOME_SHA256_PKG = "https://download.gnome.org/sources/pygobject/3.24/pygobject-3.24.0.tar.xz"
 QT_SHA256_PKG = "https://download.qt.io/official_releases/qt/5.12/5.12.4/submodules/qtspeech-everywhere-src-5.12.4.tar.xz"
 KEYID = "EC2392F2EDE74488680DA3CF5F2B4756ED873D23"
@@ -73,29 +71,6 @@ class TestCheckFn(unittest.TestCase):
 @patch('download.do_curl', mock_download_do_curl)
 class TestDomainBasedVerifiers(unittest.TestCase):
 
-    def _mock_pypi_get_info(pkg):
-        info = '''
-        {
-            "info": {
-                "author_email": "user@example.com",
-                "name": "tappy"
-            },
-            "releases": {
-                "0.9.0": [],
-                "0.9.2": [
-                    {
-                        "digests": {
-                            "md5": "82e7f161746987b4da64c3347a2a2959",
-                            "sha256": "c0a53bd9309c5bd5296bf1747b6127551f14f617dfed218c2f3fa2714c5f695f"
-                        },
-                        "filename": "tappy-0.9.2.tar.gz"
-                    }
-                ]
-            }
-        }
-        '''
-        return json.loads(info)
-
     def run_test_for_domain(self, Verifier, url):
         with tempfile.TemporaryDirectory() as tmpd:
             filen = os.path.basename(url)
@@ -105,11 +80,6 @@ class TestDomainBasedVerifiers(unittest.TestCase):
                                    'url': url})
             return verifier.verify()
         return None
-
-    @patch('pkg_integrity.PyPiVerifier.get_info', _mock_pypi_get_info)
-    def test_pypi(self):
-        result = self.run_test_for_domain(pkg_integrity.PyPiVerifier, PYPI_SHA256_PKG)
-        self.assertTrue(result)
 
     def _mock_fetch_shasum(url):
         return (
@@ -361,10 +331,8 @@ class TestUtils(unittest.TestCase):
     def _mock_download_file(url, dst=None):
         # make return codes match by url to ensure we are using the expected signature type
         if url in ("http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz.sig",
-                "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc",
-                "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2.sign",
-                "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz.asc",
-                "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz.asc"):
+                   "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz.asc",
+                   "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2.sign"):
             return os.path.join(dst, os.path.basename(url))
         return None
 
@@ -373,14 +341,10 @@ class TestUtils(unittest.TestCase):
         url_from_gnu = "http://ftp.gnu.org/pub/gnu/gperf/gperf-3.0.4.tar.gz"
         url_from_gnu1 = "http://download.savannah.gnu.org/releases/quilt/quilt-0.65.tar.gz"
         url_from_gnu2 = "http://download.savannah.gnu.org/releases/freetype/freetype-2.9.tar.bz2"
-        url_from_pypi = "http://pypi.debian.net/cmd2/cmd2-0.6.9.tar.gz"
-        url_from_pypi1 = "https://pypi.python.org/packages/c6/fe/97319581905de40f1be7015a0ea1bd336a756f6249914b148a17eefa75dc/Cython-0.24.1.tar.gz"
 
         self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu, '.')[-4:], '.sig')
-        self.assertEqual(pkg_integrity.get_signature_file(url_from_pypi, '.')[-4:], '.asc')
         self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu1, '.')[-4:], '.asc')
         self.assertEqual(pkg_integrity.get_signature_file(url_from_gnu2, '.')[-5:], '.sign')
-        self.assertEqual(pkg_integrity.get_signature_file(url_from_pypi1, '.')[-4:], '.asc')
 
     def test_parse_gpg_packets_for_email(self):
         """Test parse_gpg_packets() to retrieve email info."""

@@ -2,7 +2,6 @@
 
 import argparse
 import hashlib
-import json
 import os
 import re
 import shutil
@@ -39,7 +38,6 @@ pubkey --gnupghome /opt/pki/gpghome
 """.format(fn=__file__)
 
 SEPT = "-------------------------------------------------------------------------------"
-PYPIORG_API = "https://pypi.python.org/pypi/{}/json"
 KEYID_TRY = ""
 KEYID = ""
 IMPORTED = ""
@@ -49,13 +47,6 @@ CMD_TIMEOUT = 20
 ENV = os.environ
 INPUT_GETTER_TIMEOUT = 60
 CHUNK_SIZE = 2056
-
-PYPI_DOMAINS = [
-    'files.pythonhosted.org',
-    'pypi.debian.net',
-    'pypi.python.org',
-    'pypi.io',
-]
 
 KEY_CACHE_DIR = os.path.expanduser('~/.cache/clr-pkg-key-cache')
 
@@ -252,8 +243,6 @@ def get_signature_file(package_url, package_path):
     netloc = urlparse(package_url).netloc
     if 'samba.org' in netloc:
         sign_urls.append(package_url + '.asc')
-    elif any(loc in netloc for loc in PYPI_DOMAINS):
-        sign_urls.append(package_url + '.asc')
     elif 'mirrors.kernel.org' in netloc:
         sign_urls.append(package_url + '.sig')
     else:
@@ -441,69 +430,6 @@ class QtIoVerifier(ShaSumVerifier):
             self.print_result(False, err_msg='Unable to parse sha256 for {}'.format(self.package_url))
             return None
         return self.verify_sum(shasum)
-
-
-# PyPi Verifier
-class PyPiVerifier(ShaSumVerifier):
-    """Verify SHA256 digest for pypi."""
-
-    def __init__(self, **kwargs):
-        """Initialize with sha256."""
-        kwargs.update({'shalen': 256})
-        ShaSumVerifier.__init__(self, **kwargs)
-
-    def parse_name(self):
-        """Get pypi package name and release number."""
-        pkg_name = os.path.basename(self.package_path)
-        name, _ = re.split(r'-\d+\.', pkg_name, maxsplit=1)
-        release_no = pkg_name.replace(name + '-', '')
-        extensions = "({})".format("|".join([r'\.tar\.gz$', r'\.zip$', r'\.tgz$', r'\.tar\.bz2$']))
-        ext = re.search(extensions, release_no)
-        if ext is not None:
-            release_no = release_no.replace(ext.group(), '')
-        return name, release_no
-
-    @staticmethod
-    def get_info(package_name):
-        """Get json dump of pypi package."""
-        url = PYPIORG_API.format(package_name)
-        data = download.do_curl(url)
-        if data:
-            return json.loads(data.getvalue().decode('utf-8'))
-        else:
-            return {}
-
-    @staticmethod
-    def get_source_release(package_fullname, releases):
-        """Lookup release for package name."""
-        for release in releases:
-            if release.get('filename', 'not_found') == package_fullname:
-                return release
-        return {}
-
-    def verify(self):
-        """Verify pypi file with SHA256."""
-        global EMAIL
-        util.print_info("Searching for package information in pypi")
-        name, release = self.parse_name()
-        info = PyPiVerifier.get_info(name)
-        releases_info = info.get('releases', None)
-        if releases_info is None:
-            self.print_result(False, err_msg=f"Error in package info from {PYPIORG_API.format(name)}")
-            return None
-        release_info = releases_info.get(release, None)
-        if release_info is None:
-            self.print_result(False,
-                              err_msg='Information for package {} with release {} not found'.format(name, release))
-            return None
-        release_info = self.get_source_release(os.path.basename(self.package_path), release_info)
-        package_info = info.get('info', None)
-        if package_info is not None:
-            EMAIL = package_info.get('author_email', '')
-        sha256 = ''
-        if digests := release_info.get('digests', ''):
-            sha256 = digests.get('sha256', '')
-        return self.verify_sum(sha256)
 
 
 # GPG Verification
@@ -794,16 +720,13 @@ def from_disk(url, package_path, package_check, config, interactive=True):
 def attempt_verification_per_domain(package_path, url):
     """Use url domain name to set verification type."""
     netloc = urlparse(url).netloc
-    if any(loc in netloc for loc in PYPI_DOMAINS):
-        domain = 'pypi'
-    elif 'download.gnome.org' in netloc:
+    if 'download.gnome.org' in netloc:
         domain = 'gnome.org'
     elif 'download.qt.io' in netloc:
         domain = 'qt.io'
     else:
         domain = 'unknown'
     verifier = {
-        'pypi': PyPiVerifier,
         'gnome.org': GnomeOrgVerifier,
         'qt.io': QtIoVerifier,
     }.get(domain, None)
