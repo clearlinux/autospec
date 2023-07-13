@@ -192,7 +192,8 @@ class Config(object):
             (r"checking for UDEV\.\.\. no", "libudev"),
             (r"XMLLINT not set and xmllint not found in path", "libxml-2.0"),
             (r"error\: xml2-config not found", "libxml-2.0"),
-            (r"error: must install xorg-macros", "xorg-macros")
+            (r"error: must install xorg-macros", "xorg-macros"),
+            (r"[ ]*systemdunitdir:[ ]*$", 'systemd'),
         ]
         # simple_pattern patterns
         # contains patterns for parsing build.log for missing dependencies
@@ -234,7 +235,7 @@ class Config(object):
             (r"C library 'efivar' not found", "efivar-dev"),
             (r"Has header \"efi.h\": NO", "gnu-efi-dev"),
             (r"ERROR: Could not execute Vala compiler", "vala"),
-            (r".*: error: HAVE_INTROSPECTION does not appear in AM_CONDITIONAL", 'gobject-introspection-dev')
+            (r".*: error: HAVE_INTROSPECTION does not appear in AM_CONDITIONAL", 'gobject-introspection-dev'),
         ]
         # failed_pattern patterns
         # contains patterns for parsing build.log for missing dependencies
