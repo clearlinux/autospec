@@ -352,6 +352,16 @@ class Content():
                 name = m.group(1).strip()
                 version = convert_version(m.group(2), name)
 
+        if self.name and not version:
+            # In cases where we have a name but no version
+            # use what is after the name.
+            # https://invisible-mirror.net/archives/lynx/tarballs/lynx2.8.9rel.1.tar.gz
+            postname = tarfile.split(self.name)[-1]
+            no_extension = os.path.splitext(postname)[0]
+            if no_extension.endswith('.tar'):
+                no_extension = os.path.splitext(no_extension)[0]
+            version = convert_version(no_extension, self.name)
+
         # override name and version from commandline
         self.name = self.name if self.name else name
         self.version = self.version if self.version else version
