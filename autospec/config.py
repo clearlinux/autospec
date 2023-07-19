@@ -299,6 +299,7 @@ class Config(object):
             (r"^.*Could not find a package configuration file provided by \"(.*)\".*$", 0, None),
             (r"^.*\"(.*)\" with any of the following names.*$", 0, None),
             (r"[Cc]hecking for (.*) (?:support|development files|with pkg-config)?\.\.\. [Nn]o", 0, None),
+            (r"[Cc]hecking pkg-config for (.*?)\.\.\. [Nn]o", 0, 'pkgconfig'),
             (r"checking (.*?)\.\.\. no", 0, None),
             (r"checking for (.*) in default path\.\.\. not found", 0, None),
             (r"checking for (.*)... configure: error", 0, None),
