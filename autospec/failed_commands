@@ -1110,6 +1110,7 @@ mysql_config, mariadb-dev
 nasm, nasm-bin
 nasmw, nasm
 nc, nmap-extras
+ncurses, ncurses
 ncurses.h, ncurses-dev
 ncurses.h, pkgconfig(ncursesw)
 ncurses/curses.h, ncurses-dev
