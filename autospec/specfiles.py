@@ -1700,6 +1700,11 @@ class Specfile(object):
 
     def write_cargo_pattern(self):
         """Write cargo build pattern to spec file."""
+        if self.config.make_command:
+            cargo_build = self.config.make_command
+        else:
+            cargo_build = "cargo build --release"
+
         self.write_prep()
 
         self._write_strip("%build")
@@ -1707,7 +1712,7 @@ class Specfile(object):
         self.write_proxy_exports()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip("cargo build --release")
+        self._write_strip(cargo_build)
         if self.config.subdir:
             self._write_strip("popd")
         self.write_build_append()
@@ -1718,11 +1723,14 @@ class Specfile(object):
         self.write_license_files()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip("cargo install --path .")
-        self._write_strip("mkdir -p %{buildroot}/usr/bin")
-        self._write_strip('pushd "${HOME}/.cargo/bin/"')
-        self._write_strip("mv * %{buildroot}/usr/bin/")
-        self._write_strip("popd")
+        if self.config.install_macro:
+            self._write_strip(self.config.install_macro)
+        else:
+            self._write_strip("cargo install --path .")
+            self._write_strip("mkdir -p %{buildroot}/usr/bin")
+            self._write_strip('pushd "${HOME}/.cargo/bin/"')
+            self._write_strip("mv * %{buildroot}/usr/bin/")
+            self._write_strip("popd")
         if self.config.subdir:
             self._write_strip("popd")
         self.write_install_append()
