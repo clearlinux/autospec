@@ -51,8 +51,6 @@ class Specfile(object):
         self.default_desc = ""
         self.locales = []
         self.build_dirs = dict()  # Build directories, indexed by source URL
-        self.need_avx2_flags = False
-        self.need_avx512_flags = False
         self.tests_config = ""
         self.excludes = []
         self.file_maps = {}
@@ -506,10 +504,10 @@ class Specfile(object):
     def write_32bit_exports(self):
         """Write 32bit only env exports."""
         self._write_strip('export PKG_CONFIG_PATH="/usr/lib32/pkgconfig:/usr/share/pkgconfig"')
-        self._write_strip('export ASFLAGS="${ASFLAGS}${ASFLAGS:+ }--32"')
-        self._write_strip('export CFLAGS="${CFLAGS}${CFLAGS:+ }-m32 -mstackrealign"')
-        self._write_strip('export CXXFLAGS="${CXXFLAGS}${CXXFLAGS:+ }-m32 -mstackrealign"')
-        self._write_strip('export LDFLAGS="${LDFLAGS}${LDFLAGS:+ }-m32 -mstackrealign"')
+        self._write_strip('ASFLAGS="${CLEAR_INTERMEDIATE_ASFLAGS}${CLEAR_INTERMEDIATE_ASFLAGS:+ }--32"')
+        self._write_strip('CFLAGS="${CLEAR_INTERMEDIATE_CFLAGS}${CLEAR_INTERMEDIATE_CFLAGS:+ }-m32 -mstackrealign"')
+        self._write_strip('CXXFLAGS="${CLEAR_INTERMEDIATE_CXXFLAGS}${CLEAR_INTERMEDIATE_CXXFLAGS:+ }-m32 -mstackrealign"')
+        self._write_strip('LDFLAGS="${CLEAR_INTERMEDIATE_LDFLAGS}${CLEAR_INTERMEDIATE_LDFLAGS:+ }-m32 -mstackrealign"')
 
     def write_variables(self):
         """Write variable exports to spec file."""
@@ -526,8 +524,8 @@ class Specfile(object):
             self._write_strip("export CC=clang\n")
             self._write_strip("export CXX=clang++\n")
             self._write_strip("export LD=ld.gold\n")
-            self._write_strip("CFLAGS=${CFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
-            self._write_strip("CXXFLAGS=${CXXFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
+            self._write_strip("CLEAR_INTERMEDIATE_CFLAGS=${CLEAR_ORIG_CFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
+            self._write_strip("CLEAR_INTERMEDIATE_CXXFLAGS=${CLEAR_ORIG_CXXFLAGS/ -Wa,/ -fno-integrated-as -Wa,}")
             lto = "-flto"
         else:
             lto = "-flto=auto"
@@ -541,33 +539,23 @@ class Specfile(object):
             flags.append("-fstack-protector-strong")
             if arch == 'x86_64':
                 flags.append("-fzero-call-used-regs=used")
-        if self.need_avx2_flags:
-            flags.extend(["-O3", "-march=x86-64-v3", "-Wl,-z,x86-64-v3"])
-        if self.need_avx512_flags:
-            flags.extend(["-O3", "-march=x86_64-v4", "-Wl,-z,x86-64-v4", "-mprefer-vector-width=512"])
         if self.config.config_opts['insecure_build']:
-            self._write_strip('export CFLAGS="-O3 -g -fopt-info-vec "\n')
-            self._write_strip("unset LDFLAGS\n")
+            self._write_strip('CLEAR_INTERMEDIATE_CFLAGS="-O3 -g -fopt-info-vec "\n')
         if self.config.config_opts['conservative_flags']:
-            self._write_strip('export CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
+            self._write_strip('CLEAR_INTERMEDIATE_CFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
                               "-fexceptions -fstack-protector "
                               "--param=ssp-buffer-size=32 -Wformat "
                               "-Wformat-security -Wno-error "
                               "-Wl,-z,max-page-size=0x4000 "
                               '-march=westmere"\n')
-            self._write_strip("export CXXFLAGS=$CFLAGS\n")
-            self._write_strip('export FFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
+            self._write_strip("CLEAR_INTERMEDIATE_CXXFLAGS=$CLEAR_INTERMEDIATE_CFLAGS\n")
+            self._write_strip('CLEAR_INTERMEDIATE_FFLAGS="-O2 -g -Wp,-D_FORTIFY_SOURCE=2 '
                               "-fexceptions -fstack-protector "
                               "--param=ssp-buffer-size=32 "
                               "-Wno-error "
                               "-Wl,-z,max-page-size=0x4000 "
                               '-march=westmere"\n')
-            self._write_strip("export FCFLAGS=$FFLAGS\n")
-            self._write_strip("unset LDFLAGS\n")
-        if self.config.config_opts['use_clang']:
-            self._write_strip("unset LDFLAGS\n")
-        if self.config.config_opts['server']:
-            flags.extend(["-march=x86-64-v3"])
+            self._write_strip("CLEAR_INTERMEDIATE_FCFLAGS=$CLEAR_INTERMEDIATE_FFLAGS\n")
         if self.config.config_opts['funroll-loops']:
             if self.config.config_opts['use_clang']:
                 flags.extend(["-O3"])
@@ -597,33 +585,40 @@ class Specfile(object):
             flags.extend(["-O3", "-fauto-profile=%{{SOURCE{0}}}".format(self.source_index[self.config.sources["gcov"][0]])])
         if flags or self.config.config_opts['broken_c++']:
             flags = sorted(list(set(flags)))
-            self._write_strip('export CFLAGS="$CFLAGS {0} "\n'.format(" ".join(flags)))
-            self._write_strip('export FCFLAGS="$FFLAGS {0} "\n'.format(" ".join(flags)))
-            self._write_strip('export FFLAGS="$FFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('CLEAR_INTERMEDIATE_CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('CLEAR_INTERMEDIATE_FCFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {0} "\n'.format(" ".join(flags)))
+            self._write_strip('CLEAR_INTERMEDIATE_FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {0} "\n'.format(" ".join(flags)))
             # leave the export CXXFLAGS line open in case
-            self._write('export CXXFLAGS="$CXXFLAGS {0} '.format(" ".join(flags)))
+            self._write('CLEAR_INTERMEDIATE_CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {0} '.format(" ".join(flags)))
             if self.config.config_opts['broken_c++']:
                 self._write('-std=gnu++98')
             # close the open quote from CXXFLAGS export and add newline
             self._write('"\n')
 
-        if self.config.profile_payload and self.config.profile_payload[0] and not self.need_avx2_flags:
+        if self.config.profile_payload and self.config.profile_payload[0]:
             genflags = []
             useflags = []
             genflags.extend(["-fprofile-generate", "-fprofile-dir=/var/tmp/pgo", "-fprofile-update=atomic"])
             useflags.extend(["-fprofile-use", "-fprofile-dir=/var/tmp/pgo", "-fprofile-correction"])
 
-            self._write_strip('export CFLAGS_GENERATE="$CFLAGS {0} "\n'.format(" ".join(genflags)))
-            self._write_strip('export FCFLAGS_GENERATE="$FCFLAGS {0} "\n'.format(" ".join(genflags)))
-            self._write_strip('export FFLAGS_GENERATE="$FFLAGS {0} "\n'.format(" ".join(genflags)))
-            self._write_strip('export CXXFLAGS_GENERATE="$CXXFLAGS {0} "\n'.format(" ".join(genflags)))
-            self._write_strip('export LDFLAGS_GENERATE="$LDFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export CFLAGS_GENERATE="$CLEAR_INTERMEDIATE_CFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export FCFLAGS_GENERATE="$CLEAR_INTERMEDIATE_FCFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export FFLAGS_GENERATE="$CLEAR_INTERMEDIATE_FFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export CXXFLAGS_GENERATE="$CLEAR_INTERMEDIATE_CXXFLAGS {0} "\n'.format(" ".join(genflags)))
+            self._write_strip('export LDFLAGS_GENERATE="$CLEAR_INTERMEDIATE_LDFLAGS {0} "\n'.format(" ".join(genflags)))
 
-            self._write_strip('export CFLAGS_USE="$CFLAGS {0} "\n'.format(" ".join(useflags)))
-            self._write_strip('export FCFLAGS_USE="$FCFLAGS {0} "\n'.format(" ".join(useflags)))
-            self._write_strip('export FFLAGS_USE="$FFLAGS {0} "\n'.format(" ".join(useflags)))
-            self._write_strip('export CXXFLAGS_USE="$CXXFLAGS {0} "\n'.format(" ".join(useflags)))
-            self._write_strip('export LDFLAGS_USE="$LDFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export CFLAGS_USE="$CLEAR_INTERMEDIATE_CFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export FCFLAGS_USE="$CLEAR_INTERMEDIATE_FCFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export FFLAGS_USE="$CLEAR_INTERMEDIATE_FFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export CXXFLAGS_USE="$CLEAR_INTERMEDIATE_CXXFLAGS {0} "\n'.format(" ".join(useflags)))
+            self._write_strip('export LDFLAGS_USE="$CLEAR_INTERMEDIATE_LDFLAGS {0} "\n'.format(" ".join(useflags)))
+
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS"\n')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS"\n')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS"\n')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS"\n')
+        self._write_strip('ASFLAGS="$CLEAR_INTERMEDIATE_ASFLAGS"\n')
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS"\n')
 
     def write_check(self):
         """Write check section to spec file."""
@@ -693,6 +688,7 @@ class Specfile(object):
     def write_make_install(self):
         """Write install section to spec file for make builds."""
         self._write_strip("%install")
+        self.write_variables()
         # time.time() returns a float, but we only need second-precision
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
@@ -855,6 +851,7 @@ class Specfile(object):
         """Write install section to spec file for cmake builds."""
         self.write_build_append()
         self._write_strip("%install")
+        self.write_variables()
         self._write_strip("export SOURCE_DATE_EPOCH={}".format(int(time.time())))
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
@@ -1008,11 +1005,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1024,11 +1021,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v4 "')
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1041,11 +1038,11 @@ class Specfile(object):
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
             self._write_strip("module load openmpi")
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
             self._write_strip("./configure {0} \\\n{1} {2}"
                               .format(self.config.conf_args_openmpi,
                                       self.config.disable_static,
@@ -1092,11 +1089,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1108,11 +1105,11 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v4 "')
             self._write_strip("%reconfigure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1144,21 +1141,21 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v3\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v3\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
             self.write_make_line()
             self._write_strip("popd")
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip("export CFLAGS=\"$CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export CXXFLAGS=\"$CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 \"")
-            self._write_strip("export FFLAGS=\"$FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4\"")
-            self._write_strip("export FCFLAGS=\"$FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256\"")
-            self._write_strip("export LDFLAGS=\"$LDFLAGS -m64 -march=x86-64-v4\"")
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=512 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v4 -mprefer-vector-width=256 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v4 "')
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1197,11 +1194,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1212,11 +1209,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mprefer-vector-width=512"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
-            self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
-            self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v4 "')
-            self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4  -mprefer-vector-width=512"')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v4 -Wl,-z,x86-64-v4 "')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v4 "')
+            self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v4 "')
             self._write_strip("%autogen {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
@@ -1241,11 +1238,11 @@ class Specfile(object):
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
         self.write_build_prepend()
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
-        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
         for module in self.config.pypi_overrides:
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
@@ -1258,6 +1255,7 @@ class Specfile(object):
         self.write_build_append()
         self.write_check()
         self._write_strip("%install")
+        self.write_variables()
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
@@ -1276,11 +1274,11 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
-        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip("pip install --root=%{buildroot}-v3 --no-deps --ignore-installed dist/*.whl")
         self._write_strip("popd")
 
@@ -1303,11 +1301,11 @@ class Specfile(object):
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
         self.write_build_prepend()
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
-        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
         for module in self.config.pypi_overrides:
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 setup.py build  " + self.config.extra_configure)
@@ -1317,6 +1315,7 @@ class Specfile(object):
         self.write_build_append()
         self.write_check()
         self._write_strip("%install")
+        self.write_variables()
         self._write_strip("export MAKEFLAGS=%{?_smp_mflags}")
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
@@ -1335,11 +1334,11 @@ class Specfile(object):
         self._write_strip("echo ----[ mark ]----")
 
         self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip('export CFLAGS="$CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FFLAGS="$FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
-        self._write_strip('export FCFLAGS="$FCFLAGS -m64 -march=x86-64-v3 "')
-        self._write_strip('export LDFLAGS="$LDFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v3")
         self._write_strip("popd")
 
@@ -1356,14 +1355,14 @@ class Specfile(object):
         self._write_strip("rm -rf %{buildroot}")
         self.write_install_prepend()
         self.write_license_files()
-        self._write_strip("export LANG=C.UTF-8")
-        self._write_strip('export CFLAGS="$CFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip('export FCFLAGS="$FFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip('export FFLAGS="$FFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip('export CXXFLAGS="$CXXFLAGS -O3 -flto -fno-semantic-interposition "\n')
-        self._write_strip("export AR=gcc-ar\n")
-        self._write_strip("export RANLIB=gcc-ranlib\n")
-        self._write_strip('export LDFLAGS="$LDFLAGS  -Wl,-z -Wl,relro"\n')
+        self._write_strip("LANG=C.UTF-8")
+        self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -O3 -flto -fno-semantic-interposition "\n')
+        self._write_strip("AR=gcc-ar\n")
+        self._write_strip("RANLIB=gcc-ranlib\n")
+        self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS  -Wl,-z -Wl,relro"\n')
 
         self._write_strip("mkdir -p %{buildroot}/usr/lib64/R/library")
         self._write_strip("\n")
@@ -1440,15 +1439,12 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("mkdir -p clr-build-avx2")
             self._write_strip("pushd clr-build-avx2")
-            saved_avx2flags = self.need_avx2_flags
-            self.need_avx2_flags = True
             self.write_build_prepend()
             self.write_variables()
-            self.need_avx2_flags = saved_avx2flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1456,15 +1452,12 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("mkdir -p clr-build-avx512")
             self._write_strip("pushd clr-build-avx512")
-            saved_avx512flags = self.need_avx512_flags
-            self.need_avx512_flags = True
             self.write_build_prepend()
             self.write_variables()
-            self.need_avx512_flags = saved_avx512flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
-            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v4 -m64 "')
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -march=x86-64-v4 -m64 -Wl,-z,x86-64-v4 -mprefer-vector-width=512"')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -march=x86-64-v4 -m64 "')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1488,15 +1481,12 @@ class Specfile(object):
             self._write_strip("pushd clr-build-openmpi")
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
             self._write_strip("module load openmpi")
-            saved_avx2flags = self.need_avx2_flags
-            self.need_avx2_flags = True
             self.write_build_prepend()
             self.write_variables()
-            self.need_avx2_flags = saved_avx2flags
-            self._write_strip('export CFLAGS="$CFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export CXXFLAGS="$CXXFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export FCFLAGS="$FCFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
-            self._write_strip('export FFLAGS="$FFLAGS -march=x86-64-v3 -m64"')
+            self._write_strip('CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -march=x86-64-v3 -m64 -Wl,-z,x86-64-v3"')
+            self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -march=x86-64-v3 -m64"')
             self.write_cmake_line_openmpi()
             self.write_make_line()
             self._write_strip("module unload openmpi")
@@ -1604,7 +1594,7 @@ class Specfile(object):
         self.write_variables()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip('CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
+        self._write_strip('meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
                           .format(self.config.extra_configure,
                                   self.config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
@@ -1668,6 +1658,7 @@ class Specfile(object):
         self._write_strip("\n")
         self.write_check()
         self._write_strip("%install")
+        self.write_variables()
         self.write_install_prepend()
         self.write_license_files()
         if self.config.config_opts['32bit']:
