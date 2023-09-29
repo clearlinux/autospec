@@ -24,10 +24,10 @@ import configparser
 import json
 import os
 import re
+import tomllib
 
 import pypidata
 import specdescription
-import toml
 import util
 
 
@@ -549,7 +549,7 @@ class Requirements(object):
     def add_pyproject_requires(self, filename):
         """Detect build requirements listed in pyproject.toml in the build-system's requires lists."""
         with util.open_auto(filename) as pfile:
-            pyproject = toml.loads(pfile.read())
+            pyproject = tomllib.loads(pfile.read())
         if not (buildsys := pyproject.get("build-system")):
             return
 
