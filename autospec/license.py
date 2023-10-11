@@ -29,7 +29,6 @@ import urllib.parse
 
 import chardet
 import download
-
 from util import get_contents, get_sha1sum, print_fatal, print_warning
 
 default_license = "TO BE DETERMINED"

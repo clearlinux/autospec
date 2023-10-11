@@ -23,7 +23,6 @@ import re
 import sys
 import tempfile
 
-from abireport import examine_abi
 import build
 import buildreq
 import check
@@ -32,12 +31,13 @@ import config
 import files
 import git
 import license
-from logcheck import logcheck
 import pkg_integrity
 import pkg_scan
 import specdescription
 import specfiles
 import tarball
+from abireport import examine_abi
+from logcheck import logcheck
 from util import binary_in_path, print_fatal, write_out
 
 sys.path.append(os.path.dirname(__file__))

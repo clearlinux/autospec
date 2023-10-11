@@ -25,8 +25,7 @@ import time
 import types
 from collections import OrderedDict
 
-from util import _file_write
-from util import open_auto
+from util import _file_write, open_auto
 
 
 class Specfile(object):
