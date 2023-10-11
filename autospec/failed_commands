@@ -529,6 +529,8 @@ QImageBlitz, qimageblitz-dev
 QREncode, qrencode-dev
 QRencode, qrencode-dev
 QT, buildreq-kde
+Qt::Quick, qt6declarative-dev
+Qt::Svg, qt6svg-dev
 Qalculate, libqalculate-dev
 Qca-qt5, qca-qt5-dev
 Qt4, qt-everywhere-opensource-src-dev
@@ -551,6 +553,10 @@ Qt5X11Extras, qtx11extras-dev
 Qt5Xdg, libqtxdg-dev
 Qt5XdgIconLoader, libqtxdg-dev
 Qt5XmlPatterns, qtxmlpatterns-dev
+Qt6Positioning, qt6positioning-dev
+Qt6Quick, qt6declarative-dev
+Qt6QuickTimeline, qt6quicktimeline-dev
+Qt6ShaderTools, qt6shadertools-dev
 R, R
 READLINE, readline-dev
 RSVG, librsvg-dev

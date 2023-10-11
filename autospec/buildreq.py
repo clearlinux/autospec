@@ -485,17 +485,12 @@ class Requirements(object):
         with util.open_auto(filename, "r") as f:
             lines = f.readlines()
         for line in lines:
-            match = findpackage.search(line)
-            if match:
+            if match := findpackage.search(line):
                 module = match.group(1)
-                try:
-                    pkg = cmake_modules[module]
+                if pkg := cmake_modules.get(module):
                     self.add_buildreq(pkg)
-                except Exception:
-                    pass
 
-            match = pkgconfig.search(line)
-            if match:
+            if match := pkgconfig.search(line):
                 rest = match.group(1)
                 while rest:
                     wordmatch = extractword.search(rest)

@@ -666,8 +666,8 @@ Qt6SensorsQuickplugin, qt6base-dev
 Qt6SerialBus, qt6base-dev
 Qt6SerialBusTools, qt6base-dev
 Qt6SerialPort, qt6base-dev
-Qt6ShaderTools, qt6base-dev
-Qt6ShaderToolsTools, qt6base-dev
+Qt6ShaderTools, qt6shadertools-dev
+Qt6ShaderToolsTools, qt6shadertools-dev
 Qt6ShmServerBufferIntegrationPlugin, qt6base-dev
 Qt6ShmServerBufferPlugin, qt6base-dev
 Qt6SocketCanBusPlugin, qt6base-dev
@@ -793,7 +793,7 @@ QtScxmlTests, qt6base-dev
 QtSensorsTests, qt6base-dev
 QtSerialBusTests, qt6base-dev
 QtSerialPortTests, qt6base-dev
-QtShaderToolsTests, qt6base-dev
+QtShaderToolsTests, qt6shadertools-dev
 QtSvgTests, qt6base-dev
 QtTesting, ParaView-dev
 QtToolsTests, qt6base-dev
@@ -826,6 +826,7 @@ Sasl2, extra-cmake-modules pkgconfig(libsasl2)
 Savitar, libSavitar-dev
 ScreenSaverDBusInterface, kscreenlocker-dev
 Seccomp, extra-cmake-modules
+ShaderTools, qt6shadertools-dev
 SharedMimeInfo, extra-cmake-modules shared-mime-info
 Shiboken2, pyside2-setup-dev
 SignOnQt5, signond-dev
