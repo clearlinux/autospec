@@ -319,6 +319,7 @@ class Config(object):
             (r"which\: no ([a-zA-Z\-]*) in \(", 0, None),
             (r"you may need to install the ([a-zA-Z0-9_\-:\.]*) module", 0, 'perl'),
             (r"(a-zA-Z0-9\-) not found (re-run dependencies script to install)", 0, None),
+            (r"Skipping the build as the condition \"TARGET (.*)\" is not met.", 0, None),
         ]
 
     def set_build_pattern(self, pattern, strength):
