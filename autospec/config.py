@@ -28,8 +28,7 @@ from collections import OrderedDict
 
 import check
 import license
-from util import call, print_info, print_warning, write_out
-from util import open_auto
+from util import call, open_auto, print_info, print_warning, write_out
 
 
 def read_pattern_conf(filename, dest, list_format=False, path=None):

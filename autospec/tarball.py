@@ -25,7 +25,6 @@ import tarfile
 import zipfile
 
 import download
-
 from util import do_regex, get_sha1sum, print_fatal, write_out
 
 

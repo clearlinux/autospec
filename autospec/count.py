@@ -18,6 +18,7 @@
 
 import argparse
 import re
+
 import util
 
 testcount = {}
