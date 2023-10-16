@@ -43,6 +43,8 @@ class TestSpecfileWrite(unittest.TestCase):
                   "#\n",
                   "# Source0 file verified with key 0x1 (email)",
                   "#"]
+        # skipping autospec version lines as they change
+        self.WRITES = self.WRITES[:4] + self.WRITES[6:]
         self.assertEqual(expect, self.WRITES)
 
     def test_write_nvr_no_urlban(self):
