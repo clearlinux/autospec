@@ -22,8 +22,31 @@
 import glob
 import os
 import subprocess
+import sys
+import tempfile
 
-from util import call, write_out
+from util import call, open_auto, write_out
+
+
+def get_autospec_info():
+    """Get the latest tag from autospec."""
+    path = os.path.dirname(sys.path[0])
+    git_out = tempfile.mkstemp()[1]
+    try:
+        call("git tag -l --sort=-v:refname", git_out, cwd=path)
+        with open_auto(git_out) as gfile:
+            tag = gfile.readlines()[0].strip()
+    except Exception:
+        tag = ""
+    os.unlink(git_out)
+    try:
+        call('git log -1 --pretty=format:"%h"', git_out, cwd=path)
+        with open_auto(git_out) as gfile:
+            commit = gfile.readlines()[0].strip()
+    except Exception:
+        commit = ""
+    os.unlink(git_out)
+    return tag, commit
 
 
 def commit_to_git(config, name, success):
