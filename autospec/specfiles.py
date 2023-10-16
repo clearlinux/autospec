@@ -1263,7 +1263,7 @@ class Specfile(object):
 
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        self._write_strip("pip install --root=%{buildroot} --no-deps --ignore-installed dist/*.whl")
+        self._write_strip("python3 -m installer --destdir=%{buildroot} dist/*.whl")
         if self.config.subdir:
             self._write_strip("popd")
         for module in self.config.pypi_overrides:
@@ -1278,7 +1278,7 @@ class Specfile(object):
         self._write_strip('FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS -m64 -march=x86-64-v3 -Wl,-z,x86-64-v3 "')
         self._write_strip('FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS -m64 -march=x86-64-v3 "')
         self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS -m64 -march=x86-64-v3 "')
-        self._write_strip("pip install --root=%{buildroot}-v3 --no-deps --ignore-installed dist/*.whl")
+        self._write_strip("python3 -m installer --destdir=%{buildroot}-v3 dist/*.whl")
         self._write_strip("popd")
 
         self.write_find_lang()
