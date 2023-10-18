@@ -293,7 +293,8 @@ class Requirements(object):
                                      "configparser",
                                      "setuptools_scm[toml]",
                                      "typing",
-                                     "ipaddress"])
+                                     "ipaddress",
+                                     "pypi(setuptools_scm_git_archive)"])
         self.autoreconf_reqs = ["gettext-bin",
                                 "automake-dev",
                                 "automake",
