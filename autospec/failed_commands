@@ -3,7 +3,6 @@
 # This file is sorted with LC_COLLATE=C
 # Lines beginning with '#' are ignored.
 # For patterns that start with '#', escape the '#' as '\#'.
-'nose', pypi(nose)
 'numpy', pypi(numpy)
 'pexpect', pypi(pexpect)
 -lEGL, mesa-dev
@@ -1132,7 +1131,6 @@ nfsidmap.h, libnfsidmap-dev
 nghttp, nghttp2-dev
 nl_handle_alloc, libnl-dev
 node, nodejs
-nose, pypi-nose
 nosexcover, nosexcover
 notmuch.h, notmuch-dev
 nroff, groff

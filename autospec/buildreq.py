@@ -268,10 +268,13 @@ class Requirements(object):
 
     def __init__(self, url):
         """Initialize Default requirements settings."""
-        self.banned_requires = {None: set(["futures",
-                                           "configparser",
-                                           "typing",
-                                           "ipaddress"])}
+        self.banned_anywhere_requires = set(["futures",
+                                             "configparser",
+                                             "typing",
+                                             "ipaddress",
+                                             "pypi-nose",
+                                             "pypi(nose)"])
+        self.banned_requires = {None: set()}
         self.buildreqs = set()
         self.buildreqs_cache = set()
         self.requires = {None: set(), "pypi": set()}
@@ -294,7 +297,10 @@ class Requirements(object):
                                      "setuptools_scm[toml]",
                                      "typing",
                                      "ipaddress",
-                                     "pypi(setuptools_scm_git_archive)"])
+                                     "pypi-nose",
+                                     "pypi(setuptools_scm_git_archive)",
+                                     "pypi(setuptools_changelog_shortener)",
+                                     "pypi(nose)"])
         self.autoreconf_reqs = ["gettext-bin",
                                 "automake-dev",
                                 "automake",
@@ -346,6 +352,8 @@ class Requirements(object):
         if (banned_requires := self.banned_requires.get(subpkg)) is None:
             banned_requires = self.banned_requires[subpkg] = set()
         if req in banned_requires:
+            return False
+        if req in self.banned_anywhere_requires:
             return False
 
         if req not in self.buildreqs and req not in packages and not override:
