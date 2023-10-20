@@ -80,6 +80,13 @@ class TestBuildreq(unittest.TestCase):
         self.assertFalse(self.reqs.add_requires('testreq', []))
         self.assertNotIn('testreq', self.reqs.requires[None])
 
+    def test_add_banned_requires(self):
+        """
+        Test add_requires with banned new req (override buildreq).
+        """
+        self.assertFalse(self.reqs.add_requires('pypi(nose)', [], override=True))
+        self.assertNotIn('testreq', self.reqs.requires[None])
+
     def test_ban_provides(self):
         """
         Test ban_provides with prov already present in provides
