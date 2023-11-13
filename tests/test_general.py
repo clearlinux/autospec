@@ -10,7 +10,7 @@ class TestGeneral(unittest.TestCase):
         interpolation=None argument
         """
         grep_cmd = ["grep", "-re",
-                    "ConfigParser(.*\(^interpolation=None\).*)",
+                    "ConfigParser(.*(^interpolation=None).*)",
                     "autospec"]
         try:
             output = subprocess.check_output(grep_cmd).decode('utf-8')
