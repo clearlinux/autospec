@@ -136,20 +136,20 @@ class TestBuildreq(unittest.TestCase):
         """
         Test configure_ac_line with standard pattern
         """
-        self.reqs.configure_ac_line('AC_CHECK_FUNC\([tgetent])', False)
+        self.reqs.configure_ac_line('AC_CHECK_FUNC([tgetent])', False)
         self.assertIn('ncurses-devel', self.reqs.buildreqs)
 
     def test_configure_ac_line_comment(self):
         """
         Test configure_ac_line with commented line
         """
-        self.reqs.configure_ac_line('# AC_CHECK_FUNC\([tgetent])', False)
+        self.reqs.configure_ac_line('# AC_CHECK_FUNC([tgetent])', False)
         self.assertEqual(self.reqs.buildreqs, set())
 
     def test_configure_ac_line_pkg_check_modules(self):
         """
         Test the somewhat complicated logic of configure_ac_line check for the
-        PKG_CHECK_MODULES\((.*?)\) line.
+        PKG_CHECK_MODULES((.*?)) line.
         """
         self.reqs.configure_ac_line(
             'PKG_CHECK_MODULES(prefix, '
@@ -200,6 +200,7 @@ class TestBuildreq(unittest.TestCase):
 
         self.assertEqual(self.reqs.buildreqs,
                          set(['gettext',
+                              'ncurses-devel',
                               'perl(XML::Parser)',
                               'pkgconfig(module2)',
                               'pkgconfig(module)',

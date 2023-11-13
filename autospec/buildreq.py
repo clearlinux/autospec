@@ -406,7 +406,7 @@ class Requirements(object):
         if line.startswith('#'):
             return
 
-        pat_reqs = [(r"AC_CHECK_FUNC\([tgetent]", ["ncurses-devel"]),
+        pat_reqs = [(r"AC_CHECK_FUNC([tgetent]", ["ncurses-devel"]),
                     ("PROG_INTLTOOL", ["intltool"]),
                     ("GETTEXT_PACKAGE", ["gettext", "perl(XML::Parser)"]),
                     ("AM_GLIB_GNU_GETTEXT", ["gettext", "perl(XML::Parser)"]),
