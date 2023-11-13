@@ -96,7 +96,6 @@
 -lpcap, libpcap-dev
 -lpcre, pcre-dev
 -lpopt, popt-dev
--lproxy, pacrunner-dev
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
 -lsecret, libsecret-dev
@@ -1036,8 +1035,6 @@ libpng, pkgconfig(libpng)
 libpng-config, pkgconfig(libpng)
 libpng/png.h, pkgconfig(libpng)
 libportal, libportal-dev
-libproxy-1.0 pkg-config data, pacrunner-dev
-libproxy-1.0, pacrunner-dev
 libpsl, libpsl-dev
 libqhull/libqhull.h, qhull-dev
 library ldap, openldap-dev
