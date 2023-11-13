@@ -75,7 +75,7 @@ class TestLicense(unittest.TestCase):
         conf.license_show = "license.show.url"
         license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
 
-        self.assertEquals(license.licenses, [])
+        self.assertEqual(license.licenses, [])
 
     def test_license_from_copying_hash_bad_license(self):
         """
@@ -89,7 +89,7 @@ class TestLicense(unittest.TestCase):
         with patch('license.get_contents', m_open, create=True):
             license.license_from_copying_hash('copying.txt', '', conf, '')
 
-        self.assertEquals(license.licenses, [])
+        self.assertEqual(license.licenses, [])
 
     def test_license_from_copying_hash_license_server_excep(self):
         """
