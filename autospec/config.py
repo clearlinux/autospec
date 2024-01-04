@@ -153,6 +153,7 @@ class Config(object):
             "broken_c++": "extend flags with '-std=gnu++98",
             "cargo_vendor": "create vendor archive with cargo",
             "use_lto": "configure build for lto",
+            "use_apx": "configure build for APX",
             "use_avx2": "configure build for avx2",
             "use_avx512": "configure build for avx512",
             "keepstatic": "do not remove static libraries",
@@ -411,7 +412,10 @@ class Config(object):
         # (in case of a user-created options.conf)
         missing = set(self.config_options.keys()).difference(set(self.config_opts.keys()))
         for option in missing:
-            self.config_opts[option] = False
+            if option in ['use_apx']:
+                self.config_opts[option] = True
+            else:
+                self.config_opts[option] = False
 
         for fname, comment in sorted(self.config_options.items()):
             config_f.set('autospec', '# {}'.format(comment))
