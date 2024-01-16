@@ -144,6 +144,40 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main', '/testfn'))
         self.fm.push_package_file.assert_called_with('/V4/test-fn', 'main')
 
+    def test_file_windows_exe_not_allowed(self):
+        """
+        Test that Windows exe and dll files are excluded
+        """
+        self.fm.push_package_file = MagicMock()
+        self.fm.config.config_opts['allow_exe'] = False
+        self.fm.push_file('/usr/bin/foo.exe', 'test')
+        self.fm.push_file('/usr/lib64/foo.dll', 'test')
+        self.fm.push_file('/usr/lib/python3.12/site-packages/nsist/msvcrt/x86/api-ms-win-core-console-l1-1-0.dll', 'test')
+        self.fm.push_file('/usr/lib/python3.12/site-packages/installer/_scripts/t32.exe', 'test')
+        self.assertIn('/usr/bin/foo.exe', self.fm.excludes)
+        self.assertIn('/usr/lib64/foo.dll', self.fm.excludes)
+        self.assertIn('/usr/lib/python3.12/site-packages/nsist/msvcrt/x86/api-ms-win-core-console-l1-1-0.dll', self.fm.excludes)
+        self.assertIn('/usr/lib/python3.12/site-packages/installer/_scripts/t32.exe', self.fm.excludes)
+
+    def test_file_windows_exe_allowed(self):
+        """
+        Test that Windows exe and dll files are not excluded
+        """
+        self.fm.push_package_file = MagicMock()
+        self.fm.config.config_opts['allow_exe'] = True
+        self.fm.push_file('/usr/bin/foo.exe', 'test')
+        self.fm.push_file('/usr/lib64/foo.dll', 'test')
+        self.fm.push_file('/usr/lib/python3.12/site-packages/nsist/msvcrt/x86/api-ms-win-core-console-l1-1-0.dll', 'test')
+        self.fm.push_file('/usr/lib/python3.12/site-packages/installer/_scripts/t32.exe', 'test')
+        self.assertIn('/usr/bin/foo.exe', self.fm.files)
+        self.assertIn('/usr/lib64/foo.dll', self.fm.files)
+        self.assertIn('/usr/lib/python3.12/site-packages/nsist/msvcrt/x86/api-ms-win-core-console-l1-1-0.dll', self.fm.files)
+        self.assertIn('/usr/lib/python3.12/site-packages/installer/_scripts/t32.exe', self.fm.files)
+        self.assertNotIn('/usr/bin/foo.exe', self.fm.excludes)
+        self.assertNotIn('/usr/lib64/foo.dll', self.fm.excludes)
+        self.assertNotIn('/usr/lib/python3.12/site-packages/nsist/msvcrt/x86/api-ms-win-core-console-l1-1-0.dll', self.fm.excludes)
+        self.assertNotIn('/usr/lib/python3.12/site-packages/installer/_scripts/t32.exe', self.fm.excludes)
+
     def test_file_pat_match_no_match(self):
         """
         Test file_pat_match with no match
