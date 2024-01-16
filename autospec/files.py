@@ -272,6 +272,16 @@ class FileManager(object):
         if self.want_dev_split and self.file_pat_match(filename, r"^/usr/.*/include/.*\.h$", "dev"):
             return
 
+        # Exclude Windows executables and DLLs unless otherwise configured
+        # Can't just skip them because they could be swept up in a python lib wildcard, for example
+        if re.search(r"[^/]+\.(exe|dll)$", filename):
+            if self.config.config_opts.get('allow_exe'):
+                util.print_warning("Allowing {} because allow_exe is true".format(filename))
+            else:
+                util.print_warning("Blocking {} because allow_exe is false".format(filename))
+                self.excludes.append(filename)
+                return
+
         # if configured to do so, add .so files to the lib package instead of
         # the dev package. THis is useful for packages with a plugin
         # architecture like elfutils and mesa.

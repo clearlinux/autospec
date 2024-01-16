@@ -181,7 +181,8 @@ class Config(object):
             "nodebug": "do not generate debuginfo for this package",
             "openmpi": "configure build also for openmpi",
             "server": "Package is only used by servers",
-            "no_glob": "Do not use the replacement pattern for file matching"
+            "no_glob": "Do not use the replacement pattern for file matching",
+            "allow_exe": "Allow Windows executables (*.exe, *.dll) to be packaged",
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies
