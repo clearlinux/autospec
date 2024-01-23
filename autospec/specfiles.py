@@ -1019,7 +1019,7 @@ class Specfile(object):
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-            self._write_strip(f'LDFLAGS="$LDFLAGS {AVX2_CFLAGS} {AVX2_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
             self._write_strip("%configure {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
