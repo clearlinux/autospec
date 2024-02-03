@@ -59,7 +59,7 @@ class FileManager(object):
                         r"/usr/src.*",
                         r"/var.*"]
         for bpath in banned_paths:
-            if re.search(r"^(/V3|/V4)?" + bpath, path):
+            if re.search(r"^(/V3|/V4|/VA)?" + bpath, path):
                 return True
         return False
 
@@ -101,7 +101,7 @@ class FileManager(object):
 
         exclude = True
         for pat in patterns:
-            pat = re.compile(r"^(/V3|/V4)?" + pat)
+            pat = re.compile(r"^(/V3|/V4|/VA)?" + pat)
             if pat.search(filename):
                 exclude = False
                 break
@@ -126,10 +126,10 @@ class FileManager(object):
         # All patterns at this time and should always be prefixed by '^'
         # but just in case add the following to strip just the '^'
         pattern = pattern if not pattern.startswith('^') else pattern[1:]
-        pat = re.compile(r"^(/V3|/V4)?" + pattern)
+        pat = re.compile(r"^(/V3|/V4|/VA)?" + pattern)
         match = pat.search(filename)
         if match:
-            if len(match.groups()) > 0 and match.groups()[0] in ['/V3', '/V4']:
+            if len(match.groups()) > 0 and match.groups()[0] in ['/V3', '/V4', '/VA']:
                 norm_filename = filename.removeprefix(match.groups()[0])
                 if replacement != filename:
                     replacement = match.groups()[0] + replacement
@@ -236,7 +236,7 @@ class FileManager(object):
         # Explicit file packaging
         for k, v in self.file_maps.items():
             for match_name in v['files']:
-                match = re.search(r"^/(V3|V4)", filename)
+                match = re.search(r"^/(V3|V4|VA)", filename)
                 norm_filename = filename if not match else filename.removeprefix(match.group())
                 if isinstance(match_name, str):
                     if norm_filename == match_name:
