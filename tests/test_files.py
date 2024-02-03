@@ -33,6 +33,7 @@ class TestFiles(unittest.TestCase):
                      "/opt/two",
                      "/V3/opt/two",
                      "/V4/opt/two",
+                     "/VA/opt/two",
                      "/usr/etc/three",
                      "/usr/local/four",
                      "/usr/src/five",
@@ -58,6 +59,7 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file('/etc/test-fn')
         self.fm.push_package_file('/V3/etc/test-fn')
         self.fm.push_package_file('/V4/etc/test-fn')
+        self.fm.push_package_file('/VA/etc/test-fn')
         self.assertTrue(self.fm.has_banned)
         self.assertFalse(self.fm.newfiles_printed)
 
@@ -84,6 +86,7 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
         self.assertTrue(self.fm.compat_exclude('/V3/usr/lib64/libfoo.so'))
         self.assertTrue(self.fm.compat_exclude('/V4/usr/lib64/libfoo.so'))
+        self.assertTrue(self.fm.compat_exclude('/VA/usr/lib64/libfoo.so'))
 
     def test_compat_exclude_not_compat_mode(self):
         """
@@ -94,6 +97,7 @@ class TestFiles(unittest.TestCase):
         self.assertFalse(self.fm.compat_exclude('/usr/lib64/libfoo.so'))
         self.assertFalse(self.fm.compat_exclude('/V3/usr/lib64/libfoo.so'))
         self.assertFalse(self.fm.compat_exclude('/V4/usr/lib64/libfoo.so'))
+        self.assertFalse(self.fm.compat_exclude('/VA/usr/lib64/libfoo.so'))
 
     def test_file_pat_match(self):
         """
@@ -107,6 +111,8 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_called_with('/V3/test-fn', 'main')
         self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main'))
         self.fm.push_package_file.assert_called_with('/V4/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/VA/test-fn', r'^/test-fn', 'main'))
+        self.fm.push_package_file.assert_called_with('/VA/test-fn', 'main')
 
     def test_file_pat_match_exclude(self):
         """
@@ -117,6 +123,7 @@ class TestFiles(unittest.TestCase):
         self.assertTrue(self.fm.file_pat_match('/test-fn', r'^/test-fn', 'main'))
         self.assertTrue(self.fm.file_pat_match('/V3/test-fn', r'^/test-fn', 'main'))
         self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main'))
+        self.assertTrue(self.fm.file_pat_match('/VA/test-fn', r'^/test-fn', 'main'))
         self.fm.push_package_file.assert_not_called()
 
     def test_file_pat_match_replacement(self):
@@ -130,6 +137,8 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_called_with('/V3/testfn', 'main')
         self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'/test-fn', 'main', '/testfn'))
         self.fm.push_package_file.assert_called_with('/V4/testfn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/VA/test-fn', r'/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/VA/testfn', 'main')
 
     def test_file_pat_match_replacement_no_glob(self):
         """
@@ -143,6 +152,8 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_called_with('/V3/test-fn', 'main')
         self.assertTrue(self.fm.file_pat_match('/V4/test-fn', r'^/test-fn', 'main', '/testfn'))
         self.fm.push_package_file.assert_called_with('/V4/test-fn', 'main')
+        self.assertTrue(self.fm.file_pat_match('/VA/test-fn', r'^/test-fn', 'main', '/testfn'))
+        self.fm.push_package_file.assert_called_with('/VA/test-fn', 'main')
 
     def test_file_windows_exe_not_allowed(self):
         """
@@ -237,6 +248,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_file('/V4/foobar', '')
         calls = [call('/V4/foobar', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/foobar', '')
+        calls = [call('/VA/foobar', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_empty(self):
         """
@@ -253,6 +267,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls(calls)
         self.fm.push_file('/V4/leftglobrightglob', '')
         calls = [call('/V4/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/leftglobrightglob', '')
+        calls = [call('/VA/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_left_match(self):
@@ -271,6 +288,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_file('/V4/leftglobrightglob', '')
         calls = [call('/V4/leftglob*', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/leftglobrightglob', '')
+        calls = [call('/VA/leftglob*', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_right_match(self):
         """
@@ -287,6 +307,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls(calls)
         self.fm.push_file('/V4/leftglobrightglob', '')
         calls = [call('/V4/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/leftglobrightglob', '')
+        calls = [call('/VA/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_leftright_match(self):
@@ -305,6 +328,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_file('/V4/leftglobstuffrightglob', '')
         calls = [call('/V4/leftglob*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/leftglobstuffrightglob', '')
+        calls = [call('/VA/leftglob*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_package_file_glob_multi_match(self):
         """
@@ -321,6 +347,9 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls(calls)
         self.fm.push_file('/V4/leftglobstuff/stuffrightglob', '')
         calls = [call('/V4/leftglob*/*rightglob', 'foobar-extras')]
+        self.fm.push_package_file.assert_has_calls(calls)
+        self.fm.push_file('/VA/leftglobstuff/stuffrightglob', '')
+        calls = [call('/VA/leftglob*/*rightglob', 'foobar-extras')]
         self.fm.push_package_file.assert_has_calls(calls)
 
     def test_push_file_setuid(self):
@@ -347,6 +376,8 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls([call('/V3/usr/bin/test', 'bin')])
         self.fm.push_file('/V4/usr/bin/test', '')
         self.fm.push_package_file.assert_has_calls([call('/V4/usr/bin/test', 'bin')])
+        self.fm.push_file('/VA/usr/bin/test', '')
+        self.fm.push_package_file.assert_has_calls([call('/VA/usr/bin/test', 'bin')])
 
     def test_push_file_match_pkg_name_dependency(self):
         """
@@ -361,6 +392,8 @@ class TestFiles(unittest.TestCase):
         self.fm.push_package_file.assert_has_calls([call('/V3/usr/share/doc/testball/*', 'doc')])
         self.fm.push_file('/V4/usr/share/doc/testball/', 'testball')
         self.fm.push_package_file.assert_has_calls([call('/V4/usr/share/doc/testball/*', 'doc')])
+        self.fm.push_file('/VA/usr/share/doc/testball/', 'testball')
+        self.fm.push_package_file.assert_has_calls([call('/VA/usr/share/doc/testball/*', 'doc')])
 
     def test_push_file_no_match(self):
         """

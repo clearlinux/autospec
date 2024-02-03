@@ -74,6 +74,7 @@ class Config(object):
         self.extra_configure64 = ""
         self.extra_configure_avx2 = ""
         self.extra_configure_avx512 = ""
+        self.extra_configure_apx = ""
         self.extra_configure_openmpi = ""
         self.config_files = set()
         self.parallel_build = " %{?_smp_mflags} "
@@ -413,10 +414,7 @@ class Config(object):
         # (in case of a user-created options.conf)
         missing = set(self.config_options.keys()).difference(set(self.config_opts.keys()))
         for option in missing:
-            if option in ['use_apx']:
-                self.config_opts[option] = True
-            else:
-                self.config_opts[option] = False
+            self.config_opts[option] = False
 
         for fname, comment in sorted(self.config_options.items()):
             config_f.set('autospec', '# {}'.format(comment))
@@ -912,6 +910,9 @@ class Config(object):
 
         content = self.read_conf_file(os.path.join(self.download_path, "configure_avx512"))
         self.extra_configure_avx512 = " \\\n".join(content)
+
+        content = self.read_conf_file(os.path.join(self.download_path, "configure_apx"))
+        self.extra_configure_apx = " \\\n".join(content)
 
         content = self.read_conf_file(os.path.join(self.download_path, "configure_openmpi"))
         self.extra_configure_openmpi = " \\\n".join(content)

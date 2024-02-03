@@ -34,6 +34,8 @@ AVX512_CFLAGS = "-march=x86-64-v4 -mprefer-vector-width=512"
 AVX512_FCFLAGS = "-march=x86-64-v4 -mprefer-vector-width=256"
 AVX512_LFLAGS = "-Wl,-z,x86-64-v4"
 AVX512_LCFLAGS = "-march=x86-64-v4"
+APX_CFLAGS = "-march=x86-64-v3 -mapxf -mavx10.1"
+APX_LFLAGS = "-Wl,-z,x86-64-v3"
 
 
 class Specfile(object):
@@ -488,11 +490,7 @@ class Specfile(object):
             if self.config.subdir:
                 self._write_strip("popd")
 
-        if self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
-            self._write_strip("pushd ..")
-            self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
-            self._write_strip("popd")
-        elif self.config.default_pattern != 'cmake':
+        if self.config.default_pattern != 'cmake':
             if self.config.config_opts['32bit']:
                 self._write_strip("pushd ..")
                 self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
@@ -504,6 +502,10 @@ class Specfile(object):
             if self.config.config_opts['use_avx512']:
                 self._write_strip("pushd ..")
                 self._write_strip("cp -a {} buildavx512".format(self.content.tarball_prefix))
+                self._write_strip("popd")
+            if self.config.config_opts['use_apx']:
+                self._write_strip("pushd ..")
+                self._write_strip("cp -a {} buildapx".format(self.content.tarball_prefix))
                 self._write_strip("popd")
             if self.config.config_opts['openmpi']:
                 self._write_strip("pushd ..")
@@ -734,6 +736,11 @@ class Specfile(object):
             self._write_strip("%s_v4 %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
+        if self.config.config_opts['use_apx']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self._write_strip("%s_va %s\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip("popd")
+
         if self.config.config_opts['openmpi']:
             self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self.write_install_openmpi()
@@ -802,10 +809,12 @@ class Specfile(object):
         skips = ""
         for setuid in self.setuid:
             skips = f"{skips} --skip-path {setuid}"
-        if self.config.config_opts['use_avx2'] or self.config.default_pattern == "distutils3" or self.config.default_pattern == "pyproject":
+        if self.config.config_opts['use_avx2']:
             self._write_strip('/usr/bin/elf-move.py avx2 %{buildroot}-v3 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
         if self.config.config_opts['use_avx512']:
             self._write_strip('/usr/bin/elf-move.py avx512 %{buildroot}-v4 %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
+        if self.config.config_opts['use_apx']:
+            self._write_strip('/usr/bin/elf-move.py apx %{buildroot}-va %{buildroot} %{buildroot}/usr/share/clear/filemap/filemap-%{name}' + skips)
 
     def write_exclude_deletes(self):
         """Write out deletes for excluded files."""
@@ -898,6 +907,11 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd clr-build-avx512")
             self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx']:
+            self._write_strip("pushd clr-build-apx")
+            self._write_strip("%s_va %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
@@ -1168,6 +1182,17 @@ class Specfile(object):
             self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX512_LCFLAGS} "')
             self.write_make_line()
             self._write_strip("popd")
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            self.write_make_line()
+            self._write_strip("popd")
 
         self._write_strip("\n")
         self.write_check()
@@ -1231,6 +1256,22 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("popd")
 
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            self._write_strip("%autogen {0} {1} {2} "
+                              .format(self.config.disable_static,
+                                      self.config.extra_configure,
+                                      self.config.extra_configure_apx))
+            self.write_make_line()
+            self._write_strip("popd")
+
         self.write_check()
         self.write_make_install()
 
@@ -1246,18 +1287,34 @@ class Specfile(object):
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
 
-        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self.write_build_prepend()
-        self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-        self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
-        for module in self.config.pypi_overrides:
-            self._write_strip(f"pypi-dep-fix.py . {module}")
-        self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
-        self._write_strip("\n")
-        self._write_strip("popd")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
 
         self._write_strip("\n")
         if self.config.subdir:
@@ -1283,14 +1340,26 @@ class Specfile(object):
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
 
-        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-        self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
-        self._write_strip("python3 -m installer --destdir=%{buildroot}-v3 dist/*.whl")
-        self._write_strip("popd")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
+            self._write_strip("python3 -m installer --destdir=%{buildroot}-v3 dist/*.whl")
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            self._write_strip("python3 -m installer --destdir=%{buildroot}-va dist/*.whl")
+            self._write_strip("popd")
 
         self.write_find_lang()
 
@@ -1309,18 +1378,34 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("popd")
 
-        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self.write_build_prepend()
-        self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-        self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
-        for module in self.config.pypi_overrides:
-            self._write_strip(f"pypi-dep-fix.py . {module}")
-        self._write_strip("python3 setup.py build  " + self.config.extra_configure)
-        self._write_strip("\n")
-        self._write_strip("popd")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 setup.py build  " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self.write_build_prepend()
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            for module in self.config.pypi_overrides:
+                self._write_strip(f"pypi-dep-fix.py . {module}")
+            self._write_strip("python3 setup.py build  " + self.config.extra_configure)
+            self._write_strip("\n")
+            self._write_strip("popd")
 
         self.write_build_append()
         self.write_check()
@@ -1343,14 +1428,26 @@ class Specfile(object):
         self._write_strip("cat %{buildroot}/usr/lib/python3*/site-packages/*/requires.txt || :")
         self._write_strip("echo ----[ mark ]----")
 
-        self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-        self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
-        self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-        self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
-        self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v3")
-        self._write_strip("popd")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {AVX2_CFLAGS} "')
+            self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-v3")
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
+            self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_CFLAGS} "')
+            self._write_strip("python3 -tt setup.py build install --root=%{buildroot}-va")
+            self._write_strip("popd")
 
         self.write_find_lang()
 
@@ -1375,9 +1472,11 @@ class Specfile(object):
         self._write_strip('LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS  -Wl,-z -Wl,relro"\n')
 
         self._write_strip("mkdir -p %{buildroot}/usr/lib64/R/library")
+        self._write_strip("mkdir -p %{buildroot}-v3/usr/lib64/R/library")
+        self._write_strip("mkdir -p %{buildroot}-v4/usr/lib64/R/library")
+        self._write_strip("mkdir -p %{buildroot}-va/usr/lib64/R/library")
         self._write_strip("\n")
         self._write_strip("mkdir -p ~/.R")
-        self._write_strip("mkdir -p ~/.stash")
 
         self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
         self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
@@ -1391,8 +1490,7 @@ class Specfile(object):
                           "--data-compress=none "
                           "--compress=none "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library .")
-        self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx2 ; mv $i.avx2 ~/.stash/; done\n")
+                          "%{buildroot}-v3/usr/lib64/R/library .")
 
         self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
         self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" >> ~/.R/Makevars")
@@ -1408,8 +1506,21 @@ class Specfile(object):
                           "--compress=none "
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
-                          "%{buildroot}/usr/lib64/R/library .")
-        self._write_strip("for i in `find %{buildroot}/usr/lib64/R/ -name \"*.so\"`; do mv $i $i.avx512 ; mv $i.avx512 ~/.stash/; done\n")
+                          "%{buildroot}-v4/usr/lib64/R/library .")
+
+        self._write_strip(f"echo \"CFLAGS = $CFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
+        self._write_strip(f"echo \"FFLAGS = $FFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+        self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+
+        self._write_strip("R CMD INSTALL "
+                          f"{self.config.extra_configure} "
+                          "--install-tests "
+                          "--use-LTO "
+                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                          "--data-compress=none "
+                          "--compress=none "
+                          "--build  -l "
+                          "%{buildroot}-va/usr/lib64/R/library .")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
@@ -1425,7 +1536,6 @@ class Specfile(object):
                           "--built-timestamp=${SOURCE_DATE_EPOCH} "
                           "--build  -l "
                           "%{buildroot}/usr/lib64/R/library .")
-        self._write_strip("cp ~/.stash/* %{buildroot}/usr/lib64/R/library/*/libs/ || :")
 
         self._write_strip("%{__rm} -rf %{buildroot}%{_datadir}/R/library/R.css")
         self.write_find_lang()
@@ -1471,6 +1581,20 @@ class Specfile(object):
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX512_CFLAGS} "')
+            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
+            self.write_make_line()
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("mkdir -p clr-build-apx")
+            self._write_strip("pushd clr-build-apx")
+            self.write_build_prepend()
+            self.write_variables()
+            self._write_strip('CC=gcc-14')
+            self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
+            self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
             self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
             self.write_make_line()
             self._write_strip("popd")
@@ -1655,6 +1779,32 @@ class Specfile(object):
                                   'meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip('CC=gcc-14')
+            if self.config.config_opts['pgo'] and self.config.profile_payload != "":
+                self._write_strip(f'CFLAGS="$CFLAGS_GENERATE {APX_CFLAGS} {APX_LFLAGS} "'
+                                  f' CXXFLAGS="$CXXFLAGS_GENERATE {AVX2_CFLAGS} {AVX2_LFLAGS} "'
+                                  f' LDFLAGS="$LDFLAGS_GENERATE {APX_CFLAGS} " '
+                                  ' meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
+                                  ' {1} builddirapx'.format(self.config.extra_configure, self.config.extra_configure64))
+                self._write_strip('ninja -v -C builddirapx')
+                self._write_strip('pushd builddirapx')
+                self._write_strip("\n".join(self.config.profile_payload))
+                self._write_strip('popd')
+                self._write_strip('rm -rf builddirapx')
+                self._write_strip(f'CFLAGS="$CFLAGS_USE {APX_CFLAGS} {APX_LFLAGS} "'
+                                  f' CXXFLAGS="$CXXFLAGS_USE {AVX2_CFLAGS} {AVX2_LFLAGS} "'
+                                  f' LDFLAGS="$LDFLAGS_USE {APX_LFLAGS} " '
+                                  ' meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
+                                  ' {1} builddirapx'.format(self.config.extra_configure, self.config.extra_configure64))
+                self._write_strip('ninja -v -C builddirapx')
+            else:
+                self._write_strip(f'CFLAGS="$CFLAGS {APX_CFLAGS} {APX_LFLAGS} "'
+                                  f' CXXFLAGS="$CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "'
+                                  f' LDFLAGS="$LDFLAGS {APX_CFLAGS} " '
+                                  ' meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} '
+                                  ' {1} builddirapx'.format(self.config.extra_configure, self.config.extra_configure64))
+                self._write_strip('ninja -v -C builddirapx')
         if self.config.subdir:
             self._write_strip("popd")
         if self.config.config_opts['32bit']:
@@ -1696,6 +1846,9 @@ class Specfile(object):
             self._write_strip('DESTDIR=%{buildroot}-v3 ninja -C builddiravx2 install')
         if self.config.config_opts['use_avx512']:
             self._write_strip('DESTDIR=%{buildroot}-v4 ninja -C builddiravx512 install')
+        if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip('CC=gcc-14')
+            self._write_strip('DESTDIR=%{buildroot}-va ninja -C builddirapx install')
 
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         if self.config.subdir:
