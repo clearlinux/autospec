@@ -710,6 +710,7 @@ class Specfile(object):
 
         self.write_license_files()
 
+        self._write_strip("export GOAMD64=v2")
         if self.config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.config.subdir)
             self._write_strip("%make_install32 {} {}".format(self.config.extra_make_install,
@@ -729,21 +730,25 @@ class Specfile(object):
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write_strip("%s_v3 %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
+            self._write_strip("GOAMD64=v4")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self._write_strip("%s_v4 %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_apx']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self._write_strip("%s_va %s\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self.write_install_openmpi()
             self._write_strip("popd")
@@ -751,6 +756,7 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
 
+        self._write_strip("GOAMD64=v2")
         self._write_strip("%s %s\n" % (self.config.install_macro, self.config.extra_make_install))
 
         if self.config.subdir:
@@ -879,6 +885,8 @@ class Specfile(object):
 
         self.write_license_files()
 
+        self._write_strip("export GOAMD64=v2")
+
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
 
@@ -902,25 +910,30 @@ class Specfile(object):
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-avx2")
             self._write_strip("%s_v3 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
+            self._write_strip("GOAMD64=v4")
             self._write_strip("pushd clr-build-avx512")
             self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['use_apx']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-apx")
             self._write_strip("%s_va %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-openmpi")
             self.write_install_openmpi()
             self._write_strip("popd")
 
+        self._write_strip("GOAMD64=v2")
         self._write_strip("pushd clr-build")
         self._write_strip("%s %s\n" % (self.config.install_macro, self.config.extra_make_install))
         self._write_strip("popd")
@@ -1003,6 +1016,7 @@ class Specfile(object):
         self.write_profile_payload("configure")
         if self.config.subdir:
             self._write_strip("pushd {}".format(self.config.subdir))
+        self._write_strip("export GOAMD64=v2")
         self._write_strip("{0}%configure {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.config.disable_static,
@@ -1031,6 +1045,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1047,6 +1062,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v4")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
@@ -1063,6 +1079,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC="gcc-14"')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1081,6 +1098,7 @@ class Specfile(object):
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
             self._write_strip("module load openmpi")
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1105,6 +1123,7 @@ class Specfile(object):
         self.write_profile_payload("configure_ac")
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("export GOAMD64=v2")
         self._write_strip("{0}%reconfigure {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.config.disable_static,
@@ -1132,6 +1151,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1148,6 +1168,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v4")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
@@ -1164,6 +1185,7 @@ class Specfile(object):
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC="gcc-14"')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1189,6 +1211,7 @@ class Specfile(object):
         self.write_profile_payload("make")
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("export GOAMD64=v2")
         self.write_make_line()
         if self.config.subdir:
             self._write_strip("popd")
@@ -1201,6 +1224,7 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1211,6 +1235,7 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v4")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
@@ -1221,6 +1246,7 @@ class Specfile(object):
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1240,6 +1266,7 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self.write_profile_payload("autogen")
+        self._write_strip("export GOAMD64=v2")
         self._write_strip("{0}%autogen {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
                                   self.config.disable_static,
@@ -1265,6 +1292,7 @@ class Specfile(object):
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1280,6 +1308,7 @@ class Specfile(object):
         if self.config.config_opts['use_avx512']:
             self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v4")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
@@ -1295,6 +1324,7 @@ class Specfile(object):
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1588,6 +1618,7 @@ class Specfile(object):
         self._write_strip("mkdir -p clr-build")
         self._write_strip("pushd clr-build")
         self.write_variables()
+        self._write_strip("export GOAMD64=v2")
         self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
 
         self.write_profile_payload("cmake")
@@ -1600,6 +1631,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build-avx2")
             self.write_build_prepend()
             self.write_variables()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1613,6 +1645,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build-avx512")
             self.write_build_prepend()
             self.write_variables()
+            self._write_strip("GOAMD64=v4")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
@@ -1626,6 +1659,7 @@ class Specfile(object):
             self._write_strip("pushd clr-build-apx")
             self.write_build_prepend()
             self.write_variables()
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1656,6 +1690,7 @@ class Specfile(object):
             self._write_strip("module load openmpi")
             self.write_build_prepend()
             self.write_variables()
+            self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
@@ -1767,11 +1802,13 @@ class Specfile(object):
         self.write_variables()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
+        self._write_strip("export GOAMD64=v2")
         self._write_strip('meson --libdir=lib64 --prefix=/usr --buildtype=plain {0} {1} builddir'
                           .format(self.config.extra_configure,
                                   self.config.extra_configure64))
         self._write_strip("ninja -v -C builddir")
         if self.config.config_opts['use_avx2']:
+            self._write_strip("GOAMD64=v3")
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
                 self._write_strip(f'CFLAGS="$CFLAGS_GENERATE {AVX2_CFLAGS} {AVX2_LFLAGS} " CXXFLAGS="$CXXFLAGS_GENERATE '
                                   f'{AVX2_CFLAGS} {AVX2_LFLAGS} " LDFLAGS="$LDFLAGS_GENERATE {AVX2_LCFLAGS} " '
@@ -1794,6 +1831,7 @@ class Specfile(object):
                                   '{1} builddiravx2'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx2')
         if self.config.config_opts['use_avx512']:
+            self._write_strip("GOAMD64=v4")
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
                 self._write_strip(f'CFLAGS="$CFLAGS_GENERATE {AVX512_CFLAGS} {AVX512_LFLAGS} " CXXFLAGS="$CXXFLAGS_GENERATE '
                                   f'{AVX512_CFLAGS} {AVX512_LFLAGS} " LDFLAGS="$LDFLAGS_GENERATE {AVX512_LCFLAGS} " '
@@ -1816,6 +1854,7 @@ class Specfile(object):
                                   '{1} builddiravx512'.format(self.config.extra_configure, self.config.extra_configure64))
                 self._write_strip('ninja -v -C builddiravx512')
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC=gcc-14')
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
                 self._write_strip(f'CFLAGS="$CFLAGS_GENERATE {APX_CFLAGS} {APX_LFLAGS} "'
@@ -1859,6 +1898,7 @@ class Specfile(object):
         self._write_strip("%install")
         self.write_variables()
         self.write_install_prepend()
+        self._write_strip("export GOAMD64=v2")
         self.write_license_files()
         if self.config.config_opts['32bit']:
             self._write_strip('pushd ../build32/' + self.config.subdir)
@@ -1879,13 +1919,17 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
         if self.config.config_opts['use_avx2']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip('DESTDIR=%{buildroot}-v3 ninja -C builddiravx2 install')
         if self.config.config_opts['use_avx512']:
+            self._write_strip("GOAMD64=v4")
             self._write_strip('DESTDIR=%{buildroot}-v4 ninja -C builddiravx512 install')
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("GOAMD64=v3")
             self._write_strip('CC=gcc-14')
             self._write_strip('DESTDIR=%{buildroot}-va ninja -C builddirapx install')
 
+        self._write_strip("GOAMD64=v2")
         self._write_strip("DESTDIR=%{buildroot} ninja -C builddir install")
         if self.config.subdir:
             self._write_strip("popd")
