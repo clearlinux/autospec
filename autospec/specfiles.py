@@ -1331,7 +1331,7 @@ class Specfile(object):
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
             self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_LCFLAGS} "')
-            self._write_strip("%autogen {0} {1} {2} "
+            self._write_strip("%autogen --host=x86_64-clr-linux-gnu {0} {1} {2} "
                               .format(self.config.disable_static,
                                       self.config.extra_configure,
                                       self.config.extra_configure_apx))
