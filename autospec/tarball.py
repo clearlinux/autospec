@@ -17,6 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+import bz2
 import configparser
 import os
 import re
@@ -50,6 +51,8 @@ class Source():
         """Determine compression type."""
         if self.url.lower().endswith(('.zip', 'jar')):
             self.type = 'zip'
+        elif self.url.lower().endswith(('.bz2')) and not self.url.lower().endswith(('.tar.bz2')):
+            self.type = 'bz2'
         else:
             self.type = 'tar'
 
@@ -77,6 +80,9 @@ class Source():
         else:
             print_fatal("Not a valid tar file.")
             sys.exit(1)
+
+    def set_bz2_prefix(self):
+        """No prefix for plain bz2 archives."""
 
     def set_zip_prefix(self):
         """Determine prefix folder name of zip file."""
@@ -107,6 +113,15 @@ class Source():
         """Extract tar in path."""
         with tarfile.open(self.path) as content:
             content.extractall(path=extraction_path)
+
+    def extract_bz2(self, extraction_path):
+        """Extract plain bz2 file in path."""
+        with bz2.BZ2File(self.path, 'rb') as content:
+            data = content.read()
+            newfile = self.path.rsplit('/', 1)[1]
+            newfile = newfile.rsplit('.bz2', 1)[0]
+            with open(os.path.join(extraction_path), mode='wb') as f:
+                f.write(data)
 
     def extract_zip(self, extraction_path):
         """Extract zip in path."""
