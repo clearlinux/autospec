@@ -1546,49 +1546,52 @@ class Specfile(object):
         self._write_strip("\n")
         self._write_strip("mkdir -p ~/.R")
 
-        self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
-        self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
-        self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
+            self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+            self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
 
-        self._write_strip("R CMD INSTALL "
-                          f"{self.config.extra_configure} "
-                          "--install-tests "
-                          "--use-LTO "
-                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
-                          "--data-compress=none "
-                          "--compress=none "
-                          "--build  -l "
-                          "%{buildroot}-v3/usr/lib64/R/library .")
+            self._write_strip("R CMD INSTALL "
+                              f"{self.config.extra_configure} "
+                              "--install-tests "
+                              "--use-LTO "
+                              "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                              "--data-compress=none "
+                              "--compress=none "
+                              "--build  -l "
+                              "%{buildroot}-v3/usr/lib64/R/library .")
 
-        self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
-        self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" >> ~/.R/Makevars")
-        self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX512_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+        if self.config.config_opts['use_avx512']:
+            self._write_strip(f"echo \"CFLAGS = $CFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" > ~/.R/Makevars")
+            self._write_strip(f"echo \"FFLAGS = $FFLAGS {AVX512_CFLAGS} -ftree-vectorize  -mno-vzeroupper \" >> ~/.R/Makevars")
+            self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX512_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
 
-        self._write_strip("R CMD INSTALL "
-                          "--preclean "
-                          f"{self.config.extra_configure} "
-                          "--install-tests "
-                          "--use-LTO "
-                          "--no-test-load "
-                          "--data-compress=none "
-                          "--compress=none "
-                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
-                          "--build  -l "
-                          "%{buildroot}-v4/usr/lib64/R/library .")
+            self._write_strip("R CMD INSTALL "
+                              "--preclean "
+                              f"{self.config.extra_configure} "
+                              "--install-tests "
+                              "--use-LTO "
+                              "--no-test-load "
+                              "--data-compress=none "
+                              "--compress=none "
+                              "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                              "--build  -l "
+                              "%{buildroot}-v4/usr/lib64/R/library .")
 
-        self._write_strip(f"echo \"CFLAGS = $CFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
-        self._write_strip(f"echo \"FFLAGS = $FFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
-        self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+        if self.config.config_opts['use_apx']:
+            self._write_strip(f"echo \"CFLAGS = $CFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper\" > ~/.R/Makevars")
+            self._write_strip(f"echo \"FFLAGS = $FFLAGS {APX_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
+            self._write_strip(f"echo \"CXXFLAGS = $CXXFLAGS {AVX2_CFLAGS} -ftree-vectorize -mno-vzeroupper \" >> ~/.R/Makevars")
 
-        self._write_strip("R CMD INSTALL "
-                          f"{self.config.extra_configure} "
-                          "--install-tests "
-                          "--use-LTO "
-                          "--built-timestamp=${SOURCE_DATE_EPOCH} "
-                          "--data-compress=none "
-                          "--compress=none "
-                          "--build  -l "
-                          "%{buildroot}-va/usr/lib64/R/library .")
+            self._write_strip("R CMD INSTALL "
+                              f"{self.config.extra_configure} "
+                              "--install-tests "
+                              "--use-LTO "
+                              "--built-timestamp=${SOURCE_DATE_EPOCH} "
+                              "--data-compress=none "
+                              "--compress=none "
+                              "--build  -l "
+                              "%{buildroot}-va/usr/lib64/R/library .")
 
         self._write_strip("echo \"CFLAGS = $CFLAGS -ftree-vectorize \" > ~/.R/Makevars")
         self._write_strip("echo \"FFLAGS = $FFLAGS -ftree-vectorize \" >> ~/.R/Makevars")
