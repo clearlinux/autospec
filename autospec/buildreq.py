@@ -483,21 +483,45 @@ class Requirements(object):
     def set_build_req(self, config):
         """Add build requirements based on the build pattern."""
 
+    def findpackage_parse_lines(self, fp_line, line_iter, cmake_modules):
+        """Parse find_package multiline segment of the line_iter."""
+        qt6module = re.compile(r"^[^#]*find_package\(\s*\bQt6.*", re.I)
+        kf6module = re.compile(r"^[^#]*find_package\(\s*\bKF6.*", re.I)
+        ns = ''
+        if qt6module.search(fp_line):
+            ns = 'qt6'
+        elif kf6module.search(fp_line):
+            ns = 'kf6'
+        while True:
+            ln = next(line_iter).strip()
+            if not ln:
+                continue
+            modules = ln.strip(')').split(' ')
+            for module in modules:
+                if module:
+                    if pkg := cmake_modules.get(f"{ns}.{module}"):
+                        self.add_buildreq(pkg)
+            if ')' in ln:
+                break
+
     def parse_cmake(self, filename, cmake_modules, conf32):
         """Scan a .cmake or CMakeLists.txt file for what's it's actually looking for."""
         findpackage = re.compile(r"^[^#]*find_package\((\w+)\b.*\)", re.I)
+        findpackage_multiline = re.compile(r"^[^#]*find_package\((\w+)\b.*", re.I)
         pkgconfig = re.compile(r"^[^#]*pkg_check_modules\s*\(\w+ (.*)\)", re.I)
         pkg_search_modifiers = {'REQUIRED', 'QUIET', 'NO_CMAKE_PATH',
                                 'NO_CMAKE_ENVIRONMENT_PATH', 'IMPORTED_TARGET'}
         extractword = re.compile(r'(?:"([^"]+)"|(\S+))(.*)')
 
         with util.open_auto(filename, "r") as f:
-            lines = f.readlines()
+            lines = iter(f.readlines())
         for line in lines:
             if match := findpackage.search(line):
                 module = match.group(1)
                 if pkg := cmake_modules.get(module):
                     self.add_buildreq(pkg)
+            elif findpackage_multiline.search(line):
+                self.findpackage_parse_lines(line, lines, cmake_modules)
 
             if match := pkgconfig.search(line):
                 rest = match.group(1)
