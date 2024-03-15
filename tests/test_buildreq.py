@@ -621,12 +621,30 @@ class TestBuildreq(unittest.TestCase):
             "valid": "valid",
             "valid_but_commented": "valid_but_commented",
             "different_name": "another_name",
+            "qt6.module1": "qt6module1",
+            "qt6.module2": "qt6module2",
+            "kf6.module3": "kf6module3",
+            "kf6.module4": "kf6module4",
+            ".module5": "namodule5",
+            ".module6": "namodule6"
         }
         content = '''
 find_package(valid)
 #find_package(foo)
   # find_package(valid_but_commented)
 find_package(different_name)
+find_package(Qt6 stuff
+module1
+module2)
+find_package(KF6 stuff
+module3
+module4
+)
+find_package(NOT_HANDLED_NAMESPACE stuff
+module5
+
+module6
+)
 '''
         with tempfile.TemporaryDirectory() as tmpd:
             with open(os.path.join(tmpd, 'fname'), 'w') as f:
@@ -634,7 +652,14 @@ find_package(different_name)
             self.reqs.parse_cmake(os.path.join(tmpd, 'fname'), cmake_modules, False)
 
         self.assertEqual(self.reqs.buildreqs,
-                         set(['valid', 'another_name']))
+                         set(['valid',
+                              'another_name',
+                              'qt6module1',
+                              'qt6module2',
+                              'kf6module3',
+                              'kf6module4',
+                              'namodule5',
+                              'namodule6']))
 
     def test_r_desc_field_begin(self):
         """Test parsing of the first R description field."""

@@ -346,7 +346,7 @@ Python3, python3-dev
 PythonInterp, python3
 PythonLibs, python3-dev
 QGpgme, gpgme-dev gpgme-extras
-QHelpGenerator, extra-cmake-modules qttools-dev
+QHelpGenerator, extra-cmake-modules qt6tools-dev
 QMobipocket, kdegraphics-mobipocket-dev
 Qca-qt5, qca-qt5-dev
 Qt3DTests, qt6base-dev
@@ -901,6 +901,19 @@ igsc, igsc-dev
 json-c, json-c-dev
 kColorPicker, kcolorpicker-dev
 kImageAnnotator, kimageannotator-dev
+kf6.KIO, kio-dev
+kf6.I18n, ki18n-dev
+kf6.CoreAddons, kcoreaddons-dev
+kf6.Config, kconfig-dev
+kf6.Crash, kcrash-dev
+kf6.DBusAddons, kdbusaddons-dev
+kf6.Notifications, knotifications-dev
+kf6.Runner, krunner-dev
+kf6.Purpose, purpose-dev
+kf6.FileMetaData, kfilemetadata-dev
+kf6.JobWidgets, kjobwidgets-dev
+kf6.Service, kservice-dev
+kf6.StatusNotifierItem, kstatusnotifieritem-dev
 kim-api, kim-api-data
 leveldb, leveldb-dev
 libavif, libavif-dev
@@ -926,6 +939,9 @@ pugixml, pugixml-dev
 pybind11, pypi(pybind11)
 qt5xdg, libqtxdg-data
 qt5xdgiconloader, libqtxdg-data
+qt6.Gui, qt6base-dev
+qt6.DBus, qt6base-dev
+qt6.Widgets, qt6base-dev
 qtxdg-tools, qtxdg-tools-data
 rabbitmq-c, rabbitmq-c-dev
 realsense2, librealsense-dev
