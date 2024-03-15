@@ -579,7 +579,7 @@ class Specfile(object):
                 flags.extend(["-Ofast", "-fno-semantic-interposition", "-falign-functions=32"])
         if not self.config.config_opts['full-debug-info'] and not self.config.config_opts['use_clang']:
             flags.extend(["-gno-variable-location-views", "-gno-column-info", "-femit-struct-debug-baseonly", "-fdebug-types-section", "-gz=zstd", "-g1"])
-        if self.config.default_pattern != 'qmake':
+        if self.config.default_pattern != 'qmake' or self.config.default_pattern != 'qmake6':
             if self.config.config_opts['use_lto']:
                 flags.extend(["-O3", lto, "-ffat-lto-objects"])
                 if self.config.config_opts['use_clang']:
@@ -1733,7 +1733,18 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
 
-        self._write_strip("%qmake {} {}".format(extra_qmake_args, self.config.extra_configure))
+        self._write_strip('export QMAKE_CFLAGS="$CFLAGS"')
+        self._write_strip('export QMAKE_CXXFLAGS="$CXXFLAGS"')
+        self._write_strip('export QMAKE_LFLAGS="$LDFLAGS"')
+        self._write_strip('export QMAKE_LIBDIR=/usr/lib64')
+        self._write_strip('export QMAKE_CFLAGS_RELEASE=')
+        self._write_strip('export QMAKE_CXXFLAGS_RELEASE=')
+
+        if self.config.make_command:
+            qmake = self.config.make_command
+        else:
+            qmake = "qmake6"
+        self._write_strip(f"{qmake} {extra_qmake_args} {self.config.extra_configure}")
         self._write_strip("test -r config.log && cat config.log")
         self.write_make_line()
 
@@ -1742,7 +1753,7 @@ class Specfile(object):
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
-            self._write("%qmake 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
+            self._write(f"{qmake} 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
             self._write(f'    QMAKE_CFLAGS+="{AVX2_CFLAGS} {AVX2_LFLAGS}" QMAKE_CXXFLAGS+="{AVX2_CFLAGS} {AVX2_LFLAGS}" \\\n')
             self._write(f'    QMAKE_LFLAGS+="{AVX2_LCFLAGS}" {extra_qmake_args} {self.config.extra_configure}\n')
             self.write_make_line()
