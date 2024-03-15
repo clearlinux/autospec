@@ -778,7 +778,7 @@ debtcollector, debtcollector
 decorator, pypi-decorator
 deflate, zlib-dev
 deflateBound in -lz, zlib-dev
-designer, qttools-dev
+designer, qt6tools-dev
 desktop-file-install, desktop-file-utils
 desktop-file-validate, desktop-file-utils
 dialog, dialog
@@ -979,7 +979,7 @@ lber.h, openldap-dev
 lcms2, lcms2-dev
 lcms2.h, lcms2-dev
 lcms2/lcms2.h, lcms2-dev
-lconvert, qttools-dev
+lconvert, qt6tools-dev
 ldap.h, openldap-dev
 ldap_parse_sort_control, openldap-dev
 ldap_search in -lldap, openldap-dev
@@ -1065,14 +1065,14 @@ libxml2 devel libraries, libxml2-dev
 libxml2 library, libxml2-dev
 libxslt/pattern.h, libxslt-dev
 libz, zlib-dev
-linguist, qttools-dev
+linguist, qt6tools-dev
 linux/xattr.h, attr-dev
 llvm-config, llvm-dev
 loadkeys, kbd
-lrelease, qttools-dev
+lrelease, qt6tools-dev
 ltdl.h, libtool-dev
 lua, lua-dev
-lupdate, qttools-dev
+lupdate, qt6tools-dev
 lvm2app.h, LVM2-dev
 lxml, pypi-lxml
 lxqt, liblxqt-dev
@@ -1194,7 +1194,7 @@ pg_config, postgresql-dev
 php, php
 php-config7, php
 pip, pypi-pip
-pixeltool, qttools-dev
+pixeltool, qt6tools-dev
 pixman, pkgconfig(pixman-1)
 pkg-config, pkg-config
 pkg.m4, pkg-config-dev
@@ -1232,11 +1232,11 @@ python-pcre, python-pcre
 python-subunit, pypi(python_subunit)
 pytz, pypi(pytz)
 pyyaml, PyYAML
-qcollectiongenerator, qttools-dev
+qcollectiongenerator, qt6tools-dev
 qdbuscpp2xml, qtbase-dev
 qdbusxml2cpp, qtbase-dev
-qhelpconverter, qttools-dev
-qhelpgenerator, qttools-dev
+qhelpconverter, qt6tools-dev
+qhelpgenerator, qt6tools-dev
 qhull/libqhull.h, qhull-dev
 qjson/parser.h, qjson-dev
 qlalr, qtbase-dev
@@ -1250,8 +1250,8 @@ qmlplugindump, qtdeclarative-dev
 qmltestrunner, qtdeclarative-dev
 qscxmlc, qtscxml-dev
 qt5, buildreq-kde
-qtattributionsscanner, qttools-dev
-qtplugininfo, qttools-dev
+qtattributionsscanner, qt6tools-dev
+qtplugininfo, qt6tools-dev
 qtwaylandscanner, qtwayland-dev
 qvkgen, qtbase-dev
 raptor, raptor2-dev
