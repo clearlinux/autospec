@@ -12,6 +12,7 @@
 -lICE, pkgconfig(ice)
 -lIlmThread, ilmbase-dev
 -lSM, pkgconfig(sm)
+-lTerminfo, ncurses-dev
 -lX11, pkgconfig(x11)
 -lXau, libXau-dev
 -lXaw, pkgconfig(xaw)
@@ -99,11 +100,11 @@
 -lrdmacm, rdma-core-dev
 -lreadline, readline-dev
 -lsecret, libsecret-dev
+-lsecret, pkgconfig(libsecret-1)
 -lsensors, lm-sensors-dev
 -lsqlite3, sqlite-autoconf-dev
 -lssh, libssh-dev
 -lssl, openssl-dev
--lTerminfo, ncurses-dev
 -ltermcap, ncurses-dev
 -ltinfo, ncurses-dev
 -ltinfow, ncurses-dev
@@ -129,6 +130,7 @@ Analitza, analitza-dev
 Analitza5, analitza-dev
 BABL, babl-dev
 BISON, bison
+BROTLI, brotli-dev
 BZ2_bzCompress, bzip2-dev
 BZip2, bzip2-dev
 Berkeley DB, db
@@ -138,6 +140,7 @@ Boost, boost-dev
 Breeze, breeze-dev
 CAIRO, cairo-dev
 CARES, c-ares-dev
+CFITSIO, cfitsio-dev
 CGAL, CGAL-dev
 CHECK, check
 CLUTTER, clutter-dev
@@ -174,6 +177,7 @@ Eet.h, eet-dev
 Eigen/Core, eigen-dev
 Eigen/Dense, eigen-dev
 Eigen3, eigen-dev
+Epoxy, pkgconfig(epoxy)
 Exiv2, exiv2-dev
 Expat 1.95.x, expat-dev
 Expat XML Parser, expat-dev
@@ -254,6 +258,7 @@ Fontconfig, pkgconfig(fontconfig)
 FreeType 2, freetype-dev
 Freetype, freetype-dev
 GCRYPT, libgcrypt-dev
+GCrypt, libgcrypt-dev
 GD, gd-dev
 GDBM, gdbm-dev
 GDM_PAM_EXTENSIONS, gdm-dev
@@ -283,6 +288,7 @@ GTK, gtk+-dev
 GnuTLS, gnutls-dev
 GooglePerftools, gperftools-dev
 Gperf, gperf
+Gpgme, pkgconfig(gpgme)
 Gpgmepp, gpgme-dev
 Gphoto2, libgphoto2-dev
 Grantlee5, grantlee-dev
@@ -375,6 +381,7 @@ KF5KMahjongglib, libkmahjongg-dev
 KF5KdepimDBusInterfaces, kdepim-apps-libs-dev
 KF5Kipi, libkipi-dev
 KF5Kirigami2, kirigami2-dev
+KF5KirigamiAddons, kirigami2-dev
 KF5KontactInterface, kontactinterface-dev
 KF5Kross, kross-dev
 KF5Ldap, kldap-dev
@@ -416,6 +423,8 @@ KF5Su, kdesu-dev
 KF5Syndication, syndication-dev
 KF5SyntaxHighlighting, syntax-highlighting-dev
 KF5SysGuard, libksysguard-dev
+KF5TextAutoCorrection, ktextaddons-dev
+KF5TextAutoCorrectionWidgets, ktextaddons-dev
 KF5TextEditor, ktexteditor-dev
 KF5TextWidgets, ktextwidgets-dev
 KF5ThreadWeaver, threadweaver-dev
@@ -428,16 +437,74 @@ KF5WidgetsAddons, kwidgetsaddons-dev
 KF5WindowSystem, kwindowsystem-dev
 KF5XmlGui, kxmlgui-dev
 KF5XmlRpcClient, kxmlrpcclient-dev
+KF6Attica, attica-dev
+KF6Baloo, baloo-dev
+KF6BalooWidgets, baloo-widgets-dev
+KF6ColorScheme, kcolorscheme-dev
+KF6Config, kconfig-dev
+KF6Contacts, kcontacts-dev
+KF6DNSSD, kdnssd-dev
+KF6FileMetaData, kfilemetadata-dev
+KF6GlobalAccel, kglobalaccel-dev
+KF6Holidays, kholidays-dev
+KF6IdleTime, kidletime-dev
+KF6JobWidgets, kjobwidgets-dev
+KF6KCMUtils, kcmutils-dev
+KF6Kirigami, kirigami-dev
+KF6Kirigami2, kirigami-dev
+KF6KirigamiAddons, kirigami-addons-dev
+KF6KirigamiAddons2, kirigami-addons-dev
+KF6KirigamiPlatform, kirigami-dev
+KF6NetworkManagerQt, networkmanager-qt-dev
+KF6NewStuff, knewstuff-def
+KF6Notifications, knotifications-dev
+KF6NotifyConfig, knotifyconfig-dev
+KF6Package, kpackage-dev
+KF6Purpose, purpose-dev
+KF6QuickCharts, kquickcharts-dev
+KF6Runner, krunner-dev
+KF6Screen, libkscreen-dev
+KF6StatusNotifierItem, kstatusnotifieritem-dev
+KF6SyntaxHighlighting, syntax-highlighting-dev
+KF6TextEditor, ktexteditor-dev
 KGantt, kdiagram-dev
+KPim5Akonadi, akonadi-dev
+KPim5AkonadiContact, akonadi-contacts-dev
+KPim5AkonadiMime, akonadi-mime-dev
+KPim5AkonadiNotes, akonadi-notes-dev
+KPim5GrantleeTheme, grantleetheme-dev
+KPim5Gravatar, libgravatar-dev
+KPim5IMAP, kimap-staticdev
+KPim5Ldap, kldap-dev
+KPim5LibKSieve, libksieve-dev
+KPim5Libkdepim, libkdepim-dev
+KPim5Libkleo, libkleo-dev
+KPim5MailImporter, mailimporter-dev
+KPim5MailTransport, kmailtransport-dev
+KPim5MailTransportAkonadi,  kmailtransport-dev
+KPim5MessageComposer, messagelib-dev
+KPim5MessageCore, messagelib-dev
+KPim5Mime, kmime-dev
+KPim5PimCommon, pimcommon-dev
+KPim5TextEdit, kpimtextedit-dev
+KPim6IMAP, kimap-dev
+KPim6Libkdepim, libkdepim-dev
+KPim6Libkleo, libkleo-dev
+KPim6MailTransport, kmailtransport-dev
+KPim6MessageCore, messagelib-dev
+KPim6Mime, kmime-dev
+KPim6PimCommon, pimcommon-dev
 KPimGAPI, libkgapi-dev
 KPimKDAV, kdav-dev
 KPimPkPass, kpkpass-dev
 KPimSMTP, ksmtp-dev
 KPimSMTPConfig, ksmtp-dev
+KPipeWire, kpipewire-dev
 KScreenLocker, kscreenlocker-dev
 KTP, ktp-common-internals-dev
 KdepimLibs, kdepimlibs-dev
 Kerberos 5, krb5-dev
+KirigamiAddons, kirigami-addons-dev
 LEX, flex bison
 LIBCAP_NG_PATH, libcap-ng-dev
 LIBEXIF, libexif-dev
@@ -473,6 +540,7 @@ LibSSH, libssh-dev
 LibXml2, libxml2-dev
 LibXslt, libxslt-bin
 Libcap, libcap-dev
+Libev, libev-dev
 Lua51, lua-dev
 LuaJIT, LuaJIT-dev
 MDDS, mdds-dev
@@ -503,12 +571,16 @@ PAM, Linux-PAM-dev
 PCAP, libpcap-dev
 PCIUTILS, pciutils-dev
 PCRE, pcre-dev
+PCRE2, pcre2-dev
 PNG, pkgconfig(libpng)
 POPT, popt-dev
 POSIX ACL, acl-dev
 PULSEAUDIO, pulseaudio-dev
 Phonon, phonon-dev
 Phonon4Qt5, phonon-dev
+Phonon4Qt6, phonon-dev
+PlasmaActivities, plasma-activities-dev
+PlasmaActivitiesStats, plasma-activities-stats-dev
 PolkitQt5-1, polkit-qt-dev
 Poppler, poppler-dev
 PopplerQt4, poppler-dev
@@ -522,13 +594,12 @@ Python, python3-dev
 Python.h, python3-dev
 PythonLibs, python3-dev
 PythonLibsUnix, python3-dev
+QCoro5, qcoro-dev
 QGpgme, gpgme-dev
 QImageBlitz, qimageblitz-dev
 QREncode, qrencode-dev
 QRencode, qrencode-dev
 QT, buildreq-kde
-Qt::Quick, qt6declarative-dev
-Qt::Svg, qt6svg-dev
 Qalculate, libqalculate-dev
 Qca-qt5, qca-qt5-dev
 Qt4, qt-everywhere-opensource-src-dev
@@ -539,6 +610,7 @@ Qt5Keychain, qtkeychain-dev
 Qt5LinguistTools, qttools-dev
 Qt5Multimedia, qtmultimedia-dev
 Qt5Network, qtbase-dev
+Qt5NetworkAuth, pkgconfig(Qt5NetworkAuth)
 Qt5QuickControls2, pkgconfig(Qt5QuickControls2)
 Qt5QuickTemplates2, pkgconfig(Qt5QuickTemplates2)
 Qt5QuickTest, pkgconfig(Qt5QuickTest)
@@ -555,6 +627,9 @@ Qt6Positioning, qt6positioning-dev
 Qt6Quick, qt6declarative-dev
 Qt6QuickTimeline, qt6quicktimeline-dev
 Qt6ShaderTools, qt6shadertools-dev
+Qt6WaylandClient, qt6wayland-dev
+Qt::Quick, qt6declarative-dev
+Qt::Svg, qt6svg-dev
 R, R
 READLINE, readline-dev
 RSVG, librsvg-dev
@@ -598,6 +673,7 @@ WEBKIT, webkitgtk-dev
 WEBPMUX, libwebp-dev
 WSME, WSME
 Wayland, wayland-dev
+WaylandProtocols, wayland-protocols-dev plasma-wayland-protocols-dev
 WaylandScanner, wayland
 WebOb, pypi-webob
 X, pkgconfig(x11)
@@ -817,6 +893,7 @@ ez_setup, pypi-setuptools
 ffi.h, libffi-dev
 ffi_call, libffi-dev
 fftw3.h, fftw-dev
+file, file
 find_packages, pypi-setuptools
 flatbuffers/flatbuffers.h, FlatBuffers-dev
 flatpak, flatpak-dev
@@ -829,6 +906,7 @@ fontconfig.h, fontconfig-dev
 fontconfig/fontconfig.h, fontconfig-dev
 freerdp2, freerdp-dev
 freetype-config, freetype-dev
+frozen/unordered_map.h, frozen-dev
 fuse (via pkg-config), compat-fuse-soname2-dev fuse-dev
 fuse, fuse-dev
 fuse.h, fuse-dev
@@ -842,6 +920,7 @@ gawk, gawk
 gc/gc.h, gc-dev
 gcj, gcj
 gconftool-2, GConf-dev
+gcr-3, pkgconfig(gcr-3)
 gcrypt.h, libgcrypt-dev
 gdal-config, gdal-dev
 gdbm.h, gdbm-dev
@@ -858,6 +937,7 @@ gevent, pypi-gevent
 gflags, gflags-dev
 gfortran, gfortran
 gi, pygobject
+gi-docgen, gi-docgen
 gif_lib.h, giflib-dev
 gio-2.0, glib-dev
 giomm-2.4, glibmm-dev
@@ -1029,6 +1109,7 @@ libnettle, nettle-dev nettle-lib
 libnftnl, libnftnl-dev
 libnl-1, libnl-dev
 libnotify, libnotify-dev
+libnova, libnova-dev
 libpeas-1.0, libpeas-dev
 libpipewire-0.2, pipewire-dev
 libpng, pkgconfig(libpng)
@@ -1267,6 +1348,7 @@ requests, pypi-requests
 rest-0.7, rest-dev
 retrying, retrying
 rpm, pkgconfig(rpm)
+rst2man rst2man.py, pypi-docutils
 rst2man, pypi-docutils
 rsvg-convert, librsvg
 ruby, ruby
@@ -1279,6 +1361,7 @@ sbc, sbc-dev
 scrollkeeper-config, rarian
 scrollkeeper-preinstall, rarian
 sdl2, SDL2-dev
+sdl2-config, SDL2-dev
 security/pam_appl.h, Linux-PAM-dev
 selenium, pypi-selenium
 setcap, libcap-dev

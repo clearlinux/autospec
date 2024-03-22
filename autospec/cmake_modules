@@ -266,6 +266,7 @@ KSMServerDBusInterface, plasma-workspace-dev
 KSaneCore, ksanecore-dev
 KScreenLocker, kscreenlocker-dev
 KSysGuard, libksysguard-dev
+KUserFeedback, kuserfeedback-dev
 KWaylandServer, kwayland-server-dev
 KWinDBusInterface, kwin-dev
 KWinEffects, kwin-dev
@@ -329,6 +330,7 @@ PerlLibs, perl
 Phonon4Qt5, phonon-dev
 Phonon4Qt5Experimental, phonon-dev
 PkgConfig, pkg-config
+PlasmaActivities, plasma-activities-dev
 PlasmaPotdProvider, kdeplasma-addons-dev
 PlasmaWaylandProtocols, plasma-wayland-protocols-dev
 Png2Ico, extra-cmake-modules png2ico
@@ -901,17 +903,17 @@ igsc, igsc-dev
 json-c, json-c-dev
 kColorPicker, kcolorpicker-dev
 kImageAnnotator, kimageannotator-dev
-kf6.KIO, kio-dev
-kf6.I18n, ki18n-dev
-kf6.CoreAddons, kcoreaddons-dev
 kf6.Config, kconfig-dev
+kf6.CoreAddons, kcoreaddons-dev
 kf6.Crash, kcrash-dev
 kf6.DBusAddons, kdbusaddons-dev
-kf6.Notifications, knotifications-dev
-kf6.Runner, krunner-dev
-kf6.Purpose, purpose-dev
 kf6.FileMetaData, kfilemetadata-dev
+kf6.I18n, ki18n-dev
 kf6.JobWidgets, kjobwidgets-dev
+kf6.KIO, kio-dev
+kf6.Notifications, knotifications-dev
+kf6.Purpose, purpose-dev
+kf6.Runner, krunner-dev
 kf6.Service, kservice-dev
 kf6.StatusNotifierItem, kstatusnotifieritem-dev
 kim-api, kim-api-data
@@ -939,8 +941,8 @@ pugixml, pugixml-dev
 pybind11, pypi(pybind11)
 qt5xdg, libqtxdg-data
 qt5xdgiconloader, libqtxdg-data
-qt6.Gui, qt6base-dev
 qt6.DBus, qt6base-dev
+qt6.Gui, qt6base-dev
 qt6.Widgets, qt6base-dev
 qtxdg-tools, qtxdg-tools-data
 rabbitmq-c, rabbitmq-c-dev
