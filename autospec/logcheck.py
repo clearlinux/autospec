@@ -18,8 +18,23 @@
 
 import os
 import re
+import sys
 
 from util import print_fatal, write_out
+
+
+def log_etc(lines):
+    """Return the content of the START/etc ... END/etc section."""
+    etc = []
+    while True:
+        line = next(lines)
+        line = line.strip()
+        if line == 'END/etc':
+            break
+        if line.startswith('+'):
+            continue
+        etc.append(line)
+    return etc
 
 
 def logcheck(pkg_loc):
@@ -52,7 +67,12 @@ def logcheck(pkg_loc):
 
     pat = re.compile(r"^checking (?:for )?(.*?)\.\.\. no")
     misses = []
-    for line in lines:
+    iter_lines = iter(lines)
+    for line in iter_lines:
+        if line.strip() == "START/etc":
+            etc = log_etc(iter_lines)
+            if etc:
+                write_log(pkg_loc, "etc_files", etc)
         match = None
         m = pat.search(line)
         if m:
@@ -70,8 +90,8 @@ def logcheck(pkg_loc):
         if match in blacklist:
             print_fatal("Blacklisted configure-miss is forbidden: " + match)
             misses.append("Blacklisted configure-miss is forbidden: " + match)
-            write_misses(pkg_loc, misses)
-            exit(1)
+            write_log(pkg_loc, 'configure_misses', misses)
+            sys.exit(1)
 
         print("Configure miss: " + match)
         misses.append("Configure miss: " + match)
@@ -79,9 +99,9 @@ def logcheck(pkg_loc):
     if not misses:
         return
 
-    write_misses(pkg_loc, misses)
+    write_log(pkg_loc, 'configure_misses', misses)
 
 
-def write_misses(pkg_loc, misses):
-    """Create configure_misses file with automatically disabled configuration options."""
-    write_out(os.path.join(pkg_loc, 'configure_misses'), '\n'.join(sorted(misses)))
+def write_log(pkg_loc, fname, content):
+    """Create log file with content."""
+    write_out(os.path.join(pkg_loc, fname), '\n'.join(sorted(content)))
