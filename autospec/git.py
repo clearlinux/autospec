@@ -109,6 +109,7 @@ def commit_to_git(config, name, success):
     call("git add profile_payload", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add options.conf", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add configure_misses", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add etc_files", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add whatrequires", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add description", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add attrs", check=False, stderr=subprocess.DEVNULL, cwd=path)
