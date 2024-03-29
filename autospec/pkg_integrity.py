@@ -483,6 +483,10 @@ class GPGVerifier(Verifier):
             return None
         # valid signature exists at package_sign_path, operate on it now
         keyid = get_keyid(self.package_sign_path)
+        if keyid in self.config.keyid_blocklist:
+            self.print_result(False, err_msg='KEYID IN BLOCKLIST: {}'.format(keyid))
+            self.quit()
+
         # default location first
         pubkey_loc = self.pubkey_path.format(keyid)
         cache_key = os.path.join(KEY_CACHE_DIR, pubkey_loc)
