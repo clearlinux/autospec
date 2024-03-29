@@ -289,7 +289,6 @@ LibIcal, libical-dev
 LibKEduVocDocument, libkeduvocdocument-dev
 LibKWorkspace, plasma-workspace-dev
 LibKompareDiff2, libkomparediff2-dev
-LibLZMA, xz-dev
 LibNotificationManager, plasma-workspace-dev
 LibObs, obs-studio-dev
 LibTaskManager, plasma-workspace-dev

@@ -76,7 +76,6 @@
 -lkrb5, krb5-dev
 -lldap, openldap-dev
 -lldb, ldb-dev
--llzma, xz-dev
 -llzo, lzo-dev
 -lmagic, file-dev
 -lmenu, ncurses-dev
@@ -512,7 +511,6 @@ LIBGCRYPT - version >= 1.5.0, libgcrypt-dev
 LIBGD, libgd-dev
 LIBICAL, libical-dev
 LIBKONQ, kde-baseapps-dev
-LIBLZMA, xz-dev
 LIBNOTIFY, libnotify-dev
 LIBPCREVERSION, pcre-dev
 LIBRSVG, librsvg-dev
@@ -534,7 +532,6 @@ LibExiv2, pkgconfig(exiv2)
 LibKEduVocDocument, libkeduvocdocument-dev
 LibKWorkspace, plasma-workspace-dev
 LibKrb5, krb5-dev
-LibLZMA, xz-dev
 LibR, R-dev
 LibSSH, libssh-dev
 LibXml2, libxml2-dev
@@ -1100,7 +1097,6 @@ libhandy-0.0, libhandy-dev
 libiberty.h, binutils-dev
 libkmod.h, kmod-dev
 libksba, libksba-dev
-liblzma, xz-dev
 libmnl/libmnl.h, libmnl-dev
 libmpfr, mpfr-dev
 libmspack >= 0.0.20040308alpha (via pkg-config), libmspack-dev
@@ -1161,8 +1157,6 @@ lxqt-build-tools, lxqt-build-tools
 lxqt-globalkeys, lxqt-globalkeys-dev
 lxqt-globalkeys-ui, lxqt-globalkeys-dev
 lz4.h, lz4-dev
-lzma, xz-dev
-lzma.h, xz-dev
 lzo/lzoconf.h, lzo-dev
 magic, file-dev
 magic.h, file-dev
