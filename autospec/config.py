@@ -121,6 +121,7 @@ class Config(object):
         self.failed_commands = {}
         self.ignored_commands = {}
         self.gems = {}
+        self.keyid_blocklist = {}
         self.license_hashes = {}
         self.license_translations = {}
         self.license_blacklist = {}
@@ -603,6 +604,7 @@ class Config(object):
         read_pattern_conf("license_blacklist", self.license_blacklist, list_format=True, path=path)
         read_pattern_conf("qt_modules", self.qt_modules, path=path)
         read_pattern_conf("cmake_modules", self.cmake_modules, path=path)
+        read_pattern_conf("keyid_blocklist", self.keyid_blocklist, list_format=True, path=path)
 
     def parse_existing_spec(self, name):
         """Determine the old version, old patch list, old keyid, and cves from old spec file."""
