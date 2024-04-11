@@ -115,6 +115,8 @@ class Config(object):
         self.old_keyid = None
         self.profile_payload = None
         self.signature = None
+        self.signature_macro = None
+        self.pkey_macro = None
         self.yum_conf = None
         self.failed_pattern_dir = None
         self.alias = None
