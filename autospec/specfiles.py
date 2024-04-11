@@ -161,6 +161,12 @@ class Specfile(object):
         if self.keyid and self.config.signature:
             count += 1
             self._write_strip(f"Source{count}  : {self.config.signature}")
+            self.config.signature_macro = f"%{{SOURCE{count}}}"
+
+            # Also include the public key in the source tarball.
+            count += 1
+            self._write_strip(f"Source{count}  : {self.keyid}.pkey")
+            self.config.pkey_macro = f"%{{SOURCE{count}}}"
 
         for source in self.config.extra_sources:
             count += 1
@@ -430,6 +436,12 @@ class Specfile(object):
     def write_prep(self):
         """Write prep section to spec file."""
         self._write_strip("%prep")
+        if self.keyid and self.config.signature:
+            self._write_strip("mkdir .gnupg")
+            self._write_strip("chmod 700 .gnupg")
+            self._write_strip(f"gpg --homedir .gnupg --import {self.config.pkey_macro}")
+            self._write_strip(f"gpg --homedir .gnupg --status-fd 1 --verify {self.config.signature_macro} %{{SOURCE0}} > gpg.status")
+            self._write_strip(f"grep '^\[GNUPG:\] GOODSIG {self.keyid}' gpg.status")
         self.write_prep_prepend()
         prefix = self.content.prefixes[self.url]
         if self.config.default_pattern == 'R':
