@@ -159,6 +159,9 @@ class Specfile(object):
 
         # if package is verified, include the signature in the source tarball
         if self.keyid and self.config.signature:
+            # We'll need gnupg to verify the signature. Need to add it here so it's ready before write_buildreq
+            self.requirements.add_buildreq("gnupg")
+
             count += 1
             self._write_strip(f"Source{count}  : {self.config.signature}")
             self.config.signature_macro = f"%{{SOURCE{count}}}"
