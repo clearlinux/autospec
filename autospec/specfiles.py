@@ -441,7 +441,7 @@ class Specfile(object):
             self._write_strip("chmod 700 .gnupg")
             self._write_strip(f"gpg --homedir .gnupg --import {self.config.pkey_macro}")
             self._write_strip(f"gpg --homedir .gnupg --status-fd 1 --verify {self.config.signature_macro} %{{SOURCE0}} > gpg.status")
-            self._write_strip(f"grep '^\[GNUPG:\] GOODSIG {self.keyid}' gpg.status")
+            self._write_strip(f"grep '^\\[GNUPG:\\] GOODSIG {self.keyid}' gpg.status")
         self.write_prep_prepend()
         prefix = self.content.prefixes[self.url]
         if self.config.default_pattern == 'R':
