@@ -1097,7 +1097,6 @@ class Specfile(object):
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC="gcc-14"')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1203,7 +1202,6 @@ class Specfile(object):
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC="gcc-14"')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1264,7 +1262,6 @@ class Specfile(object):
             self._write_strip("pushd ../buildapx" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1342,7 +1339,6 @@ class Specfile(object):
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1387,7 +1383,6 @@ class Specfile(object):
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1435,7 +1430,6 @@ class Specfile(object):
 
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1478,7 +1472,6 @@ class Specfile(object):
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self.write_build_prepend()
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1523,7 +1516,6 @@ class Specfile(object):
 
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("pushd ../buildapx/" + self.config.subdir)
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1680,7 +1672,6 @@ class Specfile(object):
             self.write_build_prepend()
             self.write_variables()
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC=gcc-14')
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
@@ -1886,7 +1877,6 @@ class Specfile(object):
                 self._write_strip('ninja -v -C builddiravx512')
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC=gcc-14')
             if self.config.config_opts['pgo'] and self.config.profile_payload != "":
                 self._write_strip(f'CFLAGS="$CFLAGS_GENERATE {APX_CFLAGS} {APX_LFLAGS} "'
                                   f' CXXFLAGS="$CXXFLAGS_GENERATE {AVX2_CFLAGS} {AVX2_LFLAGS} "'
@@ -1957,7 +1947,6 @@ class Specfile(object):
             self._write_strip('DESTDIR=%{buildroot}-v4 ninja -C builddiravx512 install')
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
             self._write_strip("GOAMD64=v3")
-            self._write_strip('CC=gcc-14')
             self._write_strip('DESTDIR=%{buildroot}-va ninja -C builddirapx install')
 
         self._write_strip("GOAMD64=v2")
