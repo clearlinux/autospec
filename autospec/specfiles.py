@@ -414,6 +414,8 @@ class Specfile(object):
             self._write_strip("## make_prepend end")
         if self.config.make_command:
             make = self.config.make_command
+        elif self.config.config_opts['use_ninja']:
+            make = "ninja"
         else:
             make = "make"
         if build32:
@@ -430,7 +432,11 @@ class Specfile(object):
 
     def write_cmake_line_openmpi(self):
         """Write cmake line (openmpi) to spec file."""
-        cmake_string = 'cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=$MPI_ROOT -DCMAKE_INSTALL_SBINDIR=$MPI_BIN \\\n' \
+        if self.config.config_opts['use_ninja']:
+            cmake_type = "Ninja"
+        else:
+            cmake_type = "Unix Makefiles"
+        cmake_string = f"cmake -G {cmake_type} -DCMAKE_INSTALL_PREFIX=$MPI_ROOT -DCMAKE_INSTALL_SBINDIR=$MPI_BIN \\\n" \
                        '-DCMAKE_INSTALL_LIBDIR=$MPI_LIB -DCMAKE_INSTALL_INCLUDEDIR=$MPI_INCLUDE -DLIB_INSTALL_DIR=$MPI_LIB \\\n' \
                        '-DBUILD_SHARED_LIBS:BOOL=ON -DLIB_SUFFIX=64 \\\n' \
                        '-DCMAKE_AR=/usr/bin/gcc-ar -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_RANLIB=/usr/bin/gcc-ranlib \\\n'
@@ -1631,7 +1637,11 @@ class Specfile(object):
         self._write_strip("pushd clr-build")
         self.write_variables()
         self._write_strip("export GOAMD64=v2")
-        self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
+        if self.config.config_opts['use_ninja']:
+            cmake_type = "-G Ninja"
+        else:
+            cmake_type = "-G 'Unix Makefiles'"
+        self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
 
         self.write_profile_payload("cmake")
 
@@ -1648,7 +1658,7 @@ class Specfile(object):
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX2_CFLAGS} "')
-            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
+            self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1662,7 +1672,7 @@ class Specfile(object):
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {AVX512_CFLAGS} {AVX512_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {AVX512_CFLAGS} "')
-            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
+            self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1676,7 +1686,7 @@ class Specfile(object):
             self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
-            self._write_strip("%cmake {} {}".format(self.config.cmake_srcdir, self.extra_cmake))
+            self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
 
@@ -1689,7 +1699,7 @@ class Specfile(object):
             self._write_strip("%cmake -DLIB_INSTALL_DIR:PATH=/usr/lib32 "
                               "-DCMAKE_INSTALL_LIBDIR=/usr/lib32 "
                               "-DLIB_SUFFIX=32 "
-                              "{} {} ".format(self.config.cmake_srcdir, self.extra_cmake))
+                              f"{self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")

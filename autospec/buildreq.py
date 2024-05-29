@@ -751,6 +751,10 @@ class Requirements(object):
         configure_ac_files = []
         qmake_profiles = []
         cmake_files = []
+
+        if config.config_opts['use_ninja']:
+            self.add_buildreq('ninja')
+
         for dirpath, _, files in os.walk(dirn):
             default_score = 2 if dirpath == dirn else 1
 
