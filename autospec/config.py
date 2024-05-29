@@ -187,6 +187,7 @@ class Config(object):
             "server": "Package is only used by servers",
             "no_glob": "Do not use the replacement pattern for file matching",
             "allow_exe": "Allow Windows executables (*.exe, *.dll) to be packaged",
+            "use_ninja": "Use ninja build files",
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies

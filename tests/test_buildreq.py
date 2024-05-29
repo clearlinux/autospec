@@ -402,6 +402,7 @@ class TestBuildreq(unittest.TestCase):
         should be sufficient.
         """
         conf = config.Config("")
+        conf.config_opts['use_ninja'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'setup.py'), 'w').close()
@@ -418,6 +419,7 @@ class TestBuildreq(unittest.TestCase):
         should be sufficient.
         """
         conf = config.Config("")
+        conf.config_opts['use_ninja'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'CMakeLists.txt'), 'w').close()
@@ -434,6 +436,7 @@ class TestBuildreq(unittest.TestCase):
         should be sufficient.
         """
         conf = config.Config("")
+        conf.config_opts['use_ninja'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'SConstruct'), 'w').close()
@@ -450,6 +453,7 @@ class TestBuildreq(unittest.TestCase):
         should be sufficient.
         """
         conf = config.Config("")
+        conf.config_opts['use_ninja'] = False
         with tempfile.TemporaryDirectory() as tmpd:
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'meson.build'), 'w').close()
@@ -480,6 +484,7 @@ class TestBuildreq(unittest.TestCase):
         buildreq.pypidata.get_pypi_metadata = MagicMock(return_value=content)
         with tempfile.TemporaryDirectory() as tmpd:
             conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
             self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), "", conf)
@@ -512,6 +517,7 @@ class TestBuildreq(unittest.TestCase):
         m_open = mock_open(read_data=content)
         with tempfile.TemporaryDirectory() as tmpd:
             conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
             open(os.path.join(tmpd, 'pypi.json'), 'w').close()
@@ -537,6 +543,7 @@ class TestBuildreq(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpd:
             conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
             os.mkdir(os.path.join(tmpd, 'subdir'))
             open(os.path.join(tmpd, 'subdir', 'setup.py'), 'w').close()
             open(os.path.join(tmpd, 'subdir', 'requires.txt'), 'w').close()
@@ -545,6 +552,21 @@ class TestBuildreq(unittest.TestCase):
         self.reqs.add_pyproject_requires.assert_not_called()
         self.reqs.add_setup_py_requires.assert_called_once()
         self.reqs.grab_python_requirements.assert_called_once()
+
+    def test_scan_for_configure_ninja(self):
+        """
+        Test scan_for_configure when ninja is enabled.
+        """
+        conf = config.Config("")
+        conf.config_opts['use_ninja'] = True
+        with tempfile.TemporaryDirectory() as tmpd:
+            os.mkdir(os.path.join(tmpd, 'subdir'))
+            open(os.path.join(tmpd, 'setup.py'), 'w').close()
+
+            self.reqs.scan_for_configure(tmpd, "", conf)
+
+        self.assertEqual(self.reqs.buildreqs,
+                         set(['buildreq-distutils3', 'ninja']))
 
     def test_parse_cmake_pkg_check_modules(self):
         """
