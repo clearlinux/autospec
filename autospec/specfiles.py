@@ -913,6 +913,9 @@ class Specfile(object):
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
 
+        if self.config.config_opts['use_ninja'] and self.config.install_macro == '%make_install':
+            self.config.install_macro = '%ninja_install'
+
         if self.config.config_opts['32bit']:
             self._write_strip("pushd clr-build32")
             self._write_strip("{}32 {} {}".format(self.config.install_macro,
