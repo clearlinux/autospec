@@ -150,8 +150,9 @@ def binary_in_path(binary):
 
 def write_out(filename, content, mode="w"):
     """File.write convenience wrapper."""
-    with open_auto(filename, mode) as require_f:
-        require_f.write(content)
+    if mode:
+        with open_auto(filename, mode) as require_f:
+            require_f.write(content)
 
 
 def open_auto(*args, **kwargs):

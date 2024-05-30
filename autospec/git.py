@@ -113,6 +113,7 @@ def commit_to_git(config, name, success):
     call("git add whatrequires", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add description", check=False, stderr=subprocess.DEVNULL, cwd=path)
     call("git add attrs", check=False, stderr=subprocess.DEVNULL, cwd=path)
+    call("git add archive.diff", check=False, stderr=subprocess.DEVNULL, cwd=path)
 
     # remove deprecated config files
     call("git rm make_install_append", check=False, stderr=subprocess.DEVNULL, cwd=path)
