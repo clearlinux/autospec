@@ -465,6 +465,11 @@ class Specfile(object):
                     extract_cmd = 'unzip -q {}'
                 if archive.endswith('.bz2') and not archive.endswith('.tar.bz2'):
                     extract_cmd = 'bzcat {0} > $(basename "{0}" .bz2)'
+                if archive.endswith('.zst'):
+                    if archive.endswith('.tar.zst'):
+                        extract_cmd = 'tar -I zstd xf {}'
+                    else:
+                        extract_cmd = 'zstd -dqc {0} > $(basename "{0}" .zst)'
                 self._write_strip('cd %{_builddir}')
                 archive_file = os.path.basename(archive)
                 if self.config.archive_details.get(archive + "prefix"):

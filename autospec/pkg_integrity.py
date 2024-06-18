@@ -532,6 +532,7 @@ VERIFIER_TYPES = {
     '.bz2': GPGVerifier,
     '.xz': GPGVerifier,
     '.zip': GPGVerifier,
+    '.zst': GPGVerifier,
 }
 
 
