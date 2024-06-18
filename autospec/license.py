@@ -178,7 +178,7 @@ def scan_for_licenses(srcdir, config, pkg_name):
             # seen in the DPDK 20.11.3 tree, where the `LICENSES` directory is
             # named `license` instead.
             dirbase = os.path.basename(dirpath)
-            if re.search(r'^(LICENSES|licenses?)$', dirbase) and re.search(r'\.txt$', name):
+            if re.search(r'^(LICENSES|licenses?|licensing)$', dirbase) and re.search(r'\.txt$', name):
                 license_from_copying_hash(os.path.join(dirpath, name),
                                           srcdir, config, pkg_name)
 
