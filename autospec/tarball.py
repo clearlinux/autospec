@@ -24,6 +24,7 @@ import re
 import sys
 import tarfile
 import zipfile
+import zstandard as zstd
 
 import download
 from util import do_regex, get_sha1sum, print_fatal, write_out
@@ -53,6 +54,8 @@ class Source():
             self.type = 'zip'
         elif self.url.lower().endswith(('.bz2')) and not self.url.lower().endswith(('.tar.bz2')):
             self.type = 'bz2'
+        elif self.url.lower().endswith('.zst'):
+            self.type = 'zst'
         else:
             self.type = 'tar'
 
@@ -80,6 +83,16 @@ class Source():
         else:
             print_fatal("Not a valid tar file.")
             sys.exit(1)
+    
+    def set_zst_prefix(self):
+        """Determine prefix folder name of tar.zst file."""
+        with tarfile.open(fileobj=zstd.open(self.path, 'rb'), mode='r|') as content:
+            lines = content.getnames()
+            if len(lines) == 0:
+                print_fatal("Zstd compressed tar file doesn't appear to have any content")
+                sys.exit(1)
+            elif len(lines) > 1:
+                self.prefix = os.path.commonpath(lines)
 
     def set_bz2_prefix(self):
         """No prefix for plain bz2 archives."""
@@ -128,6 +141,10 @@ class Source():
         with zipfile.ZipFile(self.path, 'r') as content:
             content.extractall(path=extraction_path)
 
+    def extract_zst(self, extraction_path):
+        """Extract zst in path."""
+        with tarfile.open(fileobj=zstd.open(self.path, 'rb'), mode='r|') as content:
+            content.extractall(path=extraction_path)
 
 def convert_version(ver_str, name):
     """Remove disallowed characters from the version."""
