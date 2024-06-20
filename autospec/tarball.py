@@ -24,8 +24,8 @@ import re
 import sys
 import tarfile
 import zipfile
-import zstandard as zstd
 
+import zstandard as zstd
 import download
 from util import do_regex, get_sha1sum, print_fatal, write_out
 
@@ -83,7 +83,7 @@ class Source():
         else:
             print_fatal("Not a valid tar file.")
             sys.exit(1)
-    
+
     def set_zst_prefix(self):
         """Determine prefix folder name of tar.zst file."""
         with tarfile.open(fileobj=zstd.open(self.path, 'rb'), mode='r|') as content:
@@ -145,6 +145,7 @@ class Source():
         """Extract zst in path."""
         with tarfile.open(fileobj=zstd.open(self.path, 'rb'), mode='r|') as content:
             content.extractall(path=extraction_path)
+
 
 def convert_version(ver_str, name):
     """Remove disallowed characters from the version."""
