@@ -25,8 +25,8 @@ import sys
 import tarfile
 import zipfile
 
-import zstandard as zstd
 import download
+import zstandard as zstd
 from util import do_regex, get_sha1sum, print_fatal, write_out
 
 
