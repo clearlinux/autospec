@@ -289,6 +289,7 @@ class Config(object):
             (r"No rule to make target `(.*)',", 0, None),
             (r"Package (.*) was not found in the pkg-config search path.", 0, 'pkgconfig'),
             (r"Package '([a-zA-Z0-9\-:]*)', required by '.*', not found", 0, 'pkgconfig'),
+            (r"The file `([a-zA-Z0-9\-:]*)\.pc` needs to be installed and the PKG_CONFIG_PATH environment variable must contain its parent directory\.", 0, 'pkgconfig'),
             (r"Package which this enhances but not available for checking: ['‘]([a-zA-Z0-9\-]*)['’]", 0, 'R'),
             (r"Perhaps you should add the directory containing `([a-zA-Z0-9\-:]*)\.pc'", 0, 'pkgconfig'),
             (r"Program (.*) found: NO", 0, None),
