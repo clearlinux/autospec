@@ -91,6 +91,7 @@ class Config(object):
         self.install_macro = "%make_install"
         self.disable_static = "--disable-static"
         self.prep_prepend = []
+        self.copy_prepend = []
         self.build_prepend = []
         self.build_prepend_once = []
         self.build_append = []
@@ -437,10 +438,11 @@ class Config(object):
         # next the options
         config_f['autospec'] = {}
         for fname, comment in sorted(self.config_options.items()):
+            fpath = os.path.join(self.download_path, fname)
             config_f.set('autospec', '# {}'.format(comment))
-            if os.path.exists(fname):
+            if os.path.isfile(fpath):
                 config_f['autospec'][fname] = 'true'
-                os.remove(fname)
+                os.remove(fpath)
             else:
                 config_f['autospec'][fname] = 'false'
 
@@ -448,9 +450,10 @@ class Config(object):
         config_f['autospec']['use_lto'] = 'true'
 
         # renamed options need special care
-        if os.path.exists("skip_test_suite"):
+        skip_path = os.path.join(self.download_path, "skip_test_suite")
+        if os.path.exists(skip_path):
             config_f['autospec']['skip_tests'] = 'true'
-            os.remove("skip_test_suite")
+            os.remove(skip_path)
         self.write_config(config_f)
 
     def create_buildreq_cache(self, version, buildreqs_cache):
@@ -1004,6 +1007,7 @@ class Config(object):
             requirements.add_buildreq("openssh")
 
         self.prep_prepend = self.read_script_file(os.path.join(self.download_path, "prep_prepend"))
+        self.copy_prepend = self.read_script_file(os.path.join(self.download_path, "copy_prepend"))
         if os.path.isfile(os.path.join(self.download_path, "prep_append")):
             os.rename(os.path.join(self.download_path, "prep_append"), os.path.join(self.download_path, "build_prepend"))
         self.make_prepend = self.read_script_file(os.path.join(self.download_path, "make_prepend"))
