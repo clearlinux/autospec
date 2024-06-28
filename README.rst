@@ -268,6 +268,12 @@ prep_prepend
   resulting ``.spec``, and is used for situations where fine-grained
   control is required.
 
+copy_prepend
+  Additional actions that should take place directly before the source
+  directory is copied for other builds (32bit, avx2, etc). This will be
+  placed in the resulting ``.spec``, and is used for situations where
+  fine-grained control is required.
+
 build_prepend
   Additional actions that should take place after ``%build`` and before
   the ``%configure`` macro or equivalent (``%cmake``, etc.). If autospec

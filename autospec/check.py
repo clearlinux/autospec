@@ -97,17 +97,23 @@ def scan_for_tests(src_dir, config, requirements, content):
     }
     if config.config_opts.get('32bit'):
         testsuites["makecheck"] += "\ncd ../build32;\n" + make_check + " || :"
-        testsuites["cmake"] += "\ncd ../clr-build32;\n" + cmake_check + " || :"
-        testsuites["meson"] += "\ncd ../build32;\n" + meson_check + " || :"
+        testsuites["cmake"] += "\ncd ../../build32/clr-build32;\n" + cmake_check + " || :"
+        testsuites["meson"] += "\ncd ../buildapx;\n" + meson_check + " || :"
     if config.config_opts.get('use_avx2'):
         testsuites["makecheck"] += "\ncd ../buildavx2;\n" + make_check + " || :"
-        testsuites["cmake"] += "\ncd ../clr-build-avx2;\n" + cmake_check + " || :"
+        testsuites["cmake"] += "\ncd ../../buildavx2/clr-build-avx2;\n" + cmake_check + " || :"
+        testsuites["meson"] += "\ncd ../buildapx;\n" + meson_check + " || :"
     if config.config_opts.get('use_avx512'):
         testsuites["makecheck"] += "\ncd ../buildavx512;\n" + make_check + " || :"
-        testsuites["cmake"] += "\ncd ../clr-build-avx512;\n" + cmake_check + " || :"
+        testsuites["cmake"] += "\ncd ../../buildavx512/clr-build-avx512;\n" + cmake_check + " || :"
+        testsuites["meson"] += "\ncd ../buildapx;\n" + meson_check + " || :"
+    if config.config_opts.get('use_apx'):
+        testsuites["makecheck"] += "\ncd ../buildapx;\n" + make_check + " || :"
+        testsuites["cmake"] += "\ncd ../../buildapx/clr-build-apx;\n" + cmake_check + " || :"
+        testsuites["meson"] += "\ncd ../buildapx;\n" + meson_check + " || :"
     if config.config_opts.get('openmpi'):
         testsuites["makecheck"] += "\ncd ../build-openmpi;\n" + make_check_openmpi
-        testsuites["cmake"] += "\ncd ../clr-build-openmpi;\n" + cmake_check_openmpi
+        testsuites["cmake"] += "\ncd ../../build-openmpi/clr-build-openmpi;\n" + cmake_check_openmpi
 
     files = os.listdir(src_dir)
 

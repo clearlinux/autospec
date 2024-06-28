@@ -520,27 +520,28 @@ class Specfile(object):
             if self.config.subdir:
                 self._write_strip("popd")
 
-        if self.config.default_pattern != 'cmake':
-            if self.config.config_opts['32bit']:
-                self._write_strip("pushd ..")
-                self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
-                self._write_strip("popd")
-            if self.config.config_opts['use_avx2']:
-                self._write_strip("pushd ..")
-                self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
-                self._write_strip("popd")
-            if self.config.config_opts['use_avx512']:
-                self._write_strip("pushd ..")
-                self._write_strip("cp -a {} buildavx512".format(self.content.tarball_prefix))
-                self._write_strip("popd")
-            if self.config.config_opts['use_apx']:
-                self._write_strip("pushd ..")
-                self._write_strip("cp -a {} buildapx".format(self.content.tarball_prefix))
-                self._write_strip("popd")
-            if self.config.config_opts['openmpi']:
-                self._write_strip("pushd ..")
-                self._write_strip("cp -a {} build-openmpi".format(self.content.tarball_prefix))
-                self._write_strip("popd")
+        self.write_copy_prepend()
+
+        if self.config.config_opts['32bit']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} build32".format(self.content.tarball_prefix))
+            self._write_strip("popd")
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} buildavx2".format(self.content.tarball_prefix))
+            self._write_strip("popd")
+        if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} buildavx512".format(self.content.tarball_prefix))
+            self._write_strip("popd")
+        if self.config.config_opts['use_apx']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} buildapx".format(self.content.tarball_prefix))
+            self._write_strip("popd")
+        if self.config.config_opts['openmpi']:
+            self._write_strip("pushd ..")
+            self._write_strip("cp -a {} build-openmpi".format(self.content.tarball_prefix))
+            self._write_strip("popd")
         self._write_strip("\n")
 
     def write_32bit_exports(self):
@@ -800,6 +801,14 @@ class Specfile(object):
                 self._write_strip("{}\n".format(line))
             self._write_strip("## prep_prepend end")
 
+    def write_copy_prepend(self):
+        """Write out any custom supplied commands prior to creating source copies for avx, etc builds."""
+        if self.config.copy_prepend:
+            self._write_strip("## copy_prepend content")
+            for line in self.config.copy_prepend:
+                self._write_strip("{}\n".format(line))
+            self._write_strip("## copy_prepend end")
+
     def write_build_prepend(self):
         """Write out any custom supplied commands at the start of the %build section and every build type."""
         if self.config.build_prepend:
@@ -915,13 +924,11 @@ class Specfile(object):
 
         self._write_strip("export GOAMD64=v2")
 
-        if self.config.subdir:
-            self._write_strip("pushd " + self.config.subdir)
-
         if self.config.config_opts['use_ninja'] and self.config.install_macro == '%make_install':
             self.config.install_macro = '%ninja_install'
 
         if self.config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self._write_strip("pushd clr-build32")
             self._write_strip("{}32 {} {}".format(self.config.install_macro,
                                                   self.config.extra_make_install,
@@ -939,30 +946,42 @@ class Specfile(object):
             self._write_strip("    popd")
             self._write_strip("fi")
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-avx2")
             self._write_strip("%s_v3 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self._write_strip("GOAMD64=v4")
             self._write_strip("pushd clr-build-avx512")
             self._write_strip("%s_v4 %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['use_apx']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-apx")
             self._write_strip("%s_va %s || :\n" % (self.config.install_macro, self.config.extra_make_install))
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
+            self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self._write_strip("GOAMD64=v3")
             self._write_strip("pushd clr-build-openmpi")
             self.write_install_openmpi()
             self._write_strip("popd")
+            self._write_strip("popd")
+
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
 
         self._write_strip("GOAMD64=v2")
         self._write_strip("pushd clr-build")
@@ -1656,7 +1675,11 @@ class Specfile(object):
         self.write_make_line()
         self._write_strip("popd")
 
+        if self.config.subdir:
+            self._write_strip("popd")
+
         if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
             self._write_strip("mkdir -p clr-build-avx2")
             self._write_strip("pushd clr-build-avx2")
             self.write_build_prepend()
@@ -1669,8 +1692,10 @@ class Specfile(object):
             self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['use_avx512']:
+            self._write_strip("pushd ../buildavx512/" + self.config.subdir)
             self._write_strip("mkdir -p clr-build-avx512")
             self._write_strip("pushd clr-build-avx512")
             self.write_build_prepend()
@@ -1683,8 +1708,10 @@ class Specfile(object):
             self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['use_apx'] and not self.config.config_opts['use_clang']:
+            self._write_strip("pushd ../buildapx/" + self.config.subdir)
             self._write_strip("mkdir -p clr-build-apx")
             self._write_strip("pushd clr-build-apx")
             self.write_build_prepend()
@@ -1697,8 +1724,10 @@ class Specfile(object):
             self._write_strip(f"%cmake {self.config.cmake_srcdir} {self.extra_cmake} {cmake_type}")
             self.write_make_line()
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['32bit']:
+            self._write_strip("pushd ../build32/" + self.config.subdir)
             self._write_strip("mkdir -p clr-build32")
             self._write_strip("pushd clr-build32")
             self.write_build_prepend()
@@ -1711,8 +1740,10 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("unset PKG_CONFIG_PATH")
             self._write_strip("popd")
+            self._write_strip("popd")
 
         if self.config.config_opts['openmpi']:
+            self._write_strip("pushd ../build-openmpi/" + self.config.subdir)
             self._write_strip("mkdir -p clr-build-openmpi")
             self._write_strip("pushd clr-build-openmpi")
             self._write_strip(". /usr/share/defaults/etc/profile.d/modules.sh")
@@ -1728,8 +1759,6 @@ class Specfile(object):
             self.write_make_line()
             self._write_strip("module unload openmpi")
             self._write_strip("popd")
-
-        if self.config.subdir:
             self._write_strip("popd")
 
         self._write_strip("\n")
