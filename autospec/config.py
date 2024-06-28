@@ -267,6 +267,7 @@ class Config(object):
             (r"Can't locate [a-zA-Z0-9_\-\/\.]+ in @INC \(you may need to install the ([a-zA-Z0-9_\-:]+) module\)", 0, 'perl'),
             (r"Cannot find ([a-zA-Z0-9\-_\.]*)", 1, None),
             (r"Checking for (.*?)\.\.\.no", 0, None),
+            (r"checking for (.*?) \(using pkg-config\)\.\.\. no", 0, None),
             (r"Checking for (.*?)\s*: not found", 0, None),
             (r"Checking for (.*?)\s>=.*\s*: not found", 0, None),
             (r"Could not find suitable distribution for Requirement.parse\('([a-zA-Z\-\.]*)", 0, None),
