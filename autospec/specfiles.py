@@ -513,10 +513,15 @@ class Specfile(object):
             if self.config.subdir:
                 self._write_strip("pushd " + self.config.subdir)
             self._write_strip("mkdir -p .cargo")
-            self._write_strip("echo '[source.crates-io]' >> .cargo/config.toml")
-            self._write_strip("""echo 'replace-with = "vendored-sources"' >> .cargo/config.toml""")
-            self._write_strip("echo '[source.vendored-sources]' >> .cargo/config.toml")
-            self._write_strip("""echo 'directory = "vendor"' >> .cargo/config.toml""")
+            vendors = "vendor/vendors.txt"
+            self._write_strip(f"if [ -f '{vendors}' ]; then")
+            self._write_strip(f"    cat '{vendors}' >> .cargo/config.toml")
+            self._write_strip("else")
+            self._write_strip("    echo '[source.crates-io]' >> .cargo/config.toml")
+            self._write_strip("    echo 'replace-with = \"vendored-sources\"' >> .cargo/config.toml")
+            self._write_strip("    echo '[source.vendored-sources]' >> .cargo/config.toml")
+            self._write_strip("    echo 'directory = \"vendor\"' >> .cargo/config.toml")
+            self._write_strip("fi")
             if self.config.subdir:
                 self._write_strip("popd")
 
