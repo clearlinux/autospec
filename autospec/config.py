@@ -68,6 +68,7 @@ class Config(object):
 
     def __init__(self, download_path):
         """Initialize Default configuration settings."""
+        self.cargo_vendors = ""
         self.content = None  # hack to avoid circular init dependency
         self.extra_configure = ""
         self.extra_configure32 = ""
@@ -990,6 +991,11 @@ class Config(object):
                 if word.find(":") < 0:
                     if not license.add_license(word, self.license_translations, self.license_blacklist):
                         print_warning("{}: blacklisted license {} ignored.".format(self.content.name + ".license", word))
+
+        # cargo_vendors is the output of 'cargo vendor' and should be read as is
+        content = self.read_file(os.path.join(self.download_path, "cargo_vendors"), track=True)
+        if content:
+            self.cargo_vendors = "".join(content)
 
         if self.config_opts['use_clang']:
             self.config_opts['funroll-loops'] = False
