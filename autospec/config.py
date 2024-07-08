@@ -448,6 +448,8 @@ class Config(object):
 
         # default lto to true for new things
         config_f['autospec']['use_lto'] = 'true'
+        # default autoupdate to true for new things
+        config_f['autospec']['autoupdate'] = 'true'
 
         # renamed options need special care
         skip_path = os.path.join(self.download_path, "skip_test_suite")
