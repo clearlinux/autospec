@@ -297,6 +297,7 @@ class Config(object):
             (r"Perhaps you should add the directory containing `([a-zA-Z0-9\-:]*)\.pc'", 0, 'pkgconfig'),
             (r"Program (.*) found: NO", 0, None),
             (r"Target '[a-zA-Z0-9\-]' can't be generated as '(.*)' could not be found", 0, None),
+            (r"The missing Perl modules are:\s*(\S+)", 0, 'perl'),
             (r"Unable to `import (.*)`", 0, None),
             (r"Unable to find '(.*)'", 0, None),
             (r"Warning: prerequisite ([a-zA-Z:]+) [0-9\.]+ not found.", 0, 'perl'),
