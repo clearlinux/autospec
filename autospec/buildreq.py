@@ -147,7 +147,7 @@ def parse_modules_list(modules_string, is_cmake=False):
         modules = [m for m in re.split(r'\s*([><]?=|\${?[^}]*}?)\s*', modules_string)]
         modules = filter(None, modules)
     else:
-        modules = [m.strip('[]') for m in modules_string.split()]
+        modules = [m.strip('[]').strip('"') for m in modules_string.split()]
     res = []
     next_is_ver = False
     for mod in modules:
