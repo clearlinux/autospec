@@ -190,25 +190,36 @@ class TestBuildpattern(unittest.TestCase):
         def mock_util_call(cmd):
             del cmd
 
+        def mock_wrap_fatal():
+            output = ['']
+            def mock_print_fatal(msg):
+                output[0] = msg
+            return output, mock_print_fatal
+
+        result, mock_print_fatal = mock_wrap_fatal()
+
+        exit_backup = build.sys.exit
         call_backup = build.util.call
+        print_backup = build.util.print_fatal
+        build.sys.exit = MagicMock()
         build.util.call = mock_util_call
+        build.util.print_fatal = mock_print_fatal
 
         open_name = 'build.util.open_auto'
         content = "line1\nDEBUG util.py:399:  No matching package to install: 'foobar'\nDEBUG util.py:399:  No matching package to install: 'foobarbaz'\nline 4"
         m_open = mock_open(read_data=content)
         pkg = build.Build()
-        pkg.must_restart = 1
-        pkg.file_restart = 1
 
-        result = True
         with patch(open_name, m_open, create=True):
-            result = pkg.parse_buildroot_log('testname', 1)
+            pkg.parse_buildroot_log('testname', 1)
 
+        build.util.print_fatal = print_backup
         build.util.call = call_backup
+        mock_exit = build.sys.exit
+        build.sys.exit = exit_backup
 
-        self.assertFalse(result)
-        self.assertEqual(pkg.must_restart, 0)
-        self.assertEqual(pkg.file_restart, 0)
+        self.assertEqual(result[0], 'Cannot resolve dependency name: foobar\nCannot resolve dependency name: foobarbaz')
+        mock_exit.assert_called_once()
 
     def test_parse_buildroot_log_pass(self):
         """
@@ -227,11 +238,10 @@ class TestBuildpattern(unittest.TestCase):
 
         result = True
         with patch(open_name, m_open, create=True):
-            result = pkg.parse_buildroot_log('testname', 1)
+            pkg.parse_buildroot_log('testname', 1)
 
         build.util.call = call_backup
 
-        self.assertTrue(result)
         self.assertEqual(pkg.must_restart, 0)
 
     def test_parse_buildroot_log_noop(self):
