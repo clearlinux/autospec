@@ -157,6 +157,7 @@ class Config(object):
         }
         self.config_opts = {}
         self.config_options = {
+            "avoid_rebuild": "Try to use mock short circuit to avoid full rebuilds",
             "broken_c++": "extend flags with '-std=gnu++98",
             "cargo_vendor": "create vendor archive with cargo",
             "use_lto": "configure build for lto",
