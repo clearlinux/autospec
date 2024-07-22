@@ -28,7 +28,8 @@ from collections import OrderedDict
 
 import check
 import license
-from util import call, open_auto, print_info, print_warning, write_out
+from util import (call, open_auto, print_fatal, print_info, print_warning,
+                  write_out)
 
 
 def read_pattern_conf(filename, dest, list_format=False, path=None):
@@ -488,7 +489,7 @@ class Config(object):
         config_f = configparser.ConfigParser(interpolation=None)
         config_f.read(opts_path)
         if "autospec" not in config_f.sections():
-            print("Missing autospec section in options.conf")
+            print_fatal("Missing autospec section in options.conf")
             sys.exit(1)
 
         if 'package' in config_f.sections() and config_f['package'].get('alias'):
@@ -710,7 +711,7 @@ class Config(object):
             config.read(self.config_file)
 
             if "autospec" not in config.sections():
-                print("Missing autospec section..")
+                print_fatal("Missing autospec section..")
                 sys.exit(1)
 
             self.git_uri = config['autospec'].get('git', None)

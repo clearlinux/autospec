@@ -22,6 +22,7 @@
 import os
 import re
 import shutil
+import sys
 
 import util
 
@@ -153,7 +154,7 @@ class Build(object):
             return True
         self.must_restart = 0
         self.file_restart = 0
-        is_clean = True
+        fatals = []
         util.call("sync")
         with util.open_auto(filename, "r") as rootlog:
             loglines = rootlog.readlines()
@@ -161,9 +162,10 @@ class Build(object):
         for line in loglines:
             match = missing_pat.match(line)
             if match is not None:
-                util.print_fatal("Cannot resolve dependency name: {}".format(match.group(1)))
-                is_clean = False
-        return is_clean
+                fatals.append(f"Cannot resolve dependency name: {match.group(1)}")
+        if fatals:
+            util.print_fatal('\n'.join(fatals))
+            sys.exit(1)
 
     def parse_build_results(self, filename, returncode, filemanager, config, requirements, content):
         """Handle build log contents."""
@@ -295,12 +297,11 @@ class Build(object):
         # sanity check the build log
         if not os.path.exists(config.download_path + "/results/build.log"):
             util.print_fatal("Mock command failed, results log does not exist. User may not have correct permissions.")
-            exit(1)
+            sys.exit(1)
 
-        if not self.parse_buildroot_log(config.download_path + "/results/root.log", ret):
-            return
+        self.parse_buildroot_log(config.download_path + "/results/root.log", ret)
 
         self.parse_build_results(config.download_path + "/results/build.log", ret, filemanager, config, requirements, content)
         if filemanager.has_banned:
             util.print_fatal("Content in banned paths found, aborting build")
-            exit(1)
+            sys.exit(1)

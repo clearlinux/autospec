@@ -110,7 +110,7 @@ def main():
     pkg_name = sys.argv[1]
     pypi_name = get_pypi_name(pkg_name)
     if not pypi_name:
-        print(f"Couldn't find {pkg_name} in pypi")
+        util.print_fatal(f"Couldn't find {pkg_name} in pypi")
         sys.exit(1)
     pypi_metadata = get_pypi_metadata(pypi_name)
     print(pypi_metadata)

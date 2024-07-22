@@ -205,9 +205,9 @@ class Verifier(object):
     @staticmethod
     def quit():
         """Stop verification."""
-        print('Critical error quitting...')
+        util.print_fatal("Verification required for build (verify_required option set)")
         print(SEPT)
-        exit(1)
+        sys.exit(1)
 
     @staticmethod
     def calc_sum(filepath, digest_algo):
@@ -264,12 +264,12 @@ def get_signature_file(package_url, package_path):
 def compare_keys(newkey, oldkey):
     """Key comparison to check against key tampering."""
     if newkey != oldkey:
-        util.print_error('Public key has changed:\n'
+        util.print_fatal('Public key has changed:\n'
                          '            old key: {}\n'
                          '            new key: {}\n'
                          'this is a critical security error, quitting...'
                          .format(oldkey, newkey))
-        exit(1)
+        sys.exit(1)
 
 
 # sha256sum Verifier
@@ -521,7 +521,6 @@ class GPGVerifier(Verifier):
 
 def quit_verify():
     """Halt build due to verification being required."""
-    util.print_error("Verification required for build (verify_required option set)")
     Verifier.quit()
 
 

@@ -163,7 +163,7 @@ def dump_symbols(path):
     try:
         lines = get_output(cmd)
     except Exception as e:
-        print("Fatal error inspecting {}: {}".format(path, e))
+        util.print_fatal("Fatal error inspecting {}: {}".format(path, e))
         sys.exit(1)
     for line in lines.split("\n"):
         line = line.strip()
@@ -236,6 +236,7 @@ def examine_abi_host(download_path, results_dir, name):
                   cwd=download_path)
     except Exception as e:
         util.print_fatal("Error invoking abireport: {}".format(e))
+        sys.exit(1)
 
 
 def examine_abi_fallback(download_path, results_dir, name):
@@ -272,6 +273,7 @@ def examine_abi_fallback(download_path, results_dir, name):
             subprocess.check_call(cmd, shell=True)
     except Exception as e:
         util.print_fatal("Error extracting RPMS: {}".format(e))
+        sys.exit(1)
 
     os.chdir(download_path)
     collected_files = set()
