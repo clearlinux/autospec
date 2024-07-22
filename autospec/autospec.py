@@ -38,7 +38,7 @@ import specfiles
 import tarball
 from abireport import examine_abi
 from logcheck import logcheck
-from util import binary_in_path, print_fatal, write_out
+from util import binary_in_path, print_build_failed, print_fatal, write_out
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -291,7 +291,7 @@ def package(args, url, name, archives, workingdir):
 
     if package.success == 0:
         conf.create_buildreq_cache(content.version, requirements.buildreqs_cache)
-        print_fatal("Build failed, aborting")
+        print_build_failed()
         sys.exit(1)
     elif os.path.isfile("README.clear"):
         try:
