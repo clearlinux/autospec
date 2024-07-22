@@ -27,6 +27,87 @@ import sys
 dictionary_filename = os.path.dirname(__file__) + "/translate.dic"
 dictionary = [line.strip() for line in open(dictionary_filename, 'r')]
 os_paths = None
+ERROR_FILE = 'pumpAutospec'
+ERROR_ENV = 'AUTOSPEC_UPDATE'
+
+
+def _log_error(error):
+    write_out(ERROR_FILE, f"{error}\n", mode='a')
+
+
+def _commit_result():
+    if not os.path.isfile(ERROR_FILE):
+        return
+    call(f"git add {ERROR_FILE}", check=False, stderr=subprocess.DEVNULL)
+    call(f"git commit {ERROR_FILE} -m 'Notes update'", check=False, stderr=subprocess.DEVNULL)
+    call("git push", check=False, stderr=subprocess.DEVNULL)
+
+
+def _process_line(line, prev_line, current_patch, reported_patches, error):
+    if m := re.match('^Patch #[0-9]+ .(?P<patch>.*).:', line):
+        current_patch[0] = m.group('patch')
+
+    if m := re.match('Hunk #[0-9]+ FAILED at [0-9]+', line):
+        if current_patch[0] not in reported_patches:
+            _log_error("Patch " + current_patch[0] + " does not apply")
+            reported_patches[current_patch[0]] = True
+            return True
+
+    if m := re.match(".*can't find file to patch at input line ", line):
+        if current_patch[0] not in reported_patches:
+            _log_error("Patch " + current_patch[0] + " does not apply")
+            reported_patches[current_patch[0]] = True
+            return True
+
+    if m := re.match('.*meson.build:[0-9]+:[0-9]+: ERROR: Unknown options: "(?P<option>.*)"', line):
+        _log_error("Unknown meson option: " + m.group('option'))
+        return True
+
+    if m := re.match('Error: package ‘(?P<module>.*)’ .* was found, but', line):
+        _log_error("R package " + m.group('module') + " not found")
+        return True
+
+    if m := re.match('.*CMake Error at .*/CMake', prev_line):
+        if m := re.match('(?P<module>.*) not found', line):
+            _log_error("CMake module " + m.group('module') + "not found")
+            return True
+
+    if m := re.match(r'go: download.*connect: connection refused', line):
+        _log_error("Go online update")
+        return True
+
+    if 'Updating crates.io index' in line:
+        _log_error("Rust crates.io online update")
+        return True
+
+    if "error: '__builtin_ctzs' needs isa option -mbmi" in line:
+        _log_error(" error: '__builtin_ctzs' needs isa option -mbmi")
+        return True
+
+    if "error:" in line and 'Bad exit status from' not in line:
+        m = re.match('.*error:(?P<error>.*)', line)
+        if m and not error:
+            _log_error("Compiler: " + m.group('error'))
+            return True
+
+    return False
+
+
+def _process_build_log(filename):
+    with open_auto(filename, "r") as lfile:
+        lines = lfile.readlines()
+
+    prev_line = ''
+    current_patch = ''
+    reported_patches = {}
+    error = False
+    for line in lines:
+        if _process_line(line, prev_line, current_patch, reported_patches, error):
+            error = True
+        prev_line = line
+
+    if error:
+        _commit_result()
 
 
 def call(command, logfile=None, check=True, **kwargs):
@@ -116,9 +197,22 @@ def print_error(message):
     _print_message(message, 'ERROR', 'red')
 
 
+def print_build_failed():
+    """Print final fatal error, color coded for TTYs."""
+    _print_message('Build failed, aborting', 'FATAL', 'red')
+    try:
+        if os.environ.get(ERROR_ENV):
+            _process_build_log('results/build.log')
+    except Exception:
+        pass
+
+
 def print_fatal(message):
     """Print fatal error, color coded for TTYs."""
     _print_message(message, 'FATAL', 'red')
+    if os.environ.get(ERROR_ENV):
+        write_out(ERROR_FILE, f"{message}\n", mode='a')
+        _commit_result()
 
 
 def print_warning(message):
