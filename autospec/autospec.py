@@ -269,9 +269,13 @@ def package(args, url, name, archives, workingdir):
         pkg_integrity.check(url, conf, interactive=interactive_mode)
         pkg_integrity.load_specfile(specfile)
 
-    specfile.write_spec()
+    spec_type = specfile.write_spec()
+
     while 1:
         package.package(filemanager, args.mock_config, args.mock_opts, conf, requirements, content, args.cleanup)
+        if spec_type == "template":
+            # specfile template is assumed "correct" and any failures need to be manually addressed
+            break
         filemanager.load_specfile(specfile)
         specfile.write_spec()
         filemanager.newfiles_printed = 0
@@ -304,7 +308,8 @@ def package(args, url, name, archives, workingdir):
         except Exception:
             pass
 
-    check.check_regression(conf.download_path, conf.config_opts['skip_tests'], package.round - 1)
+    if spec_type == "generate":
+        check.check_regression(conf.download_path, conf.config_opts['skip_tests'], package.round - 1)
 
     examine_abi(conf.download_path, content.name)
     if os.path.exists("/var/lib/rpm"):

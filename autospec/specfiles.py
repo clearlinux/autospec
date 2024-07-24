@@ -26,6 +26,8 @@ import types
 from collections import OrderedDict
 
 import git
+from jinja2 import Environment
+from jinja2.loaders import DictLoader
 from util import _file_write, open_auto
 
 AVX2_CFLAGS = "-march=x86-64-v3"
@@ -73,11 +75,41 @@ class Specfile(object):
 
     def write_spec(self):
         """Write spec file."""
-        self.specfile = open_auto("{}/{}.spec".format(self.config.download_path, self.name), "w")
+        spec_path = f"{os.path.join(self.config.download_path, self.name)}.spec"
+        self.specfile = open_auto(spec_path, "w")
         self.specfile.write_strip = types.MethodType(_file_write, self.specfile)
 
+        # last chance to sanitize url for template and build types
+        if self.config.urlban:
+            clean_url = re.sub(self.config.urlban, "localhost", self.url)
+            # Duplicate prefixes entry before we change the url
+            self.content.prefixes[clean_url] = self.content.prefixes.get(self.url)
+            self.url = clean_url
+
+        template_path = f"{spec_path}.template"
+
+        if os.path.isfile(template_path):
+            # make templates have a template build pattern
+            self.config.default_pattern = "template"
         # spec file comment header
         self.write_comment_header()
+
+        if os.path.isfile(template_path):
+            with open_auto(template_path) as tfile:
+                template_content = tfile.read()
+            template = Environment(loader=DictLoader({'spec': template_content})).get_template('spec')
+            kw = {
+                'package_name': self.name,
+                'package_version': self.version,
+                'package_url': self.url,
+                'package_release': self.release,
+            }
+            self.specfile.write(template.render(**kw))
+            self.specfile.write_strip('\n')
+            self.specfile.close()
+            # return specfile type built so autospec knows how to
+            # handle build results (template should only builds once)
+            return "template"
 
         if self.config.config_opts.get('keepstatic'):
             self._write("%define keepstatic 1\n")
@@ -110,6 +142,10 @@ class Specfile(object):
 
         self.specfile.close()
 
+        # return specfile type built so autospec knows how to
+        # handle build results (generate has multiple builds)
+        return "generate"
+
     def write_comment_header(self):
         """Write comment header to spec file."""
         self._write("#\n")
@@ -132,11 +168,6 @@ class Specfile(object):
 
     def write_nvr(self):
         """Write name, version, and release information."""
-        if self.config.urlban:
-            clean_url = re.sub(self.config.urlban, "localhost", self.url)
-            # Duplicate prefixes entry before we change the url
-            self.content.prefixes[clean_url] = self.content.prefixes.get(self.url)
-            self.url = clean_url
         self._write("Name     : {}\n".format(self.name))
         self._write("Version  : {}\n".format(self.version))
         self._write("Release  : {}\n".format(str(self.release)))

@@ -47,7 +47,7 @@ class TestSpecfileWrite(unittest.TestCase):
         self.WRITES = self.WRITES[:4] + self.WRITES[6:]
         self.assertEqual(expect, self.WRITES)
 
-    def test_write_nvr_no_urlban(self):
+    def test_write_nvr(self):
         """
         test Specfile.write_nvr with no urlban set
         """
@@ -57,19 +57,6 @@ class TestSpecfileWrite(unittest.TestCase):
                   "Release  : 2\n",
                   "URL      : http://www.testpkg.com/testpkg/pkg-1.0.tar.gz\n",
                   "Source0  : http://www.testpkg.com/testpkg/pkg-1.0.tar.gz\n"]
-        self.assertEqual(expect, self.WRITES)
-
-    def test_write_nvr_urlban(self):
-        """
-        test Specfile.write_nvr with urlban set
-        """
-        self.specfile.config.urlban = "www.testpkg.com"
-        self.specfile.write_nvr()
-        expect = ["Name     : pkg\n",
-                  "Version  : 1.0\n",
-                  "Release  : 2\n",
-                  "URL      : http://localhost/testpkg/pkg-1.0.tar.gz\n",
-                  "Source0  : http://localhost/testpkg/pkg-1.0.tar.gz\n"]
         self.assertEqual(expect, self.WRITES)
 
     def test_write_sources(self):
