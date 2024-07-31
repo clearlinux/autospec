@@ -483,12 +483,16 @@ class Specfile(object):
             self._write_strip(f"gpg --homedir .gnupg --status-fd 1 --verify {self.config.signature_macro} %{{SOURCE0}} > gpg.status")
             self._write_strip(f"grep -E '^\\[GNUPG:\\] (GOODSIG|EXPKEYSIG) {self.keyid}' gpg.status")
         self.write_prep_prepend()
-        prefix = self.content.prefixes[self.url]
         if self.config.default_pattern == 'R':
             prefix = self.content.tarball_prefix
             self._write_strip("%setup -q -n " + prefix)
         else:
-            self._write_strip("%setup -q -n " + prefix)
+            prefix = self.content.prefixes[self.url]
+            if not prefix:
+                prefix = os.path.splitext(os.path.basename(self.url))[0]
+                self._write_strip("%setup -q -c -n " + prefix)
+            else:
+                self._write_strip("%setup -q -n " + prefix)
             for archive in self.config.sources["archive"]:
                 # Handle various archive types
                 extract_cmd = 'tar xf {}'
