@@ -64,21 +64,22 @@ def scan_for_tests(src_dir, config, requirements, content):
     if config.config_opts.get('skip_tests') or tests_config:
         return
 
+    make_command = "ninja" if config.config_opts.get('use_ninja') else "make"
     makeflags = "%{?_smp_mflags} " if config.parallel_build else ""
-    make_check = "make {}check".format(makeflags)
-    cmake_check = "make test"
+    make_check = "{} {}check".format(make_command, makeflags)
+    cmake_check = "{} test".format(make_command)
     make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                         "make {}check\nmodule unload openmpi".format(makeflags)
+                         "{} {}check\nmodule unload openmpi".format(make_command, makeflags)
     cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                          "make test\nmodule unload openmpi"
+                          "{} test\nmodule unload openmpi".format(make_command)
 
     if config.config_opts.get('allow_test_failures'):
         make_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                             "make {}check || :\nmodule unload openmpi".format(makeflags)
+                             "{} {}check || :\nmodule unload openmpi".format(make_command, makeflags)
         cmake_check_openmpi = "module load openmpi\nexport OMPI_MCA_rmaps_base_oversubscribe=1\n" \
-                              "make test || :\nmodule unload openmpi"
+                              "{} test || :\nmodule unload openmpi".format(make_command)
 
-    perl_check = "make TEST_VERBOSE=1 test"
+    perl_check = "{} TEST_VERBOSE=1 test".format(make_command)
     setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
     meson_check = "meson test -C builddir --print-errorlogs"
     if config.config_opts.get('allow_test_failures'):
