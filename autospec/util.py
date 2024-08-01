@@ -90,6 +90,20 @@ def _process_line(line, prev_line, current_patch, reported_patches, error):
             _log_error("Compiler: " + m.group('error'))
             return True
 
+    if m := re.match(r'Could NOT find (?P<package>.*) .missing', line):
+        _log_error("CMake module " + m.group('package') + " not found")
+        return True
+    if m := re.match(r'Could not find a package configuration file provided by (?P<package>.*) with', line):
+        _log_error("CMake module " + m.group('package') + " not found")
+        return True
+    # Unable to find program 'gperf'
+    if m := re.match(r"Failed to find program ‘(?P<module>.*)’", line):
+        _log_error("Failed to find " + m.group('module'))
+        return True
+    if m := re.match(r"Failed to find ‘(?P<module>.*)’", line):
+        _log_error("Failed to find " + m.group('module'))
+        return True
+
     return False
 
 
