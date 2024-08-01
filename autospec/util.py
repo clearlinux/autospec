@@ -112,7 +112,7 @@ def _process_build_log(filename):
         lines = lfile.readlines()
 
     prev_line = ''
-    current_patch = ''
+    current_patch = ['']
     reported_patches = {}
     error = False
     for line in lines:
