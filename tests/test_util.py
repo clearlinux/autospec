@@ -2,7 +2,8 @@ import subprocess
 import os
 import tempfile
 import unittest
-import unittest.mock
+from unittest.mock import MagicMock, mock_open, patch
+
 import util
 
 
@@ -63,6 +64,29 @@ class TestUtil(unittest.TestCase):
             util.os.environ["PATH"] = tmpd
             self.assertTrue(util.binary_in_path('testbin'))
             self.assertEqual(util.os_paths, [tmpd])
+
+    def test__process_build_log_bad_patch(self):
+        """
+        Test _process_build_log with a bad patch
+        """
+        def isfile_mock(_):
+            return True
+        isfile_backup = util.os.path.isfile
+        util.os.path.isfile = isfile_mock
+        call_backup = util.call
+        util.call = MagicMock()
+        open_name = 'util.open_auto'
+        content = "Patch #1 (bad.patch):\nHunk #1 FAILED at 1."
+        m_open = mock_open(read_data=content)
+        with patch(open_name, m_open, create=True):
+            util._process_build_log('filename')
+
+        util.os.path.isfile = isfile_backup
+        mock_call = util.call
+        util.call = call_backup
+        self.assertTrue(len(mock_call.mock_calls) == 3)
+
+
 
 if __name__ == '__main__':
     unittest.main(buffer=True)
