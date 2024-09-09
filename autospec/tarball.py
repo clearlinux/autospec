@@ -295,7 +295,8 @@ class Content():
         if "github.com" in self.url:
             # define regex accepted for valid packages, important for specific
             # patterns to come before general ones
-            github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/refs/tags/[vVrR]?(.*)\.tar",
+            github_patterns = [r"https?://github.com/(.*)/(.*?)/archive/refs/tags/.*/(.*).tar",
+                               r"https?://github.com/(.*)/(.*?)/archive/refs/tags/[vVrR]?(.*)\.tar",
                                r"https?://github.com/(.*)/(.*?)/archive/[v|r]?.*/(.*).tar",
                                r"https?://github.com/(.*)/(.*?)/archive/[-a-zA-Z_]*-(.*).tar",
                                r"https?://github.com/(.*)/(.*?)/archive/[vVrR]?(.*).tar",
