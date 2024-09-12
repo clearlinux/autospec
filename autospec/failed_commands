@@ -124,7 +124,9 @@ ACL_TYPE_EXTENDED, acl-dev
 ALSA, alsa-lib-dev
 APR, apr-dev
 APR-util, apr-util-dev
+ARPACK-NG, arpack-ng-dev
 ASSIMP, assimp-dev
+Adwaita, libadwaita-dev
 Analitza, analitza-dev
 Analitza5, analitza-dev
 BABL, babl-dev
@@ -175,6 +177,7 @@ EXPAT, expat-dev
 Eet.h, eet-dev
 Eigen/Core, eigen-dev
 Eigen/Dense, eigen-dev
+Eigen/Sparse, eigen-dev
 Eigen3, eigen-dev
 Epoxy, pkgconfig(epoxy)
 Exiv2, exiv2-dev
@@ -284,6 +287,7 @@ GSTREAMER, gstreamer-dev
 GSettingSchemas, gsettings-desktop-schemas
 GSettingSchemas, gsettings-desktop-schemas-dev
 GTK, gtk+-dev
+GTK4, gtk4-dev
 GnuTLS, gnutls-dev
 GooglePerftools, gperftools-dev
 Gperf, gperf
@@ -459,6 +463,7 @@ KF6NewStuff, knewstuff-def
 KF6Notifications, knotifications-dev
 KF6NotifyConfig, knotifyconfig-dev
 KF6Package, kpackage-dev
+KF6Prison, kprison-dev
 KF6Purpose, purpose-dev
 KF6QuickCharts, kquickcharts-dev
 KF6Runner, krunner-dev
@@ -548,6 +553,7 @@ NETTLE, nettle-dev
 NUMA, numactl-dev
 Nepomuk, nepomuk-core-dev
 NetworkManager, NetworkManager-dev
+Nice, libnice-dev
 NumPy, pypi-numpy
 Numa, numactl-dev
 OPENEXR, openexr-dev
@@ -621,6 +627,7 @@ Qt5Xdg, libqtxdg-dev
 Qt5XdgIconLoader, libqtxdg-dev
 Qt5XmlPatterns, qtxmlpatterns-dev
 Qt6Positioning, qt6positioning-dev
+Qt6Qml, qt6declarative-dev
 Qt6Quick, qt6declarative-dev
 Qt6QuickTimeline, qt6quicktimeline-dev
 Qt6ShaderTools, qt6shadertools-dev
@@ -650,6 +657,7 @@ Soprano, soprano-dev
 SpatialIndex, libspatialindex-dev
 Sphinx, pypi-sphinx
 Sqlite, sqlite-autoconf-dev
+Srtp2, libsrtp-dev
 Startup notification library, libnotify-dev
 TBB, tbb-dev
 TIFF, tiff-dev
@@ -1124,6 +1132,7 @@ libsecret-unstable, libsecret-dev
 libsoup-2.4, libsoup-dev
 libssh, libssh-dev
 libssh2.h, libssh2-dev
+libssl, openssl-dev
 libsystemd, pkgconfig(systemd)
 libtirpc (via pkg-config), pkgconfig(libtirpc)
 libudev.h, systemd-dev
@@ -1298,6 +1307,8 @@ pycparser, pypi(pycparser)
 pycurl, pypi(pycurl)
 pylint, pypi(pylint)
 pyperclip, pypi(pyperclip)
+pypi(openvino), openvino-python3
+pypi(pytorch), pytorch-python3
 pytest, pypi-pytest
 pytest-cov, pypi(pytest_cov)
 python lxml, pypi(lxml)
@@ -1492,6 +1503,7 @@ yaml-cpp, yaml-cpp-dev
 yarg, pypi-yarg
 yasm, yasm
 yytext is a pointer, flex
+zconf.h, zlib-dev
 zenity, zenity
 zip, zip
 zlib, zlib-dev
