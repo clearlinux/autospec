@@ -320,6 +320,7 @@ class Config(object):
             (r"checking for [a-zA-Z0-9\_\-]+ in (.*?)\.\.\. no", 0, None),
             (r"checking for library containing (.*)... no", 0, None),
             (r"checking for perl module ([a-zA-Z:]+) [0-9\.]+... no", 0, 'perl'),
+            ("checking if (.*) is available...", 0, None),
             (r"configure: error: (?:pkg-config missing|Unable to locate) (.*)", 0, None),
             (r"configure: error: ([a-zA-Z0-9]+) (?:is required to build|not found)", 0, None),
             (r"configure: error: Cannot find (.*)\. Make sure", 0, None),
