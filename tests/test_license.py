@@ -71,7 +71,7 @@ class TestLicense(unittest.TestCase):
         conf = config.Config("")
         conf.setup_patterns()
         # remove the hash from license_hashes
-        del(conf.license_hashes[license.get_sha1sum('tests/COPYING_TEST')])
+        del(conf.license_hashes[license.util.get_sha1sum('tests/COPYING_TEST')])
         conf.license_show = "license.show.url"
         license.license_from_copying_hash('tests/COPYING_TEST', '', conf, '')
 
@@ -219,6 +219,34 @@ class TestLicense(unittest.TestCase):
         conf = config.Config("")
         conf.setup_patterns()
         with tempfile.TemporaryDirectory() as tmpd:
+            # create some cruft for testing
+            for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
+                with open(os.path.join(tmpd, testf), 'w') as newtestf:
+                    newtestf.write('test content')
+            # let's check that the proper thing is being printed as well
+            out = StringIO()
+            with redirect_stdout(out):
+                with self.assertRaises(SystemExit) as thread:
+                    license.scan_for_licenses(tmpd, conf, '')
+
+        self.assertEqual(thread.exception.code, 1)
+        self.assertIn("Cannot find any license", out.getvalue())
+        self.assertEqual(license.licenses, [])
+
+    def test_scan_for_licenses_skip(self):
+        """
+        Test scan_for_licenses in temporary directory with licenses to skip
+        """
+        conf = config.Config("")
+        conf.setup_patterns()
+        conf.license_skips = [['', 'tmp', '*', 'COPYING']]
+        with open('tests/COPYING_TEST', 'rb') as copyingf:
+            content = copyingf.read()
+
+        with tempfile.TemporaryDirectory() as tmpd:
+            # create the copying file
+            with open(os.path.join(tmpd, 'COPYING'), 'w') as newcopyingf:
+                newcopyingf.write(content.decode('utf-8'))
             # create some cruft for testing
             for testf in ['testlib.c', 'testmain.c', 'testheader.h']:
                 with open(os.path.join(tmpd, testf), 'w') as newtestf:

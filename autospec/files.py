@@ -197,33 +197,6 @@ class FileManager(object):
 
         return removed
 
-    def globlike_match(self, filename, match_name):
-        """Compare the filename to the match_name in a way that simulates the shell glob '*'."""
-        fsplit = filename.split('/')
-        if len(fsplit) != len(match_name):
-            return False
-        match = True
-        for fpart, mpart in zip(fsplit, match_name):
-            if fpart != mpart:
-                if '*' not in mpart:
-                    match = False
-                    break
-                if len(mpart) > len(fpart) + 1:
-                    match = False
-                    break
-                mpl, mpr = mpart.split('*')
-                try:
-                    if fpart.index(mpl) != 0:
-                        match = False
-                        break
-                    if fpart.rindex(mpr) != len(fpart) - len(mpr):
-                        match = False
-                        break
-                except ValueError:
-                    match = False
-                    break
-        return match
-
     def push_file(self, filename, pkg_name):
         """Perform a number of checks against the filename and push the filename if appropriate."""
         if filename in self.files or filename in self.files_blacklist:
@@ -245,7 +218,7 @@ class FileManager(object):
                 elif len('/'.join(match_name)) <= (len(norm_filename) + 1):
                     # the match name may be 1 longer due to a glob
                     # being able to match an empty string
-                    if self.globlike_match(norm_filename, match_name):
+                    if util.globlike_match(norm_filename, match_name):
                         path_prefix = '/' if not match else match.group()
                         self.push_package_file(os.path.join(path_prefix, *match_name), k)
                         return

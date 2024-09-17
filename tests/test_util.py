@@ -86,6 +86,53 @@ class TestUtil(unittest.TestCase):
         util.call = call_backup
         self.assertTrue(len(mock_call.mock_calls) == 3)
 
+    def test_globlike_match(self):
+        """
+        Test globlike_match
+        """
+        match_name = ['a', 'b', 'c']
+        file_path = 'a/b'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'c']
+        file_path = 'a/b'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'bb*']
+        file_path = 'a/b'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'b*']
+        file_path = 'a/ab'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'b*']
+        file_path = 'a/ab'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', '*a']
+        file_path = 'a/ab'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'c*']
+        file_path = 'a/b'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', '*c']
+        file_path = 'a/b'
+        self.assertFalse(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'b*']
+        file_path = 'a/b'
+        self.assertTrue(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', '*b']
+        file_path = 'a/b'
+        self.assertTrue(util.globlike_match(file_path, match_name))
+
+        match_name = ['a', 'b']
+        file_path = 'a/b'
+        self.assertTrue(util.globlike_match(file_path, match_name))
 
 
 if __name__ == '__main__':

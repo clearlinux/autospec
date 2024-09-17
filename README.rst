@@ -128,6 +128,14 @@ release
   ``.spec``. This is also bumped and generated on existing and new packages,
   respectively. This results in less manual work via automatic management.
 
+license_skips
+  Each line in the file should be a full path, that path is prefixed into a
+  tempfile directory + the package tarfile prefix. Requires using '*' to be
+  effective (e.g. /tmp/*/pkgname-*/path/to/license).
+
+  Files paths can contain a single '*' per directory such that
+  a line of ``/foo*/bar*`` is allowed but ``/foo*bar*`` is not.
+
 $package.license
   In certain cases, the package license may not be automatically discovered.  In
   this instance, ``autospec`` will exit with an error. Update this file to

@@ -110,6 +110,7 @@ class Config(object):
         self.custom_summ = ""
         self.license_fetch = None
         self.license_show = None
+        self.license_skips = []
         self.git_uri = None
         self.os_packages = set()
         self.config_file = None
@@ -995,6 +996,10 @@ class Config(object):
                 if word.find(":") < 0:
                     if not license.add_license(word, self.license_translations, self.license_blacklist):
                         print_warning("{}: blacklisted license {} ignored.".format(self.content.name + ".license", word))
+
+        content = self.read_conf_file(os.path.join(self.download_path, "license_skips"))
+        if content:
+            self.license_skips = self.validate_extras_content(content, "license_skips")
 
         # cargo_vendors is the output of 'cargo vendor' and should be read as is
         content = self.read_file(os.path.join(self.download_path, "cargo_vendors"), track=True)
