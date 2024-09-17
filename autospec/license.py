@@ -29,7 +29,7 @@ import urllib.parse
 
 import chardet
 import download
-from util import get_contents, get_sha1sum, print_fatal, print_warning
+import util
 
 default_license = "TO BE DETERMINED"
 
@@ -96,7 +96,7 @@ def decode_license(license):
 def license_from_copying_hash(copying, srcdir, config, name):
     """Add licenses based on the hash of the copying file."""
     try:
-        data = get_contents(copying)
+        data = util.get_contents(copying)
     except FileNotFoundError:
         # LICENSE file is a bad symlink (qemu-4.2.0!)
         return
@@ -109,7 +109,7 @@ def license_from_copying_hash(copying, srcdir, config, name):
     if not data:
         return
 
-    hash_sum = get_sha1sum(copying)
+    hash_sum = util.get_sha1sum(copying)
 
     if config.license_fetch:
         values = {'hash': hash_sum, 'text': data, 'package': name}
@@ -142,9 +142,20 @@ def license_from_copying_hash(copying, srcdir, config, name):
     else:
         if not config.license_show:
             return
-        print_warning("Unknown license {0} with hash {1}".format(copying, hash_sum))
+        util.print_warning("Unknown license {0} with hash {1}".format(copying, hash_sum))
         hash_url = config.license_show % {'HASH': hash_sum}
-        print_warning("Visit {0} to enter".format(hash_url))
+        util.print_warning("Visit {0} to enter".format(hash_url))
+
+
+def skip_license(license_path, config):
+    """Check if a given license file path should be skipped."""
+    skip_name = False
+    for skip in config.license_skips:
+        if util.globlike_match(license_path, skip):
+            util.print_warning(f"Skip license detected for file at {license_path}")
+            skip_name = True
+            break
+    return skip_name
 
 
 def scan_for_licenses(srcdir, config, pkg_name):
@@ -166,8 +177,9 @@ def scan_for_licenses(srcdir, config, pkg_name):
     for dirpath, dirnames, files in os.walk(srcdir):
         for name in files:
             if name.lower() in targets or target_pat.search(name.lower()):
-                license_from_copying_hash(os.path.join(dirpath, name),
-                                          srcdir, config, pkg_name)
+                license_path = os.path.join(dirpath, name)
+                if not skip_license(license_path, config):
+                    license_from_copying_hash(license_path, srcdir, config, pkg_name)
             # Also search for license texts in project trees that are
             # REUSE-compliant, or are in process of adopting this standard (for
             # example, KDE ecosystem packages). See https://reuse.software for
@@ -179,11 +191,12 @@ def scan_for_licenses(srcdir, config, pkg_name):
             # named `license` instead.
             dirbase = os.path.basename(dirpath)
             if re.search(r'^(LICENSES|licenses?|licensing)$', dirbase) and re.search(r'\.txt$', name):
-                license_from_copying_hash(os.path.join(dirpath, name),
-                                          srcdir, config, pkg_name)
+                license_path = os.path.join(dirpath, name)
+                if not skip_license(license_path, config):
+                    license_from_copying_hash(license_path, srcdir, config, pkg_name)
 
     if not licenses:
-        print_fatal(" Cannot find any license or a valid {}.license file!\n".format(pkg_name))
+        util.print_fatal(" Cannot find any license or a valid {}.license file!\n".format(pkg_name))
         sys.exit(1)
 
     print("Licenses    : ", " ".join(sorted(licenses)))

@@ -274,3 +274,31 @@ def open_auto(*args, **kwargs):
     assert 'encoding' not in kwargs
     assert 'errors' not in kwargs
     return open(*args, encoding="utf-8", errors="surrogateescape", **kwargs)
+
+
+def globlike_match(filename, match_name):
+    """Compare the filename to the match_name in a way that simulates the shell glob '*'."""
+    fsplit = filename.split('/')
+    if len(fsplit) != len(match_name):
+        return False
+    match = True
+    for fpart, mpart in zip(fsplit, match_name):
+        if fpart != mpart:
+            if '*' not in mpart:
+                match = False
+                break
+            if len(mpart) > len(fpart) + 1:
+                match = False
+                break
+            mpl, mpr = mpart.split('*')
+            try:
+                if fpart.index(mpl) != 0:
+                    match = False
+                    break
+                if fpart.rindex(mpr) != len(fpart) - len(mpr):
+                    match = False
+                    break
+            except ValueError:
+                match = False
+                break
+    return match
