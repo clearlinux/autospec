@@ -151,7 +151,11 @@ def skip_license(license_path, config):
     """Check if a given license file path should be skipped."""
     skip_name = False
     for skip in config.license_skips:
-        if util.globlike_match(license_path, skip):
+        # handle the common tempfile prefix and normalize for
+        # skip lines without a starting '/'
+        skip = skip if skip[0] != '' else skip[1:]
+        skip_path = ['', 'tmp', '*'] + skip
+        if util.globlike_match(license_path, skip_path):
             util.print_warning(f"Skip license detected for file at {license_path}")
             skip_name = True
             break

@@ -106,10 +106,6 @@ class TestUtil(unittest.TestCase):
         file_path = 'a/ab'
         self.assertFalse(util.globlike_match(file_path, match_name))
 
-        match_name = ['a', 'b*']
-        file_path = 'a/ab'
-        self.assertFalse(util.globlike_match(file_path, match_name))
-
         match_name = ['a', '*a']
         file_path = 'a/ab'
         self.assertFalse(util.globlike_match(file_path, match_name))

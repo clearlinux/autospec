@@ -129,9 +129,9 @@ release
   respectively. This results in less manual work via automatic management.
 
 license_skips
-  Each line in the file should be a full path, that path is prefixed into a
-  tempfile directory + the package tarfile prefix. Requires using '*' to be
-  effective (e.g. /tmp/*/pkgname-*/path/to/license).
+  Each line in the file should be the path to a license file. That path needs
+  to account for the package tarfile prefix. Likely requires using '*' to be
+  effective (e.g. ``pkgname-*/path/to/license`` where ``*`` handles the version).
 
   Files paths can contain a single '*' per directory such that
   a line of ``/foo*/bar*`` is allowed but ``/foo*bar*`` is not.
