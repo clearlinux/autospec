@@ -518,8 +518,13 @@ class Requirements(object):
         for line in lines:
             if match := findpackage.search(line):
                 module = match.group(1)
-                if pkg := cmake_modules.get(module):
-                    self.add_buildreq(pkg)
+                if pkgs := cmake_modules.get(module):
+                    # Some of the entries in cmake_modules list multiple packages, space-separated, so we need to split.
+                    # Otherwise, anything in buildreq_ban would have to match the entire string, not just a single package name.
+                    # For example: Png2Ico, extra-cmake-modules png2ico
+                    # buildreq_ban would have to contain "extra-cmake-modules png2ico" to match, instead of just "png2ico"
+                    for pkg in pkgs.split():
+                        self.add_buildreq(pkg)
             elif findpackage_multiline.search(line):
                 self.findpackage_parse_lines(line, lines, cmake_modules)
 
