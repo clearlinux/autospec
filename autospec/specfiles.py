@@ -1825,6 +1825,9 @@ class Specfile(object):
         self._write_strip('export QMAKE_CFLAGS_RELEASE=')
         self._write_strip('export QMAKE_CXXFLAGS_RELEASE=')
 
+        # Add the qt6base tools to the path
+        self._write_strip('export PATH=/usr/lib64/qt6/bin:$PATH')
+
         if self.config.make_command:
             qmake = self.config.make_command
         else:
