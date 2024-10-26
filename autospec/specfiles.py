@@ -25,9 +25,10 @@ import time
 import types
 from collections import OrderedDict
 
-import git
 from jinja2 import Environment
 from jinja2.loaders import DictLoader
+
+import git
 from util import _file_write, open_auto
 
 AVX2_CFLAGS = "-march=x86-64-v3"
@@ -1345,6 +1346,8 @@ class Specfile(object):
         self.write_lang_c(export_epoch=True)
         self.write_variables()
         self.write_profile_payload("autogen")
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
         self._write_strip("export GOAMD64=v2")
         self._write_strip("{0}%autogen {1} {2} {3}"
                           .format(self.get_profile_use_flags(),
@@ -1353,6 +1356,8 @@ class Specfile(object):
                                   self.config.extra_configure64))
         self.write_make_line()
         self._write_strip("\n")
+        if self.config.subdir:
+            self._write_strip("popd")
         if self.config.config_opts['32bit']:
             self._write_strip("pushd ../build32/" + self.config.subdir)
             self.write_build_prepend()
