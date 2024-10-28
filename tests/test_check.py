@@ -152,26 +152,6 @@ class TestTest(unittest.TestCase):
         check.os.listdir = listdir_backup
         self.assertEqual(check.tests_config, 'make TEST_VERBOSE=1 test')
 
-    def test_scan_for_tests_setup(self):
-        """
-        Test scan_for_tests with setup.py suite
-        """
-        reqs = buildreq.Requirements("")
-        conf = config.Config("")
-        tcontent = tarball.Content("", "", "", [], conf, "")
-        listdir_backup = os.listdir
-        check.os.listdir = mock_generator(['setup.py'])
-        content = 'test_suite'
-        m_open = mock_open(read_data=content)
-        with patch(self.open_name, m_open, create=True):
-            conf.default_pattern = "distutils3"
-            check.scan_for_tests('pkgdir', conf, reqs, tcontent)
-
-        check.os.listdir = listdir_backup
-        self.assertEqual(check.tests_config,
-                         'PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") '
-                         'python setup.py test')
-
     def test_scan_for_tests_cmake(self):
         """
         Test scan_for_tests with cmake suite

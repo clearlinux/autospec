@@ -80,19 +80,16 @@ def scan_for_tests(src_dir, config, requirements, content):
                               "{} test || :\nmodule unload openmpi".format(make_command)
 
     perl_check = "{} TEST_VERBOSE=1 test".format(make_command)
-    setup_check = """PYTHONPATH=%{buildroot}$(python -c "import sys; print(sys.path[-1])") python setup.py test"""
     meson_check = "meson test -C builddir --print-errorlogs"
     if config.config_opts.get('allow_test_failures'):
         make_check += " || :"
         cmake_check += " || :"
         perl_check += " || :"
-        setup_check += " || :"
         meson_check += " || :"
 
     testsuites = {
         "makecheck": make_check,
         "perlcheck": perl_check,
-        "setup.py": setup_check,
         "cmake": "cd clr-build; " + cmake_check,
         "meson": meson_check,
     }
@@ -144,13 +141,6 @@ def scan_for_tests(src_dir, config, requirements, content):
 
     elif config.default_pattern in ["cpan"] and "Makefile.PL" in files:
         tests_config = testsuites["perlcheck"]
-
-    elif config.default_pattern == "distutils3" and "setup.py" in files:
-        with util.open_auto(os.path.join(src_dir, "setup.py"), 'r') as setup_fp:
-            setup_contents = setup_fp.read()
-
-        if "test_suite" in setup_contents or "pbr=True" in setup_contents:
-            tests_config = testsuites["setup.py"]
 
     elif config.default_pattern == "R":
         tests_config = "export _R_CHECK_FORCE_SUGGESTS_=false\n"              \
