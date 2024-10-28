@@ -25,10 +25,9 @@ import time
 import types
 from collections import OrderedDict
 
+import git
 from jinja2 import Environment
 from jinja2.loaders import DictLoader
-
-import git
 from util import _file_write, open_auto
 
 AVX2_CFLAGS = "-march=x86-64-v3"
