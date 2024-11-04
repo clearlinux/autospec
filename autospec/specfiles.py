@@ -1434,6 +1434,9 @@ class Specfile(object):
         for module in self.config.pypi_overrides:
             self._write_strip(f"pypi-dep-fix.py . {module}")
         self._write_strip("python3 -m build --wheel --skip-dependency-check --no-isolation " + self.config.extra_configure)
+        self._write_strip("\n")
+        if self.config.subdir:
+            self._write_strip("popd")
 
         if self.config.config_opts['use_avx2']:
             self._write_strip("pushd ../buildavx2/" + self.config.subdir)
@@ -1464,8 +1467,6 @@ class Specfile(object):
             self._write_strip("popd")
 
         self._write_strip("\n")
-        if self.config.subdir:
-            self._write_strip("popd")
         self.write_build_append()
         self.write_check()
         self._write_strip("%install")
