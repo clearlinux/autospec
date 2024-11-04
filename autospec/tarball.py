@@ -125,7 +125,7 @@ class Source():
     def extract_tar(self, extraction_path):
         """Extract tar in path."""
         with tarfile.open(self.path) as content:
-            content.extractall(path=extraction_path)
+            content.extractall(path=extraction_path, filter='data')
 
     def extract_bz2(self, extraction_path):
         """Extract plain bz2 file in path."""
@@ -144,7 +144,7 @@ class Source():
     def extract_zst(self, extraction_path):
         """Extract zst in path."""
         with tarfile.open(fileobj=zstd.open(self.path, 'rb'), mode='r|') as content:
-            content.extractall(path=extraction_path)
+            content.extractall(path=extraction_path, filter='data')
 
 
 def convert_version(ver_str, name):
