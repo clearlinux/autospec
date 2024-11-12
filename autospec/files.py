@@ -303,6 +303,7 @@ class FileManager(object):
             (r"^/usr/lib32/lib(asm|dw|elf)-[0-9.]+\.so", "lib32"),
             (r"^/usr/lib64/haswell/[a-zA-Z0-9._+-]*\.so\.", "lib"),
             (r"^/usr/lib64/gobject-introspection/", "lib"),
+            (r"^/usr/libexec/emacs/", "libexec", "/usr/libexec/emacs/*"),
             (r"^/usr/libexec/", "libexec"),
             (r"^/usr/bin/", "bin"),
             (r"^/usr/sbin/", "bin"),
