@@ -6,6 +6,7 @@ import config
 # Structure: (url, build_pattern)
 BUILD_PAT_URL = [
     ("https://cran.r-project.org/src/contrib/raster_3.0-12.tar.gz", "R"),
+    ("https://ftp.osuosl.org/pub/cran/src/contrib/hexbin_1.28.5.tar.gz", "R"),
     ("http://pypi.debian.net/argparse/argparse-1.4.0.tar.gz", "distutils3"),
     ("https://pypi.python.org/packages/source/T/Tempita/Tempita-0.5.2.tar.gz", "distutils3"),
     ("https://cpan.metacpan.org/authors/id/T/TO/TODDR/IO-Tty-1.14.tar.gz", "cpan"),

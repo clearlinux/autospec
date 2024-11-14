@@ -347,7 +347,7 @@ class Config(object):
     def detect_build_from_url(self, url):
         """Detect build patterns and build requirements from the patterns detected in the url."""
         # R package
-        if "cran.r-project.org" in url or "cran.rstudio.com" in url:
+        if "cran.r-project.org" in url or "cran.rstudio.com" in url or "/pub/cran/" in url:
             self.set_build_pattern("R", 10)
 
         # python
