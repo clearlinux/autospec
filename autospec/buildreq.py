@@ -763,7 +763,7 @@ class Requirements(object):
         for dirpath, _, files in os.walk(dirn):
             default_score = 2 if dirpath == dirn else 1
 
-            if "Cargo.toml" in files:
+            if "Cargo.toml" in files and 'Makefile' not in files:
                 config.set_build_pattern('cargo', default_score)
 
             if "CMakeLists.txt" in files and "configure.ac" not in files:

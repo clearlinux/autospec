@@ -2067,14 +2067,11 @@ class Specfile(object):
         self.write_license_files()
         if self.config.subdir:
             self._write_strip("pushd " + self.config.subdir)
-        if self.config.install_macro:
-            self._write_strip(self.config.install_macro)
-        else:
-            self._write_strip("cargo install --path .")
-            self._write_strip("mkdir -p %{buildroot}/usr/bin")
-            self._write_strip('pushd "${HOME}/.cargo/bin/"')
-            self._write_strip("mv * %{buildroot}/usr/bin/")
-            self._write_strip("popd")
+        self._write_strip("cargo install --path .")
+        self._write_strip("mkdir -p %{buildroot}/usr/bin")
+        self._write_strip('pushd "${HOME}/.cargo/bin/"')
+        self._write_strip("mv * %{buildroot}/usr/bin/")
+        self._write_strip("popd")
         if self.config.subdir:
             self._write_strip("popd")
         self.write_install_append()
