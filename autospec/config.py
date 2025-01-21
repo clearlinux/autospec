@@ -837,6 +837,18 @@ class Config(object):
             except Exception as e:
                 print_warning(f"Unable to remove buildreq_cache file: {e}")
 
+        invalid_release_sig_file = os.path.join(self.download_path, "invalid_release_sig")
+        content = self.read_conf_file(invalid_release_sig_file)
+        if content and content[0] == version:
+            self.config_opts['verify_required'] = False
+        else:
+            try:
+                os.unlink(invalid_release_sig_file)
+            except FileNotFoundError:
+                pass
+            except Exception as e:
+                print_warning(f"Unable to remove invalid_release_sig file: {e}")
+
         content = self.read_conf_file(os.path.join(self.download_path, "pkgconfig_add"))
         for extra in content:
             extra = pkgconfig_re.sub(r'\1', extra)

@@ -212,6 +212,12 @@ ${custom}_provides_ban
 Controlling the build process
 ------------------------------
 
+invalid_release_sig
+  This file contains the current version that will **not** have its package
+  file be processed for signature verification (overriding the config_opt).
+  This file will be automatically deleted after a new release and is intended
+  to override a single bad signed release.
+
 extra_sources
   This file contains a list of extra files to be added to the ``.spec`` and
   optionally installed as well. Each non-blank and non-comment line should start
