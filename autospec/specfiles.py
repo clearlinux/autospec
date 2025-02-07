@@ -537,7 +537,7 @@ class Specfile(object):
                 if not archive_prefix:
                     # Make it up
                     archive_prefix = os.path.splitext(os.path.basename(archive))[0]
-                self._write_strip("cp -r %{{_builddir}}/{0}/* %{{_builddir}}/{1}/{2}"
+                self._write_strip("cp -r %{{_builddir}}/{0}/. %{{_builddir}}/{1}/{2}"
                                   .format(archive_prefix,
                                           self.content.tarball_prefix,
                                           destination))
