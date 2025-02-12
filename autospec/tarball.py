@@ -153,7 +153,7 @@ def convert_version(ver_str, name):
     # them out with expensive regular expressions
     banned_subs = ["x86.64", "source", "src", "all", "bin", "release", "rh",
                    "ga", ".ce", "lcms", "onig", "linux", "gc", "sdk", "orig",
-                   "jurko", "%2f", "%2F", "%20", "x265"]
+                   "jurko", "%2f", "%2F", "%20", "x265", "autotools"]
 
     # package names may be modified in the version string by adding "lib" for
     # example. Remove these from the name before trying to remove the name from
@@ -169,7 +169,7 @@ def convert_version(ver_str, name):
         ver_str = ver_str.replace(name.replace(mod, ""), "")
 
     # replace illegal characters
-    ver_str = ver_str.strip().replace('-', '.').replace('_', '.')
+    ver_str = ver_str.strip().replace('-', '.').replace('_', '.').replace('+', '.')
 
     # remove banned substrings
     for sub in banned_subs:
