@@ -548,7 +548,7 @@ class Specfile(object):
             if self.config.subdir:
                 self._write_strip("pushd " + self.config.subdir)
             self._write_strip("mkdir -p .cargo")
-            self._write_strip(f"echo '{self.config.cargo_vendors}' >> .cargo/config.toml")
+            self._write_strip(f"echo '\n{self.config.cargo_vendors}' >> .cargo/config.toml")
             if self.config.subdir:
                 self._write_strip("popd")
 
