@@ -120,7 +120,10 @@ class Source():
             extraction_path = base_path
 
         extract_method = getattr(self, 'extract_{}'.format(self.type))
-        extract_method(extraction_path)
+        try:
+            extract_method(extraction_path)
+        except tarfile.AbsoluteLinkError:
+            pass
 
     def extract_tar(self, extraction_path):
         """Extract tar in path."""
