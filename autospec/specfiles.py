@@ -326,6 +326,9 @@ class Specfile(object):
                 self._write("Group: Default\n")
 
             for dep in deps.get(pkg, []):
+                # honor requires_ban for manual overrides
+                if f"{self.name}-{dep}" in self.requirements.banned_requires.get(pkg, []):
+                    continue
                 if dep in self.packages:
                     self._write("Requires: {}-{} = %{{version}}-%{{release}}\n".format(self.name, dep))
 
