@@ -113,7 +113,9 @@ class GPGCli(object):
             # sig file may be ascii-armored, so dearmor it first...
             args = self.args + ['--dearmor', '--output', '-', signature]
             output, err, code = self.exec_cmd(args)
-            if code != 0:
+            if code == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
+                util.print_warning("Ignoring: {}".format(err.decode('utf-8')))
+            elif code != 0:
                 return GPGCliStatus(f'Failed to convert {signature} to binary format')
             num_bytes = packets[0].get("length")
             if not num_bytes:
@@ -477,7 +479,8 @@ class GPGVerifier(Verifier):
         if sign_isvalid(self.package_sign_path) is False:
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
             try:
-                os.unlink(self.package_sign_path)
+                #os.unlink(self.package_sign_path)
+                print("NOT UNLINKING: {}".format(self.package_sign_path))
             except Exception:
                 pass
             return None
@@ -625,9 +628,12 @@ def parse_gpg_packets(filename, verbose=True):
     """Return a list with metadata about each packet from a GPG key or signature."""
     args = ["gpg", "--list-packets", filename]
     try:
-        out, err = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
-        if err.decode('utf-8') != '' and verbose is True:
-            print(err.decode('utf-8'))
+        process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        if process.returncode == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
+            util.print_warning("Ignoring: {}".format(err.decode('utf-8')))
+        elif err.decode('utf-8') != '' and verbose is True:
+            util.print_error(err.decode('utf-8'))
             return None
         out = out.decode('utf-8')
         packets = []
