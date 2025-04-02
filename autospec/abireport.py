@@ -155,7 +155,7 @@ def is_file_valid(path):
 
 def dump_symbols(path):
     """Get symbols from a file."""
-    cmd = "nm --defined-only -g --dynamic \"{}\"".format(path)
+    cmd = "nm --defined-only -g --dynamic \"{}\" | c++filt".format(path)
     lines = None
 
     ret = set()
