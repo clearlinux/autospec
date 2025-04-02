@@ -114,7 +114,7 @@ class GPGCli(object):
             args = self.args + ['--dearmor', '--output', '-', signature]
             output, err, code = self.exec_cmd(args)
             if code == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
-                util.print_warning("Ignoring: {}".format(err.decode('utf-8')))
+                util.print_warning("Ignoring: {}".format(err.decode('utf-8').rstrip('\n')))
             elif code != 0:
                 return GPGCliStatus(f'Failed to convert {signature} to binary format')
             num_bytes = packets[0].get("length")
@@ -479,8 +479,7 @@ class GPGVerifier(Verifier):
         if sign_isvalid(self.package_sign_path) is False:
             self.print_result(False, err_msg='{} is not a GPG signature'.format(self.package_sign_path))
             try:
-                #os.unlink(self.package_sign_path)
-                print("NOT UNLINKING: {}".format(self.package_sign_path))
+                os.unlink(self.package_sign_path)
             except Exception:
                 pass
             return None
@@ -631,7 +630,7 @@ def parse_gpg_packets(filename, verbose=True):
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if process.returncode == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
-            util.print_warning("Ignoring: {}".format(err.decode('utf-8')))
+            util.print_warning("Ignoring: {}".format(err.decode('utf-8').rstrip('\n')))
         elif err.decode('utf-8') != '' and verbose is True:
             util.print_error(err.decode('utf-8'))
             return None
