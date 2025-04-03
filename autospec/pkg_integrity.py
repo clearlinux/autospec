@@ -113,8 +113,9 @@ class GPGCli(object):
             # sig file may be ascii-armored, so dearmor it first...
             args = self.args + ['--dearmor', '--output', '-', signature]
             output, err, code = self.exec_cmd(args)
-            if code == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
-                util.print_warning("Ignoring: {}".format(err.decode('utf-8').rstrip('\n')))
+            errmsg = err.decode('utf-8')
+            if code == 2 and errmsg.startswith('gpg: no valid OpenPGP data found.'):
+                util.print_warning("Ignoring: {}".format(errmsg.rstrip('\n')))
             elif code != 0:
                 return GPGCliStatus(f'Failed to convert {signature} to binary format')
             num_bytes = packets[0].get("length")
@@ -629,10 +630,11 @@ def parse_gpg_packets(filename, verbose=True):
     try:
         process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
-        if process.returncode == 2 and err.decode('utf-8').startswith('gpg: no valid OpenPGP data found.'):
-            util.print_warning("Ignoring: {}".format(err.decode('utf-8').rstrip('\n')))
-        elif err.decode('utf-8') != '' and verbose is True:
-            util.print_error(err.decode('utf-8'))
+        errmsg = err.decode('utf-8')
+        if process.returncode == 2 and errmsg.startswith('gpg: no valid OpenPGP data found.'):
+            util.print_warning("Ignoring: {}".format(errmsg.rstrip('\n')))
+        elif errmsg != '' and verbose is True:
+            util.print_error(errmsg)
             return None
         out = out.decode('utf-8')
         packets = []
