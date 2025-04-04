@@ -37,9 +37,9 @@ AVX512_CFLAGS = "-march=x86-64-v4 -mprefer-vector-width=512"
 AVX512_FCFLAGS = "-march=x86-64-v4 -mprefer-vector-width=256"
 AVX512_LCFLAGS = "-march=x86-64-v4"
 AVX512_LFLAGS = "-Wl,-z,x86-64-v4"
-APX_CFLAGS = "-march=x86-64-v3 -mapxf -mavx10.1"
-APX_LCFLAGS = "-march=x86-64-v3"
-APX_LFLAGS = "-Wl,-z,x86-64-v3"
+APX_CFLAGS = "-march=x86-64-v4 -mapxf"
+APX_LCFLAGS = "-march=x86-64-v4"
+APX_LFLAGS = "-Wl,-z,x86-64-v4"
 
 
 class Specfile(object):
@@ -1166,7 +1166,7 @@ class Specfile(object):
             self.write_build_prepend()
             self._write_strip("GOAMD64=v3")
             self._write_strip(f'CFLAGS="$CLEAR_INTERMEDIATE_CFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
-            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {AVX2_CFLAGS} {AVX2_LFLAGS} "')
+            self._write_strip(f'CXXFLAGS="$CLEAR_INTERMEDIATE_CXXFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'FFLAGS="$CLEAR_INTERMEDIATE_FFLAGS {APX_CFLAGS} {APX_LFLAGS} "')
             self._write_strip(f'FCFLAGS="$CLEAR_INTERMEDIATE_FCFLAGS {APX_CFLAGS} "')
             self._write_strip(f'LDFLAGS="$CLEAR_INTERMEDIATE_LDFLAGS {APX_LCFLAGS} "')
