@@ -96,7 +96,7 @@ class GPGCli(object):
         util.write_out(os.path.join(_gpghome, 'gpg.conf'), GNUPGCONF)
         if pubkey is not None:
             args = self.args + ['--import', pubkey]
-            output, err, code = self.exec_cmd(args)
+            _, err, code = self.exec_cmd(args)
             if code == -9:
                 raise Exception('Command {} timeout after {} seconds'.format(' '.join(args), CMD_TIMEOUT))
             elif code != 0:
@@ -212,16 +212,15 @@ class Verifier(object):
     @staticmethod
     def calc_sum(filepath, digest_algo):
         """Use digest_algo to calculate block sum of a file."""
-        BLOCK_SIZE = 4096
+        block_size = 4096
         with open(filepath, 'rb') as fp:
             digest = digest_algo()
-            for block in iter(lambda: fp.read(BLOCK_SIZE), b''):
+            for block in iter(lambda: fp.read(block_size), b''):
                 digest.update(block)
             return digest.hexdigest()
 
     def print_result(self, result, err_msg=''):
         """Display verification results."""
-        global EMAIL
         package_name = ''
         if self.url is not None:
             package_name = os.path.basename(self.url)

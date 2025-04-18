@@ -156,7 +156,6 @@ def _file_write(self, s):
 
 def translate(package):
     """Convert terms to their alternate definition."""
-    global dictionary
     for item in dictionary:
         if item.startswith(package + "="):
             return item.split("=")[1]

@@ -55,8 +55,6 @@ def add_license(lic, translations, blacklist):
     presence in the blacklist. Returns False if no license were added, True
     otherwise.
     """
-    global licenses
-    global license_files
     lic = lic.strip().strip(',')
     result = False
 
@@ -208,9 +206,6 @@ def scan_for_licenses(srcdir, config, pkg_name):
 
 def load_specfile(specfile):
     """Get licenses from the specfile content."""
-    global licenses
-    global license_files
-    global hashes
     specfile.licenses = licenses if licenses else [default_license]
     specfile.license_files = sorted(license_files)
     specfile.hashes = hashes
