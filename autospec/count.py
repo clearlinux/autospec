@@ -71,14 +71,8 @@ def sanitize_counts():
     """Validate test counts are within sane bounds."""
     global total_tests
     global total_pass
-    global total_fail
-    global total_xfail
-    global total_skip
     global counted_tests
     global counted_pass
-    global counted_fail
-    global counted_xfail
-    global counted_skip
     if total_tests > 0 and total_pass == 0:
         total_pass = total_tests - total_fail - total_skip - total_xfail
 
@@ -170,7 +164,6 @@ def parse_log(log, pkgname=''):
     global total_fail
     global total_xfail
     global total_skip
-    global counted_tests
     global counted_pass
     global counted_fail
     global counted_xfail
