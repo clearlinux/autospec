@@ -215,6 +215,8 @@ class Build(object):
             elif infiles == 1 and "not matching the package arch" not in line:
                 # exclude blank lines from consideration...
                 file = line.strip()
+                if file in ("/usr", "/usr/"):
+                    self.must_restart += 1
                 if file and file[0] == "/":
                     filemanager.push_file(file, content.name)
 
