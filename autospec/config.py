@@ -193,6 +193,7 @@ class Config(object):
             "no_glob": "Do not use the replacement pattern for file matching",
             "allow_exe": "Allow Windows executables (*.exe, *.dll) to be packaged",
             "use_ninja": "Use ninja build files",
+            "has_license": "Require license subpackage for successful build",
         }
         # simple_pattern_pkgconfig patterns
         # contains patterns for parsing build.log for missing dependencies
