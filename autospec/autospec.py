@@ -277,6 +277,9 @@ def package(args, url, name, archives, workingdir):
             # specfile template is assumed "correct" and any failures need to be manually addressed
             break
         filemanager.load_specfile(specfile)
+        if 'license' in specfile.packages and not conf.config_opts['has_license']:
+            conf.config_opts['has_license'] = True
+            conf.rewrite_config_opts()
         specfile.write_spec()
         filemanager.newfiles_printed = 0
         mock_chroot = "/var/lib/mock/clear-{}/root/builddir/build/BUILDROOT/" \
@@ -296,6 +299,10 @@ def package(args, url, name, archives, workingdir):
     if package.success == 0:
         conf.create_buildreq_cache(content.version, requirements.buildreqs_cache)
         print_build_failed()
+        sys.exit(1)
+    elif 'license' not in specfile.packages and conf.config_opts['has_license']:
+        print_fatal("package -license subpackage deleted")
+        conf.create_buildreq_cache(content.version, requirements.buildreqs_cache)
         sys.exit(1)
     elif os.path.isfile("README.clear"):
         try:
