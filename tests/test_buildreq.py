@@ -499,6 +499,95 @@ class TestBuildreq(unittest.TestCase):
         self.assertEqual(self.reqs.requires['python3'], pypi_requires)
         self.assertEqual(ssummary, summary)
 
+    def test_scan_for_configure_pypi_no_name_in_json(self):
+        """
+        Test scan_for_configure when distutils is being used for the build
+        pattern to test connecting to pypi but not getting a name back.
+        """
+        orig_summary = buildreq.specdescription.default_summary
+        orig_sscore = buildreq.specdescription.default_summary_score
+        orig_pypi_name = buildreq.pypidata.get_pypi_name
+        orig_pypi_meta = buildreq.pypidata.get_pypi_metadata
+        name = "pypi-name"
+        content = json.dumps({})
+        buildreq.pypidata.pkg_search = MagicMock(return_value=False)
+        buildreq.pypidata.get_pypi_metadata = MagicMock(return_value=content)
+        with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
+            os.mkdir(os.path.join(tmpd, 'subdir'))
+            open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), name, conf)
+
+        post_summary = buildreq.specdescription.default_summary
+        buildreq.specdescription.default_summary = orig_summary
+        buildreq.specdescription.default_summary_score = orig_sscore
+        buildreq.pypidata.get_pypi_name = orig_pypi_name
+        buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
+
+        self.assertEqual(self.reqs.pypi_provides, "name")
+        self.assertEqual(post_summary, orig_summary)
+
+    def test_scan_for_configure_pypi_no_json(self):
+        """
+        Test scan_for_configure when distutils is being used for the build
+        pattern to test being unable to connect to pypi.
+        """
+        orig_summary = buildreq.specdescription.default_summary
+        orig_sscore = buildreq.specdescription.default_summary_score
+        orig_pypi_name = buildreq.pypidata.get_pypi_name
+        orig_pypi_meta = buildreq.pypidata.get_pypi_metadata
+        name = "pypi-name"
+        buildreq.pypidata.pkg_search = MagicMock(return_value=False)
+        buildreq.pypidata.get_pypi_metadata = MagicMock(return_value="")
+        with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
+            os.mkdir(os.path.join(tmpd, 'subdir'))
+            open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), name, conf)
+
+        post_summary = buildreq.specdescription.default_summary
+        buildreq.specdescription.default_summary = orig_summary
+        buildreq.specdescription.default_summary_score = orig_sscore
+        buildreq.pypidata.get_pypi_name = orig_pypi_name
+        buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
+
+        self.assertEqual(self.reqs.pypi_provides, "name")
+        self.assertEqual(post_summary, orig_summary)
+
+    def test_scan_for_configure_pypi_bad_json(self):
+        """
+        Test scan_for_configure when distutils is being used for the build
+        pattern to test being given bad json data.
+        """
+        orig_summary = buildreq.specdescription.default_summary
+        orig_sscore = buildreq.specdescription.default_summary_score
+        orig_pypi_name = buildreq.pypidata.get_pypi_name
+        orig_pypi_meta = buildreq.pypidata.get_pypi_metadata
+        orig_json_loads = buildreq.json.loads
+        name = "pypi-name"
+        content = json.dumps({})
+        buildreq.pypidata.pkg_search = MagicMock(return_value=False)
+        buildreq.pypidata.get_pypi_metadata = MagicMock(return_value=content)
+        buildreq.json.loads = MagicMock(side_effect=json.JSONDecodeError("", "", 0))
+        with tempfile.TemporaryDirectory() as tmpd:
+            conf = config.Config(tmpd)
+            conf.config_opts['use_ninja'] = False
+            os.mkdir(os.path.join(tmpd, 'subdir'))
+            open(os.path.join(tmpd, 'subdir', 'pyproject.toml'), 'w').close()
+            self.reqs.scan_for_configure(os.path.join(tmpd, 'subdir'), name, conf)
+
+        post_summary = buildreq.specdescription.default_summary
+        buildreq.specdescription.default_summary = orig_summary
+        buildreq.specdescription.default_summary_score = orig_sscore
+        buildreq.pypidata.get_pypi_name = orig_pypi_name
+        buildreq.pypidata.get_pypi_metadata = orig_pypi_meta
+        buildreq.json.loads = orig_json_loads
+
+        self.assertEqual(self.reqs.pypi_provides, "name")
+        self.assertEqual(post_summary, orig_summary)
+
     def test_scan_for_configure_pypi_override(self):
         """
         Test scan_for_configure when distutils is being used for the build

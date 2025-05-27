@@ -709,6 +709,7 @@ class Requirements(object):
         """Use pypi for getting package requires and metadata."""
         # First look for a local override
         pypi_json = ""
+        pypi_name = pypidata.get_pypi_name(name)
         pypi_file = os.path.join(config.download_path, "pypi.json")
         if os.path.isfile(pypi_file):
             with open(pypi_file, "r") as pfile:
@@ -716,16 +717,20 @@ class Requirements(object):
         else:
             # Try and grab the pypi details for the package
             if config.alias:
-                name = config.alias
-            pypi_name = pypidata.get_pypi_name(name)
+                pypi_name = config.alias
+            pypi_name = pypidata.get_pypi_name(pypi_name)
             pypi_json = pypidata.get_pypi_metadata(pypi_name)
-        if pypi_json:
+        if not pypi_json:
+            self.pypi_provides = pypi_name
+        else:
             try:
                 package_pypi = json.loads(pypi_json)
             except json.JSONDecodeError:
-                package_pypi = {}
+                package_pypi = {"name": pypi_name}
             if package_pypi.get("name"):
                 self.pypi_provides = package_pypi["name"]
+            else:
+                self.pypi_provides = pypi_name
             if package_pypi.get("requires"):
                 for pkg in package_pypi["requires"]:
                     self.add_requires(f"pypi({pkg})", config.os_packages, override=True, subpkg="python3")
