@@ -27,6 +27,15 @@ def pkg_search(name):
         return False
 
 
+def fixup_pypi_prefix(name):
+    """Try and chop off the 'pypi-' or 'python-' prefix for names."""
+    name = name.lower().replace('-', '_')
+    for prefix in ["pypi_", "python_"]:
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+    return name
+
+
 def get_pypi_name(name, miss=False):
     """Try and verify the pypi name for a given package name."""
     # normalize the name for matching as pypi is case insensitve for search
@@ -35,11 +44,9 @@ def get_pypi_name(name, miss=False):
     if pkg_search(name):
         return name
     # Maybe we have a prefix
-    for prefix in ["pypi_", "python_"]:
-        if name.startswith(prefix):
-            name = name[len(prefix):]
-            if pkg_search(name):
-                return name
+    name = fixup_pypi_prefix(name)
+    if pkg_search(name):
+        return name
     # Some cases where search fails (Sphinx)
     # Just try the name we were given
     if miss:
