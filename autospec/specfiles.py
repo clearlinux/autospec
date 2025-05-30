@@ -1806,6 +1806,59 @@ class Specfile(object):
 
         self.write_cmake_install()
 
+    def write_qmake5_pattern(self):
+        """Write qmake5 build pattern to spec file."""
+        extra_qmake_args = ""
+        if self.config.config_opts['use_clang']:
+            extra_qmake_args = "-spec linux-clang "
+        if self.config.config_opts['use_lto']:
+            extra_qmake_args += "-config ltcg -config fat-static-lto "
+        else:
+            extra_qmake_args += "QMAKE_CFLAGS+=-fno-lto QMAKE_CXXFLAGS+=-fno-lto "
+
+        self.write_prep()
+        self._write_strip("%build")
+        self.write_build_prepend()
+        self.write_proxy_exports()
+        self._write_strip("export LANG=C.UTF-8")
+        self.write_variables()
+
+        if self.config.subdir:
+            self._write_strip("pushd " + self.config.subdir)
+
+        self._write_strip('export QMAKE_CFLAGS="$CFLAGS"')
+        self._write_strip('export QMAKE_CXXFLAGS="$CXXFLAGS"')
+        self._write_strip('export QMAKE_LFLAGS="$LDFLAGS"')
+        self._write_strip('export QMAKE_LIBDIR=/usr/lib64')
+        self._write_strip('export QMAKE_CFLAGS_RELEASE=')
+        self._write_strip('export QMAKE_CXXFLAGS_RELEASE=')
+
+        # Add the qtbase tools to the path
+        self._write_strip('export PATH=/usr/lib64/qt5/bin:$PATH')
+
+        if self.config.make_command:
+            qmake = self.config.make_command
+        else:
+            qmake = "qmake"
+        self._write_strip(f"{qmake} {extra_qmake_args} {self.config.extra_configure}")
+        self._write_strip("test -r config.log && cat config.log")
+        self.write_make_line()
+
+        if self.config.subdir:
+            self._write_strip("popd")
+
+        if self.config.config_opts['use_avx2']:
+            self._write_strip("pushd ../buildavx2/" + self.config.subdir)
+            self._write(f"{qmake} 'QT_CPU_FEATURES.x86_64 += avx avx2 bmi bmi2 f16c fma lzcnt popcnt'\\\n")
+            self._write(f'    QMAKE_CFLAGS+="{AVX2_CFLAGS} {AVX2_LFLAGS}" QMAKE_CXXFLAGS+="{AVX2_CFLAGS} {AVX2_LFLAGS}" \\\n')
+            self._write(f'    QMAKE_LFLAGS+="{AVX2_LCFLAGS}" {extra_qmake_args} {self.config.extra_configure}\n')
+            self.write_make_line()
+            self._write_strip("popd")
+
+        self.write_build_append()
+        self._write_strip("\n")
+        self.write_make_install()
+
     def write_qmake_pattern(self):
         """Write qmake build pattern to spec file."""
         extra_qmake_args = ""
